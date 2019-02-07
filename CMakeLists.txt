@@ -29,10 +29,12 @@ INCLUDE_DIRECTORIES(
 
 file(GLOB_RECURSE USER_SOURCES
    Src/*.c
+   common/*.c
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
    Src/*.h
+   common/*.h
 )
 
 SET(PROJECT_SOURCES

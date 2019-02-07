@@ -65,6 +65,24 @@
 #define ON_3_3V_Pin GPIO_PIN_1
 #define ON_3_3V_GPIO_Port GPIOJ
 
+#define TTY_RTS_Pin GPIO_PIN_12
+#define TTY_RTS_GPIO_Port GPIOD
+#define TTY_CTS_Pin GPIO_PIN_11
+#define TTY_CTS_GPIO_Port GPIOD
+#define TTY_TX_Pin GPIO_PIN_10
+#define TTY_TX_GPIO_Port GPIOB
+#define TTY_RX_Pin GPIO_PIN_11
+#define TTY_RX_GPIO_Port GPIOB
+
+#define FPGA_UART_RTS_Pin GPIO_PIN_1
+#define FPGA_UART_RTS_GPIO_Port GPIOA
+#define FPGA_UART_CTS_Pin GPIO_PIN_0
+#define FPGA_UART_CTS_GPIO_Port GPIOA
+#define FPGA_UART_TX_Pin GPIO_PIN_2
+#define FPGA_UART_TX_GPIO_Port GPIOA
+#define FPGA_UART_RX_Pin GPIO_PIN_3
+#define FPGA_UART_RX_GPIO_Port GPIOA
+
 /* ########################## Assert Selection ############################## */
 /**
   * @brief Uncomment the line below to expanse the "assert_param" macro in the 
