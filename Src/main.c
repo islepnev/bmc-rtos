@@ -95,6 +95,12 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
+  // Power ON
+  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_SET);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
