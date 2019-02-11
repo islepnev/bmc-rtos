@@ -5,6 +5,8 @@
 #define ANSI_CLEARTERM "\e[2J\e[1;1H"
 #define ANSI_RED   "\x1B[0;31m"
 #define ANSI_GREEN "\x1B[0;32m"
+#define ANSI_YELLOW "\x1B[0;33m"
+#define ANSI_BLUE "\x1B[0;34m"
 #define ANSI_PUR   "\x1B[0;35m"
 #define ANSI_CYAN  "\x1B[0;36m"
 #define ANSI_GRAY  "\x1B[0;37m"
