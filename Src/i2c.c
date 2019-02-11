@@ -6,7 +6,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -48,6 +48,7 @@
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
+I2C_HandleTypeDef hi2c4;
 SMBUS_HandleTypeDef hsmbus3;
 SMBUS_HandleTypeDef hsmbus4;
 
@@ -69,14 +70,14 @@ void MX_I2C1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure Analogue filter 
+    /**Configure Analogue filter
     */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure Digital filter 
+    /**Configure Digital filter
     */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
@@ -102,20 +103,52 @@ void MX_I2C2_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure Analogue filter 
+    /**Configure Analogue filter
     */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure Digital filter 
+    /**Configure Digital filter
     */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
 
+}
+/* I2C4 init function */
+
+void MX_I2C4_Init(void)
+{
+
+  hi2c4.Instance = I2C4;
+  hi2c4.Init.Timing = 0x20404768;
+  hi2c4.Init.OwnAddress1 = 0;
+  hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c4.Init.OwnAddress2 = 0;
+  hi2c4.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c4.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c4.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c4) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+  /**Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+      _Error_Handler(__FILE__, __LINE__);
+  }
+
+  /**Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK)
+  {
+      _Error_Handler(__FILE__, __LINE__);
+  }
 }
 /* I2C3 init function */
 
@@ -141,6 +174,7 @@ void MX_I2C3_SMBUS_Init(void)
   }
 
 }
+
 /* I2C4 init function */
 
 void MX_I2C4_SMBUS_Init(void)
@@ -164,7 +198,7 @@ void MX_I2C4_SMBUS_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**configuration Alert Mode 
+    /**configuration Alert Mode
     */
   if (HAL_SMBUS_EnableAlert_IT(&hsmbus4) != HAL_OK)
   {
@@ -182,10 +216,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   /* USER CODE BEGIN I2C1_MspInit 0 */
 
   /* USER CODE END I2C1_MspInit 0 */
-  
-    /**I2C1 GPIO Configuration    
+
+    /**I2C1 GPIO Configuration
     PB9     ------> I2C1_SDA
-    PB6     ------> I2C1_SCL 
+    PB6     ------> I2C1_SCL
     */
     GPIO_InitStruct.Pin = PB_SDA_Pin|PB_SCL_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -205,10 +239,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   /* USER CODE BEGIN I2C2_MspInit 0 */
 
   /* USER CODE END I2C2_MspInit 0 */
-  
-    /**I2C2 GPIO Configuration    
+
+    /**I2C2 GPIO Configuration
     PF0     ------> I2C2_SDA
-    PF1     ------> I2C2_SCL 
+    PF1     ------> I2C2_SCL
     */
     GPIO_InitStruct.Pin = CONFIG_IIC_SDA_Pin|CONFIG_IIC_SCL_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -223,6 +257,34 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
 
   /* USER CODE END I2C2_MspInit 1 */
   }
+  else if(i2cHandle->Instance==I2C4)
+  {
+  /* USER CODE BEGIN I2C4_MspInit 0 */
+
+  /* USER CODE END I2C4_MspInit 0 */
+
+    /**I2C4 GPIO Configuration
+    PH12     ------> I2C4_SDA
+    PH11     ------> I2C4_SCL
+    PH10     ------> I2C4_SMBA
+    */
+    GPIO_InitStruct.Pin = MON_SMB_DAT_Pin|MON_SMB_CLK_Pin|MON_SMB_ALERT_B_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C4;
+    HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+    /* I2C4 clock enable */
+    __HAL_RCC_I2C4_CLK_ENABLE();
+
+    /* I2C4 interrupt Init */
+    HAL_NVIC_SetPriority(I2C4_EV_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(I2C4_EV_IRQn);
+  /* USER CODE BEGIN I2C4_MspInit 1 */
+
+  /* USER CODE END I2C4_MspInit 1 */
+  }
 }
 
 void HAL_SMBUS_MspInit(SMBUS_HandleTypeDef* smbusHandle)
@@ -234,10 +296,10 @@ void HAL_SMBUS_MspInit(SMBUS_HandleTypeDef* smbusHandle)
   /* USER CODE BEGIN I2C3_MspInit 0 */
 
   /* USER CODE END I2C3_MspInit 0 */
-  
-    /**I2C3 GPIO Configuration    
+
+    /**I2C3 GPIO Configuration
     PC9     ------> I2C3_SDA
-    PA8     ------> I2C3_SCL 
+    PA8     ------> I2C3_SCL
     */
     GPIO_InitStruct.Pin = PA_SDA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -264,11 +326,11 @@ void HAL_SMBUS_MspInit(SMBUS_HandleTypeDef* smbusHandle)
   /* USER CODE BEGIN I2C4_MspInit 0 */
 
   /* USER CODE END I2C4_MspInit 0 */
-  
-    /**I2C4 GPIO Configuration    
+
+    /**I2C4 GPIO Configuration
     PH12     ------> I2C4_SDA
     PH11     ------> I2C4_SCL
-    PH10     ------> I2C4_SMBA 
+    PH10     ------> I2C4_SMBA
     */
     GPIO_InitStruct.Pin = MON_SMB_DAT_Pin|MON_SMB_CLK_Pin|MON_SMB_ALERT_B_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -299,10 +361,10 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
   /* USER CODE END I2C1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C1_CLK_DISABLE();
-  
-    /**I2C1 GPIO Configuration    
+
+    /**I2C1 GPIO Configuration
     PB9     ------> I2C1_SDA
-    PB6     ------> I2C1_SCL 
+    PB6     ------> I2C1_SCL
     */
     HAL_GPIO_DeInit(GPIOB, PB_SDA_Pin|PB_SCL_Pin);
 
@@ -317,10 +379,10 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
   /* USER CODE END I2C2_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C2_CLK_DISABLE();
-  
-    /**I2C2 GPIO Configuration    
+
+    /**I2C2 GPIO Configuration
     PF0     ------> I2C2_SDA
-    PF1     ------> I2C2_SCL 
+    PF1     ------> I2C2_SCL
     */
     HAL_GPIO_DeInit(GPIOF, CONFIG_IIC_SDA_Pin|CONFIG_IIC_SCL_Pin);
 
@@ -340,10 +402,10 @@ void HAL_SMBUS_MspDeInit(SMBUS_HandleTypeDef* smbusHandle)
   /* USER CODE END I2C3_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C3_CLK_DISABLE();
-  
-    /**I2C3 GPIO Configuration    
+
+    /**I2C3 GPIO Configuration
     PC9     ------> I2C3_SDA
-    PA8     ------> I2C3_SCL 
+    PA8     ------> I2C3_SCL
     */
     HAL_GPIO_DeInit(PA_SDA_GPIO_Port, PA_SDA_Pin);
 
@@ -360,11 +422,11 @@ void HAL_SMBUS_MspDeInit(SMBUS_HandleTypeDef* smbusHandle)
   /* USER CODE END I2C4_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C4_CLK_DISABLE();
-  
-    /**I2C4 GPIO Configuration    
+
+    /**I2C4 GPIO Configuration
     PH12     ------> I2C4_SDA
     PH11     ------> I2C4_SCL
-    PH10     ------> I2C4_SMBA 
+    PH10     ------> I2C4_SMBA
     */
     HAL_GPIO_DeInit(GPIOH, MON_SMB_DAT_Pin|MON_SMB_CLK_Pin|MON_SMB_ALERT_B_Pin);
 
@@ -374,7 +436,7 @@ void HAL_SMBUS_MspDeInit(SMBUS_HandleTypeDef* smbusHandle)
 
   /* USER CODE END I2C4_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

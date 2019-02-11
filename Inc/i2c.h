@@ -6,7 +6,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -53,6 +53,7 @@
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
+extern I2C_HandleTypeDef hi2c4;
 extern SMBUS_HandleTypeDef hsmbus3;
 extern SMBUS_HandleTypeDef hsmbus4;
 
@@ -64,6 +65,7 @@ extern void _Error_Handler(char *, int);
 
 void MX_I2C1_Init(void);
 void MX_I2C2_Init(void);
+void MX_I2C4_Init(void);
 void MX_I2C3_SMBUS_Init(void);
 void MX_I2C4_SMBUS_Init(void);
 
