@@ -47,6 +47,7 @@
 #include "fpga_spi_hal.h"
 #include "adt7301_spi_hal.h"
 #include "ftoa.h"
+#include "ansi_escape_codes.h"
 #include <string.h>
 
 /* USER CODE BEGIN Includes */
@@ -131,6 +132,330 @@ void print_therm_n(int16_t temp[], int n, int fractdigits)
     }
 }
 
+
+const char *STR_ON = ANSI_GREEN "ON" ANSI_CLEAR;
+const char *STR_OFF = ANSI_RED "OFF" ANSI_CLEAR;
+
+const char *STR_NORMAL = ANSI_GREEN "NORMAL" ANSI_CLEAR;
+const char *STR_FAIL = ANSI_RED "FAIL" ANSI_CLEAR;
+
+int switch_5v = 0;
+int switch_3v3 = 0;
+int switch_1v5 = 0;
+int switch_1v0 = 0;
+
+enum {MANUFACTURER_ID_TI = 0x5449};
+enum {DEVICE_ID_INA226 = 0x2260};
+enum {
+    INA226_REG_CONFIG = 0x00,
+    INA226_REG_SHUNT_VOLT = 0x01,
+    INA226_REG_BUS_VOLT = 0x02,
+    INA226_REG_POWER = 0x03,
+    INA226_REG_CURRENT = 0x04,
+    INA226_REG_CAL = 0x05,
+    INA226_REG_MASK = 0x06,
+    INA226_REG_ALERT = 0x07,
+    INA226_REG_MANUFACTURER_ID = 0xFE,
+    INA226_REG_DEVICE_ID = 0xFF
+};
+enum {monSize = 13};
+int monAddr[monSize] = {
+    0x43, 0x45, 0x42, 0x44,
+    0x40, 0x46, 0x47, 0x48,
+    0x4A, 0x4B, 0x4C, 0x4D,
+    0x4E};
+float monShuntVal(int deviceAddr)
+{
+    switch(deviceAddr) {
+    case 0x40: return 0.002;
+    case 0x42: return 0;
+    case 0x43: return 0.010;
+    case 0x44: return 0;
+    case 0x45: return 0.004;
+    case 0x46: return 0.002;
+    case 0x47: return 0.002;
+    case 0x48: return 0.002;
+    case 0x4A: return 0.002;
+    case 0x4B: return 0.002;
+    case 0x4C: return 0.002;
+    case 0x4D: return 0.002;
+    case 0x4E: return 0.002;
+    default: return 0;
+    }
+}
+
+float monBusNom(int deviceAddr)
+{
+    switch(deviceAddr) {
+    case 0x40: return 1.5;
+    case 0x42: return 5.0;
+    case 0x43: return 5.0;
+    case 0x44: return 3.3;
+    case 0x45: return 3.3;
+    case 0x46: return 1.0;
+    case 0x47: return 1.0;
+    case 0x48: return 1.2;
+    case 0x4A: return 1.8;
+    case 0x4B: return 2.5;
+    case 0x4C: return 2.5;
+    case 0x4D: return 2.5;
+    case 0x4E: return 2.5;
+    default: return 0;
+    }
+}
+
+const char *monLabel(int deviceAddr)
+{
+    switch(deviceAddr) {
+    case 0x40: return "  int 1.5V"; // U1, ? mOhm
+    case 0x42: return "        5V"; // U3
+    case 0x43: return "    VME 5V"; // U5, 10 mOhm
+    case 0x44: return "      3.3V"; // U7
+    case 0x45: return "  VME 3.3V"; // U9, 4 mOhm
+    case 0x46: return "  FPGA 1.0"; // U11, 2 mOhm
+    case 0x47: return "   MGT 1.0"; // U13, 2 mOhm
+    case 0x48: return "   MGT 1.2"; // U2, 2 mOhm
+    case 0x4A: return "  FPGA 1.8"; // U, 2 mOhm
+    case 0x4B: return " TDC-A 2.5"; // U, 2 mOhm
+    case 0x4C: return " TDC-B 2.5"; // U, 2 mOhm
+    case 0x4D: return " TDC-C 2.5"; // U, 2 mOhm
+    case 0x4E: return " Clock 2.5"; // U, 2 mOhm
+    default: return "???";
+    }
+}
+
+const float TOLERANCE_1 = 0.04;
+const float TOLERANCE_CRIT = 0.09;
+
+float monValuesBus[monSize];
+float monValuesShunt[monSize];
+
+HAL_StatusTypeDef monReadRegister(uint16_t deviceAddr, uint16_t reg, uint16_t *data)
+{
+    HAL_StatusTypeDef ret;
+    int Size = 2;
+    uint8_t pData[Size];
+    ret = HAL_I2C_Mem_Read(&hi2c4, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, 2, 100);
+    if (ret != HAL_OK) {
+        printf("I2C error: %d\n", ret);
+    } else {
+        if (data) {
+            *data = ((uint16_t)pData[0] << 8) | pData[1];
+        }
+    }
+    return ret;
+}
+
+int monIsOn(int deviceAddr)
+{
+    switch(deviceAddr) {
+    case 0x40: return switch_1v5;
+    case 0x42: return switch_5v;
+    case 0x43: return 1;
+    case 0x44: return switch_3v3;
+    case 0x45: return 1;
+    case 0x46: return switch_1v0;
+    case 0x47: return switch_1v0;
+    case 0x48: return switch_1v0;
+    case 0x4A: return switch_3v3;
+    case 0x4B: return switch_3v3;
+    case 0x4C: return switch_3v3;
+    case 0x4D: return switch_3v3;
+    case 0x4E: return switch_3v3;
+    default: return 0;
+    }
+
+}
+
+int monBusValid(int deviceAddr)
+{
+    int n = -1;
+    for (int i=0; i<monSize; i++)
+        if (monAddr[i] == deviceAddr) {
+            n = i;
+            break;
+        }
+    if (n == -1)
+        return 0;
+    float bus = monValuesBus[n];
+//    float marginLo1 = monBusNom(deviceAddr) * (1-TOLERANCE_1);
+//    float marginHi1 = monBusNom(deviceAddr) * (1+TOLERANCE_1);
+    float marginLo2 = monBusNom(deviceAddr) * (1-TOLERANCE_CRIT);
+    float marginHi2 = monBusNom(deviceAddr) * (1+TOLERANCE_CRIT);
+//    int inRange1 = (bus > marginLo1) && (bus < marginHi1);
+    int inRange2 = (bus > marginLo2) && (bus < marginHi2);
+    int isOn = monIsOn(deviceAddr);
+    return isOn ? inRange2 : 1;
+}
+
+void printMonValue(int deviceAddr, float bus, float shunt, float resistance)
+{
+    const int fractdigits = 3;
+    char str1[10], str2[10], str3[10];
+    ftoa(bus, str1, fractdigits);
+    float marginLo1 = monBusNom(deviceAddr) * (1-TOLERANCE_1);
+    float marginHi1 = monBusNom(deviceAddr) * (1+TOLERANCE_1);
+    float marginLo2 = monBusNom(deviceAddr) * (1-TOLERANCE_CRIT);
+    float marginHi2 = monBusNom(deviceAddr) * (1+TOLERANCE_CRIT);
+    int inRange1 = (bus > marginLo1) && (bus < marginHi1);
+    int inRange2 = (bus > marginLo2) && (bus < marginHi2);
+    int isOn = monIsOn(deviceAddr);
+    printf("%6s: %s%8s%s", monLabel(deviceAddr), inRange1 ? ANSI_GREEN : inRange2 ? ANSI_YELLOW : isOn ? ANSI_RED : ANSI_GRAY, str1, ANSI_CLEAR);
+    if (resistance > 0) {
+        ftoa(shunt * 1e3, str2, fractdigits); // mV
+        ftoa(shunt / resistance, str3, fractdigits);
+        printf(" %8s %8s", str2, str3);
+    } else {
+    }
+    printf(" %s\n", monBusValid(deviceAddr) ? "VALID" : "FAIL");
+}
+
+enum {
+    MON_STATE_INIT = 0,
+    MON_STATE_DETECT = 1,
+    MON_STATE_READ = 2,
+    MON_STATE_ERROR = 3
+};
+
+int monState = MON_STATE_INIT;
+int monCycle = 0;
+
+int monDetect()
+{
+    int err = 0;
+    for (int i=0; i<monSize; i++) {
+        if (err > 2)
+            break;
+        uint16_t deviceAddr = monAddr[i];
+        uint16_t data;
+        if (HAL_OK != monReadRegister(deviceAddr, INA226_REG_MANUFACTURER_ID, &data)) {
+            err++;
+            continue;
+        }
+        if (data != MANUFACTURER_ID_TI) {
+            err++;
+        }
+        if (HAL_OK != monReadRegister(deviceAddr, INA226_REG_DEVICE_ID, &data)) {
+            err++;
+            continue;
+        }
+        if (data != DEVICE_ID_INA226) {
+            err++;
+        }
+    }
+    return err;
+}
+
+int monReadValues()
+{
+    int err = 0;
+    for (int i=0; i<monSize; i++) {
+        uint16_t deviceAddr = monAddr[i];
+        uint16_t data;
+        if (HAL_OK == monReadRegister(deviceAddr, INA226_REG_BUS_VOLT, &data)) {
+            monValuesBus[i] = (int16_t)data * 1.25e-3;
+        } else {
+            err++;
+            monValuesBus[i] = 0;
+        }
+        if (HAL_OK == monReadRegister(deviceAddr, INA226_REG_SHUNT_VOLT, &data)) {
+            monValuesShunt[i] = (int16_t)data * 2.5e-6;
+        } else {
+            err++;
+            monValuesShunt[i] = 0;
+        }
+//        printMonValue(deviceAddr, busVolt * 1.25e-3, shuntVolt * 2.5e-6, monShuntVal[i]);
+    }
+    return err;
+}
+
+const char *monStateStr(int monState)
+{
+    switch(monState) {
+    case MON_STATE_INIT: return "INIT";
+    case MON_STATE_DETECT: return "DETECT";
+    case MON_STATE_READ: return "READ";
+    case MON_STATE_ERROR: return "ERROR";
+    default: return "?";
+    }
+}
+
+void monPrintValues()
+{
+    printf("Mon state: %s %d\n", monStateStr(monState), monCycle);
+    if (monState == MON_STATE_READ) {
+        for (int i=0; i<monSize; i++) {
+            uint16_t deviceAddr = monAddr[i];
+            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
+        }
+    }
+}
+
+void runMon()
+{
+    monCycle++;
+//    if (!switch_5v) {
+//        monState = MON_STATE_INIT;
+//        return;
+//    }
+    switch(monState) {
+    case MON_STATE_INIT:
+        for (int i=0; i<monSize; i++) {
+            monValuesBus[i] = 0;
+            monValuesShunt[i] = 0;
+        }
+        monState = MON_STATE_DETECT;
+        break;
+    case MON_STATE_DETECT:
+        if (monDetect() == 0)
+            monState = MON_STATE_READ;
+        else
+            monState = MON_STATE_ERROR;
+        break;
+    case MON_STATE_READ:
+        if (monReadValues() == 0)
+            monState = MON_STATE_READ;
+        else
+            monState = MON_STATE_ERROR;
+        break;
+    case MON_STATE_ERROR:
+        monState = MON_STATE_INIT;
+        break;
+    default:
+        break;
+    }
+}
+
+void update_power_switches()
+{
+    switch_5v  = monBusValid(0x43) && monBusValid(0x45); // VME 5V and 3.3V
+    switch_1v5 = monBusValid(0x42); // 5V
+    switch_1v0 = monBusValid(0x40); // 1.5V
+    switch_3v3 = switch_1v0 && switch_1v5;
+    if (!switch_5v) {
+        switch_3v3 = 0;
+        switch_1v5 = 0;
+        switch_1v0 = 0;
+    }
+    if (!switch_1v5) {
+        switch_1v0 = 0;
+        switch_3v3 = 0;
+    }
+    if (!switch_1v0) {
+        switch_3v3 = 0;
+    }
+    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+//  // Power OFF
+//  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_RESET);
+
+
 /* USER CODE END 0 */
 
 /**
@@ -164,28 +489,22 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_I2C3_SMBUS_Init();
-  MX_I2C4_SMBUS_Init();
+//  MX_I2C1_Init();
+//  MX_I2C2_Init();
+//  MX_I2C3_SMBUS_Init();
+  MX_I2C4_Init();
   MX_SPI1_Init();
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
 
-  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
+//  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
 
-  // Power ON
-  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_SET);
-/*
-  // Power OFF
-  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_RESET);
-*/
+  switch_5v = 0;
+  switch_1v5 = 1;
+  switch_1v0 = 1;
+  switch_3v3 = 1;
+//    update_power_switches();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -196,6 +515,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+      printf(ANSI_CLEARTERM ANSI_CLEAR);
+      update_power_switches();
 
       for (int i=0; i<100000; i++) {
 //          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
@@ -205,21 +526,32 @@ int main(void)
       }
       for (int i=0; i<100000; i++) {
 //          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
+//          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_RESET);
+//          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
           HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
       }
-      printf("\r %8ld ", HAL_GetTick());
+      printf("Tick: %8ld \n", HAL_GetTick());
+      printf("Switch 5V   %s\n", switch_5v ? STR_ON : STR_OFF);
+      printf("Switch 3.3V %s\n", switch_3v3 ? STR_ON : STR_OFF);
+      printf("Switch 1.5V %s\n", switch_1v5 ? STR_ON : STR_OFF);
+      printf("Switch 1.0V %s\n", switch_1v0 ? STR_ON : STR_OFF);
+
       int fpga_core_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_B_GPIO_Port, FPGA_CORE_PGOOD_B_Pin));
       int ltm_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_B_GPIO_Port, LTM_PGOOD_B_Pin));
-      printf("pgood=%d,%d ", fpga_core_pgood, ltm_pgood);
+      printf("Intermediate 1.5V: %s\n", ltm_pgood ? STR_NORMAL : switch_1v5 ? STR_FAIL : STR_OFF);
+      printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
 
       int16_t temp[4] = {0,0,0,0};
       for(int i=0; i<4; i++) temp[i] = adt7301_convert_temp_adt7301_scale32(adt7301_read_temp(i));
       print_therm_n(temp, 4, 1);
+      printf("\n");
       uint16_t data[8] = {0,0,0,0,0,0,0,0};
       for (int i=0; i<8; i++) fpga_spi_hal_read_reg(i, &data[i]);
-      printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+      printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+
+//      monReadValues();
+      runMon();
+      monPrintValues();
       fflush(stdout);
   }
   /* USER CODE END 3 */
@@ -319,6 +651,7 @@ void _Error_Handler(char *file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+    printf("HAL ERROR %s %d\n", file, line);
   while(1)
   {
       HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin, GPIO_PIN_RESET);
