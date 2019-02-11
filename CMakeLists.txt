@@ -1,3 +1,4 @@
+SET(TOOLCHAIN_PREFIX ~/gcc-arm-none-eabi-8-2018-q4-major)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
@@ -11,13 +12,13 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 SET(STM32_MIN_HEAP_SIZE 0x20000)
 SET(STM32_MIN_STACK_SIZE 0x2000)
 
-PROJECT(tdc72vxs4_blinky_uart C)
+PROJECT(tdc72vxs4_fpga_spi C CXX)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
-FIND_PACKAGE(STM32HAL COMPONENTS gpio uart REQUIRED)
+FIND_PACKAGE(STM32HAL COMPONENTS gpio spi uart REQUIRED)
 
 INCLUDE_DIRECTORIES(
 #    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,24 +26,28 @@ INCLUDE_DIRECTORIES(
     ${STM32HAL_INCLUDE_DIR}
    Inc
    Src
+   drivers
+   common
 )
 
 file(GLOB_RECURSE USER_SOURCES
    Src/*.c
+   Src/*.cpp
    common/*.c
+   drivers/*.c
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
    Src/*.h
    common/*.h
+   drivers/*.h
 )
 
 SET(PROJECT_SOURCES
     ${USER_SOURCES}
     ${USER_INCLUDES}
 )
-
-
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
 SET(ELF ${CMAKE_PROJECT_NAME}.elf)
 ADD_EXECUTABLE(${ELF}
     ${CMSIS_SOURCES}

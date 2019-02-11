@@ -41,6 +41,11 @@
 #include "stm32f7xx_hal.h"
 #include "gpio.h"
 #include "usart.h"
+#include "spi.h"
+#include "fpga_spi_hal.h"
+#include "adt7301_spi_hal.h"
+#include "ftoa.h"
+#include <string.h>
 
 /* USER CODE BEGIN Includes */
 
@@ -62,6 +67,67 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+/*
+// convert float to string one decimal digit at a time
+// assumes float is < 65536 and ARRAYSIZE is big enough
+// problem: it truncates numbers at size without rounding
+// str is a char array to hold the result, float is the number to convert
+// size is the number of decimal digits you want
+void FloatToStringNew(char *str, float f, char size)
+{
+       char pos;  // position in string
+       char len;  // length of decimal part of result
+       char* curr;  // temp holder for next digit
+       int value;  // decimal digit(s) to convert
+       pos = 0;  // initialize pos, just to be sure
+
+       value = (int)f;  // truncate the floating point number
+       itoa(value,str);  // this is kinda dangerous depending on the length of str
+       // now str array has the digits before the decimal
+
+       if (f < 0 )  // handle negative numbers
+       {
+               f *= -1;
+               value *= -1;
+       }
+
+    len = strlen(str);  // find out how big the integer part was
+       pos = len;  // position the pointer to the end of the integer part
+       str[pos++] = '.';  // add decimal point to string
+
+       while(pos < (size + len + 1) )  // process remaining digits
+       {
+               f = f - (float)value;  // hack off the whole part of the number
+               f *= 10;  // move next digit over
+               value = (int)f;  // get next digit
+               itoa(value, curr); // convert digit to string
+               str[pos++] = *curr; // add digit to result string and increment pointer
+       }
+}
+*/
+void print_therm(uint16_t rawTemp)
+{
+//   if (rawTemp != TEMP_RAW_ERROR) {
+      int16_t temp32 = adt7301_convert_temp_adt7301_scale32(rawTemp);
+      int16_t tempInt = temp32 / 32;
+      int16_t tempDec = (temp32 - tempInt * 32) * 10 / 32;
+      printf("%d.%01d", tempInt, tempDec);
+//   }
+}
+
+void print_therm_n(int16_t temp[], int n, int fractdigits)
+{
+    printf("temp=");
+    for (int i=0; i<n; i++) {
+        int16_t temp32 = adt7301_convert_temp_adt7301_scale32(temp[i]);
+        float tempf = (float)temp32 / 32;
+        char str[10];
+        ftoa(tempf, str, fractdigits);
+        printf("%s ", str);
+//        print_therm(temp[i]); printf(" ");
+    }
+}
 
 /* USER CODE END 0 */
 
@@ -96,16 +162,24 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_SPI1_Init();
+  MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
 
-  printf("%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
+  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
 
   // Power ON
   HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_SET);
-
+/*
+  // Power OFF
+  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_RESET);
+*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -118,19 +192,28 @@ int main(void)
   /* USER CODE BEGIN 3 */
 
       for (int i=0; i<100000; i++) {
-          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_Y_GPIO_Port, LED_Y_Pin, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
+//          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
+          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_SET);
+          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_SET);
+          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_SET);
       }
       for (int i=0; i<100000; i++) {
-          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_Y_GPIO_Port, LED_Y_Pin, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
+//          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
       }
+      printf("\r %8ld ", HAL_GetTick());
+      int fpga_core_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_B_GPIO_Port, FPGA_CORE_PGOOD_B_Pin));
+      int ltm_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_B_GPIO_Port, LTM_PGOOD_B_Pin));
+      printf("pgood=%d,%d ", fpga_core_pgood, ltm_pgood);
 
-      printf("%ld ", HAL_GetTick());
+      int16_t temp[4] = {0,0,0,0};
+      for(int i=0; i<4; i++) temp[i] = adt7301_convert_temp_adt7301_scale32(adt7301_read_temp(i));
+      print_therm_n(temp, 4, 1);
+      uint16_t data[8] = {0,0,0,0,0,0,0,0};
+      for (int i=0; i<8; i++) fpga_spi_hal_read_reg(i, &data[i]);
+      printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
       fflush(stdout);
   }
   /* USER CODE END 3 */
