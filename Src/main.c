@@ -40,8 +40,10 @@
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "gpio.h"
-#include "usart.h"
+#include "i2c.h"
 #include "spi.h"
+#include "usart.h"
+
 #include "fpga_spi_hal.h"
 #include "adt7301_spi_hal.h"
 #include "ftoa.h"
@@ -162,6 +164,10 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_I2C3_SMBUS_Init();
+  MX_I2C4_SMBUS_Init();
   MX_SPI1_Init();
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
@@ -315,6 +321,16 @@ void _Error_Handler(char *file, int line)
   /* User can add his own implementation to report the HAL error return state */
   while(1)
   {
+      HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin, GPIO_PIN_RESET);
+      int k = 100000;
+      for (int i=0; i<k; i++) {
+          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_SET);
+          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
+      }
+      for (int i=0; i<k; i++) {
+          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_SET);
+          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_RESET);
+      }
   }
   /* USER CODE END Error_Handler_Debug */
 }
