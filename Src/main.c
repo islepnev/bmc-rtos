@@ -132,12 +132,36 @@ void print_therm_n(int16_t temp[], int n, int fractdigits)
     }
 }
 
-
 const char *STR_ON = ANSI_GREEN "ON" ANSI_CLEAR;
 const char *STR_OFF = ANSI_RED "OFF" ANSI_CLEAR;
 
 const char *STR_NORMAL = ANSI_GREEN "NORMAL" ANSI_CLEAR;
 const char *STR_FAIL = ANSI_RED "FAIL" ANSI_CLEAR;
+
+HAL_StatusTypeDef muxRead(uint8_t *data)
+{
+    const uint16_t deviceAddr = 0x74;
+    HAL_StatusTypeDef ret;
+    uint8_t pData;
+    ret = HAL_I2C_Master_Receive(&hi2c4, deviceAddr << 1, &pData, 1, 100);
+    if (ret != HAL_OK) {
+        printf("I2C error: %d\n", ret);
+    } else {
+        if (data) {
+            *data = pData;
+        }
+    }
+    return ret;
+}
+
+void muxDetect()
+{
+    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
+    uint8_t data = 0;
+    int muxPresent = (HAL_OK == muxRead(&data));
+    printf("I2C mux: %02X %s\n", data, muxPresent ? STR_NORMAL : STR_FAIL);
+}
 
 int switch_5v = 1;
 int switch_3v3 = 0;
@@ -564,6 +588,8 @@ int main(void)
 
       printf("Intermediate 1.5V: %s\n", ltm_pgood ? STR_NORMAL : switch_1v5 ? STR_FAIL : STR_OFF);
       printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
+
+      muxDetect();
 
       int16_t temp[4] = {0,0,0,0};
       for(int i=0; i<4; i++) temp[i] = adt7301_convert_temp_adt7301_scale32(adt7301_read_temp(i));
