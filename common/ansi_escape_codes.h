@@ -2,7 +2,8 @@
 #define ANSI_ESCAPE_CODES_H
 
 /* Terminal control ANSI escape codes */
-#define ANSI_CLEARTERM "\e[2J\e[1;1H"
+#define ANSI_CLEARTERM "\e[2J"
+#define ANSI_GOHOME "\e[1;1H"
 #define ANSI_RED   "\x1B[0;31m"
 #define ANSI_GREEN "\x1B[0;32m"
 #define ANSI_YELLOW "\x1B[0;33m"

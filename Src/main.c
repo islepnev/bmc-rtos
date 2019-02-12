@@ -139,9 +139,9 @@ const char *STR_OFF = ANSI_RED "OFF" ANSI_CLEAR;
 const char *STR_NORMAL = ANSI_GREEN "NORMAL" ANSI_CLEAR;
 const char *STR_FAIL = ANSI_RED "FAIL" ANSI_CLEAR;
 
-int switch_5v = 0;
+int switch_5v = 1;
 int switch_3v3 = 0;
-int switch_1v5 = 0;
+int switch_1v5 = 1;
 int switch_1v0 = 0;
 
 enum {MANUFACTURER_ID_TI = 0x5449};
@@ -224,8 +224,8 @@ const char *monLabel(int deviceAddr)
     }
 }
 
-const float TOLERANCE_1 = 0.04;
-const float TOLERANCE_CRIT = 0.09;
+const float TOLERANCE_1 = 0.05;
+const float TOLERANCE_CRIT = 0.1;
 
 float monValuesBus[monSize];
 float monValuesShunt[monSize];
@@ -302,12 +302,13 @@ void printMonValue(int deviceAddr, float bus, float shunt, float resistance)
     int isOn = monIsOn(deviceAddr);
     printf("%6s: %s%8s%s", monLabel(deviceAddr), inRange1 ? ANSI_GREEN : inRange2 ? ANSI_YELLOW : isOn ? ANSI_RED : ANSI_GRAY, str1, ANSI_CLEAR);
     if (resistance > 0) {
-        ftoa(shunt * 1e3, str2, fractdigits); // mV
+//        ftoa(shunt * 1e3, str2, fractdigits); // mV
         ftoa(shunt / resistance, str3, fractdigits);
-        printf(" %8s %8s", str2, str3);
+        printf(" %8s", str3);
     } else {
+        printf("         ");
     }
-    printf(" %s\n", monBusValid(deviceAddr) ? "VALID" : "FAIL");
+    printf(" %s\n", monBusValid(deviceAddr) ? (ANSI_GREEN "VALID" ANSI_CLEAR) : (ANSI_RED "FAIL" ANSI_CLEAR));
 }
 
 enum {
@@ -426,12 +427,15 @@ void runMon()
     }
 }
 
+int fpga_core_pgood = 0;
+int ltm_pgood = 0;
+
 void update_power_switches()
 {
-    switch_5v  = monBusValid(0x43) && monBusValid(0x45); // VME 5V and 3.3V
-    switch_1v5 = monBusValid(0x42); // 5V
-    switch_1v0 = monBusValid(0x40); // 1.5V
-    switch_3v3 = switch_1v0 && switch_1v5;
+    switch_5v  = 1; // monBusValid(0x43); // && monBusValid(0x45); // VME 5V and 3.3V
+    switch_1v5 = 1; // monBusValid(0x42); // 5V
+    switch_1v0 = ltm_pgood; // && monBusValid(0x40); // 1.5V
+    switch_3v3 = fpga_core_pgood && switch_1v0 && switch_1v5; // && monBusValid(0x45);
     if (!switch_5v) {
         switch_3v3 = 0;
         switch_1v5 = 0;
@@ -455,6 +459,22 @@ void update_power_switches()
 //  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_RESET);
 
+int readPowerGoodFpga()
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_B_GPIO_Port, FPGA_CORE_PGOOD_B_Pin));
+}
+int readPowerGood1v5()
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_B_GPIO_Port, LTM_PGOOD_B_Pin));
+}
+
+int getMonSystemState()
+{
+    for (int i=0; i < monSize; i++)
+        if (!monBusValid(monAddr[i]))
+            return 0;
+    return 1;
+}
 
 /* USER CODE END 0 */
 
@@ -499,7 +519,7 @@ int main(void)
 
 //  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
 
-  switch_5v = 0;
+  switch_5v = 1;
   switch_1v5 = 1;
   switch_1v0 = 1;
   switch_3v3 = 1;
@@ -515,9 +535,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      printf(ANSI_CLEARTERM ANSI_CLEAR);
-      update_power_switches();
-
+      printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+/*
       for (int i=0; i<100000; i++) {
 //          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
           HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_SET);
@@ -530,14 +549,19 @@ int main(void)
 //          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
           HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
       }
+      */
       printf("Tick: %8ld \n", HAL_GetTick());
       printf("Switch 5V   %s\n", switch_5v ? STR_ON : STR_OFF);
       printf("Switch 3.3V %s\n", switch_3v3 ? STR_ON : STR_OFF);
       printf("Switch 1.5V %s\n", switch_1v5 ? STR_ON : STR_OFF);
       printf("Switch 1.0V %s\n", switch_1v0 ? STR_ON : STR_OFF);
 
-      int fpga_core_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_B_GPIO_Port, FPGA_CORE_PGOOD_B_Pin));
-      int ltm_pgood = (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_B_GPIO_Port, LTM_PGOOD_B_Pin));
+      for (int i=0; i<10; i++) {
+          update_power_switches();
+          fpga_core_pgood = readPowerGoodFpga();
+          ltm_pgood = readPowerGood1v5();
+      }
+
       printf("Intermediate 1.5V: %s\n", ltm_pgood ? STR_NORMAL : switch_1v5 ? STR_FAIL : STR_OFF);
       printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
 
@@ -549,10 +573,20 @@ int main(void)
       for (int i=0; i<8; i++) fpga_spi_hal_read_reg(i, &data[i]);
       printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
 
-//      monReadValues();
       runMon();
+      int systemState = getMonSystemState();
+      printf("System state: %s\n", systemState ? STR_NORMAL : STR_FAIL);
+      HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    systemState ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
       monPrintValues();
+//      for (int i=0; i<10; i++) printf("\n");
       fflush(stdout);
+      for (int i=0; i<200000; i++) {
+          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
+      }
+      for (int i=0; i<200000; i++) {
+          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_SET);
+      }
   }
   /* USER CODE END 3 */
 
