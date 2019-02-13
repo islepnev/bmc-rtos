@@ -47,8 +47,10 @@
 /* USER CODE BEGIN Includes */
 #include "fpga_spi_hal.h"
 #include "adt7301_spi_hal.h"
+#include "pca9548_i2c_hal.h"
 #include "ftoa.h"
 #include "ansi_escape_codes.h"
+#include "display.h"
 #include "devices.h"
 
 /* USER CODE END Includes */
@@ -72,87 +74,21 @@ void SystemClock_Config(void);
 
 Devices dev;
 
-#define ANSI_COL_RESULTS ANSI_COL40
-
-const char *STR_ON = ANSI_COL_RESULTS ANSI_GREEN "ON" ANSI_CLEAR;
-const char *STR_OFF = ANSI_COL_RESULTS ANSI_RED "OFF" ANSI_CLEAR;
-
-const char *STR_NORMAL = ANSI_COL_RESULTS ANSI_GREEN "NORMAL" ANSI_CLEAR;
-const char *STR_FAIL = ANSI_COL_RESULTS ANSI_RED "FAIL" ANSI_CLEAR;
-
-void print_RawTherm(uint16_t rawTemp)
+void devPrintStatus(const Devices d)
 {
-   if (rawTemp != TEMP_RAW_ERROR) {
-      int16_t temp32 = adt7301_convert_temp_adt7301_scale32(rawTemp);
-      if (temp32 < 0) {
-          temp32 = -temp32;
-          printf("-");
-      }
-      else
-          printf(" ");
-      int16_t tempInt = temp32 / 32;
-      int16_t tempDec = (temp32 - tempInt * 32) * 10 / 32;
-      printf("%d.%01d", tempInt, tempDec);
-   } else {
-       printf(" --- ");
-   }
-}
+    printf("I2C mux: %s\n", d.i2cmux.present ? STR_NORMAL : STR_FAIL);
 
-void print_therm_n(uint16_t temp[], int n, int fractdigits)
-{
-    printf("Temp: ");
-    for (int i=0; i<n; i++) {
-        print_RawTherm(temp[i]);
-        printf(" ");
-    }
-}
-
-void readTherm(DevTherm *therm)
-{
-    for(int i=0; i<4; i++)
-        therm->rawTemp[i] = adt7301_read_temp(i);
-}
-
-int thermValid(const DevTherm therm)
-{
-    for(int i=0; i<4; i++) {
-        int16_t temp = adt7301_convert_temp_adt7301_scale32(therm.rawTemp[i]);
-        temp /= 32;
-        const int tempMin = 0.1;
-        const int tempMax = 60.0;
-        if (temp < tempMin || temp > tempMax)
-            return 0;
-    }
-    return 1;
-}
-
-void printTherm(const DevTherm d)
-{
-    print_therm_n(dev.therm.rawTemp, 4, 1);
-    printf("%s\n", thermValid(d) ? STR_NORMAL : STR_FAIL);
-}
-
-HAL_StatusTypeDef muxRead(uint8_t *data)
-{
-    const uint16_t deviceAddr = 0x74; // FIXME
-    HAL_StatusTypeDef ret;
-    uint8_t pData;
-    ret = HAL_I2C_Master_Receive(&hi2c4, deviceAddr << 1, &pData, 1, 100);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = pData;
+    int eepromVxsPbDetect()
+    {
+        uint8_t data = 0;
+        printf("EEPROM VXS PB: ");
+        if (HAL_OK == eepromVxsPbRead(0, &data)) {
+            printf("%02X %s\n", data, STR_NORMAL);
+        } else {
+            printf("%s\n", STR_FAIL);
         }
+        return 1;
     }
-    return ret;
-}
-
-void muxDetect()
-{
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
-    uint8_t data = 0;
-    int muxPresent = (HAL_OK == muxRead(&data));
-    printf("I2C mux: %02X %s\n", data, muxPresent ? STR_NORMAL : STR_FAIL);
 }
 
 int switch_5v = 1;
@@ -305,7 +241,8 @@ int monBusValid(int deviceAddr)
 void printMonValue(int deviceAddr, float bus, float shunt, float resistance)
 {
     const int fractdigits = 3;
-    char str1[10], str2[10], str3[10];
+    char str1[10], str3[10];
+//    char str2[10];
     ftoa(bus, str1, fractdigits);
     float marginLo1 = monBusNom(deviceAddr) * (1-TOLERANCE_1);
     float marginHi1 = monBusNom(deviceAddr) * (1+TOLERANCE_1);
@@ -564,33 +501,6 @@ int pllDetect()
     return 1;
 }
 
-HAL_StatusTypeDef eepromVxsPbRead(uint16_t addr, uint8_t *data)
-{
-    const int eepromVxsPbDeviceAddr = 0x51;
-    HAL_StatusTypeDef ret;
-    enum {Size = 1};
-    uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(&hi2c1, eepromVxsPbDeviceAddr << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = pData[0];
-        }
-    }
-    return ret;
-}
-
-int eepromVxsPbDetect()
-{
-    uint8_t data = 0;
-    printf("EEPROM VXS PB: ");
-    if (HAL_OK == eepromVxsPbRead(0, &data)) {
-        printf("%02X %s\n", data, STR_NORMAL);
-    } else {
-        printf("%s\n", STR_FAIL);
-    }
-    return 1;
-}
-
 const int FPGA_DEVICE_ID = 0x68; // FIXME: 0xD0
 
 int fpgaDetect()
@@ -641,7 +551,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  devInit(dev);
+  dev_init(&dev);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -713,8 +623,9 @@ int main(void)
       printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
 
       if (monBusValid(0x42)) { // 5V
-          readTherm(&dev.therm);
-          printTherm(dev.therm);
+          for (int i=0; i<DEV_THERM_COUNT; i++)
+              dev_thset_read(&dev.thset);
+          dev_thset_print(dev.thset);
       } else {
           printf("Temp: no power\n");
       }
@@ -725,11 +636,12 @@ int main(void)
       HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    systemPowerState ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
       if (systemPowerState) {
-          muxDetect();
+          devDetect(&dev);
           eepromVxsPbDetect();
           pllDetect();
           fpgaDetect();
       }
+      devPrintStatus(dev);
 
       monPrintValues();
       fflush(stdout);
