@@ -109,27 +109,57 @@ void FloatToStringNew(char *str, float f, char size)
        }
 }
 */
-void print_therm(uint16_t rawTemp)
-{
+//void print_therm(uint16_t rawTemp)
+//{
 //   if (rawTemp != TEMP_RAW_ERROR) {
+//      int16_t temp32 = adt7301_convert_temp_adt7301_scale32(rawTemp);
+//      int16_t tempInt = temp32 / 32;
+//      int16_t tempDec = (temp32 - tempInt * 32) * 10 / 32;
+//      printf("%d.%01d", tempInt, tempDec);
+//   } else {
+//       printf("----");
+//   }
+//}
+
+void print_RawTherm(uint16_t rawTemp)
+{
+   if (rawTemp != TEMP_RAW_ERROR) {
       int16_t temp32 = adt7301_convert_temp_adt7301_scale32(rawTemp);
+      if (temp32 < 0) {
+          temp32 = -temp32;
+          printf("-");
+      }
+      else
+          printf(" ");
       int16_t tempInt = temp32 / 32;
       int16_t tempDec = (temp32 - tempInt * 32) * 10 / 32;
       printf("%d.%01d", tempInt, tempDec);
-//   }
+   } else {
+       printf(" --- ");
+   }
 }
 
-void print_therm_n(int16_t temp[], int n, int fractdigits)
+void print_therm_n(uint16_t temp[], int n, int fractdigits)
 {
-    printf("temp=");
+    printf("Temp: ");
     for (int i=0; i<n; i++) {
-        int16_t temp32 = adt7301_convert_temp_adt7301_scale32(temp[i]);
-        float tempf = (float)temp32 / 32;
-        char str[10];
-        ftoa(tempf, str, fractdigits);
-        printf("%s ", str);
-//        print_therm(temp[i]); printf(" ");
+        print_RawTherm(temp[i]);
+        printf(" ");
     }
+}
+
+uint16_t rawTemp[4] = {TEMP_RAW_ERROR,TEMP_RAW_ERROR,TEMP_RAW_ERROR,TEMP_RAW_ERROR};
+
+void readTherm()
+{
+    for(int i=0; i<4; i++)
+        rawTemp[i] = adt7301_read_temp(i);
+}
+
+void printTherm()
+{
+    print_therm_n(rawTemp, 4, 1);
+    printf("\n");
 }
 
 const char *STR_ON = ANSI_GREEN "ON" ANSI_CLEAR;
@@ -140,7 +170,7 @@ const char *STR_FAIL = ANSI_RED "FAIL" ANSI_CLEAR;
 
 HAL_StatusTypeDef muxRead(uint8_t *data)
 {
-    const uint16_t deviceAddr = 0x74;
+    const uint16_t deviceAddr = 0x74; // FIXME
     HAL_StatusTypeDef ret;
     uint8_t pData;
     ret = HAL_I2C_Master_Receive(&hi2c4, deviceAddr << 1, &pData, 1, 100);
@@ -485,14 +515,14 @@ void update_power_switches()
 
 int readPowerGoodFpga()
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_B_GPIO_Port, FPGA_CORE_PGOOD_B_Pin));
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin));
 }
 int readPowerGood1v5()
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_B_GPIO_Port, LTM_PGOOD_B_Pin));
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin));
 }
 
-int getMonSystemState()
+int getMonPowerSupplyState()
 {
     for (int i=0; i < monSize; i++)
         if (!monBusValid(monAddr[i]))
@@ -500,6 +530,85 @@ int getMonSystemState()
     return 1;
 }
 
+const int pllDeviceAddr = 0x4A;
+
+HAL_StatusTypeDef pllSendByte(uint16_t data)
+{
+    HAL_StatusTypeDef ret;
+    enum {Size = 2};
+    uint8_t pData[Size];
+    pData[0] = (data >> 8) & 0xFF;
+    pData[1] = data & 0xFF;
+    ret = HAL_I2C_Master_Transmit(&hi2c2, pllDeviceAddr << 1, pData, Size, 100);
+    if (ret != HAL_OK) {
+        printf("I2C error: %d\n", ret);
+    }
+    return ret;
+}
+
+HAL_StatusTypeDef pllReceiveByte(uint32_t *data)
+{
+    HAL_StatusTypeDef ret;
+    enum {Size = 3};
+    uint8_t pData[Size] = {0, 0, 0};
+    ret = HAL_I2C_Master_Receive(&hi2c2, pllDeviceAddr << 1, pData, Size, 100);
+    if (ret != HAL_OK) {
+        printf("I2C error: %d\n", ret);
+    } else {
+        if (data) {
+            *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
+        }
+    }
+    return ret;
+}
+
+HAL_StatusTypeDef pllReadRegister(uint16_t reg, uint32_t *data)
+{
+    HAL_StatusTypeDef ret;
+    enum {Size = 3};
+    uint8_t pData[Size];
+    ret = HAL_I2C_Mem_Read(&hi2c2, pllDeviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
+    if (ret != HAL_OK) {
+        printf("I2C error: %d\n", ret);
+    } else {
+        if (data) {
+            *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
+        }
+    }
+    return ret;
+}
+
+void pllDetect()
+{
+    for (int i=0; i<100; i++)
+        HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
+    for (int i=0; i<100; i++)
+    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
+    for (int i=0; i<100; i++)
+        HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
+
+    uint16_t addr = 0xC;
+    uint32_t data = 0;
+//    pllSendByte(addr);
+//    pllReceiveByte(&data);
+    pllReadRegister(addr, &data);
+    printf("PLL detect: %04X = %06lX\n", addr, data);
+//    pllReadRegister();
+}
+
+void setStaticPinsPll()
+{
+    //    HAL_GPIO_WritePin(PLL_M0_GPIO_Port, PLL_M0_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(PLL_M3_GPIO_Port, PLL_M3_Pin, GPIO_PIN_RESET); // M3=0 - do not load eeprom
+    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, GPIO_PIN_SET);   // M4=1 - I2C mode
+    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, GPIO_PIN_RESET); // M5=0 - I2C address offset
+    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, GPIO_PIN_SET);   // M6=1 - I2C address offset
+}
+
+void setStaticPins()
+{
+    setStaticPinsPll();
+}
 /* USER CODE END 0 */
 
 /**
@@ -533,14 +642,15 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
-//  MX_I2C1_Init();
-//  MX_I2C2_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
 //  MX_I2C3_SMBUS_Init();
   MX_I2C4_Init();
   MX_SPI1_Init();
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
 
+  setStaticPins();
 //  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
 
   switch_5v = 1;
@@ -589,23 +699,28 @@ int main(void)
       printf("Intermediate 1.5V: %s\n", ltm_pgood ? STR_NORMAL : switch_1v5 ? STR_FAIL : STR_OFF);
       printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
 
-      muxDetect();
+      if (monBusValid(0x42)) { // 5V
+          readTherm();
+          printTherm();
+      } else {
+          printf("Temp: no power\n");
+      }
 
-      int16_t temp[4] = {0,0,0,0};
-      for(int i=0; i<4; i++) temp[i] = adt7301_convert_temp_adt7301_scale32(adt7301_read_temp(i));
-      print_therm_n(temp, 4, 1);
-      printf("\n");
       uint16_t data[8] = {0,0,0,0,0,0,0,0};
       for (int i=0; i<8; i++) fpga_spi_hal_read_reg(i, &data[i]);
       printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
 
       runMon();
-      int systemState = getMonSystemState();
-      printf("System state: %s\n", systemState ? STR_NORMAL : STR_FAIL);
-      HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    systemState ? GPIO_PIN_SET : GPIO_PIN_RESET);
+      int systemPowerState = getMonPowerSupplyState();
+      printf("System power supplies: %s\n", systemPowerState ? STR_NORMAL : STR_FAIL);
+      HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    systemPowerState ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+      if (systemPowerState) {
+          muxDetect();
+          pllDetect();
+      }
 
       monPrintValues();
-//      for (int i=0; i<10; i++) printf("\n");
       fflush(stdout);
       for (int i=0; i<200000; i++) {
           HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);

@@ -104,8 +104,8 @@
 #define FPGA_SCK_GPIO_Port GPIOA
 #define ON_1_0V_1_2V_Pin GPIO_PIN_5
 #define ON_1_0V_1_2V_GPIO_Port GPIOC
-#define LTM_PGOOD_B_Pin GPIO_PIN_14
-#define LTM_PGOOD_B_GPIO_Port GPIOF
+#define LTM_PGOOD_Pin GPIO_PIN_14
+#define LTM_PGOOD_GPIO_Port GPIOF
 #define ON_5V_Pin GPIO_PIN_2
 #define ON_5V_GPIO_Port GPIOJ
 #define ADT_CS_B0_Pin GPIO_PIN_11
@@ -124,8 +124,8 @@
 #define FPGA_MOSI_GPIO_Port GPIOA
 #define PLL_M3_Pin GPIO_PIN_1
 #define PLL_M3_GPIO_Port GPIOB
-#define FPGA_CORE_PGOOD_B_Pin GPIO_PIN_0
-#define FPGA_CORE_PGOOD_B_GPIO_Port GPIOB
+#define FPGA_CORE_PGOOD_Pin GPIO_PIN_0
+#define FPGA_CORE_PGOOD_GPIO_Port GPIOB
 #define ON_1_5V_Pin GPIO_PIN_0
 #define ON_1_5V_GPIO_Port GPIOJ
 #define ON_3_3V_Pin GPIO_PIN_1
