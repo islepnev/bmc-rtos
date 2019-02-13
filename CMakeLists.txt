@@ -28,6 +28,7 @@ INCLUDE_DIRECTORIES(
    Src
    drivers
    common
+   src
 )
 
 file(GLOB_RECURSE USER_SOURCES
@@ -35,12 +36,14 @@ file(GLOB_RECURSE USER_SOURCES
    Src/*.cpp
    common/*.c
    drivers/*.c
+   src/*.c
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
    Src/*.h
    common/*.h
    drivers/*.h
+   src/*.h
 )
 
 SET(PROJECT_SOURCES
