@@ -44,13 +44,12 @@
 #include "spi.h"
 #include "usart.h"
 
+/* USER CODE BEGIN Includes */
 #include "fpga_spi_hal.h"
 #include "adt7301_spi_hal.h"
 #include "ftoa.h"
 #include "ansi_escape_codes.h"
-#include <string.h>
-
-/* USER CODE BEGIN Includes */
+#include "devices.h"
 
 /* USER CODE END Includes */
 
@@ -71,55 +70,15 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 
-/*
-// convert float to string one decimal digit at a time
-// assumes float is < 65536 and ARRAYSIZE is big enough
-// problem: it truncates numbers at size without rounding
-// str is a char array to hold the result, float is the number to convert
-// size is the number of decimal digits you want
-void FloatToStringNew(char *str, float f, char size)
-{
-       char pos;  // position in string
-       char len;  // length of decimal part of result
-       char* curr;  // temp holder for next digit
-       int value;  // decimal digit(s) to convert
-       pos = 0;  // initialize pos, just to be sure
+Devices dev;
 
-       value = (int)f;  // truncate the floating point number
-       itoa(value,str);  // this is kinda dangerous depending on the length of str
-       // now str array has the digits before the decimal
+#define ANSI_COL_RESULTS ANSI_COL40
 
-       if (f < 0 )  // handle negative numbers
-       {
-               f *= -1;
-               value *= -1;
-       }
+const char *STR_ON = ANSI_COL_RESULTS ANSI_GREEN "ON" ANSI_CLEAR;
+const char *STR_OFF = ANSI_COL_RESULTS ANSI_RED "OFF" ANSI_CLEAR;
 
-    len = strlen(str);  // find out how big the integer part was
-       pos = len;  // position the pointer to the end of the integer part
-       str[pos++] = '.';  // add decimal point to string
-
-       while(pos < (size + len + 1) )  // process remaining digits
-       {
-               f = f - (float)value;  // hack off the whole part of the number
-               f *= 10;  // move next digit over
-               value = (int)f;  // get next digit
-               itoa(value, curr); // convert digit to string
-               str[pos++] = *curr; // add digit to result string and increment pointer
-       }
-}
-*/
-//void print_therm(uint16_t rawTemp)
-//{
-//   if (rawTemp != TEMP_RAW_ERROR) {
-//      int16_t temp32 = adt7301_convert_temp_adt7301_scale32(rawTemp);
-//      int16_t tempInt = temp32 / 32;
-//      int16_t tempDec = (temp32 - tempInt * 32) * 10 / 32;
-//      printf("%d.%01d", tempInt, tempDec);
-//   } else {
-//       printf("----");
-//   }
-//}
+const char *STR_NORMAL = ANSI_COL_RESULTS ANSI_GREEN "NORMAL" ANSI_CLEAR;
+const char *STR_FAIL = ANSI_COL_RESULTS ANSI_RED "FAIL" ANSI_CLEAR;
 
 void print_RawTherm(uint16_t rawTemp)
 {
@@ -148,25 +107,30 @@ void print_therm_n(uint16_t temp[], int n, int fractdigits)
     }
 }
 
-uint16_t rawTemp[4] = {TEMP_RAW_ERROR,TEMP_RAW_ERROR,TEMP_RAW_ERROR,TEMP_RAW_ERROR};
-
-void readTherm()
+void readTherm(DevTherm *therm)
 {
     for(int i=0; i<4; i++)
-        rawTemp[i] = adt7301_read_temp(i);
+        therm->rawTemp[i] = adt7301_read_temp(i);
 }
 
-void printTherm()
+int thermValid(const DevTherm therm)
 {
-    print_therm_n(rawTemp, 4, 1);
-    printf("\n");
+    for(int i=0; i<4; i++) {
+        int16_t temp = adt7301_convert_temp_adt7301_scale32(therm.rawTemp[i]);
+        temp /= 32;
+        const int tempMin = 0.1;
+        const int tempMax = 60.0;
+        if (temp < tempMin || temp > tempMax)
+            return 0;
+    }
+    return 1;
 }
 
-const char *STR_ON = ANSI_GREEN "ON" ANSI_CLEAR;
-const char *STR_OFF = ANSI_RED "OFF" ANSI_CLEAR;
-
-const char *STR_NORMAL = ANSI_GREEN "NORMAL" ANSI_CLEAR;
-const char *STR_FAIL = ANSI_RED "FAIL" ANSI_CLEAR;
+void printTherm(const DevTherm d)
+{
+    print_therm_n(dev.therm.rawTemp, 4, 1);
+    printf("%s\n", thermValid(d) ? STR_NORMAL : STR_FAIL);
+}
 
 HAL_StatusTypeDef muxRead(uint8_t *data)
 {
@@ -174,9 +138,7 @@ HAL_StatusTypeDef muxRead(uint8_t *data)
     HAL_StatusTypeDef ret;
     uint8_t pData;
     ret = HAL_I2C_Master_Receive(&hi2c4, deviceAddr << 1, &pData, 1, 100);
-    if (ret != HAL_OK) {
-        printf("I2C error: %d\n", ret);
-    } else {
+    if (ret == HAL_OK) {
         if (data) {
             *data = pData;
         }
@@ -290,9 +252,7 @@ HAL_StatusTypeDef monReadRegister(uint16_t deviceAddr, uint16_t reg, uint16_t *d
     int Size = 2;
     uint8_t pData[Size];
     ret = HAL_I2C_Mem_Read(&hi2c4, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, 2, 100);
-    if (ret != HAL_OK) {
-        printf("I2C error: %d\n", ret);
-    } else {
+    if (ret == HAL_OK) {
         if (data) {
             *data = ((uint16_t)pData[0] << 8) | pData[1];
         }
@@ -362,7 +322,7 @@ void printMonValue(int deviceAddr, float bus, float shunt, float resistance)
     } else {
         printf("         ");
     }
-    printf(" %s\n", monBusValid(deviceAddr) ? (ANSI_GREEN "VALID" ANSI_CLEAR) : (ANSI_RED "FAIL" ANSI_CLEAR));
+    printf(" %s\n", monBusValid(deviceAddr) ? STR_NORMAL : STR_FAIL);
 }
 
 enum {
@@ -373,6 +333,7 @@ enum {
 };
 
 int monState = MON_STATE_INIT;
+int monErrors = 0;
 int monCycle = 0;
 
 int monDetect()
@@ -437,7 +398,7 @@ const char *monStateStr(int monState)
 
 void monPrintValues()
 {
-    printf("Mon state: %s %d\n", monStateStr(monState), monCycle);
+    printf("Mon state: %s (cycle %d, errors %d) %s\n", monStateStr(monState), monCycle, monErrors, monErrors ? STR_FAIL : STR_NORMAL);
     if (monState == MON_STATE_READ) {
         for (int i=0; i<monSize; i++) {
             uint16_t deviceAddr = monAddr[i];
@@ -474,6 +435,7 @@ void runMon()
             monState = MON_STATE_ERROR;
         break;
     case MON_STATE_ERROR:
+        monErrors++;
         monState = MON_STATE_INIT;
         break;
     default:
@@ -540,9 +502,6 @@ HAL_StatusTypeDef pllSendByte(uint16_t data)
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
     ret = HAL_I2C_Master_Transmit(&hi2c2, pllDeviceAddr << 1, pData, Size, 100);
-    if (ret != HAL_OK) {
-        printf("I2C error: %d\n", ret);
-    }
     return ret;
 }
 
@@ -552,9 +511,7 @@ HAL_StatusTypeDef pllReceiveByte(uint32_t *data)
     enum {Size = 3};
     uint8_t pData[Size] = {0, 0, 0};
     ret = HAL_I2C_Master_Receive(&hi2c2, pllDeviceAddr << 1, pData, Size, 100);
-    if (ret != HAL_OK) {
-        printf("I2C error: %d\n", ret);
-    } else {
+    if (ret == HAL_OK) {
         if (data) {
             *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
         }
@@ -568,9 +525,7 @@ HAL_StatusTypeDef pllReadRegister(uint16_t reg, uint32_t *data)
     enum {Size = 3};
     uint8_t pData[Size];
     ret = HAL_I2C_Mem_Read(&hi2c2, pllDeviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
-    if (ret != HAL_OK) {
-        printf("I2C error: %d\n", ret);
-    } else {
+    if (ret == HAL_OK) {
         if (data) {
             *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
         }
@@ -578,7 +533,16 @@ HAL_StatusTypeDef pllReadRegister(uint16_t reg, uint32_t *data)
     return ret;
 }
 
-void pllDetect()
+enum {
+    AD9545_REG_VENDOR_ID = 0x0C,
+    AD9545_REG_INT_THERM = 0x3003
+};
+
+enum {
+    AD9545_VENDOR_ID = 0x0456
+};
+
+int pllDetect()
 {
     for (int i=0; i<100; i++)
         HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
@@ -587,13 +551,62 @@ void pllDetect()
     for (int i=0; i<100; i++)
         HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
 
-    uint16_t addr = 0xC;
     uint32_t data = 0;
-//    pllSendByte(addr);
+//    pllSendByte(AD9545_REG_VENDOR_ID);
 //    pllReceiveByte(&data);
-    pllReadRegister(addr, &data);
-    printf("PLL detect: %04X = %06lX\n", addr, data);
-//    pllReadRegister();
+    pllReadRegister(AD9545_REG_VENDOR_ID, &data);
+    int detected = (data == AD9545_VENDOR_ID);
+    printf("PLL I2C: %04lX %s\n", data, detected ? STR_NORMAL : STR_FAIL);
+    if (!detected)
+        return 0;
+//    pllReadRegister(AD9545_REG_INT_THERM, &data);
+//    printf("PLL therm: %04lX\n", data);
+    return 1;
+}
+
+HAL_StatusTypeDef eepromVxsPbRead(uint16_t addr, uint8_t *data)
+{
+    const int eepromVxsPbDeviceAddr = 0x51;
+    HAL_StatusTypeDef ret;
+    enum {Size = 1};
+    uint8_t pData[Size];
+    ret = HAL_I2C_Mem_Read(&hi2c1, eepromVxsPbDeviceAddr << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
+    if (ret == HAL_OK) {
+        if (data) {
+            *data = pData[0];
+        }
+    }
+    return ret;
+}
+
+int eepromVxsPbDetect()
+{
+    uint8_t data = 0;
+    printf("EEPROM VXS PB: ");
+    if (HAL_OK == eepromVxsPbRead(0, &data)) {
+        printf("%02X %s\n", data, STR_NORMAL);
+    } else {
+        printf("%s\n", STR_FAIL);
+    }
+    return 1;
+}
+
+const int FPGA_DEVICE_ID = 0x68; // FIXME: 0xD0
+
+int fpgaDetect()
+{
+    uint16_t data[2] = {0,0};
+    int err = 0;
+    for (int i=0; i<2; i++) {
+        if (HAL_OK != fpga_spi_hal_read_reg(i, &data[i])) {
+            err++;
+            break;
+        }
+    }
+    if ((data[0] & 0xFF) != FPGA_DEVICE_ID)
+        err++;
+    printf("FPGA ID: %4X %s\n", data[0], err ? STR_FAIL : STR_NORMAL);
+    return (err == 0);
 }
 
 void setStaticPinsPll()
@@ -628,7 +641,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  devInit(dev);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -656,7 +669,7 @@ int main(void)
   switch_5v = 1;
   switch_1v5 = 1;
   switch_1v0 = 1;
-  switch_3v3 = 1;
+  switch_3v3 = 0;
 //    update_power_switches();
 
   /* USER CODE END 2 */
@@ -700,15 +713,11 @@ int main(void)
       printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
 
       if (monBusValid(0x42)) { // 5V
-          readTherm();
-          printTherm();
+          readTherm(&dev.therm);
+          printTherm(dev.therm);
       } else {
           printf("Temp: no power\n");
       }
-
-      uint16_t data[8] = {0,0,0,0,0,0,0,0};
-      for (int i=0; i<8; i++) fpga_spi_hal_read_reg(i, &data[i]);
-      printf("fpga=%4X %4X %4X %4X %4X %4X %4X %4X\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
 
       runMon();
       int systemPowerState = getMonPowerSupplyState();
@@ -717,7 +726,9 @@ int main(void)
 
       if (systemPowerState) {
           muxDetect();
+          eepromVxsPbDetect();
           pllDetect();
+          fpgaDetect();
       }
 
       monPrintValues();

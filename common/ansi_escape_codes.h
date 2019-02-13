@@ -14,4 +14,8 @@
 #define ANSI_NONE  "\x1B[0;1m"
 #define ANSI_CLEAR "\x1B[0m"
 
+#define ANSI_COL20 "\e[20G"
+#define ANSI_COL30 "\e[30G"
+#define ANSI_COL40 "\e[40G"
+
 #endif /* ANSI_ESCAPE_CODES_H */
