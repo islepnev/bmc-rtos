@@ -12,7 +12,7 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 SET(STM32_MIN_HEAP_SIZE 0x20000)
 SET(STM32_MIN_STACK_SIZE 0x2000)
 
-PROJECT(tdc72vxs4_iic C CXX)
+PROJECT(tdc72vxs4_iic C)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ENABLE_LANGUAGE(ASM)
@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(
    Src
    drivers
    common
-   src
+   app
 )
 
 file(GLOB_RECURSE USER_SOURCES
@@ -36,14 +36,14 @@ file(GLOB_RECURSE USER_SOURCES
    Src/*.cpp
    common/*.c
    drivers/*.c
-   src/*.c
+   app/*.c
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
    Src/*.h
    common/*.h
    drivers/*.h
-   src/*.h
+   app/*.h
 )
 
 SET(PROJECT_SOURCES
