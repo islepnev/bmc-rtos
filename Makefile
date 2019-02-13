@@ -5,17 +5,20 @@
 SHELL := /bin/bash
 RM    := rm -rf
 MKDIR := mkdir -p
+ifneq ($(TOOLCHAIN_PREFIX),)
+    CMAKE_ARGS := -DTOOLCHAIN_PREFIX=$(TOOLCHAIN_PREFIX)
+endif
 
 all: ./build/Makefile
 	@ $(MAKE) -C build
 
 ./build/Makefile:
 	@  ($(MKDIR) build > /dev/null)
-	@  (cd build > /dev/null 2>&1 && cmake ..)
+	@  (cd build > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ..)
 
 distclean:
 	@  ($(MKDIR) build > /dev/null)
-	@  (cd build > /dev/null 2>&1 && cmake .. > /dev/null 2>&1)
+	@  (cd build > /dev/null 2>&1 && cmake $(CMAKE_ARGS) .. > /dev/null 2>&1)
 	@- $(MAKE) --silent -C build clean || true
 	@- $(RM) ./build/Makefile
 	@- $(RM) ./build/src
