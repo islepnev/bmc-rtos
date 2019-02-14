@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "ansi_escape_codes.h"
+#include "devices.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -17,6 +18,7 @@
 #define STR_FAIL (ANSI_COL_RESULTS ANSI_RED "FAIL" ANSI_CLEAR)
 
 void print_adt7301_value(uint16_t rawTemp);
+void devPrintStatus(const Devices d);
 
 #ifdef __cplusplus
 }
