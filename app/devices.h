@@ -25,7 +25,6 @@ void struct_fpga_init(Dev_fpga *d);
 void struct_pca9548_init(Dev_pca9548 *d);
 void struct_at24c_init(Dev_at24c *d);
 void struct_ad9545_init(Dev_ad9545 *d);
-void struct_powermon_init(Dev_powermon *d);
 void struct_Devices_init(Devices *d);
 
 DeviceStatus devDetect(Devices *d);
