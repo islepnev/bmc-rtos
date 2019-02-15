@@ -21,9 +21,9 @@ void print_adt7301_value(uint16_t rawTemp)
 
 void devPrintStatus(const Devices d)
 {
-    printf("I2C mux:       %s\n", d.i2cmux.present ? STR_NORMAL : STR_FAIL);
-    printf("EEPROM config: %s\n", d.eeprom_config.present ? STR_NORMAL : STR_FAIL);
-    printf("EEPROM VXS PB: %s\n", d.eeprom_vxspb.present ? STR_NORMAL : STR_FAIL);
-    printf("PLL I2C:       %s\n", d.pll.present ? STR_NORMAL : STR_FAIL);
-    printf("FPGA ID: %02X  %s\n", d.fpga.id, d.fpga.present ? STR_NORMAL : STR_FAIL);
+    printf("I2C mux:       %s\n", d.i2cmux.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM config: %s\n", d.eeprom_config.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM VXS PB: %s\n", d.eeprom_vxspb.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("PLL I2C:       %s\n", d.pll.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("FPGA ID: %02X  %s\n", d.fpga.id, d.fpga.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
 }

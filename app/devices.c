@@ -39,6 +39,7 @@ void struct_ad9545_init(Dev_ad9545 *d)
 
 void struct_Devices_init(Devices *d)
 {
+    struct_dev_leds_init(&d->leds);
     struct_thset_init(&d->thset);
     struct_fpga_init(&d->fpga);
     struct_pca9548_init(&d->i2cmux);
@@ -60,19 +61,21 @@ DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
 
 DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
-    uint8_t data = 0;
-    if (HAL_OK == dev_eepromConfig_Read(0, &data)) {
-        d->present = DEVICE_NORMAL;
-    }
+    d->present = (HAL_OK == dev_eepromConfig_Detect());
+//    uint8_t data = 0;
+//    if (HAL_OK == dev_eepromConfig_Read(0, &data)) {
+//        d->present = DEVICE_NORMAL;
+//    }
     return d->present;
 }
 
 DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
 {
-    uint8_t data = 0;
-    if (HAL_OK == dev_eepromVxsPb_Read(0, &data)) {
-        d->present = 1;
-    }
+    d->present = (HAL_OK == dev_eepromVxsPb_Detect());
+//    uint8_t data = 0;
+//    if (HAL_OK == dev_eepromVxsPb_Read(0, &data)) {
+//        d->present = 1;
+//    }
     return d->present;
 }
 
@@ -94,13 +97,21 @@ DeviceStatus pllDetect(Dev_ad9545 *d)
     for (int i=0; i<100; i++)
         HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
 
-    uint32_t data = 0;
+    HAL_StatusTypeDef ret = ad9545_detect();
+    d->present = (HAL_OK == ret);
+    if (d->present) {
+        uint32_t data = 0;
+        ad9545_read(AD9545_REG_VENDOR_ID, &data);
+        d->present = (data == AD9545_VENDOR_ID);
+    }
+    /*
 //    pllSendByte(AD9545_REG_VENDOR_ID);
 //    pllReceiveByte(&data);
     pllReadRegister(AD9545_REG_VENDOR_ID, &data);
     d->present = (data == AD9545_VENDOR_ID);
 //    pllReadRegister(AD9545_REG_INT_THERM, &data);
 //    printf("PLL therm: %04lX\n", data);
+*/
     return d->present;
 }
 
@@ -124,29 +135,49 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
 
 DeviceStatus devDetect(Devices *d)
 {
-    int err = 0;
     dev_i2cmux_detect(&d->i2cmux);
     dev_eepromConfig_detect(&d->eeprom_config);
     dev_eepromVxsPb_detect(&d->eeprom_vxspb);
     pllDetect(&d->pll);
     fpgaDetect(&d->fpga);
-    return err == 0;
+    DeviceStatus status = DEVICE_FAIL;
+    if ((d->i2cmux.present == DEVICE_NORMAL)
+            && (d->eeprom_config.present == DEVICE_NORMAL)
+            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
+            && (d->pll.present == DEVICE_NORMAL)
+            && (d->fpga.present == DEVICE_NORMAL)
+            )
+        status = DEVICE_NORMAL;
+    return status;
+}
+
+void dev_switchPower(Devices *dev, SwitchOnOff state)
+{
+    update_power_switches(&dev->pm, state);
+    pm_read_pgood(&dev->pm);
+    if (state == SWITCH_ON) {
+        // Wait for PGOOD
+        const uint32_t PGOOD_TIMEOUT_MS = 100;
+        uint32_t tickStart = HAL_GetTick();
+        while (1) {
+            pm_read_pgood(&dev->pm);
+            if (dev->pm.fpga_core_pgood && dev->pm.ltm_pgood) {
+                break;
+            }
+            if ((HAL_GetTick() - tickStart) > PGOOD_TIMEOUT_MS) {
+                //             printf("No power %s\n", STR_FAIL);
+                break;
+            }
+        }
+    }
+//    pm_read_pgood(&dev->pm);
+//    pm_pgood_print(dev->pm);
 }
 
 void dev_thset_read(Dev_thset *d)
 {
     for(int i=0; i<DEV_THERM_COUNT; i++)
         d->th[i].rawTemp = adt7301_read_temp(i);
-}
-
-void dev_thset_print(const Dev_thset d)
-{
-    printf("Temp: ");
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        print_adt7301_value(d.th[i].rawTemp);
-        printf(" ");
-    }
-    printf("%s\n", dev_thset_thermStatus(d) ? STR_NORMAL : STR_FAIL);
 }
 
 SensorStatus dev_thset_thermStatus(const Dev_thset d)
@@ -164,4 +195,31 @@ SensorStatus dev_thset_thermStatus(const Dev_thset d)
             return SENSOR_WARNING;
     }
     return SENSOR_NORMAL;
+}
+
+void dev_thset_print(const Dev_thset d)
+{
+    printf("Temp: ");
+    for (int i=0; i<DEV_THERM_COUNT; i++) {
+        print_adt7301_value(d.th[i].rawTemp);
+        printf(" ");
+    }
+    printf("%s\n", dev_thset_thermStatus(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+}
+
+void dev_read_thermometers(Devices *dev)
+{
+    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+        for (int i=0; i<DEV_THERM_COUNT; i++)
+            dev_thset_read(&dev->thset);
+    }
+}
+
+void dev_print_thermometers(const Devices dev)
+{
+    if (pm_sensor_isValid(dev.pm.sensors[SENSOR_VME_5V])) { // 5V
+        dev_thset_print(dev.thset);
+    } else {
+        printf("Temp: no power\n");
+    }
 }

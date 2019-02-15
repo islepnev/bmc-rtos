@@ -15,23 +15,37 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
-
-#include <unistd.h>
-#include "stm32f7xx_hal_def.h"
+#ifndef DEV_LEDS_H
+#define DEV_LEDS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-HAL_StatusTypeDef dev_eepromVxsPb_Detect(void);
-HAL_StatusTypeDef dev_eepromConfig_Detect(void);
-HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data);
-HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data);
+typedef enum {
+    LED_RED = 1,
+    LED_YELLOW = 2,
+    LED_GREEN = 3
+} DeviceLeds;
+
+typedef enum {
+    LED_OFF = 0,
+    LED_ON = 1
+} LedState;
+
+typedef struct {
+    LedState led_red;
+    LedState led_yellow;
+    LedState led_green;
+} Dev_Leds;
+
+void struct_dev_leds_init(Dev_Leds *d);
+
+void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state);
+void dev_leds_toggle(Dev_Leds *d, DeviceLeds led);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_EEPROM_H
+#endif // DEV_LEDS_H

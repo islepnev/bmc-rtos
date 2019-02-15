@@ -9,8 +9,12 @@ extern "C" {
 #include "stm32f7xx_hal.h"
 #include "dev_types.h"
 #include "dev_powermon.h"
+#include "dev_leds.h"
+
+enum { FPGA_DEVICE_ID = 0x68}; // FIXME: 0xD0
 
 typedef struct {
+    Dev_Leds leds;
     Dev_thset thset;
     Dev_fpga fpga;
     Dev_pca9548 i2cmux;
@@ -28,10 +32,13 @@ void struct_ad9545_init(Dev_ad9545 *d);
 void struct_Devices_init(Devices *d);
 
 DeviceStatus devDetect(Devices *d);
+void dev_switchPower(Devices *dev, SwitchOnOff state);
+void dev_read_thermometers(Devices *dev);
+void dev_print_thermometers(const Devices dev);
 
-void dev_thset_read(Dev_thset *d);
-void dev_thset_print(const Dev_thset d);
-SensorStatus dev_thset_thermStatus(const Dev_thset d);
+//void dev_thset_read(Dev_thset *d);
+//void dev_thset_print(const Dev_thset d);
+//SensorStatus dev_thset_thermStatus(const Dev_thset d);
 
 #ifdef __cplusplus
 }

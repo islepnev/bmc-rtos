@@ -47,7 +47,7 @@ void _exit(int status) {
  fork
  Create a new process. Minimal implementation (for a system without processes):
  */
-int _fork() {
+int _fork(void) {
     errno = EAGAIN;
     return -1;
 }
@@ -68,7 +68,7 @@ int _fstat(int file, struct stat *st) {
  Process-ID; this is sometimes used to generate strings unlikely to conflict with other processes. Minimal implementation, for a system without processes:
  */
 
-int _getpid() {
+int _getpid(void) {
     return 1;
 }
 

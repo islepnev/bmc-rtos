@@ -15,23 +15,15 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
+#include "dev_mcu.h"
+#include "stm32f7xx_hal.h"
 
-#include <unistd.h>
-#include "stm32f7xx_hal_def.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-HAL_StatusTypeDef dev_eepromVxsPb_Detect(void);
-HAL_StatusTypeDef dev_eepromConfig_Detect(void);
-HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data);
-HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data);
-
-#ifdef __cplusplus
+uint32_t getTickFreqHz(void)
+{
+    switch (HAL_GetTickFreq()) {
+    case HAL_TICK_FREQ_10HZ : return 10;
+    case HAL_TICK_FREQ_100HZ: return 100;
+    case HAL_TICK_FREQ_1KHZ: return 1000;
+    };
+    return 1000;
 }
-#endif
-
-#endif // DEV_EEPROM_H

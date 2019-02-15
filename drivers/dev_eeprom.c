@@ -19,13 +19,33 @@
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
 
+const int eeprom_VxsPb_busAddress = 0x50;
+const int eeprom_Config_busAddress = 0x51;
+
+HAL_StatusTypeDef dev_eepromVxsPb_Detect(void)
+{
+    HAL_StatusTypeDef ret;
+    uint32_t Trials = 10;
+    uint32_t Timeout = 10;
+    ret = HAL_I2C_IsDeviceReady(&hi2c2, eeprom_VxsPb_busAddress << 1, Trials, Timeout);
+    return ret;
+}
+
+HAL_StatusTypeDef dev_eepromConfig_Detect(void)
+{
+    HAL_StatusTypeDef ret;
+    uint32_t Trials = 10;
+    uint32_t Timeout = 10;
+    ret = HAL_I2C_IsDeviceReady(&hi2c1, eeprom_Config_busAddress << 1, Trials, Timeout);
+    return ret;
+}
+
 HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data)
 {
-    const int eepromVxsPbDeviceAddr = 0x50;
     HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(&hi2c2, eepromVxsPbDeviceAddr << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
+    ret = HAL_I2C_Mem_Read(&hi2c2, eeprom_VxsPb_busAddress << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData[0];
@@ -36,11 +56,10 @@ HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data)
 
 HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data)
 {
-    const int eepromConfigDeviceAddr = 0x51;
     HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(&hi2c1, eepromConfigDeviceAddr << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
+    ret = HAL_I2C_Mem_Read(&hi2c1, eeprom_Config_busAddress << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, 100);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData[0];

@@ -57,6 +57,8 @@
 #include "display.h"
 #include "devices.h"
 #include "dev_types.h"
+#include "dev_mcu.h"
+#include "dev_leds.h"
 
 /* USER CODE END Includes */
 
@@ -64,6 +66,16 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+
+uint32_t mainloopCount = 0;
+
+uint32_t heartbeatCount = 0;
+const uint32_t heartbeatInterval = 50;
+uint32_t heartbeatUpdateTick = 999999; // run in first loop
+
+uint32_t displayUpdateCount = 0;
+const uint32_t displayUpdateInterval = 1000;
+uint32_t displayUpdateTick = 999999;
 
 /* USER CODE END PV */
 
@@ -79,155 +91,75 @@ void SystemClock_Config(void);
 
 Devices dev;
 
-int switch_5v = 1;
-int switch_3v3 = 0;
-int switch_1v5 = 1;
-int switch_1v0 = 0;
-
-int monIsOn(int deviceAddr)
+void setStaticPins(void)
 {
-    switch(deviceAddr) {
-    case 0x40: return switch_1v5;
-    case 0x42: return switch_5v;
-    case 0x43: return 1;
-    case 0x44: return switch_3v3;
-    case 0x45: return 1;
-    case 0x46: return switch_1v0;
-    case 0x47: return switch_1v0;
-    case 0x48: return switch_1v0;
-    case 0x4A: return switch_3v3;
-    case 0x4B: return switch_3v3;
-    case 0x4C: return switch_3v3;
-    case 0x4D: return switch_3v3;
-    case 0x4E: return switch_3v3;
-    default: return 0;
+    pllSetStaticPins();
+}
+
+void task_oneshot(void)
+{
+    setStaticPins();
+    // test leds
+    for (int i=0; i<50000; i++) {
+        dev_led_set(&dev.leds, LED_RED,    LED_ON);
+        dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
+        dev_led_set(&dev.leds, LED_GREEN,  LED_ON);
     }
-
-}
-
-enum {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-};
-
-int monState = MON_STATE_INIT;
-int monErrors = 0;
-int monCycle = 0;
-
-const char *monStateStr(int monState)
-{
-    switch(monState) {
-    case MON_STATE_INIT: return "INIT";
-    case MON_STATE_DETECT: return "DETECT";
-    case MON_STATE_READ: return "READ";
-    case MON_STATE_ERROR: return "ERROR";
-    default: return "?";
+    for (int i=0; i<50000; i++) {
+        dev_led_set(&dev.leds, LED_RED,    LED_OFF);
+        dev_led_set(&dev.leds, LED_YELLOW, LED_OFF);
+        dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
     }
+    // display error state
+    dev_led_set(&dev.leds, LED_RED,    LED_ON);
+    dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
+    dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
 }
 
-void monPrintValues(const Dev_powermon d)
+void task_main(void)
 {
-    printf("Mon state: %s (cycle %d, errors %d) %s\n", monStateStr(monState), monCycle, monErrors, monErrors ? STR_FAIL : STR_NORMAL);
-    if (monState == MON_STATE_READ) {
-        for (int i=0; i<POWERMON_SENSORS; i++) {
-//            uint16_t deviceAddr = monAddr[i];
-//            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
-            pm_sensor_print(d.sensors[i]);
-        }
-    }
+    mainloopCount++;
+    // Switch ON
+    //      dev_switchPower(&dev, SWITCH_OFF);
+    dev_switchPower(&dev, SWITCH_ON);
+    //      HAL_Delay(1500);
+
+    //      struct_Devices_init(&dev);
+    DeviceStatus devStatus = devDetect(&dev);
+    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
+
+    dev_read_thermometers(&dev);
+
+    runMon(&dev.pm);
+    int systemPowerState = getPowerMonState(dev.pm);
+    dev_led_set(&dev.leds, LED_RED, !systemPowerState);
 }
 
-void runMon()
+void task_heartbeat(void)
 {
-    monCycle++;
-//    if (!switch_5v) {
-//        monState = MON_STATE_INIT;
-//        return;
-//    }
-    switch(monState) {
-    case MON_STATE_INIT:
-        struct_powermon_init(&dev.pm);
-        monState = MON_STATE_DETECT;
-        break;
-    case MON_STATE_DETECT:
-        if (monDetect(&dev.pm) == 0)
-            monState = MON_STATE_READ;
-        else
-            monState = MON_STATE_ERROR;
-        break;
-    case MON_STATE_READ:
-        if (monReadValues(&dev.pm) == 0)
-            monState = MON_STATE_READ;
-        else
-            monState = MON_STATE_ERROR;
-        break;
-    case MON_STATE_ERROR:
-        monErrors++;
-        monState = MON_STATE_INIT;
-        break;
-    default:
-        break;
-    }
+    dev_leds_toggle(&dev.leds, LED_GREEN);
 }
 
-int fpga_core_pgood = 0;
-int ltm_pgood = 0;
-
-void update_power_switches()
+void task_display(void)
 {
-    switch_5v  = 1; // monBusValid(0x43); // && monBusValid(0x45); // VME 5V and 3.3V
-    switch_1v5 = 1; // monBusValid(0x42); // 5V
-    switch_1v0 = ltm_pgood; // && monBusValid(0x40); // 1.5V
-    switch_3v3 = fpga_core_pgood && switch_1v0 && switch_1v5; // && monBusValid(0x45);
-    if (!switch_5v) {
-        switch_3v3 = 0;
-        switch_1v5 = 0;
-        switch_1v0 = 0;
-    }
-    if (!switch_1v5) {
-        switch_1v0 = 0;
-        switch_3v3 = 0;
-    }
-    if (!switch_1v0) {
-        switch_3v3 = 0;
-    }
-    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
-}
-//  // Power OFF
-//  HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        GPIO_PIN_RESET);
-//  HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      GPIO_PIN_RESET);
-//  HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      GPIO_PIN_RESET);
-//  HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, GPIO_PIN_RESET);
+    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
 
-int readPowerGoodFpga()
-{
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin));
-}
-int readPowerGood1v5()
-{
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin));
-}
+    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
+           HAL_GetDEVID(), HAL_GetREVID(),
+           HAL_GetHalVersion(),
+           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+           );
+    printf("Uptime: %-8ld Mainloop %-8ld Heartbeat %-6ld DisplayUpdate %-6ld\n",
+           HAL_GetTick() / getTickFreqHz(), mainloopCount, heartbeatCount, displayUpdateCount);
+    print_pm_switches(dev.pm.sw);
+    int systemPowerState = getPowerMonState(dev.pm);
+    printf("System power supplies: %s\n", systemPowerState ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    pm_pgood_print(dev.pm);
+    dev_print_thermometers(dev);
+    devPrintStatus(dev);
+    monPrintValues(dev.pm);
+    fflush(stdout);
 
-const int FPGA_DEVICE_ID = 0x68; // FIXME: 0xD0
-
-
-void setStaticPinsPll()
-{
-    //    HAL_GPIO_WritePin(PLL_M0_GPIO_Port, PLL_M0_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(PLL_M3_GPIO_Port, PLL_M3_Pin, GPIO_PIN_RESET); // M3=0 - do not load eeprom
-    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, GPIO_PIN_SET);   // M4=1 - I2C mode
-    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, GPIO_PIN_RESET); // M5=0 - I2C address offset
-    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, GPIO_PIN_SET);   // M6=1 - I2C address offset
-}
-
-void setStaticPins()
-{
-    setStaticPinsPll();
 }
 /* USER CODE END 0 */
 
@@ -238,119 +170,64 @@ void setStaticPins()
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+    /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+    /* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+    /* MCU Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
 
-  /* USER CODE BEGIN Init */
-  struct_Devices_init(&dev);
-  /* USER CODE END Init */
+    /* USER CODE BEGIN Init */
+    struct_Devices_init(&dev);
+    /* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* Configure the system clock */
+    SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+    /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+    /* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-//  MX_I2C3_SMBUS_Init();
-  MX_I2C4_Init();
-  MX_SPI1_Init();
-  MX_SPI4_Init();
-  /* USER CODE BEGIN 2 */
+    /* Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_USART3_UART_Init();
+    MX_I2C1_Init();
+    MX_I2C2_Init();
+    //  MX_I2C3_SMBUS_Init();
+    MX_I2C4_Init();
+    MX_SPI1_Init();
+    MX_SPI4_Init();
+    /* USER CODE BEGIN 2 */
 
-  setStaticPins();
-//  printf("\n%lu, %d, %lu\n", HAL_RCC_GetHCLKFreq(), HAL_GetTickFreq(), HAL_GetTick());
+    task_oneshot();
 
-  switch_5v = 1;
-  switch_1v5 = 1;
-  switch_1v0 = 1;
-  switch_3v3 = 0;
-//    update_power_switches();
+    /* USER CODE END 2 */
 
-  /* USER CODE END 2 */
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
+    while (1)
+    {
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+        /* USER CODE END WHILE */
 
-  /* USER CODE END WHILE */
+        /* USER CODE BEGIN 3 */
+        task_main();
 
-  /* USER CODE BEGIN 3 */
-      printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
-/*
-      for (int i=0; i<100000; i++) {
-//          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_SET);
-      }
-      for (int i=0; i<100000; i++) {
-//          HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_13, GPIO_PIN_RESET);
-//          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    GPIO_PIN_RESET);
-//          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
-      }
-      */
-      printf("Tick: %8ld \n", HAL_GetTick());
-      printf("Switch 5V   %s\n", switch_5v ? STR_ON : STR_OFF);
-      printf("Switch 3.3V %s\n", switch_3v3 ? STR_ON : STR_OFF);
-      printf("Switch 1.5V %s\n", switch_1v5 ? STR_ON : STR_OFF);
-      printf("Switch 1.0V %s\n", switch_1v0 ? STR_ON : STR_OFF);
-
-      for (int i=0; i<10; i++) {
-          update_power_switches();
-          fpga_core_pgood = readPowerGoodFpga();
-          ltm_pgood = readPowerGood1v5();
-      }
-
-      printf("Intermediate 1.5V: %s\n", ltm_pgood ? STR_NORMAL : switch_1v5 ? STR_FAIL : STR_OFF);
-      printf("FPGA Core 1.0V:    %s\n", fpga_core_pgood ? STR_NORMAL : switch_1v0 ? STR_FAIL : STR_OFF);
-
-//      struct_Devices_init(&dev);
-      devDetect(&dev);
-
-      if (pm_sensor_isValid(dev.pm.sensors[2])) { // 5V
-          for (int i=0; i<DEV_THERM_COUNT; i++)
-              dev_thset_read(&dev.thset);
-          dev_thset_print(dev.thset);
-      } else {
-          printf("Temp: no power\n");
-      }
-
-      runMon();
-      int systemPowerState = getPowerMonState(dev.pm);
-      printf("System power supplies: %s\n", systemPowerState ? STR_NORMAL : STR_FAIL);
-      HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    systemPowerState ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
-//      if (systemPowerState) {
-//          devDetect(&dev);
-//      } else {
-//      }
-      devPrintStatus(dev);
-
-      monPrintValues(dev.pm);
-      fflush(stdout);
-      for (int i=0; i<200000; i++) {
-          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_RESET);
-      }
-      for (int i=0; i<200000; i++) {
-          HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  GPIO_PIN_SET);
-      }
-  }
-  /* USER CODE END 3 */
+        if (HAL_GetTick() - heartbeatUpdateTick > heartbeatInterval) {
+            heartbeatUpdateTick = HAL_GetTick();
+            heartbeatCount++;
+            task_heartbeat();
+        };
+        if (HAL_GetTick() - displayUpdateTick > displayUpdateInterval) {
+            displayUpdateTick = HAL_GetTick();
+            displayUpdateCount++;
+            task_display();
+        }
+    }
+    /* USER CODE END 3 */
 
 }
 
@@ -361,76 +238,76 @@ int main(void)
 void SystemClock_Config(void)
 {
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
     /**Configure the main internal regulator output voltage
     */
-  __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
 
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
     /**Initializes the CPU, AHB and APB busses clocks
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 12;
-  RCC_OscInitStruct.PLL.PLLN = 216;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 12;
+    RCC_OscInitStruct.PLL.PLLN = 216;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 2;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
 
     /**Activate the Over-Drive mode
     */
-  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+    if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
 
     /**Initializes the CPU, AHB and APB busses clocks
     */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+            |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
-                              |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C4;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3
+            |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
+            |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C4;
+    PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
 
     /**Configure the Systick interrupt time
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
     /**Configure the Systick
     */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+    /* SysTick_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* USER CODE BEGIN 4 */
@@ -445,23 +322,23 @@ void SystemClock_Config(void)
   */
 void _Error_Handler(char *file, int line)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+    /* USER CODE BEGIN Error_Handler_Debug */
+    /* User can add his own implementation to report the HAL error return state */
     printf("HAL ERROR %s %d\n", file, line);
-  while(1)
-  {
-      HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin, GPIO_PIN_RESET);
-      int k = 100000;
-      for (int i=0; i<k; i++) {
-          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
-      }
-      for (int i=0; i<k; i++) {
-          HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_SET);
-          HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_RESET);
-      }
-  }
-  /* USER CODE END Error_Handler_Debug */
+    while(1)
+    {
+        HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin, GPIO_PIN_RESET);
+        int k = 100000;
+        for (int i=0; i<k; i++) {
+            HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_RESET);
+        }
+        for (int i=0; i<k; i++) {
+            HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(LED_RED_B_GPIO_Port, LED_RED_B_Pin, GPIO_PIN_RESET);
+        }
+    }
+    /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -474,10 +351,10 @@ void _Error_Handler(char *file, int line)
   */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+    /* USER CODE BEGIN 6 */
+    /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
