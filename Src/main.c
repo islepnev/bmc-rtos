@@ -99,6 +99,12 @@ void setStaticPins(void)
 void task_oneshot(void)
 {
     setStaticPins();
+    // light all leds
+    dev_led_set(&dev.leds, LED_RED,    LED_ON);
+    dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
+    dev_led_set(&dev.leds, LED_GREEN,  LED_ON);
+    printf("Starting...");
+    fflush(stdout);
     // test leds
     for (int i=0; i<50000; i++) {
         dev_led_set(&dev.leds, LED_RED,    LED_ON);
@@ -114,8 +120,6 @@ void task_oneshot(void)
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
-    printf("Starting...");
-    fflush(stdout);
 }
 
 void task_main(void)
