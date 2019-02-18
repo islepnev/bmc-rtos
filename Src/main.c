@@ -114,6 +114,8 @@ void task_oneshot(void)
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
+    printf("Starting...");
+    fflush(stdout);
 }
 
 void task_main(void)
