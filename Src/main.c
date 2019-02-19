@@ -72,8 +72,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* Priorities at which the tasks are created. */
-#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
+#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define mainAPPMAIN_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 /* The rate at which data is sent to the queue.  The 200ms value is converted
 to ticks using the portTICK_PERIOD_MS constant. */
@@ -123,6 +124,10 @@ void vApplicationTickHook( void )
 }
 /*-----------------------------------------------------------*/
 
+void task_heartbeat_rtos(void)
+{
+    dev_leds_toggle(&dev.leds, LED_GREEN);
+}
 
 
 static void prvQueueSendTask( void *pvParameters )
@@ -171,7 +176,7 @@ const unsigned long ulExpectedValue = 100UL;
         is it the expected value?  If it is, toggle the LED. */
         if( ulReceivedValue == ulExpectedValue )
         {
-            task_heartbeat();
+            task_heartbeat_rtos();
             ulReceivedValue = 0U;
         }
     }
@@ -201,31 +206,9 @@ void task_oneshot(void)
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
-
-    if (1) {
-        xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
-        if( xQueue != NULL )
-        {
-            xTaskCreate( prvQueueReceiveTask,				// The function that implements the task.
-                         "Rx", 								// The text name assigned to the task - for debug only as it is not used by the kernel.
-                         configMINIMAL_STACK_SIZE, 			// The size of the stack to allocate to the task.
-                         NULL, 								// The parameter passed to the task - not used in this case.
-                         mainQUEUE_RECEIVE_TASK_PRIORITY, 	// The priority assigned to the task.
-                         NULL );								// The task handle is not required, so NULL is passed.
-
-            xTaskCreate( prvQueueSendTask,
-                         "TX",
-                         configMINIMAL_STACK_SIZE,
-                         NULL,
-                         mainQUEUE_SEND_TASK_PRIORITY,
-                         NULL );
-        }
-    }
-    vTaskStartScheduler(); // should not return
-    for( ;; );
 }
 
-void task_main(void)
+void task_main (void)
 {
     mainloopCount++;
     // Switch ON
@@ -246,7 +229,14 @@ void task_main(void)
 
 void task_heartbeat(void)
 {
-    dev_leds_toggle(&dev.leds, LED_GREEN);
+//    dev_leds_toggle(&dev.leds, LED_YELLOW);
+    for (int i=0; i<50000; i++) {
+        dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
+    }
+    for (int i=0; i<50000; i++) {
+        dev_led_set(&dev.leds, LED_YELLOW, LED_OFF);
+    }
+    HAL_Delay(1);
 }
 
 void task_display(void)
@@ -270,6 +260,64 @@ void task_display(void)
     fflush(stdout);
 
 }
+
+static void prvAppMainTask( void *pvParameters )
+{
+    (void) pvParameters;
+    while (1)
+    {
+//        task_main();
+        task_heartbeat();
+        continue;
+        if (HAL_GetTick() - heartbeatUpdateTick > heartbeatInterval) {
+            heartbeatUpdateTick = HAL_GetTick();
+            heartbeatCount++;
+            task_heartbeat();
+        };
+        if (HAL_GetTick() - displayUpdateTick > displayUpdateInterval) {
+            displayUpdateTick = HAL_GetTick();
+            displayUpdateCount++;
+            task_display();
+        }
+    }
+}
+
+static void start_rtos(void)
+{
+    printf("Creating tasks\n");
+
+    if (1) {
+        xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
+        if( xQueue != NULL )
+        {
+            xTaskCreate( prvQueueReceiveTask,				// The function that implements the task.
+                         "Rx", 								// The text name assigned to the task - for debug only as it is not used by the kernel.
+                         configMINIMAL_STACK_SIZE, 			// The size of the stack to allocate to the task.
+                         NULL, 								// The parameter passed to the task - not used in this case.
+                         mainQUEUE_RECEIVE_TASK_PRIORITY, 	// The priority assigned to the task.
+                         NULL );								// The task handle is not required, so NULL is passed.
+
+            xTaskCreate( prvQueueSendTask,
+                         "TX",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         mainQUEUE_SEND_TASK_PRIORITY,
+                         NULL );
+        }
+    }
+    if (1) {
+        xTaskCreate( prvAppMainTask,
+                     "Main",
+                     configMINIMAL_STACK_SIZE,
+                     NULL,
+                     mainAPPMAIN_TASK_PRIORITY,
+                     NULL );
+    }
+    printf("Starting scheduler\n");
+    vTaskStartScheduler(); // should not return
+    for( ;; );
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -312,6 +360,7 @@ int main(void)
     /* USER CODE BEGIN 2 */
 
     task_oneshot();
+    start_rtos();
 
     /* USER CODE END 2 */
 
@@ -323,18 +372,6 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-        task_main();
-
-        if (HAL_GetTick() - heartbeatUpdateTick > heartbeatInterval) {
-            heartbeatUpdateTick = HAL_GetTick();
-            heartbeatCount++;
-            task_heartbeat();
-        };
-        if (HAL_GetTick() - displayUpdateTick > displayUpdateInterval) {
-            displayUpdateTick = HAL_GetTick();
-            displayUpdateCount++;
-            task_display();
-        }
     }
     /* USER CODE END 3 */
 
