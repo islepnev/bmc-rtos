@@ -4,6 +4,8 @@ if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
+SET(FREERTOS_DIR FreeRTOS)
+
 SET(STM32_CHIP STM32F769NIH)
 SET(STM32Cube_DIR STM32Cube)
 SET(CMAKE_MODULE_PATH cmake)
@@ -24,6 +26,8 @@ INCLUDE_DIRECTORIES(
 #    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMSIS_INCLUDE_DIRS}
     ${STM32HAL_INCLUDE_DIR}
+   ${FREERTOS_DIR}/Source/include
+   ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1
    Inc
    Src
    drivers
@@ -50,11 +54,25 @@ SET(PROJECT_SOURCES
     ${USER_SOURCES}
     ${USER_INCLUDES}
 )
+
+file(GLOB_RECURSE FREERTOS_SOURCES
+    ${FREERTOS_DIR}/Source/tasks.c
+    ${FREERTOS_DIR}/Source/timers.c
+    ${FREERTOS_DIR}/Source/queue.c
+    ${FREERTOS_DIR}/Source/list.c
+    ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1/port.c
+    ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
+    ${FREERTOS_DIR}/Source/event_groups.c
+
+)
+
+set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
 SET(ELF ${CMAKE_PROJECT_NAME}.elf)
 ADD_EXECUTABLE(${ELF}
     ${CMSIS_SOURCES}
     ${STM32HAL_SOURCES}
+    ${FREERTOS_SOURCES}
     ${PROJECT_SOURCES}
 )
 TARGET_LINK_LIBRARIES(${ELF})
