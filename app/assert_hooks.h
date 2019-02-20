@@ -12,9 +12,9 @@ extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file. */
 extern void vApplicationMallocFailedHook( void );
-extern void vApplicationIdleHook( void );
+//extern void vApplicationIdleHook( void );
 extern void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
-extern void vApplicationTickHook( void );
+//extern void vApplicationTickHook( void );
 
 #ifdef __cplusplus
 }

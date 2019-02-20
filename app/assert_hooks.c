@@ -1,62 +1,95 @@
 #include "assert_hooks.h"
 
-#include <FreeRTOS.h>
-#include <task.h>
+#include "stm32f7xx_hal.h"
+#include "usart.h"
+#include "led_gpio_hal.h"
 
-/*
-void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
+void debug_send_char(const char c)
 {
+    // wait for UART ready
+    while (HAL_UART_GetState(stdio_uart) != HAL_UART_STATE_READY) {}
+    // use HAL_MAX_DELAY for CPU polling mode
+    HAL_UART_Transmit(stdio_uart, (uint8_t *) &c, 1, HAL_MAX_DELAY);
+}
 
-//  static portBASE_TYPE xPrinted = pdFALSE;
-  volatile uint32_t ulSetToNonZeroInDebuggerToContinue = 0;
+void debug_print(const char *ptr, int len)
+{
+    static int n;
+    static const char r = '\r';
+    for (n = 0; n < len; n++) {
+        if (*ptr == '\n') {
+            debug_send_char(r);
+        }
+        debug_send_char(*ptr++);
+    }
+}
 
-  taskDISABLE_INTERRUPTS(); // game over
+static const int LED_BLINK_CPUDELAY = 200000;
 
-  printf("\nError: assert called at %s:%ld\n", pcFileName, ulLine);
+//void led_blink(DeviceLeds led, int duration_on, int duration_off)
+//{
+//    for (int i=0; i < duration_on * LED_BLINK_CPUDELAY; i++)
+//        led_set_state(led, LED_ON);
+//    for (int i=0; i < duration_off * LED_BLINK_CPUDELAY; i++)
+//        led_set_state(led, LED_OFF);
+//}
 
-    taskENTER_CRITICAL();
-    {
-        // You can step out of this function to debug the assertion by using
-        // the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
-        // value
-        while( ulSetToNonZeroInDebuggerToContinue == 0 )
-        {
+void led_show_error(void)
+{
+    led_set_state(LED_GREEN, LED_OFF);
+    led_set_state(LED_YELLOW, LED_OFF);
+    led_set_state(LED_RED, LED_ON);
+}
+
+void led_blink_morse(DeviceLeds led, const int buf[], unsigned int size)
+{
+    static unsigned int n;
+    for (n=0; n<size; n++) {
+        switch(buf[n]) {
+        case 0:
+            for (int i=0; i < LED_BLINK_CPUDELAY; i++)
+                led_set_state(led, LED_OFF);
+            break;
+        case 1:
+            for (int i=0; i < LED_BLINK_CPUDELAY; i++)
+                led_set_state(led, LED_ON);
+            break;
+        default:
+            for (int i=0; i < 3 * LED_BLINK_CPUDELAY; i++)
+                led_set_state(led, LED_ON);
+            break;
         }
     }
-    taskEXIT_CRITICAL();
 }
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTsk, signed portCHAR *pcTskNm )
+void led_blink_error(void)
 {
-
-  taskDISABLE_INTERRUPTS(); // game over
-
-  printf("\nError: stack overflow in task %s\n", pcTskNm);
-  for( ;; );
+    // dot=1, dash=3, space=3, wordspace=7
+    static const int buf[] = {
+        0,0,0,0,0,0,0,   // wordspace
+        1,0,1,0,1, 0,0,0, // S
+        3,0,3,0,3, 0,0,0, // O
+        1,0,1,0,1, 0,0,0  // S
+    };
+    enum { bufsize = sizeof(buf)/sizeof(buf[0])};
+    led_blink_morse(LED_YELLOW, buf, bufsize);
 }
-
-void vApplicationMallocFailedHook( void )
-{
-
-  taskDISABLE_INTERRUPTS(); // game over
-
-  printf("\nError: malloc failed\n");
-
-  for( ;; );
-}
-*/
 
 void vAssertCalled( uint32_t ulLine, const char *pcFile )
 {
-volatile unsigned long ul = 0;
+    volatile unsigned long ul = 0;
 
     ( void ) pcFile;
     ( void ) ulLine;
 
     taskDISABLE_INTERRUPTS(); // game over
+    led_show_error();
 
-    printf("\nError: assert called at %s:%ld\n", pcFile, ulLine);
+    static const char str[] = "assert called\n";
+    while (HAL_UART_GetState(stdio_uart) != HAL_UART_STATE_READY) {}
+    HAL_UART_Transmit_IT(stdio_uart, (uint8_t *)str, sizeof(*str));
 
+//    printf("\nError: assert called at %s:%ld\n", pcFile, ulLine);
 
     taskENTER_CRITICAL();
     {
@@ -64,6 +97,7 @@ volatile unsigned long ul = 0;
         function. */
         while( ul == 0 )
         {
+            led_blink_error();
             __NOP();
         }
     }
@@ -73,33 +107,23 @@ volatile unsigned long ul = 0;
 void vApplicationMallocFailedHook( void )
 {
     taskDISABLE_INTERRUPTS(); // game over
-
-    printf("\nError: malloc failed\n");
-
-    for( ;; );
+    led_show_error();
+    static const char str[] = "Error: malloc failed\n";
+    debug_print(str, sizeof(str));
+    while(1) {
+        led_blink_error();
+    }
 }
 
 void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
+    (void) pxTask;
+    (void) pcTaskName;
     taskDISABLE_INTERRUPTS(); // game over
-
-    printf("\nError: stack overflow in task %s\n", pcTaskName);
-    for( ;; );
-}
-
-void vApplicationIdleHook( void )
-{
-volatile size_t xFreeHeapSpace;
-
-    /* This is just a trivial example of an idle hook.  It is called on each
-    cycle of the idle task.  It must *NOT* attempt to block.  In this case the
-    idle task just queries the amount of FreeRTOS heap that remains.  See the
-    memory management section on the http://www.FreeRTOS.org web site for memory
-    management options.  If there is a lot of heap memory free then the
-    configTOTAL_HEAP_SIZE value in FreeRTOSConfig.h can be reduced to free up
-    RAM. */
-    xFreeHeapSpace = xPortGetFreeHeapSize();
-
-    /* Remove compiler warning about xFreeHeapSpace being set but never used. */
-    ( void ) xFreeHeapSpace;
+    led_show_error();
+    static const char str[] = "Error: stack overflow\n";
+    debug_print(str, sizeof(str));
+    while(1) {
+        led_blink_error();
+    }
 }
