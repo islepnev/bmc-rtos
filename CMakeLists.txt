@@ -20,12 +20,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
-FIND_PACKAGE(STM32HAL COMPONENTS i2c gpio smbus spi uart REQUIRED)
+FIND_PACKAGE(STM32HAL COMPONENTS i2c gpio smbus spi tim uart REQUIRED)
 
 INCLUDE_DIRECTORIES(
 #    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMSIS_INCLUDE_DIRS}
     ${STM32HAL_INCLUDE_DIR}
+   ${FREERTOS_DIR}/Source/CMSIS_RTOS
    ${FREERTOS_DIR}/Source/include
    ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1
    Inc
@@ -60,6 +61,7 @@ file(GLOB_RECURSE FREERTOS_SOURCES
     ${FREERTOS_DIR}/Source/timers.c
     ${FREERTOS_DIR}/Source/queue.c
     ${FREERTOS_DIR}/Source/list.c
+    ${FREERTOS_DIR}/Source/CMSIS_RTOS/cmsis_os.c
     ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1/port.c
     ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
     ${FREERTOS_DIR}/Source/event_groups.c

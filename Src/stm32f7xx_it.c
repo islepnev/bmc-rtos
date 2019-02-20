@@ -34,12 +34,70 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
+#include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
+
+void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
+{
+    // These are volatile to try and prevent the compiler/linker optimising them
+    // away as the variables never actually get used.  If the debugger won't show the
+    // values of the variables, make them global by moving their declaration outside
+    // of this function.
+    volatile uint32_t r0;
+    volatile uint32_t r1;
+    volatile uint32_t r2;
+    volatile uint32_t r3;
+    volatile uint32_t r12;
+    volatile uint32_t lr;  // Link register
+    volatile uint32_t pc;  // Program counter
+    volatile uint32_t psr; // Program status register
+
+    r0  = pulFaultStackAddress[ 0 ];
+    r1  = pulFaultStackAddress[ 1 ];
+    r2  = pulFaultStackAddress[ 2 ];
+    r3  = pulFaultStackAddress[ 3 ];
+    r12 = pulFaultStackAddress[ 4 ];
+    lr  = pulFaultStackAddress[ 5 ];
+    pc  = pulFaultStackAddress[ 6 ];
+    psr = pulFaultStackAddress[ 7 ];
+
+    // suppress unused variable warning
+    (void) r0;
+    (void) r1;
+    (void) r2;
+    (void) r3;
+    (void) r12;
+    (void) lr;
+    (void) pc;
+    (void) psr;
+
+    // When the following line is hit, the variables contain the register values
+    for( ;; );
+}
+
+/* The fault handler implementation calls a function called
+prvGetRegistersFromStack(). */
+void HardFault_Handler(void)
+{
+    __asm volatile
+    (
+        " tst lr, #4                                                \n"
+        " ite eq                                                    \n"
+        " mrseq r0, msp                                             \n"
+        " mrsne r0, psp                                             \n"
+        " ldr r1, [r0, #24]                                         \n"
+        " ldr r2, handler2_address_const                            \n"
+        " bx r2                                                     \n"
+        " handler2_address_const: .word prvGetRegistersFromStack    \n"
+    );
+}
 
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+
+extern TIM_HandleTypeDef htim1;
 
 /******************************************************************************/
 /*            Cortex-M7 Processor Interruption and Exception Handlers         */
@@ -56,24 +114,6 @@ void NMI_Handler(void)
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
 
   /* USER CODE END NonMaskableInt_IRQn 1 */
-}
-
-/**
-* @brief This function handles Hard fault interrupt.
-*/
-void HardFault_Handler(void)
-{
-  /* USER CODE BEGIN HardFault_IRQn 0 */
-
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
-  /* USER CODE BEGIN HardFault_IRQn 1 */
-
-  /* USER CODE END HardFault_IRQn 1 */
 }
 
 /**
@@ -131,20 +171,6 @@ void UsageFault_Handler(void)
 }
 
 /**
-* @brief This function handles System service call via SWI instruction.
-* use __weak for compatibility with FreeRTOS
-*/
-__weak void SVC_Handler(void)
-{
-  /* USER CODE BEGIN SVCall_IRQn 0 */
-
-  /* USER CODE END SVCall_IRQn 0 */
-  /* USER CODE BEGIN SVCall_IRQn 1 */
-
-  /* USER CODE END SVCall_IRQn 1 */
-}
-
-/**
 * @brief This function handles Debug monitor.
 */
 void DebugMon_Handler(void)
@@ -158,30 +184,14 @@ void DebugMon_Handler(void)
 }
 
 /**
-* @brief This function handles Pendable request for system service.
-* use __weak for compatibility with FreeRTOS
-*/
-__weak void PendSV_Handler(void)
-{
-  /* USER CODE BEGIN PendSV_IRQn 0 */
-
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
-
-  /* USER CODE END PendSV_IRQn 1 */
-}
-
-/**
 * @brief This function handles System tick timer.
-* use __weak for compatibility with FreeRTOS
 */
-__weak void SysTick_Handler(void)
+void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
+  osSystickHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -193,6 +203,20 @@ __weak void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f7xx.s).                    */
 /******************************************************************************/
+
+/**
+* @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
+*/
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
+
+  /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim1);
+  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
+
+  /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

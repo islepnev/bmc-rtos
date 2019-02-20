@@ -49,13 +49,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f7xx_hal.h"
-#include "gpio.h"
+#include "cmsis_os.h"
 #include "i2c.h"
 #include "spi.h"
 #include "usart.h"
+#include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 
@@ -100,7 +100,7 @@ static QueueHandle_t xQueue = NULL;
 uint32_t mainloopCount = 0;
 
 uint32_t heartbeatCount = 0;
-const uint32_t heartbeatInterval = 50;
+const uint32_t heartbeatInterval = 10;
 uint32_t heartbeatUpdateTick = 999999; // run in first loop
 
 uint32_t displayUpdateCount = 0;
@@ -111,6 +111,7 @@ uint32_t displayUpdateTick = 999999;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -129,9 +130,9 @@ void setStaticPins(void)
     pllSetStaticPins();
 }
 
-void vApplicationTickHook( void )
-{
-}
+//void vApplicationTickHook( void )
+//{
+//}
 /*-----------------------------------------------------------*/
 
 void task_heartbeat_rtos(void)
@@ -164,8 +165,6 @@ const unsigned long ulValueToSend = 100UL;
     }
 }
 /*-----------------------------------------------------------*/
-
-void task_heartbeat(void);
 
 static void prvQueueReceiveTask( void *pvParameters )
 {
@@ -228,7 +227,7 @@ void task_main (void)
 
     //      struct_Devices_init(&dev);
     DeviceStatus devStatus = devDetect(&dev);
-    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
+//    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
 
     dev_read_thermometers(&dev);
 
@@ -239,14 +238,7 @@ void task_main (void)
 
 void task_heartbeat(void)
 {
-//    dev_leds_toggle(&dev.leds, LED_YELLOW);
-    for (int i=0; i<50000; i++) {
-        dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
-    }
-    for (int i=0; i<50000; i++) {
-        dev_led_set(&dev.leds, LED_YELLOW, LED_OFF);
-    }
-    HAL_Delay(1);
+    dev_leds_toggle(&dev.leds, LED_YELLOW);
 }
 
 void task_display(void)
@@ -276,23 +268,22 @@ static void prvAppMainTask( void *pvParameters )
     (void) pvParameters;
     while (1)
     {
-//        task_main();
-        task_heartbeat();
-        continue;
-        if (HAL_GetTick() - heartbeatUpdateTick > heartbeatInterval) {
-            heartbeatUpdateTick = HAL_GetTick();
+        task_main();
+        const uint32_t tick = HAL_GetTick();
+        if (tick - heartbeatUpdateTick > heartbeatInterval) {
+            heartbeatUpdateTick = tick;
             heartbeatCount++;
             task_heartbeat();
         };
-        if (HAL_GetTick() - displayUpdateTick > displayUpdateInterval) {
-            displayUpdateTick = HAL_GetTick();
+        if (tick - displayUpdateTick > displayUpdateInterval) {
+            displayUpdateTick = tick;
             displayUpdateCount++;
             task_display();
         }
     }
 }
 
-static void start_rtos(void)
+static void create_tasks(void)
 {
     printf("Creating tasks\n");
 
@@ -317,15 +308,12 @@ static void start_rtos(void)
     }
     if (1) {
         xTaskCreate( prvAppMainTask,
-                     "Main",
-                     configMINIMAL_STACK_SIZE,
-                     NULL,
+                     "Main", // thread name, debug only
+                     4 * configMINIMAL_STACK_SIZE,    // stack size
+                     NULL,   // *pvParameters
                      mainAPPMAIN_TASK_PRIORITY,
-                     NULL );
+                     NULL ); // task handle
     }
-    printf("Starting scheduler\n");
-    vTaskStartScheduler(); // should not return
-    for( ;; );
 }
 
 /* USER CODE END 0 */
@@ -359,31 +347,40 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
     //  MX_I2C3_SMBUS_Init();
     MX_I2C4_Init();
     MX_SPI1_Init();
     MX_SPI4_Init();
+    MX_USART2_UART_Init();
+    MX_USART3_UART_Init();
     /* USER CODE BEGIN 2 */
 
     task_oneshot();
-    start_rtos();
+    create_tasks();
 
-    /* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    while (1)
-    {
+  /* Call init function for freertos objects (in freertos.c) */
+//  MX_FREERTOS_Init();
 
-        /* USER CODE END WHILE */
+  /* Start scheduler */
+  osKernelStart();
 
-        /* USER CODE BEGIN 3 */
-    }
-    /* USER CODE END 3 */
+  /* We should never get here as control is now taken by the scheduler */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+
+  /* USER CODE END WHILE */
+      prvAppMainTask(NULL);
+  /* USER CODE BEGIN 3 */
+
+  }
+  /* USER CODE END 3 */
 
 }
 
@@ -462,13 +459,34 @@ void SystemClock_Config(void)
     */
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-    /* SysTick_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
 }
 
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
