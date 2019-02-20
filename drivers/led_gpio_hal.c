@@ -15,47 +15,21 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "dev_leds.h"
-#include "stm32f7xx_hal.h"
 #include "led_gpio_hal.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "main.h"
 
-void struct_dev_leds_init(Dev_Leds *d)
-{
-    d->led_red = LED_OFF;
-    d->led_yellow = LED_OFF;
-    d->led_green = LED_OFF;
-}
-
-void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state)
+void led_set_state(DeviceLeds led, LedState state)
 {
     switch(led) {
     case LED_RED :
-        d->led_red = state;
+        HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
     case LED_YELLOW :
-        d->led_yellow = state;
+        HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
     case LED_GREEN :
-        d->led_green = state;
-        break;
-    }
-    led_set_state(led, state);
-}
-
-void dev_leds_toggle(Dev_Leds *d, DeviceLeds led)
-{
-    switch(led) {
-    case LED_RED :
-        d->led_red = ! d->led_red;
-        dev_led_set(d, led, d->led_red);
-        break;
-    case LED_YELLOW :
-        d->led_yellow = ! d->led_yellow;
-        dev_led_set(d, led, d->led_yellow);
-        break;
-    case LED_GREEN :
-        d->led_green = ! d->led_green;
-        dev_led_set(d, led, d->led_green);
+        HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
     }
 }

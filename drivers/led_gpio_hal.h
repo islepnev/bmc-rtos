@@ -15,27 +15,30 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef DEV_LEDS_H
-#define DEV_LEDS_H
+#ifndef LED_GPIO_HAL_H
+#define LED_GPIO_HAL_H
 
-#include "led_gpio_hal.h"
+#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-    LedState led_red;
-    LedState led_yellow;
-    LedState led_green;
-} Dev_Leds;
+typedef enum {
+    LED_RED = 1,
+    LED_YELLOW = 2,
+    LED_GREEN = 3
+} DeviceLeds;
 
-void struct_dev_leds_init(Dev_Leds *d);
-void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state);
-void dev_leds_toggle(Dev_Leds *d, DeviceLeds led);
+typedef enum {
+    LED_OFF = 0,
+    LED_ON = 1
+} LedState;
+
+void led_set_state(DeviceLeds led, LedState state);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_LEDS_H
+#endif // LED_GPIO_HAL_H
