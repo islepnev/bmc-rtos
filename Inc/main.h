@@ -87,7 +87,6 @@
 #define PLL_M5_GPIO_Port GPIOF
 #define PLL_M0_Pin GPIO_PIN_8
 #define PLL_M0_GPIO_Port GPIOF
-#define PLL_M0_EXTI_IRQn EXTI9_5_IRQn
 #define PLL_RESET_B_Pin GPIO_PIN_0
 #define PLL_RESET_B_GPIO_Port GPIOC
 #define PLL_M4_Pin GPIO_PIN_1

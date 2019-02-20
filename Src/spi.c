@@ -139,6 +139,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
   else if(spiHandle->Instance==SPI4)
   {
   /* USER CODE BEGIN SPI4_MspInit 0 */
+
   /* USER CODE END SPI4_MspInit 0 */
     /* SPI4 clock enable */
     __HAL_RCC_SPI4_CLK_ENABLE();

@@ -65,7 +65,7 @@ extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi4;
 
 /* USER CODE BEGIN Private defines */
-//extern SPI_HandleTypeDef * const pll_spi;
+
 extern SPI_HandleTypeDef * const fpga_spi;
 extern SPI_HandleTypeDef * const therm_spi;
 /* USER CODE END Private defines */
