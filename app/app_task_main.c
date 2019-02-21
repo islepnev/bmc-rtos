@@ -37,7 +37,8 @@
 
 #include "app_shared_data.h"
 
-static const int threadStackSize = 400;
+static const int mainThreadStackSize = 1000;
+static const int displayThreadStackSize = 1000;
 
 static uint32_t mainloopCount = 0;
 
@@ -73,7 +74,7 @@ static void task_heartbeat(void)
     dev_leds_toggle(&dev.leds, LED_YELLOW);
 }
 
-static void task_display(void)
+static void update_display(const Devices * dev)
 {
     printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
 
@@ -84,15 +85,24 @@ static void task_display(void)
            );
     printf("Uptime: %-8ld Mainloop %-8ld Heartbeat %-6ld DisplayUpdate %-6ld\n",
            HAL_GetTick() / getTickFreqHz(), mainloopCount, heartbeatCount, displayUpdateCount);
-    print_pm_switches(dev.pm.sw);
-    int systemPowerState = getPowerMonState(dev.pm);
+    print_pm_switches(dev->pm.sw);
+    int systemPowerState = getPowerMonState(dev->pm);
     printf("System power supplies: %s\n", systemPowerState ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    pm_pgood_print(dev.pm);
+    pm_pgood_print(dev->pm);
     dev_print_thermometers(dev);
     devPrintStatus(dev);
-    monPrintValues(dev.pm);
+    monPrintValues(&dev->pm);
     fflush(stdout);
+    displayUpdateCount++;
+}
 
+static void displayTask(void const *arg)
+{
+    (void) arg;
+    while(1) {
+        osDelay(displayUpdateInterval);
+        update_display(&dev);
+    }
 }
 
 static void prvAppMainTask( void const *arg)
@@ -106,20 +116,25 @@ static void prvAppMainTask( void const *arg)
             heartbeatCount++;
             task_heartbeat();
         };
-        if (tick - displayUpdateTick > displayUpdateInterval) {
-            displayUpdateTick = tick;
-            displayUpdateCount++;
-            task_display();
-        }
+//        if (tick - displayUpdateTick > displayUpdateInterval) {
+//            displayUpdateTick = tick;
+//            update_display(dev);
+//        }
+        osDelay(10);
     }
 }
 
-osThreadDef(mainThread, prvAppMainTask, osPriorityIdle,      1, threadStackSize);
+osThreadDef(mainThread, prvAppMainTask, osPriorityAboveNormal,      1, mainThreadStackSize);
+osThreadDef(displayThread, displayTask, osPriorityIdle,      1, displayThreadStackSize);
 
 void create_task_main(void)
 {
     osThreadId mainThreadId = osThreadCreate(osThread (mainThread), NULL);
     if (mainThreadId == NULL) {
         printf("Failed to create Main thread\n");
+    }
+    osThreadId displayThreadId = osThreadCreate(osThread (displayThread), NULL);
+    if (displayThreadId == NULL) {
+        printf("Failed to create Display thread\n");
     }
 }

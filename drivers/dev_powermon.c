@@ -140,17 +140,17 @@ const char *monStateStr(int monState)
     }
 }
 
-void monPrintValues(const Dev_powermon d)
+void monPrintValues(const Dev_powermon *d)
 {
-    printf("Mon state: %s %s", monStateStr(d.monState), d.monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
-    if (d.monErrors)
-        printf("     %d errors", d.monErrors);
+    printf("Mon state: %s %s", monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
+    if (d->monErrors)
+        printf("     %d errors", d->monErrors);
     printf("\n");
-    if (d.monState == MON_STATE_READ) {
+    if (d->monState == MON_STATE_READ) {
         for (int i=0; i<POWERMON_SENSORS; i++) {
 //            uint16_t deviceAddr = monAddr[i];
 //            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
-            pm_sensor_print(d.sensors[i], monIsOn(d.sw, i));
+            pm_sensor_print(d->sensors[i], monIsOn(d->sw, i));
         }
     }
 }

@@ -1,3 +1,20 @@
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "display.h"
 #include "adt7301_spi_hal.h"
 
@@ -19,11 +36,11 @@ void print_adt7301_value(uint16_t rawTemp)
    }
 }
 
-void devPrintStatus(const Devices d)
+void devPrintStatus(const Devices *d)
 {
-    printf("I2C mux:       %s\n", d.i2cmux.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    printf("EEPROM config: %s\n", d.eeprom_config.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    printf("EEPROM VXS PB: %s\n", d.eeprom_vxspb.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    printf("PLL I2C:       %s\n", d.pll.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    printf("FPGA ID: %02X  %s\n", d.fpga.id, d.fpga.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("I2C mux:       %s\n", d->i2cmux.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM config: %s\n", d->eeprom_config.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM VXS PB: %s\n", d->eeprom_vxspb.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("PLL I2C:       %s\n", d->pll.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("FPGA ID: %02X  %s\n", d->fpga.id, d->fpga.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
 }

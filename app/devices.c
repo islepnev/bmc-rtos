@@ -1,3 +1,19 @@
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "devices.h"
 #include "adt7301_spi_hal.h"
@@ -49,7 +65,7 @@ void struct_Devices_init(Devices *d)
     struct_powermon_init(&d->pm);
 }
 
-DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
+static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
 {
     HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
     HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
@@ -59,7 +75,7 @@ DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
     return d->present;
 }
 
-DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
+static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
     d->present = (HAL_OK == dev_eepromConfig_Detect());
 //    uint8_t data = 0;
@@ -69,7 +85,7 @@ DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
     return d->present;
 }
 
-DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
+static DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
 {
     d->present = (HAL_OK == dev_eepromVxsPb_Detect());
 //    uint8_t data = 0;
@@ -88,7 +104,7 @@ enum {
     AD9545_VENDOR_ID = 0x0456
 };
 
-DeviceStatus pllDetect(Dev_ad9545 *d)
+static DeviceStatus pllDetect(Dev_ad9545 *d)
 {
     for (int i=0; i<100; i++)
         HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
@@ -115,7 +131,7 @@ DeviceStatus pllDetect(Dev_ad9545 *d)
     return d->present;
 }
 
-DeviceStatus fpgaDetect(Dev_fpga *d)
+static DeviceStatus fpgaDetect(Dev_fpga *d)
 {
     uint16_t data[2] = {0,0};
     int err = 0;
@@ -174,16 +190,16 @@ void dev_switchPower(Devices *dev, SwitchOnOff state)
 //    pm_pgood_print(dev->pm);
 }
 
-void dev_thset_read(Dev_thset *d)
+static void dev_thset_read(Dev_thset *d)
 {
     for(int i=0; i<DEV_THERM_COUNT; i++)
         d->th[i].rawTemp = adt7301_read_temp(i);
 }
 
-SensorStatus dev_thset_thermStatus(const Dev_thset d)
+static SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 {
     for(int i=0; i<DEV_THERM_COUNT; i++) {
-        int16_t temp = adt7301_convert_temp_adt7301_scale32(d.th[i].rawTemp);
+        int16_t temp = adt7301_convert_temp_adt7301_scale32(d->th[i].rawTemp);
         temp /= 32;
         const int tempMinCrit = -40;
         const int tempMaxCrit = 80.0;
@@ -197,11 +213,11 @@ SensorStatus dev_thset_thermStatus(const Dev_thset d)
     return SENSOR_NORMAL;
 }
 
-void dev_thset_print(const Dev_thset d)
+static void dev_thset_print(const Dev_thset *d)
 {
     printf("Temp: ");
     for (int i=0; i<DEV_THERM_COUNT; i++) {
-        print_adt7301_value(d.th[i].rawTemp);
+        print_adt7301_value(d->th[i].rawTemp);
         printf(" ");
     }
     printf("%s\n", dev_thset_thermStatus(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
@@ -215,10 +231,10 @@ void dev_read_thermometers(Devices *dev)
     }
 }
 
-void dev_print_thermometers(const Devices dev)
+void dev_print_thermometers(const Devices *dev)
 {
-    if (pm_sensor_isValid(dev.pm.sensors[SENSOR_VME_5V])) { // 5V
-        dev_thset_print(dev.thset);
+    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+        dev_thset_print(&dev->thset);
     } else {
         printf("Temp: no power\n");
     }

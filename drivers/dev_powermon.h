@@ -67,7 +67,7 @@ void print_pm_switches(const pm_switches sw);
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state);
 void pm_pgood_print(const Dev_powermon pm);
 int monIsOn(const pm_switches sw, SensorIndex index);
-void monPrintValues(const Dev_powermon d);
+void monPrintValues(const Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
 int getPowerMonState(const Dev_powermon d);
