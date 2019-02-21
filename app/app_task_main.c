@@ -19,9 +19,7 @@
 
 #include <stdint.h>
 
-#include "FreeRTOS.h"
-#include "task.h"
-//#include "semphr.h"
+#include "cmsis_os.h"
 
 #include "fpga_spi_hal.h"
 #include "adt7301_spi_hal.h"
@@ -39,15 +37,17 @@
 
 #include "app_shared_data.h"
 
-uint32_t mainloopCount = 0;
+static const int threadStackSize = 400;
 
-uint32_t heartbeatCount = 0;
-const uint32_t heartbeatInterval = 10;
-uint32_t heartbeatUpdateTick = 999999; // run in first loop
+static uint32_t mainloopCount = 0;
 
-uint32_t displayUpdateCount = 0;
-const uint32_t displayUpdateInterval = 1000;
-uint32_t displayUpdateTick = 999999;
+static uint32_t heartbeatCount = 0;
+static const uint32_t heartbeatInterval = 10;
+static uint32_t heartbeatUpdateTick = 999999; // run in first loop
+
+static uint32_t displayUpdateCount = 0;
+static const uint32_t displayUpdateInterval = 1000;
+static uint32_t displayUpdateTick = 999999;
 
 static void task_main (void)
 {
@@ -95,9 +95,8 @@ static void task_display(void)
 
 }
 
-static void prvAppMainTask( void *pvParameters )
+static void prvAppMainTask( void const *arg)
 {
-    (void) pvParameters;
     while (1)
     {
         task_main();
@@ -115,12 +114,12 @@ static void prvAppMainTask( void *pvParameters )
     }
 }
 
-void create_task_main(int priority)
+osThreadDef(mainThread, prvAppMainTask, osPriorityIdle,      1, threadStackSize);
+
+void create_task_main(void)
 {
-    xTaskCreate( prvAppMainTask,
-                 "Main", // thread name, debug only
-                 4 * configMINIMAL_STACK_SIZE,    // stack size
-                 NULL,   // *pvParameters
-                 priority,
-                 NULL ); // task handle
+    osThreadId mainThreadId = osThreadCreate(osThread (mainThread), NULL);
+    if (mainThreadId == NULL) {
+        printf("Failed to create Main thread\n");
+    }
 }

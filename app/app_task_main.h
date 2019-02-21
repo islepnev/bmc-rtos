@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-void create_task_main(int priority);
+void create_task_main(void);
 
 #ifdef __cplusplus
 }

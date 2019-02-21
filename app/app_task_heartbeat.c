@@ -21,9 +21,9 @@
 #include "cmsis_os.h"
 #include "dev_leds.h"
 
-const int threadStackSize = 100;
+static const int threadStackSize = 100;
 
-const int mainQUEUE_SEND_FREQUENCY_MS = 200;
+static const int mainQUEUE_SEND_FREQUENCY_MS = 200;
 
 osMessageQDef(message_q, 1, uint32_t); // Declare a message queue, size 1
 osMessageQId (message_q_id);           // Declare an ID for the message queue
@@ -74,8 +74,8 @@ static void prvQueueReceiveTask(void const *arg)
     }
 }
 
-osThreadDef(rxThread, prvQueueReceiveTask, osPriorityNormal,      1, threadStackSize);
-osThreadDef(txThread, prvQueueSendTask,    osPriorityBelowNormal, 1, threadStackSize);
+osThreadDef(rxThread, prvQueueReceiveTask, osPriorityBelowNormal,      1, threadStackSize);
+osThreadDef(txThread, prvQueueSendTask,    osPriorityLow, 1, threadStackSize);
 
 void create_task_heartbeat(void)
 {

@@ -19,22 +19,14 @@
 #include "app_task_heartbeat.h"
 #include "app_task_main.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-
 #include <stdio.h>
-
-/* Priorities at which the tasks are created. */
-//#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
-//#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define mainAPPMAIN_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 void create_tasks(void)
 {
     printf("Creating tasks...");
     fflush(stdout);
     create_task_heartbeat();
-    create_task_main(mainAPPMAIN_TASK_PRIORITY);
+    create_task_main();
     printf("Ok\n");
     fflush(stdout);
 }
