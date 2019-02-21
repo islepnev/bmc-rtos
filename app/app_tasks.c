@@ -15,26 +15,26 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ASSERT_HOOKS_H
-#define ASSERT_HOOKS_H
+#include "app_tasks.h"
+#include "app_task_heartbeat.h"
+#include "app_task_main.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdio.h>
 
-extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName );
-/* Prototypes for the standard FreeRTOS callback/hook functions implemented
-within this file. */
-extern void vApplicationMallocFailedHook( void );
-//extern void vApplicationIdleHook( void );
-extern void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
-//extern void vApplicationTickHook( void );
+/* Priorities at which the tasks are created. */
+#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define mainAPPMAIN_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
-#ifdef __cplusplus
+void create_tasks(void)
+{
+    printf("Creating tasks...");
+    fflush(stdout);
+    create_task_heartbeat(mainQUEUE_SEND_TASK_PRIORITY, mainQUEUE_RECEIVE_TASK_PRIORITY);
+    create_task_main(mainAPPMAIN_TASK_PRIORITY);
+    printf("Ok\n");
+    fflush(stdout);
 }
-#endif
-
-#endif // ASSERT_HOOKS_H

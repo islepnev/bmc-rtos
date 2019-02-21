@@ -56,23 +56,9 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "task.h"
-#include "semphr.h"
-
-#include "fpga_spi_hal.h"
-#include "adt7301_spi_hal.h"
-#include "pca9548_i2c_hal.h"
-#include "ad9545_i2c_hal.h"
-#include "ina226_i2c_hal.h"
-#include "dev_eeprom.h"
-#include "dev_powermon.h"
-#include "ftoa.h"
-#include "ansi_escape_codes.h"
-#include "display.h"
-#include "devices.h"
-#include "dev_types.h"
-#include "dev_mcu.h"
-#include "dev_leds.h"
+#include "app_tasks.h"
+#include "app_task_init.h"
+#include "app_shared_data.h"
 
 /* USER CODE END Includes */
 
@@ -81,31 +67,6 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
-/* Priorities at which the tasks are created. */
-#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
-#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define mainAPPMAIN_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
-
-/* The rate at which data is sent to the queue.  The 200ms value is converted
-to ticks using the portTICK_PERIOD_MS constant. */
-#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_PERIOD_MS )
-
-/* The number of items the queue can hold.  This is 1 as the receive task
-will remove items as they are added, meaning the send task should always find
-the queue empty. */
-#define mainQUEUE_LENGTH					( 1 )
-
-static QueueHandle_t xQueue = NULL;
-
-uint32_t mainloopCount = 0;
-
-uint32_t heartbeatCount = 0;
-const uint32_t heartbeatInterval = 10;
-uint32_t heartbeatUpdateTick = 999999; // run in first loop
-
-uint32_t displayUpdateCount = 0;
-const uint32_t displayUpdateInterval = 1000;
-uint32_t displayUpdateTick = 999999;
 
 /* USER CODE END PV */
 
@@ -116,205 +77,14 @@ void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
-static void prvQueueReceiveTask( void *pvParameters );
-static void prvQueueSendTask( void *pvParameters );
-
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-Devices dev;
-
-void setStaticPins(void)
-{
-    pllSetStaticPins();
-}
 
 //void vApplicationTickHook( void )
 //{
 //}
 /*-----------------------------------------------------------*/
-
-void task_heartbeat_rtos(void)
-{
-    dev_leds_toggle(&dev.leds, LED_GREEN);
-}
-
-
-static void prvQueueSendTask( void *pvParameters )
-{
-TickType_t xNextWakeTime;
-const unsigned long ulValueToSend = 100UL;
-
-    /* Remove compiler warning about unused parameter. */
-    ( void ) pvParameters;
-
-    /* Initialise xNextWakeTime - this only needs to be done once. */
-    xNextWakeTime = xTaskGetTickCount();
-
-    for( ;; )
-    {
-        /* Place this task in the blocked state until it is time to run again. */
-        vTaskDelayUntil( &xNextWakeTime, mainQUEUE_SEND_FREQUENCY_MS );
-
-        /* Send to the queue - causing the queue receive task to unblock and
-        toggle the LED.  0 is used as the block time so the sending operation
-        will not block - it shouldn't need to block as the queue should always
-        be empty at this point in the code. */
-        xQueueSend( xQueue, &ulValueToSend, 0U );
-    }
-}
-/*-----------------------------------------------------------*/
-
-static void prvQueueReceiveTask( void *pvParameters )
-{
-unsigned long ulReceivedValue;
-const unsigned long ulExpectedValue = 100UL;
-
-    /* Remove compiler warning about unused parameter. */
-    ( void ) pvParameters;
-
-    for( ;; )
-    {
-        /* Wait until something arrives in the queue - this task will block
-        indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
-        FreeRTOSConfig.h. */
-        xQueueReceive( xQueue, &ulReceivedValue, portMAX_DELAY );
-
-        /*  To get here something must have been received from the queue, but
-        is it the expected value?  If it is, toggle the LED. */
-        if( ulReceivedValue == ulExpectedValue )
-        {
-            task_heartbeat_rtos();
-            ulReceivedValue = 0U;
-        }
-    }
-}
-
-void task_oneshot(void)
-{
-    setStaticPins();
-    // light all leds
-    dev_led_set(&dev.leds, LED_RED,    LED_ON);
-    dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
-    dev_led_set(&dev.leds, LED_GREEN,  LED_ON);
-    printf("Starting...");
-    fflush(stdout);
-    // test leds
-    for (int i=0; i<50000; i++) {
-        dev_led_set(&dev.leds, LED_RED,    LED_ON);
-        dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
-        dev_led_set(&dev.leds, LED_GREEN,  LED_ON);
-    }
-    for (int i=0; i<50000; i++) {
-        dev_led_set(&dev.leds, LED_RED,    LED_OFF);
-        dev_led_set(&dev.leds, LED_YELLOW, LED_OFF);
-        dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
-    }
-    // display error state
-    dev_led_set(&dev.leds, LED_RED,    LED_ON);
-    dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
-    dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
-}
-
-void task_main (void)
-{
-    mainloopCount++;
-    // Switch ON
-    //      dev_switchPower(&dev, SWITCH_OFF);
-    dev_switchPower(&dev, SWITCH_ON);
-    //      HAL_Delay(1500);
-
-    //      struct_Devices_init(&dev);
-    DeviceStatus devStatus = devDetect(&dev);
-//    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
-
-    dev_read_thermometers(&dev);
-
-    runMon(&dev.pm);
-    int systemPowerState = getPowerMonState(dev.pm);
-    dev_led_set(&dev.leds, LED_RED, !systemPowerState);
-}
-
-void task_heartbeat(void)
-{
-    dev_leds_toggle(&dev.leds, LED_YELLOW);
-}
-
-void task_display(void)
-{
-    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
-
-    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
-           HAL_GetDEVID(), HAL_GetREVID(),
-           HAL_GetHalVersion(),
-           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
-           );
-    printf("Uptime: %-8ld Mainloop %-8ld Heartbeat %-6ld DisplayUpdate %-6ld\n",
-           HAL_GetTick() / getTickFreqHz(), mainloopCount, heartbeatCount, displayUpdateCount);
-    print_pm_switches(dev.pm.sw);
-    int systemPowerState = getPowerMonState(dev.pm);
-    printf("System power supplies: %s\n", systemPowerState ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    pm_pgood_print(dev.pm);
-    dev_print_thermometers(dev);
-    devPrintStatus(dev);
-    monPrintValues(dev.pm);
-    fflush(stdout);
-
-}
-
-static void prvAppMainTask( void *pvParameters )
-{
-    (void) pvParameters;
-    while (1)
-    {
-        task_main();
-        const uint32_t tick = HAL_GetTick();
-        if (tick - heartbeatUpdateTick > heartbeatInterval) {
-            heartbeatUpdateTick = tick;
-            heartbeatCount++;
-            task_heartbeat();
-        };
-        if (tick - displayUpdateTick > displayUpdateInterval) {
-            displayUpdateTick = tick;
-            displayUpdateCount++;
-            task_display();
-        }
-    }
-}
-
-static void create_tasks(void)
-{
-    printf("Creating tasks\n");
-
-    if (1) {
-        xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
-        if( xQueue != NULL )
-        {
-            xTaskCreate( prvQueueReceiveTask,				// The function that implements the task.
-                         "Rx", 								// The text name assigned to the task - for debug only as it is not used by the kernel.
-                         configMINIMAL_STACK_SIZE, 			// The size of the stack to allocate to the task.
-                         NULL, 								// The parameter passed to the task - not used in this case.
-                         mainQUEUE_RECEIVE_TASK_PRIORITY, 	// The priority assigned to the task.
-                         NULL );								// The task handle is not required, so NULL is passed.
-
-            xTaskCreate( prvQueueSendTask,
-                         "TX",
-                         configMINIMAL_STACK_SIZE,
-                         NULL,
-                         mainQUEUE_SEND_TASK_PRIORITY,
-                         NULL );
-        }
-    }
-    if (1) {
-        xTaskCreate( prvAppMainTask,
-                     "Main", // thread name, debug only
-                     4 * configMINIMAL_STACK_SIZE,    // stack size
-                     NULL,   // *pvParameters
-                     mainAPPMAIN_TASK_PRIORITY,
-                     NULL ); // task handle
-    }
-}
 
 /* USER CODE END 0 */
 
@@ -376,7 +146,6 @@ int main(void)
   {
 
   /* USER CODE END WHILE */
-      prvAppMainTask(NULL);
   /* USER CODE BEGIN 3 */
 
   }
