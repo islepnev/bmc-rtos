@@ -36,6 +36,7 @@ typedef enum {
 } LedState;
 
 void led_set_state(DeviceLeds led, LedState state);
+void led_toggle(DeviceLeds led);
 
 #ifdef __cplusplus
 }

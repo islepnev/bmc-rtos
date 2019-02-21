@@ -33,3 +33,18 @@ void led_set_state(DeviceLeds led, LedState state)
         break;
     }
 }
+
+void led_toggle(DeviceLeds led)
+{
+    switch(led) {
+    case LED_RED :
+        HAL_GPIO_TogglePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin);
+        break;
+    case LED_YELLOW :
+        HAL_GPIO_TogglePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin);
+        break;
+    case LED_GREEN :
+        HAL_GPIO_TogglePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin);
+        break;
+    }
+}

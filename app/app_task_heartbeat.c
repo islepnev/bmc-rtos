@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include "cmsis_os.h"
-#include "app_shared_data.h"
+#include "dev_leds.h"
 
 const int threadStackSize = 100;
 
@@ -30,7 +30,7 @@ osMessageQId (message_q_id);           // Declare an ID for the message queue
 
 static void task_heartbeat_rtos(void)
 {
-    dev_leds_toggle(&dev.leds, LED_GREEN);
+    led_toggle(LED_GREEN);
 }
 
 static void prvQueueSendTask(void const *arg)
