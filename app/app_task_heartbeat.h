@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-void create_task_heartbeat(int rx_priority, int tx_priority);
+void create_task_heartbeat(void);
 
 #ifdef __cplusplus
 }

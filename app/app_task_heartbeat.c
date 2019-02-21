@@ -18,66 +18,51 @@
 #include "app_task_heartbeat.h"
 
 #include <stdint.h>
-
-#include "FreeRTOS.h"
-#include "queue.h"
-
+#include "cmsis_os.h"
 #include "app_shared_data.h"
 
-/* The rate at which data is sent to the queue.  The 200ms value is converted
-to ticks using the portTICK_PERIOD_MS constant. */
-#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_PERIOD_MS )
+const int threadStackSize = 100;
 
-static QueueHandle_t xQueue = NULL;
+const int mainQUEUE_SEND_FREQUENCY_MS = 200;
 
-static void prvQueueReceiveTask( void *pvParameters );
-static void prvQueueSendTask( void *pvParameters );
+osMessageQDef(message_q, 1, uint32_t); // Declare a message queue, size 1
+osMessageQId (message_q_id);           // Declare an ID for the message queue
 
-void task_heartbeat_rtos(void)
+static void task_heartbeat_rtos(void)
 {
     dev_leds_toggle(&dev.leds, LED_GREEN);
 }
 
-
-static void prvQueueSendTask( void *pvParameters )
+static void prvQueueSendTask(void const *arg)
 {
-TickType_t xNextWakeTime;
-const unsigned long ulValueToSend = 100UL;
-
-    /* Remove compiler warning about unused parameter. */
-    ( void ) pvParameters;
-
-    /* Initialise xNextWakeTime - this only needs to be done once. */
-    xNextWakeTime = xTaskGetTickCount();
+    (void) arg;
+    const uint32_t ulValueToSend = 100UL;
 
     for( ;; )
     {
         /* Place this task in the blocked state until it is time to run again. */
-        vTaskDelayUntil( &xNextWakeTime, mainQUEUE_SEND_FREQUENCY_MS );
+//        vTaskDelayUntil( &xNextWakeTime, mainQUEUE_SEND_FREQUENCY_MS );
+        osDelay(mainQUEUE_SEND_FREQUENCY_MS);
 
         /* Send to the queue - causing the queue receive task to unblock and
         toggle the LED.  0 is used as the block time so the sending operation
         will not block - it shouldn't need to block as the queue should always
         be empty at this point in the code. */
-        xQueueSend( xQueue, &ulValueToSend, 0U );
+        uint32_t data = ulValueToSend;
+        osMessagePut(message_q_id, data, 0);
     }
 }
-/*-----------------------------------------------------------*/
 
-static void prvQueueReceiveTask( void *pvParameters )
+static void prvQueueReceiveTask(void const *arg)
 {
-unsigned long ulReceivedValue;
-const unsigned long ulExpectedValue = 100UL;
-
-    /* Remove compiler warning about unused parameter. */
-    ( void ) pvParameters;
+    (void) arg;
+    uint32_t ulReceivedValue;
+    const uint32_t ulExpectedValue = 100UL;
 
     for( ;; )
     {
-        /* Wait until something arrives in the queue - this task will block
-        indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
-        FreeRTOSConfig.h. */
-        xQueueReceive( xQueue, &ulReceivedValue, portMAX_DELAY );
+        osEvent event = osMessageGet(message_q_id, osWaitForever);
+        ulReceivedValue = event.value.v;
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, toggle the LED. */
@@ -89,27 +74,22 @@ const unsigned long ulExpectedValue = 100UL;
     }
 }
 
-void create_task_heartbeat(int rx_priority, int tx_priority)
-{
-    /* The number of items the queue can hold.  This is 1 as the receive task
-    will remove items as they are added, meaning the send task should always find
-    the queue empty. */
-    const int mainQUEUE_LENGTH = 1;
-    xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
-    if( xQueue != NULL )
-    {
-        xTaskCreate( prvQueueReceiveTask,				// The function that implements the task.
-                     "Rx", 								// The text name assigned to the task - for debug only as it is not used by the kernel.
-                     configMINIMAL_STACK_SIZE, 			// The size of the stack to allocate to the task.
-                     NULL, 								// The parameter passed to the task - not used in this case.
-                     rx_priority, 	// The priority assigned to the task.
-                     NULL );								// The task handle is not required, so NULL is passed.
+osThreadDef(rxThread, prvQueueReceiveTask, osPriorityNormal,      1, threadStackSize);
+osThreadDef(txThread, prvQueueSendTask,    osPriorityBelowNormal, 1, threadStackSize);
 
-        xTaskCreate( prvQueueSendTask,
-                     "TX",
-                     configMINIMAL_STACK_SIZE,
-                     NULL,
-                     tx_priority,
-                     NULL );
+void create_task_heartbeat(void)
+{
+    message_q_id = osMessageCreate(osMessageQ(message_q), NULL);
+
+    if( message_q_id != NULL )
+    {
+        osThreadId rxThreadId = osThreadCreate(osThread (rxThread), NULL);
+        osThreadId txThreadId = osThreadCreate(osThread (txThread), NULL);
+        if (rxThreadId == NULL) {
+            printf("Failed to create Rx thread\n");
+        }
+        if (txThreadId == NULL) {
+            printf("Failed to create Tx thread\n");
+        }
     }
 }

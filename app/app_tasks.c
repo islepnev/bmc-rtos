@@ -25,15 +25,15 @@
 #include <stdio.h>
 
 /* Priorities at which the tasks are created. */
-#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
-#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
+//#define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+//#define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
 #define mainAPPMAIN_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 void create_tasks(void)
 {
     printf("Creating tasks...");
     fflush(stdout);
-    create_task_heartbeat(mainQUEUE_SEND_TASK_PRIORITY, mainQUEUE_RECEIVE_TASK_PRIORITY);
+    create_task_heartbeat();
     create_task_main(mainAPPMAIN_TASK_PRIORITY);
     printf("Ok\n");
     fflush(stdout);
