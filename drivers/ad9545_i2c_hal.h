@@ -26,8 +26,6 @@ extern "C" {
 
 void pllSetStaticPins(void);
 HAL_StatusTypeDef ad9545_detect(void);
-//HAL_StatusTypeDef pllSendByte(uint16_t data);
-//HAL_StatusTypeDef pllReceiveByte(uint32_t *data);
 HAL_StatusTypeDef ad9545_read(uint16_t reg, uint32_t *data);
 
 #ifdef __cplusplus

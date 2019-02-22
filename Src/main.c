@@ -58,7 +58,6 @@
 /* USER CODE BEGIN Includes */
 #include "app_tasks.h"
 #include "app_task_init.h"
-#include "app_shared_data.h"
 
 /* USER CODE END Includes */
 
@@ -105,7 +104,6 @@ int main(void)
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-    struct_Devices_init(&dev);
     /* USER CODE END Init */
 
     /* Configure the system clock */

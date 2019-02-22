@@ -22,7 +22,8 @@
 #include "main.h"
 #include "spi.h"
 
-const int FPGA_SPI_TIMEOUT = 100;
+static const int SPI_TIMEOUT_MS = 10;
+
 enum {
     FPGA_SPI_ADDR_0 = 0,
     FPGA_SPI_ADDR_1 = 1,
@@ -61,7 +62,7 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint8_t addr, uint16_t *data)
     };
     uint8_t buf2[4] = {0,0,0,0};
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(fpga_spi, buf1, buf2, 4, FPGA_SPI_TIMEOUT);
+    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(fpga_spi, buf1, buf2, 4, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
         printf("%s: SPI error\n", __func__);
@@ -88,7 +89,7 @@ HAL_StatusTypeDef fpga_spi_hal_write_reg(uint8_t addr, uint16_t data)
         (data & 0xFF)
     };
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, buf1, 4, FPGA_SPI_TIMEOUT);
+    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, buf1, 4, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
         printf("%s: SPI error\n", __func__);

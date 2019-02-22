@@ -39,6 +39,7 @@ enum {
     INA226_REG_DEVICE_ID = 0xFF
 };
 
+HAL_StatusTypeDef ina226_i2c_Detect(uint16_t deviceAddr);
 HAL_StatusTypeDef ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data);
 
 #ifdef __cplusplus

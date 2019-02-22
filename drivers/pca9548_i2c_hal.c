@@ -22,13 +22,15 @@
 //#include "main.h"
 #include "i2c.h"
 
+static const int I2C_TIMEOUT_MS = 10;
+
 enum { PCA9548_I2C_ADDRESS = 0x74 };
 
 HAL_StatusTypeDef pca9548_read(uint8_t *data)
 {
     HAL_StatusTypeDef ret;
     uint8_t pData;
-    ret = HAL_I2C_Master_Receive(&hi2c4, PCA9548_I2C_ADDRESS << 1, &pData, 1, 100);
+    ret = HAL_I2C_Master_Receive(&hi2c4, PCA9548_I2C_ADDRESS << 1, &pData, 1, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData;

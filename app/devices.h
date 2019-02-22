@@ -29,6 +29,10 @@ extern "C" {
 #include "dev_leds.h"
 
 enum { FPGA_DEVICE_ID = 0x68}; // FIXME: 0xD0
+typedef enum {
+    PGOOD_FAIL = 0,
+    PGOOD_OK = 1 }
+PgoodState;
 
 typedef struct {
     Dev_Leds leds;
@@ -48,8 +52,12 @@ void struct_at24c_init(Dev_at24c *d);
 void struct_ad9545_init(Dev_ad9545 *d);
 void struct_Devices_init(Devices *d);
 
+void devReset(Devices *d);
+DeviceStatus getDeviceStatus(const Devices *d);
 DeviceStatus devDetect(Devices *d);
-void dev_switchPower(Devices *dev, SwitchOnOff state);
+void dev_switchPower(Dev_powermon *pm, SwitchOnOff state);
+PgoodState dev_readPgood(Dev_powermon *pm);
+void dev_waitPgood(Devices *dev, SwitchOnOff state);
 void dev_read_thermometers(Devices *dev);
 void dev_print_thermometers(const Devices *dev);
 

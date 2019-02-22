@@ -16,10 +16,11 @@
 //
 
 #include "dev_powermon.h"
+#include "cpu_cycle.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
-#include "ftoa.h"
 #include "dev_pm_sensors.h"
+#include "cmsis_os.h"
 
 int monIsOn(const pm_switches sw, SensorIndex index)
 {
@@ -120,16 +121,15 @@ void pm_pgood_print(const Dev_powermon pm)
     printf("FPGA Core 1.0V:    %s\n", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_FAIL : STR_RESULT_OFF);
 }
 
-
-int getPowerMonState(const Dev_powermon d)
+int getPowerMonState(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
-        if (!pm_sensor_isValid(d.sensors[i]))
+        if (!pm_sensor_isValid(d->sensors[i]))
             return 0;
     return 1;
 }
 
-const char *monStateStr(int monState)
+const char *monStateStr(MonState monState)
 {
     switch(monState) {
     case MON_STATE_INIT: return "INIT";
@@ -158,6 +158,7 @@ void monPrintValues(const Dev_powermon *d)
 int monDetect(Dev_powermon *d)
 {
     int count = 0;
+    enable_cpu_cycle_counter();
     for (int i=0; i<POWERMON_SENSORS; i++) {
         if (pm_sensor_detect(&d->sensors[i]))
             count++;
@@ -180,13 +181,13 @@ void pm_setStateStartTick(Dev_powermon *pm)
     pm->stateStartTick = HAL_GetTick();
 }
 
-void runMon(Dev_powermon *pm)
+MonState runMon(Dev_powermon *pm)
 {
     pm->monCycle++;
     const MonState oldState = pm->monState;
     if (!pm->sw.switch_5v) {
         pm->monState = MON_STATE_INIT;
-        return;
+        return 1;
     }
     switch(pm->monState) {
     case MON_STATE_INIT:
@@ -194,7 +195,8 @@ void runMon(Dev_powermon *pm)
         pm->monState = MON_STATE_DETECT;
         break;
     case MON_STATE_DETECT:
-        if (monDetect(pm) > 0)
+        // all but two devices up
+        if (monDetect(pm) > POWERMON_SENSORS - 2)
             pm->monState = MON_STATE_READ;
         break;
     case MON_STATE_READ:
@@ -213,4 +215,10 @@ void runMon(Dev_powermon *pm)
     if (oldState != pm->monState) {
         pm_setStateStartTick(pm);
     }
+    return pm->monState;
+}
+
+int getSensorIsValid_5V(const Dev_powermon *pm)
+{
+    return pm_sensor_isValid(pm->sensors[SENSOR_5V]);
 }

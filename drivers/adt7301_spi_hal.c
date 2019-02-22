@@ -19,7 +19,7 @@
 #include "main.h"
 #include "spi.h"
 
-enum {ADT7301_SPI_TIMEOUT = 1000};
+static const int SPI_TIMEOUT_MS = 10;
 
 /**
   * @brief  Converts raw temperature value
@@ -71,7 +71,7 @@ uint16_t adt7301_read_temp(int source)
     }
 
     HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_RESET);
-    HAL_StatusTypeDef spi_ret = HAL_SPI_TransmitReceive(therm_spi, SPI_transmit_buffer, SPI_receive_buffer, 1, ADT7301_SPI_TIMEOUT);
+    HAL_StatusTypeDef spi_ret = HAL_SPI_TransmitReceive(therm_spi, SPI_transmit_buffer, SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
     HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
     if (spi_ret != HAL_OK) {
 //        *result = 0;

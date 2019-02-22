@@ -20,8 +20,8 @@
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
 
-const int pllDeviceAddr = 0x4A;
-const int AD9545_I2C_TIMEOUT_MS = 100;
+static const int pllDeviceAddr = 0x4A;
+static const int I2C_TIMEOUT_MS = 10;
 
 void pllSetStaticPins(void)
 {
@@ -35,28 +35,28 @@ void pllSetStaticPins(void)
 HAL_StatusTypeDef ad9545_detect(void)
 {
     HAL_StatusTypeDef ret;
-    uint32_t Trials = 10;
-    ret = HAL_I2C_IsDeviceReady(&hi2c2, pllDeviceAddr << 1, Trials, AD9545_I2C_TIMEOUT_MS);
+    uint32_t Trials = 2;
+    ret = HAL_I2C_IsDeviceReady(&hi2c2, pllDeviceAddr << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
 }
 
-HAL_StatusTypeDef pllSendByte(uint16_t data)
+static HAL_StatusTypeDef pllSendByte(uint16_t data)
 {
     HAL_StatusTypeDef ret;
     enum {Size = 2};
     uint8_t pData[Size];
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
-    ret = HAL_I2C_Master_Transmit(&hi2c2, pllDeviceAddr << 1, pData, Size, AD9545_I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Master_Transmit(&hi2c2, pllDeviceAddr << 1, pData, Size, I2C_TIMEOUT_MS);
     return ret;
 }
 
-HAL_StatusTypeDef pllReceiveByte(uint32_t *data)
+static HAL_StatusTypeDef pllReceiveByte(uint32_t *data)
 {
     HAL_StatusTypeDef ret;
     enum {Size = 3};
     uint8_t pData[Size] = {0, 0, 0};
-    ret = HAL_I2C_Master_Receive(&hi2c2, pllDeviceAddr << 1, pData, Size, AD9545_I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Master_Receive(&hi2c2, pllDeviceAddr << 1, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
@@ -70,7 +70,7 @@ HAL_StatusTypeDef ad9545_read(uint16_t reg, uint32_t *data)
     HAL_StatusTypeDef ret;
     enum {Size = 3};
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(&hi2c2, pllDeviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size, AD9545_I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Mem_Read(&hi2c2, pllDeviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];

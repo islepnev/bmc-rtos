@@ -227,21 +227,16 @@ void pm_sensor_print(const pm_sensor d, int isOn)
 int pm_sensor_detect(pm_sensor *d)
 {
     d->lastStatusUpdatedTick = HAL_GetTick();
-    int detected = 1;
     uint16_t deviceAddr = d->busAddress;
-    uint16_t data;
-    if (HAL_OK != ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &data)) {
-        detected = 0;
-    }
-    if (data != INA226_MANUFACTURER_ID) {
-        detected = 0;
-    }
-    if (HAL_OK != ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &data)) {
-        detected = 0;
-    }
-    if (data != INA226_DEVICE_ID) {
-        detected = 0;
-    }
+    uint16_t manuf_id;
+    uint16_t device_id;
+    int detected =(
+                (HAL_OK == ina226_i2c_Detect(deviceAddr))
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id))
+                && (manuf_id == INA226_MANUFACTURER_ID)
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id))
+                && (device_id == INA226_DEVICE_ID)
+            );
     pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
     return detected;
 }

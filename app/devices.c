@@ -62,7 +62,6 @@ void struct_Devices_init(Devices *d)
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);
     struct_ad9545_init(&d->pll);
-    struct_powermon_init(&d->pm);
 }
 
 static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
@@ -104,7 +103,7 @@ enum {
     AD9545_VENDOR_ID = 0x0456
 };
 
-static DeviceStatus pllDetect(Dev_ad9545 *d)
+static void pllReset(Dev_ad9545 *d)
 {
     for (int i=0; i<100; i++)
         HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
@@ -112,7 +111,10 @@ static DeviceStatus pllDetect(Dev_ad9545 *d)
     HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
     for (int i=0; i<100; i++)
         HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
+}
 
+static DeviceStatus pllDetect(Dev_ad9545 *d)
+{
     HAL_StatusTypeDef ret = ad9545_detect();
     d->present = (HAL_OK == ret);
     if (d->present) {
@@ -148,17 +150,11 @@ static DeviceStatus fpgaDetect(Dev_fpga *d)
     d->id = id;
     return d->present;
 }
-
-DeviceStatus devDetect(Devices *d)
+DeviceStatus getDeviceStatus(const Devices *d)
 {
-    dev_i2cmux_detect(&d->i2cmux);
-    dev_eepromConfig_detect(&d->eeprom_config);
-    dev_eepromVxsPb_detect(&d->eeprom_vxspb);
-    pllDetect(&d->pll);
-    fpgaDetect(&d->fpga);
     DeviceStatus status = DEVICE_FAIL;
     if ((d->i2cmux.present == DEVICE_NORMAL)
-            && (d->eeprom_config.present == DEVICE_NORMAL)
+//            && (d->eeprom_config.present == DEVICE_NORMAL)
             && (d->eeprom_vxspb.present == DEVICE_NORMAL)
             && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
@@ -167,7 +163,33 @@ DeviceStatus devDetect(Devices *d)
     return status;
 }
 
-void dev_switchPower(Devices *dev, SwitchOnOff state)
+void devReset(Devices *d)
+{
+    pllReset(&d->pll);
+}
+
+DeviceStatus devDetect(Devices *d)
+{
+    dev_i2cmux_detect(&d->i2cmux);
+    dev_eepromConfig_detect(&d->eeprom_config);
+    dev_eepromVxsPb_detect(&d->eeprom_vxspb);
+    pllDetect(&d->pll);
+    fpgaDetect(&d->fpga);
+    return getDeviceStatus(d);
+}
+
+void dev_switchPower(Dev_powermon *pm, SwitchOnOff state)
+{
+    update_power_switches(pm, state);
+}
+
+PgoodState dev_readPgood(Dev_powermon *pm)
+{
+    pm_read_pgood(pm);
+    return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
+}
+
+void dev_waitPgood(Devices *dev, SwitchOnOff state)
 {
     update_power_switches(&dev->pm, state);
     pm_read_pgood(&dev->pm);
@@ -176,8 +198,8 @@ void dev_switchPower(Devices *dev, SwitchOnOff state)
         const uint32_t PGOOD_TIMEOUT_MS = 100;
         uint32_t tickStart = HAL_GetTick();
         while (1) {
-            pm_read_pgood(&dev->pm);
-            if (dev->pm.fpga_core_pgood && dev->pm.ltm_pgood) {
+            int pgood = dev_readPgood(&dev->pm);
+            if (pgood) {
                 break;
             }
             if ((HAL_GetTick() - tickStart) > PGOOD_TIMEOUT_MS) {
