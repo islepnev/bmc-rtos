@@ -57,13 +57,12 @@ DeviceStatus getDeviceStatus(const Devices *d);
 DeviceStatus devDetect(Devices *d);
 void dev_switchPower(Dev_powermon *pm, SwitchOnOff state);
 PgoodState dev_readPgood(Dev_powermon *pm);
-void dev_waitPgood(Devices *dev, SwitchOnOff state);
 void dev_read_thermometers(Devices *dev);
-void dev_print_thermometers(const Devices *dev);
+//void dev_print_thermometers(const Devices *dev);
 
 //void dev_thset_read(Dev_thset *d);
 //void dev_thset_print(const Dev_thset d);
-//SensorStatus dev_thset_thermStatus(const Dev_thset d);
+SensorStatus dev_thset_thermStatus(const Dev_thset *d);
 
 #ifdef __cplusplus
 }

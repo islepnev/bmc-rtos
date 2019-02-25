@@ -98,9 +98,9 @@ float monVoltageNom(SensorIndex index)
     case SENSOR_FPGA_MGT_1V0:  return 1.0;
     case SENSOR_FPGA_MGT_1V2:  return 1.2;
     case SENSOR_FPGA_1V8:      return 1.8;
-    case SENSOR_TDC_A:         return 2.6;
-    case SENSOR_TDC_B:         return 2.6;
-    case SENSOR_TDC_C:         return 2.6;
+    case SENSOR_TDC_A:         return 2.5;
+    case SENSOR_TDC_B:         return 2.5;
+    case SENSOR_TDC_C:         return 2.5;
     case SENSOR_CLOCK_2V5:     return 2.5;
     }
     return 0;

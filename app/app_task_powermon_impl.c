@@ -36,6 +36,13 @@
 
 #include "app_shared_data.h"
 
+const int TEST_RESTART = 0; // debug only
+const uint32_t SENSORS_SETTLE_TICKS = 100;
+const uint32_t THERM_SETTLE_TICKS = 1000;
+const uint32_t RAMP_TIMEOUT_TICKS = 1000;
+const uint32_t POWERFAIL_DELAY_TICKS = 2000;
+const uint32_t ERROR_DELAY_TICKS = 2000;
+
 static const int pmThreadStackSize = 1000;
 
 uint32_t pmLoopCount = 0;
@@ -57,6 +64,7 @@ static uint32_t stateTicks(void)
 static void task_pm (void)
 {
     pmLoopCount++;
+    int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
     const PmState oldState = pmState;
     int pgood = dev_readPgood(&dev.pm);
     int power_5v_ok = (pgood
@@ -65,7 +73,11 @@ static void task_pm (void)
     int power_all_ok = (pgood
                     && (dev.pm.monState == MON_STATE_READ)
                     && (pm_sensors_getStatus(&dev.pm)) <= SENSOR_WARNING);
-;
+    SensorStatus monStatus = SENSOR_NORMAL;
+    if ((dev.pm.monState == MON_STATE_READ)
+            && (getMonStateTicks(&dev.pm) > SENSORS_SETTLE_TICKS)) {
+        monStatus = pm_sensors_getStatus(&dev.pm);
+    }
     switch (pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(&dev.pm);
@@ -73,14 +85,18 @@ static void task_pm (void)
         pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_STANDBY:
-        if (stateTicks() > 1000) {
-            dev_switchPower(&dev.pm, SWITCH_ON);
+        if (vmePresent && (stateTicks() > 1000)) {
             pmState = PM_STATE_RAMP_5V;
         }
         break;
     case PM_STATE_RAMP_5V:
+        if (!vmePresent) {
+            pmState = PM_STATE_STANDBY;
+            break;
+        }
         if (power_5v_ok) {
             pmState = PM_STATE_RAMP;
+            break;
         }
         if (stateTicks() > 1000) {
             printf("RAMP_5V timeout\n");
@@ -88,17 +104,24 @@ static void task_pm (void)
         }
         break;
     case PM_STATE_RAMP:
-        if (pgood && dev.pm.monState == MON_STATE_READ) {
-            if (pm_sensors_getStatus(&dev.pm) <= SENSOR_WARNING) {
-                pmState = PM_STATE_RUN;
-            }
+        if (!vmePresent) {
+            pmState = PM_STATE_STANDBY;
+            break;
         }
-        if (stateTicks() > 1000) {
+        if (pgood
+                && (monStatus <= SENSOR_WARNING)) {
+            pmState = PM_STATE_RUN;
+        }
+        if (stateTicks() > RAMP_TIMEOUT_TICKS) {
             printf("RAMP timeout\n");
             pmState = PM_STATE_PWRFAIL;
         }
         break;
     case PM_STATE_RUN:
+        if (!vmePresent) {
+            pmState = PM_STATE_STANDBY;
+            break;
+        }
         if (!power_all_ok) {
                 printf("Power failure in RUN\n");
                 pmState = PM_STATE_PWRFAIL;
@@ -109,27 +132,49 @@ static void task_pm (void)
                 pmState = PM_STATE_ERROR;
                 break;
         }
+        if (TEST_RESTART && (stateTicks() > 5000)) {
+            pmState = PM_STATE_STANDBY;
+            break;
+        }
         break;
     case PM_STATE_PWRFAIL:
-        dev_switchPower(&dev.pm, SWITCH_OFF);
-        dev_readPgood(&dev.pm);
-        if (stateTicks() > 2000) {
+//        dev_switchPower(&dev.pm, SWITCH_OFF);
+//        dev_readPgood(&dev.pm);
+        if (stateTicks() > POWERFAIL_DELAY_TICKS) {
             pmState = PM_STATE_STANDBY;
         }
         break;
     case PM_STATE_ERROR:
-        dev_switchPower(&dev.pm, SWITCH_OFF);
-        if (stateTicks() > 2000) {
+//        dev_switchPower(&dev.pm, SWITCH_OFF);
+        if (stateTicks() > ERROR_DELAY_TICKS) {
             pmState = PM_STATE_STANDBY;
         }
         break;
     }
+    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev.thset);
+    SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
+    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
+        pmStatus = SENSOR_CRITICAL;
+    SensorStatus systemStatus = SENSOR_NORMAL;
+    if (pmStatus > systemStatus)
+        systemStatus = pmStatus;
+    if (monStatus > systemStatus)
+        systemStatus = monStatus;
+    if (temperatureStatus > systemStatus)
+        systemStatus = temperatureStatus;
 
-    dev_led_set(&dev.leds, LED_RED, pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR);
-    dev_led_set(&dev.leds, LED_YELLOW, pmState != PM_STATE_RUN);
+    dev_led_set(&dev.leds, LED_RED, systemStatus >= SENSOR_CRITICAL);
+    dev_led_set(&dev.leds, LED_YELLOW, systemStatus >= SENSOR_WARNING);
 
-    if (pmState == PM_STATE_RAMP_5V
-            || pmState == PM_STATE_RAMP) {
+    if ((pmState == PM_STATE_RAMP_5V)
+            || (pmState == PM_STATE_RAMP)
+            || (pmState == PM_STATE_RUN)) {
+        dev_switchPower(&dev.pm, SWITCH_ON);
+    } else {
+        dev_switchPower(&dev.pm, SWITCH_OFF);
+    }
+    if ((pmState == PM_STATE_RAMP_5V)
+            || (pmState == PM_STATE_RAMP)) {
         runMon(&dev.pm);
     } else
         if (pmState == PM_STATE_RUN) {
@@ -141,9 +186,10 @@ static void task_pm (void)
 
         }
         else  {
-            struct_powermon_init(&dev.pm);
+            monClearMeasurements(&dev.pm);
         }
     if ((pmState == PM_STATE_RUN)
+            && (getMonStateTicks(&dev.pm) > THERM_SETTLE_TICKS)
             && getSensorIsValid_5V(&dev.pm)) {
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
@@ -155,7 +201,7 @@ static void task_pm (void)
     }
 
     if (oldState != pmState) {
-        stateStartTick = HAL_GetTick();
+        stateStartTick = osKernelSysTick();
     }
 }
 
@@ -171,7 +217,7 @@ static void unused1(void)
     time2 -= startTick;
     time3 -= startTick;
     time4 -= startTick;
-    printf(ANSI_NONE "%-8ld %-8ld %-8ld %-8ld \n",
+    printf(ANSI_CLEAR "%-8ld %-8ld %-8ld %-8ld \n",
            (uint32_t)((float)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
            (uint32_t)((float)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
            (uint32_t)((float)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),

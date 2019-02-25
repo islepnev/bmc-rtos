@@ -36,6 +36,7 @@
 #include "dev_mcu.h"
 #include "dev_leds.h"
 #include "devices.h"
+#include "version.h"
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
@@ -81,32 +82,60 @@ static const char *mainStateStr(MainState state)
     }
 }
 
+static void dev_thset_print(const Dev_thset *d)
+{
+    printf("Temp: ");
+    for (int i=0; i<DEV_THERM_COUNT; i++) {
+        print_adt7301_value(d->th[i].rawTemp);
+        printf(" ");
+    }
+    const SensorStatus status = dev_thset_thermStatus(d);
+    printf("%s\n", sensorStatusStr(status));
+}
+
+void dev_print_thermometers(const Devices *dev)
+{
+    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+        dev_thset_print(&dev->thset);
+    } else {
+        printf("Temp: no power\n");
+    }
+}
+
 static void update_display(const Devices * dev)
 {
     printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
-
-    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
+    uint32_t uptimeSec = osKernelSysTick() / osKernelSysTickFrequency;
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
+    printf("     Uptime: %-8ld", uptimeSec);
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+    if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
            HAL_GetHalVersion(),
            HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
            );
-    printf("Uptime: %-8ld PmLoop %-8ld Mainloop %-8ld DisplayUpdate %-6ld\n",
-           HAL_GetTick() / getTickFreqHz(),
+    if (0) printf("PmLoop %-8ld Mainloop %-8ld DisplayUpdate %-6ld\n",
            getPmLoopCount(),
            getMainLoopCount(),
            displayUpdateCount);
     printf("\n");
-    printf("Powermon state: %s\n", pmStateStr(getPmState()));
+    const PmState pmState = getPmState();
+    printf("Powermon state: %s\n", pmStateStr(pmState));
     print_pm_switches(dev->pm.sw);
-    SensorStatus sensors = pm_sensors_getStatus(&dev->pm);
-    printf("System power supplies: %s\n", sensorStatusStr(sensors));
     pm_pgood_print(dev->pm);
+    if (pmState == PM_STATE_RAMP || pmState == PM_STATE_RUN) {
+        SensorStatus sensors = pm_sensors_getStatus(&dev->pm);
+        printf("System power supplies: %s\n", sensorStatusStr(sensors));
+        printf("\n");
+        monPrintValues(&dev->pm);
+        dev_print_thermometers(dev);
+    }
+    if (getMainState() == MAIN_STATE_RUN) {
+        printf("\n");
+        printf("Main state:     %s\n", mainStateStr(getMainState()));
+        devPrintStatus(dev);
+    }
     printf("\n");
-    monPrintValues(&dev->pm);
-    dev_print_thermometers(dev);
-    printf("\n");
-    printf("Main state:     %s\n", mainStateStr(getMainState()));
-    devPrintStatus(dev);
     fflush(stdout);
     displayUpdateCount++;
 }

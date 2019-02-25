@@ -57,6 +57,7 @@ void struct_powermon_init(Dev_powermon *d)
     d->monCycle = 0;
     struct_powermon_sensors_init(d);
 //    d->present = DEVICE_UNKNOWN;
+    d->vmePresent = 0;
     d->fpga_core_pgood = 0;
     d->ltm_pgood = 0;
     d->sw.switch_5v = 1;
@@ -65,14 +66,21 @@ void struct_powermon_init(Dev_powermon *d)
     d->sw.switch_1v0 = 1;
 }
 
-int readPowerGoodFpga(void)
+static int readPowerGoodFpga(void)
 {
     return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin));
 }
 
-int readPowerGood1v5(void)
+static int readPowerGood1v5(void)
 {
     return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin));
+}
+
+static int readLiveInsertPin(void)
+{
+    GPIO_PinState state;
+    state = HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    return (GPIO_PIN_RESET == state);
 }
 
 void print_pm_switches(const pm_switches sw)
@@ -82,6 +90,12 @@ void print_pm_switches(const pm_switches sw)
            sw.switch_3v3 ? STR_ON : STR_OFF,
            sw.switch_1v5 ? STR_ON : STR_OFF,
            sw.switch_1v0 ? STR_ON : STR_OFF);
+}
+
+int pm_read_liveInsert(Dev_powermon *pm)
+{
+    pm->vmePresent = readLiveInsertPin();
+    return pm->vmePresent;
 }
 
 void pm_read_pgood(Dev_powermon *pm)
@@ -117,6 +131,7 @@ void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 
 void pm_pgood_print(const Dev_powermon pm)
 {
+//    printf("Live insert: %s\n", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
     printf("Intermediate 1.5V: %s\n", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
     printf("FPGA Core 1.0V:    %s\n", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
 }
@@ -165,6 +180,13 @@ void monPrintValues(const Dev_powermon *d)
     }
 }
 
+void monClearMeasurements(Dev_powermon *d)
+{
+    for (int i=0; i<POWERMON_SENSORS; i++) {
+        struct_pm_sensor_clear_measurements(&d->sensors[i]);
+    }
+}
+
 int monDetect(Dev_powermon *d)
 {
     int count = 0;
@@ -189,6 +211,11 @@ int monReadValues(Dev_powermon *d)
 void pm_setStateStartTick(Dev_powermon *pm)
 {
     pm->stateStartTick = HAL_GetTick();
+}
+
+uint32_t getMonStateTicks(const Dev_powermon *pm)
+{
+    return HAL_GetTick() - pm->stateStartTick;
 }
 
 MonState runMon(Dev_powermon *pm)

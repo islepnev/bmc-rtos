@@ -25,6 +25,12 @@
 #include "i2c.h"
 #include "display.h"
 
+// Temperature limits
+static const int tempMinCrit = -40;
+static const int tempMaxCrit = 80.0;
+static const int tempMinWarn = 0.1;
+static const int tempMaxWarn = 60.0;
+
 void struct_thset_init(Dev_thset *d)
 {
     for (int i=0; i<DEV_THERM_COUNT; i++) {
@@ -189,60 +195,28 @@ PgoodState dev_readPgood(Dev_powermon *pm)
     return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
 }
 
-void dev_waitPgood(Devices *dev, SwitchOnOff state)
-{
-    update_power_switches(&dev->pm, state);
-    pm_read_pgood(&dev->pm);
-    if (state == SWITCH_ON) {
-        // Wait for PGOOD
-        const uint32_t PGOOD_TIMEOUT_MS = 100;
-        uint32_t tickStart = HAL_GetTick();
-        while (1) {
-            int pgood = dev_readPgood(&dev->pm);
-            if (pgood) {
-                break;
-            }
-            if ((HAL_GetTick() - tickStart) > PGOOD_TIMEOUT_MS) {
-                //             printf("No power %s\n", STR_FAIL);
-                break;
-            }
-        }
-    }
-//    pm_read_pgood(&dev->pm);
-//    pm_pgood_print(dev->pm);
-}
-
 static void dev_thset_read(Dev_thset *d)
 {
     for(int i=0; i<DEV_THERM_COUNT; i++)
         d->th[i].rawTemp = adt7301_read_temp(i);
 }
 
-static SensorStatus dev_thset_thermStatus(const Dev_thset *d)
+SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 {
+    SensorStatus maxStatus = SENSOR_NORMAL;
     for(int i=0; i<DEV_THERM_COUNT; i++) {
         int16_t temp = adt7301_convert_temp_adt7301_scale32(d->th[i].rawTemp);
         temp /= 32;
-        const int tempMinCrit = -40;
-        const int tempMaxCrit = 80.0;
-        if (temp < tempMinCrit || temp > tempMaxCrit)
-            return SENSOR_CRITICAL;
-        const int tempMinWarn = 0.1;
-        const int tempMaxWarn = 60.0;
-        if (temp < tempMinWarn || temp > tempMaxWarn)
-            return SENSOR_WARNING;
+        if (temp < tempMinCrit || temp > tempMaxCrit) {
+            if (SENSOR_CRITICAL > maxStatus)
+                maxStatus = SENSOR_CRITICAL;
+        }
+        if (temp < tempMinWarn || temp > tempMaxWarn) {
+            if (SENSOR_WARNING > maxStatus)
+                maxStatus = SENSOR_WARNING;
+        }
     }
-    return SENSOR_NORMAL;
-}
-
-static void dev_thset_print(const Dev_thset *d)
-{
-    printf("Temp: ");
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        print_adt7301_value(d->th[i].rawTemp);
-        printf(" ");
-    }
-    printf("%s\n", dev_thset_thermStatus(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    return maxStatus;
 }
 
 void dev_read_thermometers(Devices *dev)
@@ -250,14 +224,5 @@ void dev_read_thermometers(Devices *dev)
     if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
         for (int i=0; i<DEV_THERM_COUNT; i++)
             dev_thset_read(&dev->thset);
-    }
-}
-
-void dev_print_thermometers(const Devices *dev)
-{
-    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
-        dev_thset_print(&dev->thset);
-    } else {
-        printf("Temp: no power\n");
     }
 }
