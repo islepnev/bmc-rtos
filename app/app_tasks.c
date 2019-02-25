@@ -17,7 +17,9 @@
 
 #include "app_tasks.h"
 #include "app_task_heartbeat.h"
+#include "app_task_powermon_impl.h"
 #include "app_task_main.h"
+#include "app_task_display.h"
 
 #include <stdio.h>
 
@@ -26,7 +28,9 @@ void create_tasks(void)
     printf("Creating tasks...");
     fflush(stdout);
     create_task_heartbeat();
+    create_task_powermon();
     create_task_main();
+    create_task_display();
     printf("Ok\n");
     fflush(stdout);
 }

@@ -20,9 +20,8 @@
 #include <stdint.h>
 
 typedef enum {
-    SENSOR_UNKNOWN = 0,
-    SENSOR_NORMAL = 1,
-    SENSOR_WARNING = 2,
+    SENSOR_NORMAL   = 1, // numeric value used
+    SENSOR_WARNING  = 2,
     SENSOR_CRITICAL = 3
 } SensorStatus;
 

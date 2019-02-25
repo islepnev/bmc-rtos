@@ -15,28 +15,17 @@
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_MAIN_H
-#define APP_TASK_MAIN_H
-
-#include <stdint.h>
+#ifndef APP_TASK_DISPLAY_H
+#define APP_TASK_DISPLAY_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    MAIN_STATE_INIT,
-    MAIN_STATE_DETECT,
-    MAIN_STATE_RUN,
-    MAIN_STATE_ERROR
-} MainState;
-
-MainState getMainState(void);
-uint32_t getMainLoopCount(void);
-void create_task_main(void);
+void create_task_display(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_MAIN_H
+#endif // APP_TASK_DISPLAY_H

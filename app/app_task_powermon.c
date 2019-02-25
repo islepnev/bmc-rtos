@@ -12,31 +12,27 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_MAIN_H
-#define APP_TASK_MAIN_H
+#include "app_task_powermon.h"
 
-#include <stdint.h>
+#include "dev_powermon.h"
+#include "ansi_escape_codes.h"
+#include "app_shared_data.h"
+#include "app_task_powermon_impl.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
-    MAIN_STATE_INIT,
-    MAIN_STATE_DETECT,
-    MAIN_STATE_RUN,
-    MAIN_STATE_ERROR
-} MainState;
-
-MainState getMainState(void);
-uint32_t getMainLoopCount(void);
-void create_task_main(void);
-
-#ifdef __cplusplus
+PmState getPmState(void)
+{
+    return pmState;
 }
-#endif
 
-#endif // APP_TASK_MAIN_H
+Dev_powermon getPmData(void)
+{
+    return dev.pm;
+}
+
+uint32_t getPmLoopCount(void)
+{
+    return pmLoopCount;
+}

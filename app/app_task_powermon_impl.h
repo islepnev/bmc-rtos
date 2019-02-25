@@ -15,28 +15,22 @@
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_MAIN_H
-#define APP_TASK_MAIN_H
+#ifndef APP_TASK_POWERMON_IMPL_H
+#define APP_TASK_POWERMON_IMPL_H
 
-#include <stdint.h>
+#include "app_task_powermon.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    MAIN_STATE_INIT,
-    MAIN_STATE_DETECT,
-    MAIN_STATE_RUN,
-    MAIN_STATE_ERROR
-} MainState;
+extern PmState pmState;
+extern uint32_t pmLoopCount;
 
-MainState getMainState(void);
-uint32_t getMainLoopCount(void);
-void create_task_main(void);
+void create_task_powermon(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_MAIN_H
+#endif // APP_TASK_POWERMON_IMPL_H

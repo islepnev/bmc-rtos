@@ -117,16 +117,26 @@ void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 
 void pm_pgood_print(const Dev_powermon pm)
 {
-    printf("Intermediate 1.5V: %s\n", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_FAIL : STR_RESULT_OFF);
-    printf("FPGA Core 1.0V:    %s\n", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_FAIL : STR_RESULT_OFF);
+    printf("Intermediate 1.5V: %s\n", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("FPGA Core 1.0V:    %s\n", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
 }
 
-int getPowerMonState(const Dev_powermon *d)
+int pm_sensors_isAllValid(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
         if (!pm_sensor_isValid(d->sensors[i]))
             return 0;
     return 1;
+}
+SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
+{
+    SensorStatus maxStatus = SENSOR_NORMAL;
+    for (int i=0; i < POWERMON_SENSORS; i++) {
+        SensorStatus status = pm_sensor_status(d->sensors[i]);
+        if (status > maxStatus)
+            maxStatus = status;
+    }
+    return maxStatus;
 }
 
 const char *monStateStr(MonState monState)
@@ -142,7 +152,7 @@ const char *monStateStr(MonState monState)
 
 void monPrintValues(const Dev_powermon *d)
 {
-    printf("Mon state: %s %s", monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
+    printf("Sensors state:  %s %s", monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
     if (d->monErrors)
         printf("     %d errors", d->monErrors);
     printf("\n");

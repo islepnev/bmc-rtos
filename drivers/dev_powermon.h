@@ -70,7 +70,8 @@ int monIsOn(const pm_switches sw, SensorIndex index);
 void monPrintValues(const Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
-int getPowerMonState(const Dev_powermon *d);
+int pm_sensors_isAllValid(const Dev_powermon *d);
+SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 MonState runMon(Dev_powermon *pm);
 int getSensorIsValid_5V(const Dev_powermon *pm);
 

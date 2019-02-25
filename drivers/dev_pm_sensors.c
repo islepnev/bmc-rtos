@@ -23,45 +23,85 @@
 #include "ftoa.h"
 #include "dev_mcu.h"
 
-const float SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
+//const float SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
 const float SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
 
 float monShuntVal(SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return 0.002;
-    case SENSOR_5V: return 0;
-    case SENSOR_VME_5V: return 0.010;
-    case SENSOR_3V3: return 0;
-    case SENSOR_VME_3V3: return 0.004;
+    case SENSOR_1V5:           return 0.002;
+    case SENSOR_5V:            return 0;
+    case SENSOR_VME_5V:        return 0.010;
+    case SENSOR_3V3:           return 0;
+    case SENSOR_VME_3V3:       return 0.004;
     case SENSOR_FPGA_CORE_1V0: return 0.002;
-    case SENSOR_FPGA_MGT_1V0: return 0.002;
-    case SENSOR_FPGA_MGT_1V2: return 0.002;
-    case SENSOR_FPGA_1V8: return 0.002;
-    case SENSOR_TDC_A: return 0.002;
-    case SENSOR_TDC_B: return 0.002;
-    case SENSOR_TDC_C: return 0.002;
-    case SENSOR_CLOCK_2V5: return 0.002;
+    case SENSOR_FPGA_MGT_1V0:  return 0.002;
+    case SENSOR_FPGA_MGT_1V2:  return 0.002;
+    case SENSOR_FPGA_1V8:      return 0.002;
+    case SENSOR_TDC_A:         return 0.002;
+    case SENSOR_TDC_B:         return 0.002;
+    case SENSOR_TDC_C:         return 0.002;
+    case SENSOR_CLOCK_2V5:     return 0.002;
     }
     return 0;
 }
 
-float monBusNom(SensorIndex index)
+float monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return 1.5;
-    case SENSOR_5V: return 5.0;
-    case SENSOR_VME_5V: return 5.0;
-    case SENSOR_3V3: return 3.3;
-    case SENSOR_VME_3V3: return 3.3;
+    case SENSOR_1V5:           return 0.03;
+    case SENSOR_5V:            return 0.1;
+    case SENSOR_VME_5V:        return 0.1;
+    case SENSOR_3V3:           return 0.1;
+    case SENSOR_VME_3V3:       return 0.1;
+    case SENSOR_FPGA_CORE_1V0: return 0.03;
+    case SENSOR_FPGA_MGT_1V0:  return 0.03;
+    case SENSOR_FPGA_MGT_1V2:  return 0.03;
+    case SENSOR_FPGA_1V8:      return 0.03;
+    case SENSOR_TDC_A:         return 0.1;
+    case SENSOR_TDC_B:         return 0.1;
+    case SENSOR_TDC_C:         return 0.1;
+    case SENSOR_CLOCK_2V5:     return 0.03;
+    }
+    return 0;
+}
+
+float monVoltageMarginCrit(SensorIndex index)
+{
+    switch(index) {
+    case SENSOR_1V5:           return 0.1;
+    case SENSOR_5V:            return 0.15;
+    case SENSOR_VME_5V:        return 0.15;
+    case SENSOR_3V3:           return 0.15;
+    case SENSOR_VME_3V3:       return 0.15;
+    case SENSOR_FPGA_CORE_1V0: return 0.05;
+    case SENSOR_FPGA_MGT_1V0:  return 0.05;
+    case SENSOR_FPGA_MGT_1V2:  return 0.05;
+    case SENSOR_FPGA_1V8:      return 0.05;
+    case SENSOR_TDC_A:         return 0.15;
+    case SENSOR_TDC_B:         return 0.15;
+    case SENSOR_TDC_C:         return 0.15;
+    case SENSOR_CLOCK_2V5:     return 0.05;
+    }
+    return 0;
+}
+
+float monVoltageNom(SensorIndex index)
+{
+    switch(index) {
+    case SENSOR_1V5:           return 1.5;
+    case SENSOR_5V:            return 5.0;
+    case SENSOR_VME_5V:        return 5.0;
+    case SENSOR_3V3:           return 3.3;
+    case SENSOR_VME_3V3:       return 3.3;
     case SENSOR_FPGA_CORE_1V0: return 1.0;
-    case SENSOR_FPGA_MGT_1V0: return 1.0;
-    case SENSOR_FPGA_MGT_1V2: return 1.2;
-    case SENSOR_FPGA_1V8: return 1.8;
-    case SENSOR_TDC_A: return 2.5;
-    case SENSOR_TDC_B: return 2.5;
-    case SENSOR_TDC_C: return 2.5;
-    case SENSOR_CLOCK_2V5: return 2.5;
+    case SENSOR_FPGA_MGT_1V0:  return 1.0;
+    case SENSOR_FPGA_MGT_1V2:  return 1.2;
+    case SENSOR_FPGA_1V8:      return 1.8;
+    case SENSOR_TDC_A:         return 2.6;
+    case SENSOR_TDC_B:         return 2.6;
+    case SENSOR_TDC_C:         return 2.6;
+    case SENSOR_CLOCK_2V5:     return 2.5;
     }
     return 0;
 }
@@ -69,19 +109,19 @@ float monBusNom(SensorIndex index)
 int sensorBusAddress(SensorIndex index)
 {
     switch (index) {
-    case SENSOR_1V5: return 0x40;
-    case SENSOR_5V: return 0x42;
-    case SENSOR_VME_5V: return 0x43;
-    case SENSOR_3V3: return 0x44;
-    case SENSOR_VME_3V3: return 0x45;
+    case SENSOR_1V5:           return 0x40;
+    case SENSOR_5V:            return 0x42;
+    case SENSOR_VME_5V:        return 0x43;
+    case SENSOR_3V3:           return 0x44;
+    case SENSOR_VME_3V3:       return 0x45;
     case SENSOR_FPGA_CORE_1V0: return 0x46;
-    case SENSOR_FPGA_MGT_1V0: return 0x47;
-    case SENSOR_FPGA_MGT_1V2: return 0x48;
-    case SENSOR_FPGA_1V8: return 0x4A;
-    case SENSOR_TDC_A: return 0x4B;
-    case SENSOR_TDC_B: return 0x4C;
-    case SENSOR_TDC_C: return 0x4D;
-    case SENSOR_CLOCK_2V5: return 0x4E;
+    case SENSOR_FPGA_MGT_1V0:  return 0x47;
+    case SENSOR_FPGA_MGT_1V2:  return 0x48;
+    case SENSOR_FPGA_1V8:      return 0x4A;
+    case SENSOR_TDC_A:         return 0x4B;
+    case SENSOR_TDC_B:         return 0x4C;
+    case SENSOR_TDC_C:         return 0x4D;
+    case SENSOR_CLOCK_2V5:     return 0x4E;
     }
     return 0;
 }
@@ -89,19 +129,19 @@ int sensorBusAddress(SensorIndex index)
 const char *monLabel(SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return "  int 1.5V"; // U1, ? mOhm
-    case SENSOR_5V: return "        5V"; // U3
-    case SENSOR_VME_5V: return "    VME 5V"; // U5, 10 mOhm
-    case SENSOR_3V3: return "      3.3V"; // U7
-    case SENSOR_VME_3V3: return "  VME 3.3V"; // U9, 4 mOhm
+    case SENSOR_1V5:           return "  int 1.5V"; // U1, ? mOhm
+    case SENSOR_5V:            return "        5V"; // U3
+    case SENSOR_VME_5V:        return "    VME 5V"; // U5, 10 mOhm
+    case SENSOR_3V3:           return "      3.3V"; // U7
+    case SENSOR_VME_3V3:       return "  VME 3.3V"; // U9, 4 mOhm
     case SENSOR_FPGA_CORE_1V0: return "  FPGA 1.0"; // U11, 2 mOhm
-    case SENSOR_FPGA_MGT_1V0: return "   MGT 1.0"; // U13, 2 mOhm
-    case SENSOR_FPGA_MGT_1V2: return "   MGT 1.2"; // U2, 2 mOhm
-    case SENSOR_FPGA_1V8: return "  FPGA 1.8"; // U, 2 mOhm
-    case SENSOR_TDC_A: return " TDC-A 2.5"; // U, 2 mOhm
-    case SENSOR_TDC_B: return " TDC-B 2.5"; // U, 2 mOhm
-    case SENSOR_TDC_C: return " TDC-C 2.5"; // U, 2 mOhm
-    case SENSOR_CLOCK_2V5: return " Clock 2.5"; // U, 2 mOhm
+    case SENSOR_FPGA_MGT_1V0:  return "   MGT 1.0"; // U13, 2 mOhm
+    case SENSOR_FPGA_MGT_1V2:  return "   MGT 1.2"; // U2, 2 mOhm
+    case SENSOR_FPGA_1V8:      return "  FPGA 1.8"; // U, 2 mOhm
+    case SENSOR_TDC_A:         return " TDC-A 2.5"; // U, 2 mOhm
+    case SENSOR_TDC_B:         return " TDC-B 2.5"; // U, 2 mOhm
+    case SENSOR_TDC_C:         return " TDC-C 2.5"; // U, 2 mOhm
+    case SENSOR_CLOCK_2V5:     return " Clock 2.5"; // U, 2 mOhm
     }
     return "???";
 }
@@ -115,13 +155,14 @@ void struct_pm_sensor_clear_measurements(pm_sensor *d)
 
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
+    d->index = index;
     d->deviceStatus = DEVICE_UNKNOWN;
-    d->sensorStatus = SENSOR_UNKNOWN;
+    d->sensorStatus = SENSOR_NORMAL;
     d->lastStatusUpdatedTick = 0;
     d->busAddress = sensorBusAddress(index);
     d->hasShunt = monShuntVal(index) > 1e-6f;
     d->shuntVal = monShuntVal(index);
-    d->busNomVoltage = monBusNom(index);
+    d->busNomVoltage = monVoltageNom(index);
     d->label = monLabel(index);
     struct_pm_sensor_clear_measurements(d);
 }
@@ -133,16 +174,16 @@ SensorStatus pm_sensor_status(const pm_sensor d)
 //        return SENSOR_UNKNOWN;
 //    }
 
-    float bus = d.busVoltage;
-    float marginLo1 = d.busNomVoltage * (1-SENSOR_VOLTAGE_MARGIN_WARN);
-    float marginHi1 = d.busNomVoltage * (1+SENSOR_VOLTAGE_MARGIN_WARN);
-    float marginLo2 = d.busNomVoltage * (1-SENSOR_VOLTAGE_MARGIN_CRIT);
-    float marginHi2 = d.busNomVoltage * (1+SENSOR_VOLTAGE_MARGIN_CRIT);
-    int inRange1 = (bus > marginLo1) && (bus < marginHi1);
-    int inRange2 = (bus > marginLo2) && (bus < marginHi2);
-    if (inRange1 && inRange2)
+    float V = d.busVoltage;
+    float VMinWarn = d.busNomVoltage * (1-monVoltageMarginWarn(d.index));
+    float VMaxWarn = d.busNomVoltage * (1+monVoltageMarginWarn(d.index));
+    float VMinCrit = d.busNomVoltage * (1-monVoltageMarginCrit(d.index));
+    float VMaxCrit = d.busNomVoltage * (1+monVoltageMarginCrit(d.index));
+    int VNorm = (V > VMinWarn) && (V < VMaxWarn);
+    int VWarn = (V > VMinCrit) && (V < VMaxCrit);
+    if (VNorm && VWarn)
         return SENSOR_NORMAL;
-    if (inRange2)
+    if (VWarn)
         return SENSOR_WARNING;
 //    int isOn = 1; // FIXME: monIsOn(deviceAddr);
 //    return isOn ? inRange2 : 1;
@@ -206,7 +247,6 @@ void pm_sensor_print(const pm_sensor d, int isOn)
     SensorStatus status = pm_sensor_status(d);
     const char *color = "";
     switch (status) {
-    case SENSOR_UNKNOWN: break;
     case SENSOR_NORMAL: color = ANSI_GREEN; break;
     case SENSOR_WARNING: color = ANSI_YELLOW; break;
     case SENSOR_CRITICAL: color = ANSI_RED; break;
@@ -259,7 +299,7 @@ int pm_sensor_read(pm_sensor *d)
     }
     if (err) {
         pm_sensor_set_deviceStatus(d, err ? DEVICE_FAIL : DEVICE_NORMAL);
-        pm_sensor_set_sensorStatus(d, SENSOR_UNKNOWN);
+        pm_sensor_set_sensorStatus(d, SENSOR_NORMAL);
     } else {
         pm_sensor_set_sensorStatus(d, pm_sensor_status(*d));
     }
