@@ -42,6 +42,12 @@ uint32_t pmLoopCount = 0;
 
 PmState pmState = PM_STATE_INIT;
 
+static const uint32_t sensorReadInterval = 100;
+static uint32_t sensorReadTick = 0;
+
+static const uint32_t thermReadInterval = 300;
+static uint32_t thermReadTick = 0;
+
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
@@ -52,7 +58,6 @@ static void task_pm (void)
 {
     pmLoopCount++;
     const PmState oldState = pmState;
-    led_toggle(LED_YELLOW);
     int pgood = dev_readPgood(&dev.pm);
     int power_5v_ok = (pgood
                     && (dev.pm.monState == MON_STATE_READ)
@@ -121,17 +126,30 @@ static void task_pm (void)
     }
 
     dev_led_set(&dev.leds, LED_RED, pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR);
+    dev_led_set(&dev.leds, LED_YELLOW, pmState != PM_STATE_RUN);
 
     if (pmState == PM_STATE_RAMP_5V
-            || pmState == PM_STATE_RAMP
-            || pmState == PM_STATE_RUN) {
+            || pmState == PM_STATE_RAMP) {
         runMon(&dev.pm);
-    } else {
-        struct_powermon_init(&dev.pm);
-    }
+    } else
+        if (pmState == PM_STATE_RUN) {
+            uint32_t ticks = osKernelSysTick() - sensorReadTick;
+            if (ticks > sensorReadInterval) {
+                sensorReadTick = osKernelSysTick();
+                runMon(&dev.pm);
+            }
+
+        }
+        else  {
+            struct_powermon_init(&dev.pm);
+        }
     if ((pmState == PM_STATE_RUN)
             && getSensorIsValid_5V(&dev.pm)) {
-        dev_read_thermometers(&dev);
+        uint32_t ticks = osKernelSysTick() - thermReadTick;
+        if (ticks > thermReadInterval) {
+            thermReadTick = osKernelSysTick();
+            dev_read_thermometers(&dev);
+        }
     } else {
         struct_thset_init(&dev.thset);
     }
@@ -139,11 +157,6 @@ static void task_pm (void)
     if (oldState != pmState) {
         stateStartTick = HAL_GetTick();
     }
-
-//    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
-
-//    int systemPowerState = getPowerMonState(&dev.pm);
-//    dev_led_set(&dev.leds, LED_RED, !systemPowerState);
 }
 
 static void unused1(void)
@@ -172,7 +185,7 @@ static void prvPowermonTask( void const *arg)
     while (1)
     {
         task_pm();
-        osDelay(5);
+        osDelay(2);
     }
 }
 

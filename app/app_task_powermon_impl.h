@@ -24,9 +24,8 @@
 extern "C" {
 #endif
 
-extern PmState pmState;
 extern uint32_t pmLoopCount;
-
+extern PmState pmState;
 void create_task_powermon(void);
 
 #ifdef __cplusplus

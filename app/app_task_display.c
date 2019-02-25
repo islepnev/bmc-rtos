@@ -44,7 +44,7 @@
 static const int displayThreadStackSize = 1000;
 
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayUpdateInterval = 300;
+static const uint32_t displayUpdateInterval = 1000;
 
 static const char *pmStateStr(PmState state)
 {
