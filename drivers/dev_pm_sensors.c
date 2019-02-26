@@ -57,7 +57,7 @@ float monVoltageMarginWarn(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.03;
     case SENSOR_FPGA_MGT_1V0:  return 0.03;
     case SENSOR_FPGA_MGT_1V2:  return 0.03;
-    case SENSOR_FPGA_1V8:      return 0.03;
+    case SENSOR_FPGA_1V8:      return 0.05;
     case SENSOR_TDC_A:         return 0.1;
     case SENSOR_TDC_B:         return 0.1;
     case SENSOR_TDC_C:         return 0.1;
@@ -157,7 +157,7 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
     d->index = index;
     d->deviceStatus = DEVICE_UNKNOWN;
-    d->sensorStatus = SENSOR_NORMAL;
+    d->sensorStatus = SENSOR_CRITICAL;
     d->lastStatusUpdatedTick = 0;
     d->busAddress = sensorBusAddress(index);
     d->hasShunt = monShuntVal(index) > 1e-6f;
@@ -167,18 +167,18 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     struct_pm_sensor_clear_measurements(d);
 }
 
-SensorStatus pm_sensor_status(const pm_sensor d)
+SensorStatus pm_sensor_status(const pm_sensor *d)
 {
-//    if (d.status != DEVICE_UNKNOWN) {
-//        printf("%s: device unknown\n", d.label);
-//        return SENSOR_UNKNOWN;
-//    }
+    if (d->deviceStatus != DEVICE_NORMAL) {
+//        printf("%s: device unknown\n", d->label);
+        return SENSOR_CRITICAL;
+    }
 
-    float V = d.busVoltage;
-    float VMinWarn = d.busNomVoltage * (1-monVoltageMarginWarn(d.index));
-    float VMaxWarn = d.busNomVoltage * (1+monVoltageMarginWarn(d.index));
-    float VMinCrit = d.busNomVoltage * (1-monVoltageMarginCrit(d.index));
-    float VMaxCrit = d.busNomVoltage * (1+monVoltageMarginCrit(d.index));
+    float V = d->busVoltage;
+    float VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
+    float VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
+    float VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
+    float VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
     int VNorm = (V > VMinWarn) && (V < VMaxWarn);
     int VWarn = (V > VMinCrit) && (V < VMaxCrit);
     if (VNorm && VWarn)
@@ -191,7 +191,7 @@ SensorStatus pm_sensor_status(const pm_sensor d)
 }
 
 
-int pm_sensor_isValid(const pm_sensor d)
+int pm_sensor_isValid(const pm_sensor *d)
 {
     SensorStatus status = pm_sensor_status(d);
     if (status == SENSOR_NORMAL || status == SENSOR_WARNING)
@@ -218,32 +218,24 @@ void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
     }
 }
 
-uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor d)
+static uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
 {
-    return HAL_GetTick() - d.lastStatusUpdatedTick;
+    return HAL_GetTick() - d->lastStatusUpdatedTick;
 }
 
-void pm_sensor_print(const pm_sensor d, int isOn)
+void pm_sensor_print(const pm_sensor *d, int isOn)
 {
-    printf("%6s: ", d.label);
-    if (d.deviceStatus == DEVICE_UNKNOWN) {
+    printf("%6s: ", d->label);
+    if (d->deviceStatus == DEVICE_UNKNOWN) {
         printf("DEVICE_UNKNOWN");
     }
-    if (d.deviceStatus == DEVICE_FAIL) {
+    if (d->deviceStatus == DEVICE_FAIL) {
         printf("DEVICE_FAIL");
     }
     const int fractdigits = 3;
     char str1[10], str3[10];
     //    char str2[10];
-    ftoa(d.busVoltage, str1, fractdigits);
-    //            float marginLo1 = d.busNomVoltage * (1-TOLERANCE_1);
-    //            float marginHi1 = d.busNomVoltage * (1+TOLERANCE_1);
-    //            float marginLo2 = d.busNomVoltage * (1-TOLERANCE_CRIT);
-    //            float marginHi2 = d.busNomVoltage * (1+TOLERANCE_CRIT);
-    //            int inRange1 = (d.busVoltage > marginLo1) && (d.busVoltage < marginHi1);
-    //            int inRange2 = (d.busVoltage > marginLo2) && (d.busVoltage < marginHi2);
-    //            int isOn = 1; // FIXME: monIsOn(deviceAddr);
-    //            printf("%s%8s%s", inRange1 ? ANSI_GREEN : inRange2 ? ANSI_YELLOW : isOn ? ANSI_RED : ANSI_GRAY, str1, ANSI_CLEAR);
+    ftoa(d->busVoltage, str1, fractdigits);
     SensorStatus status = pm_sensor_status(d);
     const char *color = "";
     switch (status) {
@@ -252,9 +244,9 @@ void pm_sensor_print(const pm_sensor d, int isOn)
     case SENSOR_CRITICAL: color = ANSI_RED; break;
     }
     printf("%s%8s%s", color, str1, ANSI_CLEAR);
-    if (d.shuntVal > 0) {
+    if (d->shuntVal > 0) {
         //        ftoa(shunt * 1e3, str2, fractdigits); // mV
-        ftoa(d.shuntVoltage / d.shuntVal, str3, fractdigits);
+        ftoa(d->shuntVoltage / d->shuntVal, str3, fractdigits);
         printf(" %8s", str3);
     } else {
         printf("         ");
@@ -301,7 +293,7 @@ int pm_sensor_read(pm_sensor *d)
         pm_sensor_set_deviceStatus(d, err ? DEVICE_FAIL : DEVICE_NORMAL);
         pm_sensor_set_sensorStatus(d, SENSOR_NORMAL);
     } else {
-        pm_sensor_set_sensorStatus(d, pm_sensor_status(*d));
+        pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
     }
     //        printMonValue(deviceAddr, busVolt * 1.25e-3, shuntVolt * 2.5e-6, monShuntVal[i]);
     return err;

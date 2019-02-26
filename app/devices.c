@@ -221,7 +221,7 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 
 void dev_read_thermometers(Devices *dev)
 {
-    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+    if (pm_sensor_isValid(&dev->pm.sensors[SENSOR_VME_5V])) { // 5V
         for (int i=0; i<DEV_THERM_COUNT; i++)
             dev_thset_read(&dev->thset);
     }

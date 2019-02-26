@@ -23,7 +23,7 @@
 #endif
 
 #define APP_NAME_STR "TDC72VXS4 BMC"
-#define VERSION_STR "1.1"
+#define VERSION_STR "1.2"
 
 #ifdef __cplusplus
 }

@@ -107,10 +107,10 @@ void pm_read_pgood(Dev_powermon *pm)
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 {
 //    pm_read_pgood(pm);
-    pm->sw.switch_5v  = state; // monBusValid(0x43); // && monBusValid(0x45); // VME 5V and 3.3V
+    pm->sw.switch_5v  = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]); // VME 5V and 3.3V
     pm->sw.switch_1v5 = state; // monBusValid(0x42); // 5V
-    pm->sw.switch_1v0 = state; //pm->ltm_pgood; // && monBusValid(0x40); // 1.5V
-    pm->sw.switch_3v3 = state; // pm->fpga_core_pgood && pm->sw.switch_1v0 && pm->sw.switch_1v5; // && monBusValid(0x45);
+    pm->sw.switch_1v0 = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_1V5]); //pm->ltm_pgood; // 1.5V
+    pm->sw.switch_3v3 = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_VME_3V3]); // pm->fpga_core_pgood && pm->sw.switch_1v0 && pm->sw.switch_1v5;
     if (!pm->sw.switch_5v) {
         pm->sw.switch_3v3 = 0;
         pm->sw.switch_1v5 = 0;
@@ -139,7 +139,7 @@ void pm_pgood_print(const Dev_powermon pm)
 int pm_sensors_isAllValid(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
-        if (!pm_sensor_isValid(d->sensors[i]))
+        if (!pm_sensor_isValid(&d->sensors[i]))
             return 0;
     return 1;
 }
@@ -147,7 +147,7 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        SensorStatus status = pm_sensor_status(d->sensors[i]);
+        SensorStatus status = pm_sensor_status(&d->sensors[i]);
         if (status > maxStatus)
             maxStatus = status;
     }
@@ -175,7 +175,7 @@ void monPrintValues(const Dev_powermon *d)
         for (int i=0; i<POWERMON_SENSORS; i++) {
 //            uint16_t deviceAddr = monAddr[i];
 //            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
-            pm_sensor_print(d->sensors[i], monIsOn(d->sw, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, i));
         }
     }
 }
@@ -257,5 +257,5 @@ MonState runMon(Dev_powermon *pm)
 
 int getSensorIsValid_5V(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(pm->sensors[SENSOR_5V]);
+    return pm_sensor_isValid(&pm->sensors[SENSOR_5V]);
 }

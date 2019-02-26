@@ -95,7 +95,7 @@ static void dev_thset_print(const Dev_thset *d)
 
 void dev_print_thermometers(const Devices *dev)
 {
-    if (pm_sensor_isValid(dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+    if (pm_sensor_isValid(&dev->pm.sensors[SENSOR_VME_5V])) { // 5V
         dev_thset_print(&dev->thset);
     } else {
         printf("Temp: no power\n");
