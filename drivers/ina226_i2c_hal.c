@@ -41,3 +41,14 @@ HAL_StatusTypeDef ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *d
     }
     return ret;
 }
+
+HAL_StatusTypeDef ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data)
+{
+    HAL_StatusTypeDef ret;
+    int Size = 2;
+    uint8_t pData[Size];
+    pData[0] = (data >> 8) & 0xFF;
+    pData[1] = data & 0xFF;
+    ret = HAL_I2C_Mem_Write(&hi2c4, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    return ret;
+}
