@@ -65,11 +65,8 @@ void struct_powermon_init(Dev_powermon *d);
 //int readPowerGood1v5();
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
-void print_pm_switches(const pm_switches sw);
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state);
-void pm_pgood_print(const Dev_powermon pm);
 int monIsOn(const pm_switches sw, SensorIndex index);
-void monPrintValues(const Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
@@ -78,6 +75,7 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 int getSensorIsValid_5V(const Dev_powermon *pm);
+int getSensorIsValid_3V3(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

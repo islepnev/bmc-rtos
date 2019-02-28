@@ -21,7 +21,7 @@
 #include "cmsis_os.h"
 #include "dev_leds.h"
 
-static const int threadStackSize = 100;
+enum { threadStackSize = 100 };
 
 static const int mainQUEUE_SEND_FREQUENCY_MS = 200;
 

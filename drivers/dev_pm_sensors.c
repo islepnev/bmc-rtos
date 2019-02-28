@@ -74,7 +74,7 @@ float monVoltageMarginCrit(SensorIndex index)
     case SENSOR_VME_5V:        return 0.15;
     case SENSOR_3V3:           return 0.15;
     case SENSOR_VME_3V3:       return 0.15;
-    case SENSOR_FPGA_CORE_1V0: return 0.05;
+    case SENSOR_FPGA_CORE_1V0: return 0.08; // set to 8 %
     case SENSOR_FPGA_MGT_1V0:  return 0.05;
     case SENSOR_FPGA_MGT_1V2:  return 0.05;
     case SENSOR_FPGA_1V8:      return 0.05;
@@ -146,10 +146,16 @@ const char *monLabel(SensorIndex index)
     return "???";
 }
 
+void struct_pm_sensor_clear_minmax(pm_sensor *d)
+{
+    d->busVoltageMin = 0;
+    d->busVoltageMax = 0;
+    d->currentMin = 0;
+    d->currentMax = 0;
+}
 void struct_pm_sensor_clear_measurements(pm_sensor *d)
 {
     d->busVoltage = 0;
-    d->shuntVoltage = 0;
     d->current = 0;
 }
 
@@ -165,6 +171,7 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     d->busNomVoltage = monVoltageNom(index);
     d->label = monLabel(index);
     struct_pm_sensor_clear_measurements(d);
+    struct_pm_sensor_clear_minmax(d);
 }
 
 SensorStatus pm_sensor_status(const pm_sensor *d)
@@ -209,6 +216,24 @@ void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
     }
 }
 
+void pm_sensor_set_readVoltage(pm_sensor *d, float value)
+{
+    d->busVoltage = value;
+    if (value > d->busVoltageMax)
+        d->busVoltageMax = value;
+    if (value < d->busVoltageMin)
+        d->busVoltageMin = value;
+}
+
+void pm_sensor_set_readCurrent(pm_sensor *d, float value)
+{
+    d->current = value;
+    if (value > d->currentMax)
+        d->currentMax = value;
+    if (value < d->currentMin)
+        d->currentMin = value;
+}
+
 void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
 {
     SensorStatus oldStatus = d->sensorStatus;
@@ -218,42 +243,9 @@ void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
     }
 }
 
-static uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
+uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
 {
     return HAL_GetTick() - d->lastStatusUpdatedTick;
-}
-
-void pm_sensor_print(const pm_sensor *d, int isOn)
-{
-    printf("%6s: ", d->label);
-    if (d->deviceStatus == DEVICE_UNKNOWN) {
-        printf("DEVICE_UNKNOWN");
-    }
-    if (d->deviceStatus == DEVICE_FAIL) {
-        printf("DEVICE_FAIL");
-    }
-    const int fractdigits = 3;
-    char str1[10], str3[10];
-    //    char str2[10];
-    ftoa(d->busVoltage, str1, fractdigits);
-    SensorStatus status = pm_sensor_status(d);
-    const char *color = "";
-    switch (status) {
-    case SENSOR_NORMAL: color = ANSI_GREEN; break;
-    case SENSOR_WARNING: color = ANSI_YELLOW; break;
-    case SENSOR_CRITICAL: color = ANSI_RED; break;
-    }
-    printf("%s%8s%s", color, str1, ANSI_CLEAR);
-    if (d->shuntVal > 0) {
-        //        ftoa(shunt * 1e3, str2, fractdigits); // mV
-        ftoa(d->shuntVoltage / d->shuntVal, str3, fractdigits);
-        printf(" %8s", str3);
-    } else {
-        printf("         ");
-    }
-
-    printf(" %s   %ld\n", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF,
-           pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz());
 }
 
 int pm_sensor_detect(pm_sensor *d)
@@ -273,6 +265,18 @@ int pm_sensor_detect(pm_sensor *d)
     return detected;
 }
 
+typedef union {
+    struct {
+        unsigned int mode:3;
+        unsigned int vshct:3;
+        unsigned int vbusct:3;
+        unsigned int avg:3;
+        unsigned int reserved:3;
+        unsigned int rst:1;
+    } bit;
+    uint16_t raw;
+} configreg_t;
+
 int pm_sensor_read(pm_sensor *d)
 {
     int err = 0;
@@ -280,12 +284,35 @@ int pm_sensor_read(pm_sensor *d)
     uint16_t deviceAddr = d->busAddress;
     uint16_t data;
     if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &data)) {
-        d->busVoltage = (int16_t)data * 1.25e-3;
+        pm_sensor_set_readVoltage(d, (int16_t)data * 1.25e-3f);
     } else {
         err++;
     }
     if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &data)) {
-        d->shuntVoltage = (int16_t)data * 2.5e-6;
+        const float shuntVoltage = (int16_t)data * 2.5e-6f;
+        if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+            pm_sensor_set_readCurrent(d, shuntVoltage / d->shuntVal);
+        }
+    } else {
+        err++;
+    }
+    // default value 0x4127
+    configreg_t config;
+    config.bit.mode = 7;     // 7: Shunt and Bus, Continuous
+    config.bit.vshct = 4;    // 4: 1 ms
+    config.bit.vbusct = 4;   // 4: 1 ms
+    config.bit.avg = 1;      // 1: 4 averages
+    config.bit.reserved = 4; // should be 4
+    config.bit.rst = 0;      // 0: no reset
+    data = config.raw;
+    if (HAL_OK != ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data)) {
+        err++;
+    }
+    if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &data)) {
+        if (data != config.raw) {
+            printf("%04X != %04X\n", data, config.raw);
+            err++;
+        }
     } else {
         err++;
     }

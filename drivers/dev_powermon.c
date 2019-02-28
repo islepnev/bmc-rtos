@@ -83,15 +83,6 @@ static int readLiveInsertPin(void)
     return (GPIO_PIN_RESET == state);
 }
 
-void print_pm_switches(const pm_switches sw)
-{
-    printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s\n",
-           sw.switch_5v  ? STR_ON : STR_OFF,
-           sw.switch_3v3 ? STR_ON : STR_OFF,
-           sw.switch_1v5 ? STR_ON : STR_OFF,
-           sw.switch_1v0 ? STR_ON : STR_OFF);
-}
-
 int pm_read_liveInsert(Dev_powermon *pm)
 {
     pm->vmePresent = readLiveInsertPin();
@@ -129,13 +120,6 @@ void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
     HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        pm->sw.switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-void pm_pgood_print(const Dev_powermon pm)
-{
-//    printf("Live insert: %s\n", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
-    printf("Intermediate 1.5V: %s\n", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
-    printf("FPGA Core 1.0V:    %s\n", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
-}
-
 int pm_sensors_isAllValid(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
@@ -152,32 +136,6 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
             maxStatus = status;
     }
     return maxStatus;
-}
-
-const char *monStateStr(MonState monState)
-{
-    switch(monState) {
-    case MON_STATE_INIT: return "INIT";
-    case MON_STATE_DETECT: return "DETECT";
-    case MON_STATE_READ: return "READ";
-    case MON_STATE_ERROR: return "ERROR";
-    default: return "?";
-    }
-}
-
-void monPrintValues(const Dev_powermon *d)
-{
-    printf("Sensors state:  %s %s", monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
-    if (d->monErrors)
-        printf("     %d errors", d->monErrors);
-    printf("\n");
-    if (d->monState == MON_STATE_READ) {
-        for (int i=0; i<POWERMON_SENSORS; i++) {
-//            uint16_t deviceAddr = monAddr[i];
-//            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
-            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, i));
-        }
-    }
 }
 
 void monClearMeasurements(Dev_powermon *d)
@@ -258,4 +216,9 @@ MonState runMon(Dev_powermon *pm)
 int getSensorIsValid_5V(const Dev_powermon *pm)
 {
     return pm_sensor_isValid(&pm->sensors[SENSOR_5V]);
+}
+
+int getSensorIsValid_3V3(const Dev_powermon *pm)
+{
+    return pm_sensor_isValid(&pm->sensors[SENSOR_3V3]);
 }

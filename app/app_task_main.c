@@ -39,7 +39,7 @@
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
 
-static const int mainThreadStackSize = 1000;
+enum { mainThreadStackSize = 1000 };
 
 static uint32_t mainloopCount = 0;
 

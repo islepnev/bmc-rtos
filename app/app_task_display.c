@@ -37,15 +37,16 @@
 #include "dev_leds.h"
 #include "devices.h"
 #include "version.h"
+#include "logbuffer.h"
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
 #include "app_task_main.h"
 
-static const int displayThreadStackSize = 1000;
+enum { displayThreadStackSize = 1000 };
 
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayUpdateInterval = 1000;
+static const uint32_t displayUpdateInterval = 100;
 
 static const char *pmStateStr(PmState state)
 {
@@ -90,7 +91,7 @@ static void dev_thset_print(const Dev_thset *d)
         printf(" ");
     }
     const SensorStatus status = dev_thset_thermStatus(d);
-    printf("%s\n", sensorStatusStr(status));
+    printf("%s", sensorStatusStr(status));
 }
 
 void dev_print_thermometers(const Devices *dev)
@@ -98,16 +99,168 @@ void dev_print_thermometers(const Devices *dev)
     if (pm_sensor_isValid(&dev->pm.sensors[SENSOR_VME_5V])) { // 5V
         dev_thset_print(&dev->thset);
     } else {
-        printf("Temp: no power\n");
+        printf("Temp: no power");
     }
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void print_pm_switches(const pm_switches sw)
+{
+    printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s",
+           sw.switch_5v  ? STR_ON : STR_OFF,
+           sw.switch_3v3 ? STR_ON : STR_OFF,
+           sw.switch_1v5 ? STR_ON : STR_OFF,
+           sw.switch_1v0 ? STR_ON : STR_OFF);
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void pm_pgood_print(const Dev_powermon pm)
+{
+//    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
+//    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("Intermediate 1.5V: %s", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("FPGA Core 1.0V:    %s", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void pm_sensor_print(const pm_sensor *d, int isOn)
+{
+    printf("%6s: ", d->label);
+    if (isOn && d->deviceStatus != DEVICE_UNKNOWN) {
+        if (d->deviceStatus == DEVICE_FAIL) {
+            printf("FAIL");
+        }
+        const int fractdigits = 3;
+        char str1[10], str3[10];
+        //    char str2[10];
+        ftoa(d->busVoltage, str1, fractdigits);
+        SensorStatus status = pm_sensor_status(d);
+        const char *color = "";
+        switch (status) {
+        case SENSOR_NORMAL: color = ANSI_GREEN; break;
+        case SENSOR_WARNING: color = ANSI_YELLOW; break;
+        case SENSOR_CRITICAL: color = ANSI_RED; break;
+        }
+        printf("%s%8s%s", color, str1, ANSI_CLEAR);
+        if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+            ftoa(d->current, str3, fractdigits);
+            printf(" %8s", str3);
+            ftoa(d->currentMax, str3, fractdigits);
+            printf(" %8s", str3);
+        } else {
+            printf("         ");
+        }
+        printf(" %s   %ld", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF,
+               pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz());
+    } else {
+        printf(ANSI_CLEAR_EOL);
+    }
+}
+
+static const char *monStateStr(MonState monState)
+{
+    switch(monState) {
+    case MON_STATE_INIT: return "INIT";
+    case MON_STATE_DETECT: return "DETECT";
+    case MON_STATE_READ: return "READ";
+    case MON_STATE_ERROR: return "ERROR";
+    default: return "?";
+    }
+}
+
+void monPrintValues(const Dev_powermon *d)
+{
+    printf("Sensors state:  %s %s",
+           monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
+    if (d->monErrors)
+        printf("     %d errors", d->monErrors);
+    printf("%s\n", ANSI_CLEAR_EOL);
+//    if (d->monState == MON_STATE_READ)
+    {
+        for (int i=0; i<POWERMON_SENSORS; i++) {
+//            uint16_t deviceAddr = monAddr[i];
+//            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
+            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, i));
+            printf("%s\n", ANSI_CLEAR_EOL);
+        }
+    }
+}
+
+static void print_log_entry(uint32_t index)
+{
+    LogEntry ent;
+    log_get(index, &ent);
+    const char *prefix = "";
+    const char *suffix = ANSI_CLEAR_EOL ANSI_CLEAR;
+    switch (ent.priority) {
+    case LOG_DEBUG: break;
+    case LOG_INFO: break;
+    case LOG_NOTICE: break;
+    case LOG_WARNING: prefix = ANSI_YELLOW; break;
+    case LOG_ERR: prefix = ANSI_RED; break;
+    default: prefix = ANSI_PUR; break;
+    }
+    printf("%s%d %8ld.%03ld %s%s", prefix, ent.priority,
+           ent.tick/1000, ent.tick%1000, ent.str, suffix);
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+//static uint32_t log_rptr = 0;
+//static uint32_t log_n = 0;
+
+#define DISPLAY_POWERMON_Y 3
+#define DISPLAY_POWERMON_H 4
+#define DISPLAY_SENSORS_Y (1 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
+#define DISPLAY_SENSORS_H 16
+#define DISPLAY_MAIN_Y (1 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
+#define DISPLAY_MAIN_H 6
+#define DISPLAY_LOG_Y (1 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_LOG_H (LOG_BUF_SIZE)
+
+static void print_goto(int line, int col)
+{
+    printf("\x1B[%d;%dH", line, col);
+}
+
+static void print_clearbox(int line1, int height)
+{
+    for(int i=line1; i<line1+height; i++)
+        printf("\x1B[%d;H\x1B[K", i);
+}
+
+static void print_log_messages(void)
+{
+//    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
+    print_goto(DISPLAY_LOG_Y, 1);
+    const uint32_t log_count = log_get_count();
+    const uint32_t log_wptr = log_get_wptr();
+    if (log_count < LOG_BUF_SIZE) {
+        for (uint32_t i=0; i<log_wptr; i++)
+            print_log_entry(i);
+        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
+            printf("%s\n", ANSI_CLEAR_EOL);
+    } else {
+        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
+            print_log_entry(i);
+        for (uint32_t i=0; i<log_wptr; i++)
+            print_log_entry(i);
+    }
+//    char str[16];
+//    snprintf(str, 16, "%ld", log_n++);
+//    log_put(1, str);
 }
 
 static void update_display(const Devices * dev)
 {
-    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+    //    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+    printf(ANSI_GOHOME ANSI_CLEAR);
+    printf(CSI"?25l"); // hide cursor
+    // Title
     uint32_t uptimeSec = osKernelSysTick() / osKernelSysTickFrequency;
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
     printf("     Uptime: %-8ld", uptimeSec);
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
@@ -118,24 +271,37 @@ static void update_display(const Devices * dev)
            getPmLoopCount(),
            getMainLoopCount(),
            displayUpdateCount);
-    printf("\n");
+//    printf("\n");
+    // Powermon
     const PmState pmState = getPmState();
-    printf("Powermon state: %s\n", pmStateStr(pmState));
+//    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
+    print_goto(DISPLAY_POWERMON_Y, 1);
+    printf("Powermon state: %s", pmStateStr(pmState));
+    printf("%s\n", ANSI_CLEAR_EOL);
     print_pm_switches(dev->pm.sw);
     pm_pgood_print(dev->pm);
-    if (pmState == PM_STATE_RAMP || pmState == PM_STATE_RUN) {
+    printf("%s\n", ANSI_CLEAR_EOL);
+    // Sensors
+//    print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
+    print_goto(DISPLAY_SENSORS_Y, 1);
+//    if (pmState == PM_STATE_RAMP || pmState == PM_STATE_RUN) {
         SensorStatus sensors = pm_sensors_getStatus(&dev->pm);
         printf("System power supplies: %s\n", sensorStatusStr(sensors));
-        printf("\n");
+//        printf("\n");
         monPrintValues(&dev->pm);
         dev_print_thermometers(dev);
-    }
+//    }
+    printf("%s\n", ANSI_CLEAR_EOL);
+//    print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
+    print_goto(DISPLAY_MAIN_Y, 1);
     if (getMainState() == MAIN_STATE_RUN) {
-        printf("\n");
-        printf("Main state:     %s\n", mainStateStr(getMainState()));
+        printf("Main state:     %s", mainStateStr(getMainState()));
+        printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
+        printf("%s\n", ANSI_CLEAR_EOL);
     }
-    printf("\n");
+    print_log_messages();
+    printf(CSI"?25h"); // show cursor
     fflush(stdout);
     displayUpdateCount++;
 }
@@ -143,6 +309,7 @@ static void update_display(const Devices * dev)
 static void displayTask(void const *arg)
 {
     (void) arg;
+    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
     while(1) {
         update_display(&dev);
         osDelay(displayUpdateInterval);
