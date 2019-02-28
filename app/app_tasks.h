@@ -18,9 +18,20 @@
 #ifndef APP_TASKS_H
 #define APP_TASKS_H
 
+#include "cmsis_os.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum {
+    SIGNAL_REFRESH_DISPLAY = 1000,
+    SIGNAL_POWER_ON = 1001,
+    SIGNAL_POWER_OFF = 1002,
+};
+extern osThreadId powermonThreadId;
+extern osThreadId displayThreadId;
+extern osThreadId keyboardThreadId;
 
 void create_tasks(void);
 

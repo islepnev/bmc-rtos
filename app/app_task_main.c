@@ -22,7 +22,7 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 
-//#include "fpga_spi_hal.h"
+#include "dev_fpga.h"
 //#include "adt7301_spi_hal.h"
 //#include "pca9548_i2c_hal.h"
 //#include "ina226_i2c_hal.h"
@@ -35,6 +35,7 @@
 //#include "dev_mcu.h"
 //#include "dev_leds.h"
 #include "devices.h"
+#include "version.h"
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
@@ -105,6 +106,9 @@ static void task_main (void)
     }
     if (mainState == MAIN_STATE_DETECT || mainState == MAIN_STATE_RUN) {
         devDetect(&dev);
+        fpgaWriteBmcVersion();
+        fpgaWriteBmcTemperature(&dev.thset);
+
     } else {
         struct_Devices_init(&dev);
     }

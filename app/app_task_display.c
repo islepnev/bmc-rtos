@@ -42,11 +42,14 @@
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
 #include "app_task_main.h"
+#include "app_tasks.h"
+
+osThreadId displayThreadId = NULL;
 
 enum { displayThreadStackSize = 1000 };
 
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayUpdateInterval = 100;
+static const uint32_t displayTaskLoopDelay = 100;
 
 static const char *pmStateStr(PmState state)
 {
@@ -306,13 +309,27 @@ static void update_display(const Devices * dev)
     displayUpdateCount++;
 }
 
+static void read_keys(void)
+{
+    int ch = getchar();
+    if (ch == EOF)
+        return;
+    switch (ch) {
+        case ' ':
+//        osSignalSet(displayThreadId, SIGNAL_REFRESH_DISPLAY);
+        break;
+    }
+}
+
 static void displayTask(void const *arg)
 {
     (void) arg;
     printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
     while(1) {
         update_display(&dev);
-        osDelay(displayUpdateInterval);
+//        read_keys();
+//        osSignalWait(SIGNAL_REFRESH_DISPLAY, displayTaskLoopDelay);
+        osDelay(displayTaskLoopDelay);
     }
 }
 
@@ -320,7 +337,7 @@ osThreadDef(displayThread, displayTask, osPriorityIdle,      1, displayThreadSta
 
 void create_task_display(void)
 {
-    osThreadId displayThreadId = osThreadCreate(osThread (displayThread), NULL);
+    displayThreadId = osThreadCreate(osThread (displayThread), NULL);
     if (displayThreadId == NULL) {
         printf("Failed to create Display thread\n");
     }

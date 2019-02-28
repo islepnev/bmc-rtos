@@ -149,7 +149,7 @@ int _read(int file, char *ptr, int len) {
     switch (file) {
     case STDIN_FILENO:
         for (n = 0; n < len; n++) {
-                HAL_UART_Receive(stdio_uart, (uint8_t *) ptr++, 1, 1000);
+                HAL_UART_Receive(stdio_uart, (uint8_t *) ptr++, 1, HAL_MAX_DELAY);
             num++;
         }
         break;
@@ -183,17 +183,17 @@ int _write(int file, char *ptr, int len) {
     case STDOUT_FILENO: /*stdout*/
         for (n = 0; n < len; n++) {
                 if (*ptr == '\n') {
-                    HAL_UART_Transmit(stdio_uart, (uint8_t *) &r, 1, 1000);
+                    HAL_UART_Transmit(stdio_uart, (uint8_t *) &r, 1, HAL_MAX_DELAY);
                 }
-                HAL_UART_Transmit(stdio_uart, (uint8_t *) ptr++, 1, 1000);
+                HAL_UART_Transmit(stdio_uart, (uint8_t *) ptr++, 1, HAL_MAX_DELAY);
         }
         break;
     case STDERR_FILENO: /* stderr */
         for (n = 0; n < len; n++) {
                 if (*ptr == '\n') {
-                    HAL_UART_Transmit(stdio_uart, (uint8_t *) &r, 1, 1000);
+                    HAL_UART_Transmit(stdio_uart, (uint8_t *) &r, 1, HAL_MAX_DELAY);
                 }
-                HAL_UART_Transmit(stdio_uart, (uint8_t *) ptr++, 1, 1000);
+                HAL_UART_Transmit(stdio_uart, (uint8_t *) ptr++, 1, HAL_MAX_DELAY);
         }
         break;
     default:

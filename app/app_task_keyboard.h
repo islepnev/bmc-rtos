@@ -15,22 +15,20 @@
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_POWERMON_IMPL_H
-#define APP_TASK_POWERMON_IMPL_H
+#ifndef APP_TASK_KEYBOARD_H
+#define APP_TASK_KEYBOARD_H
 
-#include "app_task_powermon.h"
+#include "cmsis_os.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint32_t pmLoopCount;
-extern PmState pmState;
-
-void powermon_task (void);
+extern osThreadId keyboardThreadId;
+void create_task_keyboard(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_POWERMON_IMPL_H
+#endif // APP_TASK_KEYBOARD_H

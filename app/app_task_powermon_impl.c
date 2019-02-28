@@ -44,8 +44,6 @@ const uint32_t RAMP_5V_TIMEOUT_TICKS = 3000;
 const uint32_t POWERFAIL_DELAY_TICKS = 3000;
 const uint32_t ERROR_DELAY_TICKS = 3000;
 
-enum { pmThreadStackSize = 1000 };
-
 uint32_t pmLoopCount = 0;
 
 PmState pmState = PM_STATE_INIT;
@@ -63,7 +61,7 @@ static uint32_t stateTicks(void)
 }
 
 SensorStatus oldSensorStatus[POWERMON_SENSORS];
-static void clearOldSensorStatus(void)
+void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
         oldSensorStatus[i] = SENSOR_NORMAL;
@@ -121,8 +119,14 @@ static void log_sensor_status(void)
     }
 }
 
-static void task_pm (void)
+static int pm_initialized = 0;
+
+void powermon_task (void)
 {
+    if (!pm_initialized) {
+        clearOldSensorStatus();
+        pm_initialized = 1;
+    }
     pmLoopCount++;
     int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
     const PmState oldState = pmState;
@@ -302,27 +306,4 @@ static void unused1(void)
            (uint32_t)((float)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
            (uint32_t)((float)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
            );
-}
-
-static void prvPowermonTask( void const *arg)
-{
-    (void) arg;
-
-    clearOldSensorStatus();
-
-    while (1)
-    {
-        task_pm();
-        osDelay(2);
-    }
-}
-
-osThreadDef(powermonThread, prvPowermonTask, osPriorityHigh,      1, pmThreadStackSize);
-
-void create_task_powermon(void)
-{
-    osThreadId threadId = osThreadCreate(osThread (powermonThread), NULL);
-    if (threadId == NULL) {
-        printf("Failed to create Powermon thread\n");
-    }
 }

@@ -12,25 +12,25 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_POWERMON_IMPL_H
-#define APP_TASK_POWERMON_IMPL_H
+#ifndef DEV_FPGA_H
+#define DEV_FPGA_H
 
-#include "app_task_powermon.h"
+#include <unistd.h>
+#include "stm32f7xx_hal_def.h"
+#include "dev_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint32_t pmLoopCount;
-extern PmState pmState;
-
-void powermon_task (void);
+HAL_StatusTypeDef fpgaWriteBmcVersion(void);
+HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_POWERMON_IMPL_H
+#endif // DEV_FPGA_H

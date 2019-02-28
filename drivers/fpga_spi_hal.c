@@ -22,18 +22,7 @@
 #include "main.h"
 #include "spi.h"
 
-static const int SPI_TIMEOUT_MS = 10;
-
-enum {
-    FPGA_SPI_ADDR_0 = 0,
-    FPGA_SPI_ADDR_1 = 1,
-    FPGA_SPI_ADDR_2 = 2,
-    FPGA_SPI_ADDR_3 = 3,
-    FPGA_SPI_ADDR_4 = 4,
-    FPGA_SPI_ADDR_5 = 5,
-    FPGA_SPI_ADDR_6 = 6,
-    FPGA_SPI_ADDR_7 = 7
-};
+static const int SPI_TIMEOUT_MS = HAL_MAX_DELAY;
 
 typedef enum {
     NSS_ASSERT = 0,

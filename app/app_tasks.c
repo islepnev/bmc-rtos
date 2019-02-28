@@ -17,9 +17,10 @@
 
 #include "app_tasks.h"
 #include "app_task_heartbeat.h"
-#include "app_task_powermon_impl.h"
+#include "app_task_powermon.h"
 #include "app_task_main.h"
 #include "app_task_display.h"
+#include "app_task_keyboard.h"
 
 #include <stdio.h>
 
@@ -31,6 +32,7 @@ void create_tasks(void)
     create_task_powermon();
     create_task_main();
     create_task_display();
+//    create_task_keyboard();
     printf("Ok\n");
     fflush(stdout);
 }

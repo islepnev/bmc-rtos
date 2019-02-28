@@ -37,6 +37,7 @@ typedef enum {
 PmState getPmState(void);
 Dev_powermon getPmData(void);
 uint32_t getPmLoopCount(void);
+void create_task_powermon(void);
 
 #ifdef __cplusplus
 }

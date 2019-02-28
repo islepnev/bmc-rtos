@@ -18,6 +18,8 @@
 #ifndef APP_TASK_DISPLAY_H
 #define APP_TASK_DISPLAY_H
 
+#include "cmsis_os.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

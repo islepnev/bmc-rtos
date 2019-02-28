@@ -15,32 +15,33 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef FPGA_SPI_HAL_H
-#define FPGA_SPI_HAL_H
+#include "dev_fpga.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdint.h>
 #include "stm32f7xx_hal.h"
+#include "spi.h"
+#include "fpga_spi_hal.h"
+#include "version.h"
+#include "app_shared_data.h"
 
-enum {
-    FPGA_SPI_ADDR_0 = 0,
-    FPGA_SPI_ADDR_1 = 1,
-    FPGA_SPI_ADDR_2 = 2,
-    FPGA_SPI_ADDR_3 = 3,
-    FPGA_SPI_ADDR_4 = 4,
-    FPGA_SPI_ADDR_5 = 5,
-    FPGA_SPI_ADDR_6 = 6,
-    FPGA_SPI_ADDR_7 = 7
-};
-
-HAL_StatusTypeDef fpga_spi_hal_read_reg(uint8_t addr, uint16_t *data);
-HAL_StatusTypeDef fpga_spi_hal_write_reg(uint8_t addr, uint16_t data);
-
-#ifdef __cplusplus
+HAL_StatusTypeDef fpgaWriteBmcVersion(void)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_0, VERSION_MAJOR_NUM);
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_7, VERSION_MINOR_NUM);
+    if (ret != HAL_OK)
+        return ret;
+    return ret;
 }
-#endif
 
-#endif /* FPGA_SPI_HAL_H */
+HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    for (int i=0; i<4; i++) {
+        ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, thset->th[i].rawTemp);
+        if (ret != HAL_OK)
+            return ret;
+    }
+    return ret;
+}
