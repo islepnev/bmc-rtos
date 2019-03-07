@@ -56,6 +56,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+#include "assert_hooks.h"
 #include "app_tasks.h"
 #include "app_task_init.h"
 
@@ -178,6 +179,7 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLN = 216;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 2;
+    RCC_OscInitStruct.PLL.PLLR = 2; // 2..7
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
         _Error_Handler(__FILE__, __LINE__);
@@ -290,11 +292,12 @@ void _Error_Handler(char *file, int line)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t* file, uint32_t line)
+void assert_failed(const uint8_t* file, uint32_t line)
 {
     /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    vAssertCalled(line, file);
     /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
