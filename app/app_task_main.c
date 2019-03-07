@@ -39,8 +39,9 @@
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
+#include "app_tasks.h"
 
-enum { mainThreadStackSize = 1000 };
+enum { mainThreadStackSize = threadStackSize };
 
 static uint32_t mainloopCount = 0;
 
@@ -108,11 +109,12 @@ static void task_main (void)
         devDetect(&dev);
         fpgaWriteBmcVersion();
         fpgaWriteBmcTemperature(&dev.thset);
-
     } else {
         struct_Devices_init(&dev);
     }
-
+    if (mainState == MAIN_STATE_RUN) {
+        devRun(&dev);
+    }
     if (oldState != mainState) {
         stateStartTick = HAL_GetTick();
     }
@@ -133,7 +135,7 @@ static void prvAppMainTask( void const *arg)
     }
 }
 
-osThreadDef(mainThread, prvAppMainTask, osPriorityAboveNormal,      1, mainThreadStackSize);
+osThreadDef(mainThread, prvAppMainTask, osPriorityNormal,      1, mainThreadStackSize);
 
 void create_task_main(void)
 {

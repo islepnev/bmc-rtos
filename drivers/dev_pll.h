@@ -15,31 +15,23 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASKS_H
-#define APP_TASKS_H
+#ifndef DEV_PLL_H
+#define DEV_PLL_H
 
-#include "cmsis_os.h"
+#include <unistd.h>
+//#include "stm32f7xx_hal_def.h"
+#include "dev_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// for use with GCC flags -fstack-usage -Wstack-usage=N
-enum { threadStackSize = 4000 };
-
-enum {
-    SIGNAL_REFRESH_DISPLAY = 1000,
-    SIGNAL_POWER_ON = 1001,
-    SIGNAL_POWER_OFF = 1002,
-};
-extern osThreadId powermonThreadId;
-extern osThreadId displayThreadId;
-extern osThreadId keyboardThreadId;
-
-void create_tasks(void);
+void pllReset(Dev_ad9545 *d);
+DeviceStatus pllDetect(Dev_ad9545 *d);
+DeviceStatus pllRun(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASKS_H
+#endif // DEV_PLL_H

@@ -18,7 +18,7 @@
 #include "devices.h"
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
-#include "ad9545_i2c_hal.h"
+#include "dev_pll.h"
 #include "fpga_spi_hal.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
@@ -56,6 +56,7 @@ void struct_at24c_init(Dev_at24c *d)
 
 void struct_ad9545_init(Dev_ad9545 *d)
 {
+    d->pllState = PLL_STATE_INIT;
     d->present = DEVICE_UNKNOWN;
 }
 
@@ -97,45 +98,6 @@ static DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
 //    if (HAL_OK == dev_eepromVxsPb_Read(0, &data)) {
 //        d->present = 1;
 //    }
-    return d->present;
-}
-
-enum {
-    AD9545_REG_VENDOR_ID = 0x0C,
-    AD9545_REG_INT_THERM = 0x3003
-};
-
-enum {
-    AD9545_VENDOR_ID = 0x0456
-};
-
-static void pllReset(Dev_ad9545 *d)
-{
-    for (int i=0; i<100; i++)
-        HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
-    for (int i=0; i<100; i++)
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
-    for (int i=0; i<100; i++)
-        HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
-}
-
-static DeviceStatus pllDetect(Dev_ad9545 *d)
-{
-    HAL_StatusTypeDef ret = ad9545_detect();
-    d->present = (HAL_OK == ret);
-    if (d->present) {
-        uint32_t data = 0;
-        ad9545_read(AD9545_REG_VENDOR_ID, &data);
-        d->present = (data == AD9545_VENDOR_ID);
-    }
-    /*
-//    pllSendByte(AD9545_REG_VENDOR_ID);
-//    pllReceiveByte(&data);
-    pllReadRegister(AD9545_REG_VENDOR_ID, &data);
-    d->present = (data == AD9545_VENDOR_ID);
-//    pllReadRegister(AD9545_REG_INT_THERM, &data);
-//    printf("PLL therm: %04lX\n", data);
-*/
     return d->present;
 }
 
@@ -181,6 +143,12 @@ DeviceStatus devDetect(Devices *d)
     dev_eepromVxsPb_detect(&d->eeprom_vxspb);
     pllDetect(&d->pll);
     fpgaDetect(&d->fpga);
+    return getDeviceStatus(d);
+}
+
+DeviceStatus devRun(Devices *d)
+{
+//    pllRun(&d->pll); // FIXME
     return getDeviceStatus(d);
 }
 

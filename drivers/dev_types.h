@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 typedef enum {
+    SENSOR_UNKNOWN  = 0,
     SENSOR_NORMAL   = 1, // numeric value used
     SENSOR_WARNING  = 2,
     SENSOR_CRITICAL = 3
@@ -55,8 +56,26 @@ typedef struct {
     DeviceStatus present;
 } Dev_at24c;
 
+typedef enum {
+    PLL_STATE_INIT,
+    PLL_STATE_RESET,
+    PLL_STATE_SETUP_SYSCLK,
+    PLL_STATE_SYSCLK_WAITLOCK,
+    PLL_STATE_APLL_WAITCAL,
+    PLL_STATE_SYSCLK_LOCKED,
+    PLL_STATE_RUN,
+    PLL_STATE_ERROR
+} PllState;
+
+typedef struct {
+    int locked;
+    int stable;
+} PllSysclkStatus;
+
 typedef struct {
     DeviceStatus present;
+    PllState pllState;
+    PllSysclkStatus sysclkStatus;
 } Dev_ad9545;
 
 #endif // DEV_TYPES_H

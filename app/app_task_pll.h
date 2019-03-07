@@ -15,8 +15,8 @@
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_KEYBOARD_H
-#define APP_TASK_KEYBOARD_H
+#ifndef APP_TASK_PLL_H
+#define APP_TASK_PLL_H
 
 #include "cmsis_os.h"
 
@@ -24,11 +24,11 @@
 extern "C" {
 #endif
 
-extern osThreadId keyboardThreadId;
-void create_task_keyboard(void);
+extern osThreadId pllThreadId;
+void create_task_pll(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_KEYBOARD_H
+#endif // APP_TASK_PLL_H

@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName );
+extern void vAssertCalled( unsigned long ulLine, const uint8_t * const pcFileName );
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file. */
 extern void vApplicationMallocFailedHook( void );

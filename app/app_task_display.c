@@ -46,7 +46,7 @@
 
 osThreadId displayThreadId = NULL;
 
-enum { displayThreadStackSize = 1000 };
+enum { displayThreadStackSize = threadStackSize };
 
 static uint32_t displayUpdateCount = 0;
 static const uint32_t displayTaskLoopDelay = 100;
@@ -68,6 +68,7 @@ static const char *pmStateStr(PmState state)
 static const char *sensorStatusStr(SensorStatus state)
 {
     switch(state) {
+    case SENSOR_UNKNOWN:  return STR_RESULT_WARNING;
     case SENSOR_NORMAL:   return STR_RESULT_NORMAL;
     case SENSOR_WARNING:  return STR_RESULT_WARNING;
     case SENSOR_CRITICAL: return STR_RESULT_CRIT;
@@ -82,6 +83,22 @@ static const char *mainStateStr(MainState state)
     case MAIN_STATE_DETECT:  return ANSI_YELLOW "DETECT"  ANSI_CLEAR;
     case MAIN_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
     case MAIN_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    default: return "?";
+    }
+}
+
+
+static const char *pllStateStr(PllState state)
+{
+    switch(state) {
+    case PLL_STATE_INIT:    return "INIT";
+    case PLL_STATE_RESET:    return "RESET";
+    case PLL_STATE_SETUP_SYSCLK: return ANSI_YELLOW  "SETUP_SYSCLK"     ANSI_CLEAR;
+    case PLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
+    case PLL_STATE_APLL_WAITCAL: return ANSI_YELLOW  "APLL_WAITCAL"     ANSI_CLEAR;
+    case PLL_STATE_SYSCLK_LOCKED:     return ANSI_GREEN  "SYSCLK_LOCKED"     ANSI_CLEAR;
+    case PLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
+    case PLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
     default: return "?";
     }
 }
@@ -141,6 +158,7 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
         SensorStatus status = pm_sensor_status(d);
         const char *color = "";
         switch (status) {
+        case SENSOR_UNKNOWN: color = ANSI_YELLOW; break;
         case SENSOR_NORMAL: color = ANSI_GREEN; break;
         case SENSOR_WARNING: color = ANSI_YELLOW; break;
         case SENSOR_CRITICAL: color = ANSI_RED; break;
@@ -217,7 +235,7 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_SENSORS_Y (1 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
 #define DISPLAY_SENSORS_H 16
 #define DISPLAY_MAIN_Y (1 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
-#define DISPLAY_MAIN_H 6
+#define DISPLAY_MAIN_H 7
 #define DISPLAY_LOG_Y (1 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
 #define DISPLAY_LOG_H (LOG_BUF_SIZE)
 
@@ -299,6 +317,8 @@ static void update_display(const Devices * dev)
     print_goto(DISPLAY_MAIN_Y, 1);
     if (getMainState() == MAIN_STATE_RUN) {
         printf("Main state:     %s", mainStateStr(getMainState()));
+        printf("%s\n", ANSI_CLEAR_EOL);
+        printf("PLL state:      %s", pllStateStr(dev->pll.pllState));
         printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
         printf("%s\n", ANSI_CLEAR_EOL);

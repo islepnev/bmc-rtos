@@ -19,14 +19,29 @@
 
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
+#include "i2c.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+extern I2C_HandleTypeDef * const hPll;
+
 void pllSetStaticPins(void);
 HAL_StatusTypeDef ad9545_detect(void);
-HAL_StatusTypeDef ad9545_read(uint16_t reg, uint32_t *data);
+HAL_StatusTypeDef ad9545_read1(uint16_t reg, uint8_t *data);
+HAL_StatusTypeDef ad9545_write1(uint16_t reg, uint8_t data);
+HAL_StatusTypeDef ad9545_read2(uint16_t reg, uint16_t *data);
+HAL_StatusTypeDef ad9545_write2(uint16_t reg, uint16_t data);
+HAL_StatusTypeDef ad9545_read3(uint16_t reg, uint32_t *data);
+HAL_StatusTypeDef ad9545_write3(uint16_t reg, uint32_t data);
+HAL_StatusTypeDef ad9545_read4(uint16_t reg, uint32_t *data);
+HAL_StatusTypeDef ad9545_write4(uint16_t reg, uint32_t data);
+HAL_StatusTypeDef ad9545_read5(uint16_t reg, uint64_t *data);
+HAL_StatusTypeDef ad9545_write5(uint16_t reg, uint64_t data);
+HAL_StatusTypeDef ad9545_read6(uint16_t reg, uint64_t *data);
+HAL_StatusTypeDef ad9545_write6(uint16_t reg, uint64_t data);
+HAL_StatusTypeDef ad9545_write8(uint16_t reg, uint64_t data);
 
 #ifdef __cplusplus
 }

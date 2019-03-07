@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "cmsis_os.h"
+#include "i2c.h"
 
 #include "app_task_powermon.h"
 #include "adt7301_spi_hal.h"
@@ -70,6 +71,7 @@ void clearOldSensorStatus(void)
 static const char *sensorStatusStr(SensorStatus state)
 {
     switch(state) {
+    case SENSOR_UNKNOWN:  return "  UNKNOWN";
     case SENSOR_NORMAL:   return "  NORMAL";
     case SENSOR_WARNING:  return " WARNING";
     case SENSOR_CRITICAL: return "CRITICAL";
@@ -104,6 +106,9 @@ static void log_sensor_status(void)
                      curr_frac
                      );
             switch(status) {
+            case SENSOR_UNKNOWN:
+                log_put(LOG_WARNING, str);
+                break;
             case SENSOR_CRITICAL:
                 log_put(LOG_ERR, str);
                 break;

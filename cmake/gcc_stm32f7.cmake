@@ -1,4 +1,5 @@
 SET(CMAKE_C_FLAGS "-mthumb -fno-builtin -mcpu=cortex-m7 -mfpu=fpv5-sp-d16 -mfloat-abi=softfp \
+-fstack-protector-all -fstack-usage -Wstack-usage=1000   \
 -Wall -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused-parameter \
 -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-unroll-loops -ffast-math -ftree-vectorize" CACHE INTERNAL "c compiler flags")
 SET(CMAKE_CXX_FLAGS "-mthumb -fno-builtin -mcpu=cortex-m7 -mfpu=fpv5-sp-d16 -mfloat-abi=softfp -Wall -std=c++11 -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-unroll-loops -ffast-math -ftree-vectorize" CACHE INTERNAL "cxx compiler flags")
@@ -26,7 +27,7 @@ ENDMACRO()
 MACRO(STM32_GET_CHIP_PARAMETERS CHIP FLASH_SIZE RAM_SIZE CCRAM_SIZE)
     STRING(REGEX REPLACE "^[sS][tT][mM]32[fF](7[4567][5679].[EGI]).*$" "\\1" STM32_CODE ${CHIP})
     STRING(REGEX REPLACE "^[sS][tT][mM]32[fF]7[4567][5679].([EGI]).*$" "\\1" STM32_SIZE_CODE ${CHIP})
-    
+
     IF(STM32_SIZE_CODE STREQUAL "E")
         SET(FLASH "512K")
     ELSEIF(STM32_SIZE_CODE STREQUAL "G")
@@ -34,9 +35,9 @@ MACRO(STM32_GET_CHIP_PARAMETERS CHIP FLASH_SIZE RAM_SIZE CCRAM_SIZE)
     ELSEIF(STM32_SIZE_CODE STREQUAL "I")
         SET(FLASH "2048K")
     ENDIF()
-    
+
     STM32_GET_CHIP_TYPE(${CHIP} TYPE)
-    
+
     IF(${TYPE} STREQUAL "745xx")
         SET(RAM "320K")
     ELSEIF(${TYPE} STREQUAL "746xx")
@@ -52,7 +53,7 @@ MACRO(STM32_GET_CHIP_PARAMETERS CHIP FLASH_SIZE RAM_SIZE CCRAM_SIZE)
     ELSEIF(${TYPE} STREQUAL "779xx")
         SET(RAM "512K")
     ENDIF()
-    
+
     SET(${FLASH_SIZE} ${FLASH})
     SET(${RAM_SIZE} ${RAM})
     # First 64K of RAM are already CCM...
@@ -70,6 +71,6 @@ FUNCTION(STM32_SET_CHIP_DEFINITIONS TARGET CHIP_TYPE)
     ELSE()
         SET(TARGET_DEFS "STM32F7;STM32F${CHIP_TYPE}")
     ENDIF()
-        
+
     SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_DEFINITIONS "${TARGET_DEFS}")
 ENDFUNCTION()

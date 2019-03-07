@@ -26,7 +26,7 @@
 #include "app_task_powermon_impl.h"
 
 osThreadId powermonThreadId = NULL;
-enum { pmThreadStackSize = 1000 };
+enum { powermonThreadStackSize = threadStackSize };
 static const uint32_t powermonTaskLoopDelay = 2;
 
 PmState getPmState(void)
@@ -60,7 +60,7 @@ static void prvPowermonTask( void const *arg)
     }
 }
 
-osThreadDef(powermonThread, prvPowermonTask, osPriorityHigh,      1, pmThreadStackSize);
+osThreadDef(powermonThread, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
 
 void create_task_powermon(void)
 {

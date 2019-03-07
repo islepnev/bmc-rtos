@@ -17,6 +17,7 @@
 
 #include "dev_pm_sensors.h"
 #include "ina226_i2c_hal.h"
+#include "i2c.h"
 
 #include "ansi_escape_codes.h"
 #include "display.h"
@@ -178,7 +179,7 @@ SensorStatus pm_sensor_status(const pm_sensor *d)
 {
     if (d->deviceStatus != DEVICE_NORMAL) {
 //        printf("%s: device unknown\n", d->label);
-        return SENSOR_CRITICAL;
+        return SENSOR_UNKNOWN;
     }
 
     float V = d->busVoltage;
@@ -248,8 +249,16 @@ uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
     return HAL_GetTick() - d->lastStatusUpdatedTick;
 }
 
+static void reset_I2C_Powermon(void)
+{
+    __HAL_I2C_DISABLE(&hi2c4);
+    __HAL_I2C_ENABLE(&hi2c4);
+}
+
 int pm_sensor_detect(pm_sensor *d)
 {
+    reset_I2C_Powermon();
+
     d->lastStatusUpdatedTick = HAL_GetTick();
     uint16_t deviceAddr = d->busAddress;
     uint16_t manuf_id;

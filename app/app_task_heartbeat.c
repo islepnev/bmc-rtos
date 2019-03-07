@@ -20,8 +20,9 @@
 #include <stdint.h>
 #include "cmsis_os.h"
 #include "dev_leds.h"
+#include "app_tasks.h"
 
-enum { threadStackSize = 100 };
+enum { heartbeatThreadStackSize = threadStackSize };
 
 static const int mainQUEUE_SEND_FREQUENCY_MS = 200;
 
@@ -74,8 +75,8 @@ static void prvQueueReceiveTask(void const *arg)
     }
 }
 
-osThreadDef(rxThread, prvQueueReceiveTask, osPriorityBelowNormal,      1, threadStackSize);
-osThreadDef(txThread, prvQueueSendTask,    osPriorityLow, 1, threadStackSize);
+osThreadDef(rxThread, prvQueueReceiveTask, osPriorityBelowNormal,      1, heartbeatThreadStackSize);
+osThreadDef(txThread, prvQueueSendTask,    osPriorityLow, 1, heartbeatThreadStackSize);
 
 void create_task_heartbeat(void)
 {

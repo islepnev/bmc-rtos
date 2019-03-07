@@ -22,7 +22,11 @@
 static void debug_send_char(const char c)
 {
     // wait for UART ready
-    while (HAL_UART_GetState(stdio_uart) != HAL_UART_STATE_READY) {}
+    while (1) {
+        volatile HAL_UART_StateTypeDef state = HAL_UART_GetState(stdio_uart);
+        if (state == HAL_UART_STATE_READY)
+            break;
+    }
     // use HAL_MAX_DELAY for CPU polling mode
     HAL_UART_Transmit(stdio_uart, (uint8_t *) &c, 1, HAL_MAX_DELAY);
 }

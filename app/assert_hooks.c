@@ -18,7 +18,7 @@
 #include "assert_hooks.h"
 #include "debug_helpers.h"
 
-void vAssertCalled( uint32_t ulLine, const char *pcFile )
+void vAssertCalled( uint32_t ulLine, const uint8_t *pcFile )
 {
     volatile unsigned long ul = 0;
 
@@ -40,7 +40,7 @@ void vAssertCalled( uint32_t ulLine, const char *pcFile )
         while( ul == 0 )
         {
             led_blink_error();
-            __NOP();
+//            __NOP();
         }
     }
     taskEXIT_CRITICAL();

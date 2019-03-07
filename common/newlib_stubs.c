@@ -17,6 +17,9 @@
 #include "stm32f7xx_hal.h"
 #include "usart.h"
 
+#include "assert_hooks.h"
+#include "debug_helpers.h"
+
 // stdio_uart handle must be defined in usart.h
 
 #undef errno
@@ -36,8 +39,20 @@ int _close(int file) {
     return -1;
 }
 
+void vApplicationExitHook( void )
+{
+    taskDISABLE_INTERRUPTS(); // game over
+    led_show_error();
+    static const char str[] = "Error: exit called\n";
+    debug_print(str, sizeof(str));
+    while(1) {
+        led_blink_error();
+    }
+}
+
 void _exit(int status) {
-    _write(1, "exit", 4);
+    vApplicationExitHook();
+//    _write(1, "exit", 4);
     while (1) {
         ;
     }
