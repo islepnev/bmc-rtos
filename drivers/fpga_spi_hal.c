@@ -38,27 +38,28 @@ void fpga_spi_hal_spi_nss_b(NssState state)
     HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, (state == NSS_DEASSERT) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-/*
- * read 13-bit data from FPGA MCU register
+/**
+ * @brief Read FPGA register
+ * @param addr 15-bit address
+ * @param data pointer to 16-bit destination
+ * @return @arg HAL_OK on success
  */
-HAL_StatusTypeDef fpga_spi_hal_read_reg(uint8_t addr, uint16_t *data)
+HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
 {
-    uint8_t buf1[4] = {
-        (0x80 | ((addr >> 8) & 0x7F)),
-        (addr & 0xFF),
-        0,
-        0
-    };
-    uint8_t buf2[4] = {0,0,0,0};
+    enum {Size = 2}; // number of 16-bit words
+    uint16_t txBuf[1];
+    uint16_t rxBuf[1];
+    txBuf[0] = (0x8000 | (addr & 0x7FFF));
+    txBuf[1] = 0;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(fpga_spi, buf1, buf2, 4, SPI_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
-        printf("%s: SPI error\n", __func__);
         return ret;
     }
+    uint16_t result = rxBuf[1];
     if (data) {
-        *data = ((uint16_t)buf2[3] << 8) | buf2[2];
+        *data = result;
     }
     return ret;
 }
@@ -66,22 +67,20 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint8_t addr, uint16_t *data)
 /**
  * @brief Write FPGA register
  * @param addr 15-bit address
- * @param data 16-bit data
- * @return @arg FPGA_SPI_OK on success
+ * @param data 16-bit data to write
+ * @return @arg HAL_OK on success
  */
-HAL_StatusTypeDef fpga_spi_hal_write_reg(uint8_t addr, uint16_t data)
+HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
 {
-    uint8_t buf1[4] = {
-        (0x00 | ((addr >> 8) & 0x7F)),
-        (addr & 0xFF),
-        (data >> 8),
-        (data & 0xFF)
-    };
+    enum {Size = 2};
+    uint16_t txBuf[1];
+    txBuf[0] = (0x8000 | (addr & 0x7FFF));
+    txBuf[1] = data;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, buf1, 4, SPI_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
-        printf("%s: SPI error\n", __func__);
+        printf("fpga_spi_hal_write_reg: SPI error %d\n", ret);
         return ret;
     }
     return ret;

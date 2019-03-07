@@ -36,8 +36,8 @@ enum {
     FPGA_SPI_ADDR_7 = 7
 };
 
-HAL_StatusTypeDef fpga_spi_hal_read_reg(uint8_t addr, uint16_t *data);
-HAL_StatusTypeDef fpga_spi_hal_write_reg(uint8_t addr, uint16_t data);
+HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
+HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
 
 #ifdef __cplusplus
 }
