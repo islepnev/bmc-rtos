@@ -28,7 +28,7 @@ extern "C" {
 
 void pllReset(Dev_ad9545 *d);
 DeviceStatus pllDetect(Dev_ad9545 *d);
-DeviceStatus pllRun(Dev_ad9545 *d);
+void pllRun(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }

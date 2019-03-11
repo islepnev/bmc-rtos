@@ -1,19 +1,19 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "dev_pll.h"
 
@@ -21,12 +21,10 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "ad9545_i2c_hal.h"
+#include "ad9545_setup.h"
 #include "dev_types.h"
 #include "ansi_escape_codes.h"
 #include "cmsis_os.h"
-
-//static const uint64_t sysclk_Ref_Frequency = 38880000ULL * 1000; // milliHertz
-static const uint64_t sysclk_Ref_Frequency_milliHz = 38879880ULL * 1000; // milliHertz
 
 #define DEBUG_PRINT_RET(x)     printf("%s failed: %s, I2C error 0x%08lX\n", __func__, OpStatusErrorStr(x), hPll->ErrorCode)
 
@@ -71,38 +69,12 @@ typedef union
 {
   struct
   {
-    uint32_t enable_hcsl:1;
-    uint32_t driver_current:2;
-    uint32_t driver_mode:2;
-    uint32_t bypass_retiming:1;
-    uint32_t reserved:2;
-  } b;
-  uint8_t raw;
-} Driver_Config_REG_Type;
-
-typedef union
-{
-  struct
-  {
     uint32_t autosync_mode:2;
     uint32_t enable_ref_sync:1;
     uint32_t reserved:5;
   } b;
   uint8_t raw;
 } Sync_Control_REG_Type;
-
-typedef union
-{
-  struct
-  {
-    uint32_t force_freerun:1;
-    uint32_t force_holdover:1;
-    uint32_t tr_prof_select_mode:2;
-    uint32_t assign_tr_prof:3;
-    uint32_t enable_step_detect_ref_fault:1;
-  } b;
-  uint8_t raw;
-} DPLL_Mode_REG_Type;
 
 enum {
     AD9545_REG1_CONFIG_0  = 0x0000,
@@ -173,7 +145,7 @@ enum {
     AD9545_REG1_3000 = 0x3000,
     AD9545_REG1_3001 = 0x3001,
     AD9545_REG1_3002 = 0x3002,
-    AD9545_REG_INT_THERM = 0x3003,
+    AD9545_REG2_INT_THERM = 0x3003,
     AD9545_REG1_3005 = 0x3005,
     AD9545_REG1_3006 = 0x3006,
     AD9545_REG1_3007 = 0x3007,
@@ -311,26 +283,24 @@ static OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    uint8_t Sysclk_FB_DIV_Ratio = 0x1F;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_FB_DIV_Ratio, Sysclk_FB_DIV_Ratio)))
+    PllSysclkSetup_TypeDef sysclkSetup;
+    init_PllSysclkSetup(&sysclkSetup);
+
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup.Sysclk_FB_DIV_Ratio)))
         goto err;
 
-    uint8_t Sysclk_Input = 0x01;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_Input, Sysclk_Input)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_Input, sysclkSetup.Sysclk_Input)))
         goto err;
 
-    if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_Sysclk_Ref_Frequency, sysclk_Ref_Frequency_milliHz)))
+    if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_Sysclk_Ref_Frequency, sysclkSetup.sysclk_Ref_Frequency_milliHz)))
         goto err;
 
-    uint32_t Sysclk_Stability_Timer = 0x32;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_Sysclk_Stability_Timer, Sysclk_Stability_Timer)))
+    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_Sysclk_Stability_Timer, sysclkSetup.Sysclk_Stability_Timer)))
         goto err;
 
-    uint16_t Temperature_Low_Threshold = (int16_t)128 * -5;
-    if (HAL_OK != (ret = ad9545_write2(0x2903, Temperature_Low_Threshold)))
+    if (HAL_OK != (ret = ad9545_write2(0x2903, sysclkSetup.Temperature_Low_Threshold)))
         goto err;
-    uint16_t Temperature_Hihg_Threshold = (int16_t)128 * 70;
-    if (HAL_OK != (ret = ad9545_write2(0x2905, Temperature_Hihg_Threshold)))
+    if (HAL_OK != (ret = ad9545_write2(0x2905, sysclkSetup.Temperature_Hihg_Threshold)))
         goto err;
 
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -432,20 +402,17 @@ static OpStatusTypeDef pllSetupOutputDrivers(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    Driver_Config_REG_Type Driver_Config;
-    Driver_Config.raw = 0;
-    Driver_Config.b.enable_hcsl = 1;
-    Driver_Config.b.driver_current = 2;
-    Driver_Config.b.driver_mode = 0;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D7, Driver_Config.raw)))
+    Pll_OutputDrivers_Setup_TypeDef setup;
+    init_Pll_OutputDrivers_Setup(&setup);
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D7, setup.Driver_Config.raw)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D8, Driver_Config.raw)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D8, setup.Driver_Config.raw)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D9, Driver_Config.raw)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D9, setup.Driver_Config.raw)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D7, Driver_Config.raw)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D7, setup.Driver_Config.raw)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D8, Driver_Config.raw)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D8, setup.Driver_Config.raw)))
         goto err;
 
     return ret;
@@ -480,26 +447,22 @@ err:
 static OpStatusTypeDef pllSetupDistribution(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-
+    Pll_OutputDividers_Setup_TypeDef setup;
+    init_Pll_OutputDividers_Setup(&setup);
     // channel 0
-    uint8_t Secondary_Clock_Path_0 = 0x0; // 0x0E;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DA, Secondary_Clock_Path_0)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DA, setup.Secondary_Clock_Path_0)))
         goto err;
 
-    uint8_t Automute_Control_0 = 0xFC;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DC, Automute_Control_0)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DC, setup.Automute_Control_0)))
         goto err;
 
-    uint8_t Distribution_Divider_0_A = 30;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1100, Distribution_Divider_0_A)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1100, setup.Distribution_Divider_0_A)))
         goto err;
 
-    uint8_t Distribution_Divider_0_B = 30;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1112, Distribution_Divider_0_B)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1112, setup.Distribution_Divider_0_B)))
         goto err;
 
-    uint8_t Distribution_Divider_0_C = 30;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1124, Distribution_Divider_0_C)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1124, setup.Distribution_Divider_0_C)))
         goto err;
 
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -515,32 +478,28 @@ static OpStatusTypeDef pllSetupDistribution(Dev_ad9545 *d)
     // UPDATE bit prior to programming autosync mode = 1, 2, or 3.
     Sync_Control_REG_Type Sync_Control_0;
     Sync_Control_0.raw = 0;
-    Sync_Control_0.b.enable_ref_sync = 1;
+    Sync_Control_0.b.enable_ref_sync = setup.enable_ref_sync_0;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
-    Sync_Control_0.b.autosync_mode = 1;
+    Sync_Control_0.b.autosync_mode = setup.autosync_mode_0;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
     // channel 1
-    uint8_t Secondary_Clock_Path_1 = 0x0; // 0x06;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DA, Secondary_Clock_Path_1)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DA, setup.Secondary_Clock_Path_1)))
         goto err;
 
-    uint8_t Automute_Control_1 = 0xFC;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DC, Automute_Control_1)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DC, setup.Automute_Control_1)))
         goto err;
 
-    uint8_t Distribution_Divider_1_A = 39;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1500, Distribution_Divider_1_A)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1500, setup.Distribution_Divider_1_A)))
         goto err;
 
-    uint8_t Distribution_Divider_1_B = 39;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1512, Distribution_Divider_1_B)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1512, setup.Distribution_Divider_1_B)))
         goto err;
 
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -552,12 +511,12 @@ static OpStatusTypeDef pllSetupDistribution(Dev_ad9545 *d)
     // UPDATE bit prior to programming autosync mode = 1, 2, or 3.
     Sync_Control_REG_Type Sync_Control_1;
     Sync_Control_1.raw = 0;
-    Sync_Control_1.b.enable_ref_sync = 1;
+    Sync_Control_1.b.enable_ref_sync = setup.enable_ref_sync_1;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
-    Sync_Control_1.b.autosync_mode = 1;
+    Sync_Control_1.b.autosync_mode = setup.autosync_mode_1;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -568,103 +527,31 @@ err:
     DEBUG_PRINT_RET(ret);
     return ret;
 }
-
-static const uint32_t ref_r_divide = 209;
 
 static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-
-    uint8_t REFA_Receiver_Settings = 0x01;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, REFA_Receiver_Settings)))
+    PllRefSetup_TypeDef refSetup;
+    init_PllRefSetup(&refSetup);
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, refSetup.REFA_Receiver_Settings)))
         goto err;
-    uint8_t REFB_Receiver_Settings = 0x01;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0304, REFB_Receiver_Settings)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0304, refSetup.REFB_Receiver_Settings)))
         goto err;
 
     // REFERENCE INPUT A (REFA) REGISTERS—REGISTER 0x0400 TO REGISTER 0x0414
 
-    uint32_t REFA_R_Divider = ref_r_divide;
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0400, REFA_R_Divider)))
+    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0400, refSetup.REFA_R_Divider)))
         goto err;
 
-    uint64_t REFA_Input_Period = 24000000000ULL; // * 1e-18 sec, 59682F000ULL;
-    if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0404, REFA_Input_Period)))
+    if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0404, refSetup.REFA_Input_Period)))
         goto err;
-
 
     // REFERENCE INPUT B (REFB) REGISTERS—REGISTER 0x0440 TO REGISTER 0x0454
 
-    uint32_t REFB_R_Divider = ref_r_divide;
-    if (HAL_OK != (ret = ad9545_write4(0x0440, REFB_R_Divider)))
+    if (HAL_OK != (ret = ad9545_write4(0x0440, refSetup.REFB_R_Divider)))
         goto err;
 
-    uint64_t REFB_Input_Period = 24000000000ULL; // 0x59682F000ULL
-    if (HAL_OK != (ret = ad9545_write8(0x0444, REFB_Input_Period)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupDPLL0(Dev_ad9545 *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    // DPLL CHANNEL 0 REGISTERS—REGISTER 0x1000 TO REGISTER 0x102A
-//    uint64_t DPLL0_Freerun_Tuning_Word = 36490124248939ULL;
-    const double targetFreq = 312.5e6;
-    const double sysclkVco = sysclk_Ref_Frequency_milliHz * 1e-3 * 31.0 * 2;
-    uint64_t DPLL0_Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVco);
-    if (HAL_OK != (ret = ad9545_write6(0x1000, DPLL0_Freerun_Tuning_Word)))
-        goto err;
-
-    // APLL CHANNEL 0 REGISTERS—REGISTER 0x1080 TO REGISTER 0x1083
-    uint8_t APLL0_M0_Divider = 8;
-    if (HAL_OK != (ret = ad9545_write1(0x1081, APLL0_M0_Divider)))
-        goto err;
-
-    // DPLL TRANSLATION PROFILE 0.0 REGISTERS—REGISTER 0x1200 TO REGISTER 0x1217
-    uint8_t DPLL0_Priority_and_Enable = 0x01;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1200, DPLL0_Priority_and_Enable)))
-        goto err;
-
-    uint8_t DPLL0_Profile_Ref_Source = 0x0; // 0: RefA
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1201, DPLL0_Profile_Ref_Source)))
-        goto err;
-
-    uint8_t DPLL0_ZD_Feedback_Path = 0; // Out0A
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1202, DPLL0_ZD_Feedback_Path)))
-        goto err;
-
-    uint8_t DPLL0_Feedback_Mode = 1; // 0x03;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1203, DPLL0_Feedback_Mode)))
-        goto err;
-
-    uint32_t DPLL_Loop_BW = 500 * 1000000; // microHertz
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_1204, DPLL_Loop_BW)))
-        goto err;
-
-    uint32_t DPLL_Hitless_FB_Divider = ref_r_divide;
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_1208, DPLL_Hitless_FB_Divider)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Divider = ref_r_divide;
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_120C, DPLL_Buildout_FB_Divider)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Fraction = 0;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1210, DPLL_Buildout_FB_Fraction)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Modulus = 0;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1213, DPLL_Buildout_FB_Modulus)))
-        goto err;
-
-    uint32_t DPLL_FastLock = 4; // 4: 100 ms
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1217, DPLL_FastLock)))
+    if (HAL_OK != (ret = ad9545_write8(0x0444, refSetup.REFB_Input_Period)))
         goto err;
 
     return ret;
@@ -673,69 +560,81 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDPLL1(Dev_ad9545 *d)
+typedef enum {
+    DPLL0 = 0,
+    DPLL1 = 1,
+} PllChannel_TypeDef;
+
+static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d, PllChannel_TypeDef channel)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-
-    // DPLL CHANNEL 1 REGISTERS—REGISTER 0x1400 TO REGISTER 0x142A
-    volatile const double targetFreq = 325e6;
-    volatile const double sysclkVco = sysclk_Ref_Frequency_milliHz * 1e-3 * 31.0 * 2;
-    volatile uint64_t DPLL1_Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVco);
-    if (HAL_OK != (ret = ad9545_write6(0x1400, DPLL1_Freerun_Tuning_Word)))
-        goto err;
-
-    // APLL CHANNEL 1 REGISTERS—REGISTER 0x1480 TO REGISTER 0x1483
-    uint8_t APLL1_M1_Divider = 10;
-    if (HAL_OK != (ret = ad9545_write1(0x1481, APLL1_M1_Divider)))
-        goto err;
-
-    // DPLL TRANSLATION PROFILE 1.0 REGISTERS—REGISTER 0x1600 TO REGISTER 0x1617
-    {
-    uint8_t DPLL_Priority_and_Enable = 0x01;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1600, DPLL_Priority_and_Enable)))
-        goto err;
-
-    uint8_t DPLL_Profile_Ref_Source = 0x0; // 0: RefA
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1601, DPLL_Profile_Ref_Source)))
-        goto err;
-
-    uint8_t DPLL_ZD_Feedback_Path = 0; // 0x0; // 0: Out1A
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1602, DPLL_ZD_Feedback_Path)))
-        goto err;
-
-    uint8_t DPLL_Feedback_Mode = 1; // 0x03;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1603, DPLL_Feedback_Mode)))
-        goto err;
-
-    uint32_t DPLL_Loop_BW = 500 * 1000000; // microHertz
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_1604, DPLL_Loop_BW)))
-        goto err;
-
-    uint32_t DPLL_Hitless_FB_Divider = ref_r_divide; // D0
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_1608, DPLL_Hitless_FB_Divider)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Divider = ref_r_divide; // 0x65D;
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_160C, DPLL_Buildout_FB_Divider)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Fraction = 0;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1610, DPLL_Buildout_FB_Fraction)))
-        goto err;
-
-    uint32_t DPLL_Buildout_FB_Modulus = 0;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1613, DPLL_Buildout_FB_Modulus)))
-        goto err;
-
-    uint32_t DPLL_FastLock = 4; // 4: 100 ms
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_1617, DPLL_FastLock)))
-        goto err;
+    Pll_DPLL_Setup_TypeDef dpll;
+    uint16_t reg_offset = 0x0;
+    switch(channel) {
+    case DPLL0:
+        init_DPLL0_Setup(&dpll);
+        break;
+    case DPLL1:
+        init_DPLL1_Setup(&dpll);
+        reg_offset = 0x400;
+        break;
     }
 
+    // DPLL CHANNEL REGISTERS
+    if (HAL_OK != (ret = ad9545_write6(reg_offset + 0x1000, dpll.Freerun_Tuning_Word)))
+        goto err;
+
+    // APLL CHANNEL REGISTERS
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x1081, dpll.APLL_M_Divider)))
+        goto err;
+
+    // DPLL TRANSLATION PROFILE 0.0 REGISTERS
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1200, dpll.Priority_and_Enable)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1201, dpll.Profile_Ref_Source)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1202, dpll.ZD_Feedback_Path)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1203, dpll.Feedback_Mode)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_1204, dpll.Loop_BW)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_1208, dpll.Hitless_FB_Divider)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_120C, dpll.Buildout_FB_Divider)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1210, dpll.Buildout_FB_Fraction)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1213, dpll.Buildout_FB_Modulus)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1217, dpll.FastLock)))
+        goto err;
+
     return ret;
 err:
     DEBUG_PRINT_RET(ret);
     return ret;
+}
+static OpStatusTypeDef pllSetupDPLL0(Dev_ad9545 *d)
+{
+    Pll_DPLL_Setup_TypeDef dpll;
+    init_DPLL0_Setup(&dpll);
+    return pllSetupDPLL(d, DPLL0);
+}
+static OpStatusTypeDef pllSetupDPLL1(Dev_ad9545 *d)
+{
+    Pll_DPLL_Setup_TypeDef dpll;
+    init_DPLL1_Setup(&dpll);
+    return pllSetupDPLL(d, DPLL1);
 }
 
 static OpStatusTypeDef pllSetupOperationalControl(Dev_ad9545 *d)
@@ -751,12 +650,9 @@ static OpStatusTypeDef pllSetupOperationalControl(Dev_ad9545 *d)
 //    uint8_t Divider_Q0C = 0;
 //    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2104, Divider_Q0C)))
 //        goto err;
-    DPLL_Mode_REG_Type dpll0_mode;
-    dpll0_mode.raw = 0;
-    dpll0_mode.b.tr_prof_select_mode = 2;
-    dpll0_mode.b.assign_tr_prof = 0;
-//    dpll0_mode.b.force_holdover = 1;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2105, dpll0_mode.raw)))
+    Pll_DPLLMode_Setup_TypeDef dpll_mode;
+    init_Pll_DPLLMode_Setup(&dpll_mode);
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2105, dpll_mode.dpll0_mode.raw)))
         goto err;
 //    uint8_t Divider_Q1A = 0;
 //    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2202, Divider_Q1A)))
@@ -764,12 +660,7 @@ static OpStatusTypeDef pllSetupOperationalControl(Dev_ad9545 *d)
 //    uint8_t Divider_Q1B = 0;
 //    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2203, Divider_Q1B)))
 //        goto err;
-    DPLL_Mode_REG_Type dpll1_mode;
-    dpll1_mode.raw = 0;
-    dpll1_mode.b.tr_prof_select_mode = 2;
-    dpll1_mode.b.assign_tr_prof = 0;
-//    dpll1_mode.b.force_holdover = 1;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2205, dpll1_mode.raw)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2205, dpll_mode.dpll1_mode.raw)))
         goto err;
 
     return ret;
@@ -918,7 +809,7 @@ static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
 
     // read temp
     uint16_t temp;
-    ret = ad9545_read2(AD9545_REG_INT_THERM, &temp);
+    ret = ad9545_read2(AD9545_REG2_INT_THERM, &temp);
     if (ret != HAL_OK)
         goto err;
     printf("internal temp %d C\n", temp/128);
@@ -1214,7 +1105,7 @@ static void reset_I2C_Pll(void)
     __HAL_I2C_ENABLE(hPll);
 }
 
-DeviceStatus pllRun(Dev_ad9545 *d)
+void pllRun(Dev_ad9545 *d)
 {
     const PllState oldState = pllState;
     switch(pllState) {
@@ -1288,11 +1179,15 @@ DeviceStatus pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-//        if (DEV_OK != pllIoUpdate(d)) {
-//            pllState = PLL_STATE_ERROR;
-//            break;
-//        }
+        if (DEV_OK != pllIoUpdate(d)) {
+            pllState = PLL_STATE_ERROR;
+            break;
+        }
         if (DEV_OK != pllSetupRef(d)) {
+            pllState = PLL_STATE_ERROR;
+            break;
+        }
+        if (DEV_OK != pllIoUpdate(d)) {
             pllState = PLL_STATE_ERROR;
             break;
         }
@@ -1316,23 +1211,26 @@ DeviceStatus pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (DEV_OK != pllSetupDistribution(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
+        pllState = PLL_STATE_DIST_SYNC;
+        break;
+    case PLL_STATE_DIST_SYNC:
+        if (stateTicks() > 1000) {
+            if (DEV_OK != pllSetupDistribution(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+//            if (DEV_OK != pllManualOutputSync(d)) {
+//                pllState = PLL_STATE_ERROR;
+//                break;
+//            }
+            pllState = PLL_STATE_RUN;
         }
-//        HAL_Delay(2000);
-//        if (DEV_OK != pllManualOutputSync(d)) {
+        break;
+    case PLL_STATE_RUN:
+//        if (DEV_OK != pllClearAutomute(d)) {
 //            pllState = PLL_STATE_ERROR;
 //            break;
 //        }
-        pllState = PLL_STATE_RUN;
-        break;
-    case PLL_STATE_RUN:
-        printf(ANSI_CLEARTERM ANSI_GOHOME);
-        if (DEV_OK != pllClearAutomute(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
         if (DEV_OK != pllIoUpdate(d)) {
             pllState = PLL_STATE_ERROR;
             break;
@@ -1349,15 +1247,14 @@ DeviceStatus pllRun(Dev_ad9545 *d)
 //            pllState = PLL_STATE_ERROR;
 //            break;
 //        }
-        if (DEV_OK != pllReadStatus(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
+//        if (DEV_OK != pllReadStatus(d)) {
+//            pllState = PLL_STATE_ERROR;
+//            break;
+//        }
 //        if (DEV_OK != pllReadAllRegisters(d)) {
 //            pllState = PLL_STATE_ERROR;
 //            break;
 //        }
-        osDelay(50);
         break;
     case PLL_STATE_ERROR:
         osDelay(100);
@@ -1375,11 +1272,20 @@ DeviceStatus pllRun(Dev_ad9545 *d)
     //        }
     //    }
 
+    if (pllState == PLL_STATE_DIST_SYNC || pllState == PLL_STATE_RUN) {
+        printf(ANSI_CLEARTERM ANSI_GOHOME);
+        if (DEV_OK != pllIoUpdate(d)) {
+            pllState = PLL_STATE_ERROR;
+        }
+        if (DEV_OK != pllReadStatus(d)) {
+            pllState = PLL_STATE_ERROR;
+        }
+        osDelay(50);
+    }
 //    osDelay(1000);
     if (oldState != pllState) {
         printf("PLL state changed %s -> %s\n", pllStateStr(oldState), pllStateStr(pllState));
         stateStartTick = HAL_GetTick();
     }
 //    printf("PLL FSM state %s\n", pllStateStr(pllState));
-    return d->present;
 }
