@@ -112,7 +112,6 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
     d->APLL_M_Divider = 8;
-//    memset(&d->profile[0], 0, sizeof(Pll_DPLL_Profile_TypeDef));
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;

@@ -18,6 +18,7 @@
 #define DEV_TYPES_H
 
 #include <stdint.h>
+#include "ad9545_status.h"
 
 typedef enum {
     SENSOR_UNKNOWN  = 0,
@@ -63,20 +64,20 @@ typedef enum {
     PLL_STATE_SYSCLK_WAITLOCK,
     PLL_STATE_APLL_WAITCAL,
     PLL_STATE_SYSCLK_LOCKED,
-    PLL_STATE_DIST_SYNC,
     PLL_STATE_RUN,
     PLL_STATE_ERROR
 } PllState;
 
-typedef struct {
-    int locked;
-    int stable;
-} PllSysclkStatus;
+//typedef struct {
+//    int locked;
+//    int stable;
+//} PllSysclkStatus;
 
 typedef struct {
     DeviceStatus present;
     PllState pllState;
-    PllSysclkStatus sysclkStatus;
+//    PllSysclkStatus sysclkStatus;
+    AD9545_Status status;
 } Dev_ad9545;
 
 #endif // DEV_TYPES_H

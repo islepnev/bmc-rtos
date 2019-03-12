@@ -22,6 +22,8 @@
 #include "i2c.h"
 #include "ad9545_i2c_hal.h"
 #include "ad9545_setup.h"
+#include "ad9545_status.h"
+#include "dev_pll_print.h"
 #include "dev_types.h"
 #include "ansi_escape_codes.h"
 #include "cmsis_os.h"
@@ -792,65 +794,18 @@ err:
 static OpStatusTypeDef pllReadRefStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
-    // read RefA status
     uint8_t refa;
     ret = ad9545_read1(AD9545_REG1_3005, &refa);
     if (ret != HAL_OK)
         goto err;
-    printf("Ref A  %02X %s%s%s%s%s%s\n",
-           refa,
-           (refa & 0x01) ? " SLOW" : "",
-           (refa & 0x02) ? " FAST" : "",
-           (refa & 0x04) ? " JITTER" : "",
-           (refa & 0x08) ? " FAULT" : "",
-           (refa & 0x10) ? " VALID" : "",
-           (refa & 0x20) ? " LOS" : ""
-                          );
+    d->status.ref[0].raw = refa;
 
-//    // read RefAA status
-//    uint8_t refaa;
-//    ret = ad9545_read1(AD9545_REG1_3006, &refaa);
-//    if (ret != HAL_OK)
-//        goto err;
-//    printf("Ref AA %02X %s%s%s%s%s%s\n",
-//           refaa,
-//           (refaa & 0x01) ? " SLOW" : "",
-//           (refaa & 0x02) ? " FAST" : "",
-//           (refaa & 0x04) ? " JITTER" : "",
-//           (refaa & 0x08) ? " FAULT" : "",
-//           (refaa & 0x10) ? " VALID" : "",
-//           (refaa & 0x20) ? " LOS" : ""
-//                          );
-
-    // read RefB status
     uint8_t refb;
-    ret = ad9545_read1(AD9545_REG1_3007, &refb);
+    ret = ad9545_read1(AD9545_REG1_3005, &refb);
     if (ret != HAL_OK)
         goto err;
-    printf("Ref B  %02X %s%s%s%s%s%s\n",
-           refb,
-           (refb & 0x01) ? " SLOW" : "",
-           (refb & 0x02) ? " FAST" : "",
-           (refb & 0x04) ? " JITTER" : "",
-           (refb & 0x08) ? " FAULT" : "",
-           (refb & 0x10) ? " VALID" : "",
-           (refb & 0x20) ? " LOS" : ""
-                          );
+    d->status.ref[2].raw = refb;
 
-//    // read RefBB status
-//    uint8_t refbb;
-//    ret = ad9545_read1(AD9545_REG1_3008, &refbb);
-//    if (ret != HAL_OK)
-//        goto err;
-//    printf("Ref BB %02X %s%s%s%s%s%s\n",
-//           refbb,
-//           (refbb & 0x01) ? " SLOW" : "",
-//           (refbb & 0x02) ? " FAST" : "",
-//           (refbb & 0x04) ? " JITTER" : "",
-//           (refbb & 0x08) ? " FAULT" : "",
-//           (refbb & 0x10) ? " VALID" : "",
-//           (refbb & 0x20) ? " LOS" : ""
-//                          );
     return ret;
 err:
     DEBUG_PRINT_RET(ret);
@@ -861,7 +816,6 @@ static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDe
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
 
-    printf(" === DPLL channel %d ===\n", channel);
     uint16_t reg_offset = 0x0;
     switch(channel) {
     case DPLL0:
@@ -870,119 +824,35 @@ static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDe
         reg_offset = 0x100;
         break;
     }
-    // read DPLL0 translation profile
-    uint8_t dpll_TrProfile;
-    ret = ad9545_read1(AD9545_REG1_3009 + reg_offset, &dpll_TrProfile);
-    if (ret != HAL_OK)
-        goto err;
-    printf("Translation profile %d.%s%s%s%s%s%s%s\n",
-           channel,
-           (dpll_TrProfile==0) ? "none" : "",
-           (dpll_TrProfile==0x1) ? "0" : "",
-           (dpll_TrProfile==0x2) ? "1" : "",
-           (dpll_TrProfile==0x4) ? "2" : "",
-           (dpll_TrProfile==0x8) ? "3" : "",
-           (dpll_TrProfile==0x10) ? "4" : "",
-           (dpll_TrProfile==0x20) ? "5" : ""
-                                    );
+    DPLL_Status *dpll_status = &d->status.dpll[channel];
 
-    // read PLL0 status
-    uint8_t dpll_LockStatus;
-    ret = ad9545_read1(AD9545_REG1_3100 + reg_offset, &dpll_LockStatus);
+    ret = ad9545_read1(AD9545_REG1_3009 + 1 * channel, &dpll_status->act_profile.raw);
     if (ret != HAL_OK)
         goto err;
-    printf("Lock status %02X %s%s%s%s%s%s\n",
-           dpll_LockStatus,
-           (dpll_LockStatus & 0x01) ? " ALL_LOCK" : "",
-           (dpll_LockStatus & 0x02) ? " D_PHASE_LOCK" : "",
-           (dpll_LockStatus & 0x04) ? " D_FREQ_LOCK" : "",
-           (dpll_LockStatus & 0x08) ? " A_LOCK" : "",
-           (dpll_LockStatus & 0x10) ? " A_CAL_BUSY" : "",
-           (dpll_LockStatus & 0x20) ? " A_CALIBRATED" : ""
-                                      );
-
-    // read PLL0 status
-    uint8_t dpll_OperStatus;
-    ret = ad9545_read1(AD9545_REG1_3101 + reg_offset, &dpll_OperStatus);
+    ret = ad9545_read1(AD9545_REG1_3100 + reg_offset, &dpll_status->lock_status.raw);
     if (ret != HAL_OK)
         goto err;
-    printf("Oper status %02X %s%s%s%s %s %d.%d\n",
-           dpll_OperStatus,
-           (dpll_OperStatus & 0x01) ? " FREERUN" : "",
-           (dpll_OperStatus & 0x02) ? " HOLDOVER" : "",
-           (dpll_OperStatus & 0x04) ? " REF_SWITCH" : "",
-           (dpll_OperStatus & 0x08) ? " ACTIVE" : "",
-           (dpll_OperStatus & 0x08) ? "current profile" : "last profile",
-           channel,
-           (dpll_OperStatus >> 4) & 0x3
-           );
-    // read PLL0 state
-    uint8_t dpll_OperState;
-    ret = ad9545_read1(AD9545_REG1_3102 + reg_offset, &dpll_OperState);
+    ret = ad9545_read1(AD9545_REG1_3101 + reg_offset, &dpll_status->operation.raw);
     if (ret != HAL_OK)
         goto err;
-    printf("state %02X %s%s%s%s%s\n",
-           dpll_OperState,
-           (dpll_OperState & 0x01) ? " HIST" : "",
-           (dpll_OperState & 0x02) ? " FREQ_CLAMP" : "",
-           (dpll_OperState & 0x04) ? " PHASE_SLEW_LIMIT" : "",
-           (dpll_OperState & 0x10) ? " FACQ_ACT" : "",
-           (dpll_OperState & 0x20) ? " FACQ_DONE" : ""
-                                     );
-
-    int freq_clamp = (dpll_OperState & 0x02);
-
-    // read PLL0 PLD/FLD tub
-    uint16_t dpll_PldTub;
-    ret = ad9545_read2(AD9545_REG2_3109 + reg_offset, &dpll_PldTub);
+    ret = ad9545_read1(AD9545_REG1_3102 + reg_offset, &dpll_status->state.raw);
     if (ret != HAL_OK)
         goto err;
-    uint16_t dpll_FldTub;
-    ret = ad9545_read2(AD9545_REG2_310B + reg_offset, &dpll_FldTub);
+    ret = ad9545_read2(AD9545_REG2_3109 + reg_offset, &dpll_status->pld_tub);
     if (ret != HAL_OK)
         goto err;
-    printf("PLD tub %d, FLD tub %d\n", dpll_PldTub, dpll_FldTub);
-
-    {
-        uint64_t dpll_TWH;
-        ret = ad9545_read6(AD9545_REG6_3103 + reg_offset, &dpll_TWH);
-        if (ret != HAL_OK)
-            goto err;
-        Pll_DPLL_Setup_TypeDef dpll = {0};
-        init_DPLL_Setup(&dpll, channel);
-        int64_t twdelta = dpll_TWH - dpll.Freerun_Tuning_Word;
-        int64_t norm = dpll.Freerun_Tuning_Word/1000000000ULL;
-        if (freq_clamp)
-            printf("TW history %lld (FREQ_CLAMP)\n", dpll_TWH);
-        else
-            printf("TW history %lld (%lld ppb)\n", dpll_TWH, (twdelta/(norm)));
-    }
-    {
-        uint8_t dpll_phase_slew;
-        ret = ad9545_read1(AD9545_REG1_310D + reg_offset, &dpll_phase_slew);
-        if (ret != HAL_OK)
-            goto err;
-        printf("Phase slew %02X %s%s%s%s\n",
-               dpll_phase_slew,
-               (dpll_phase_slew & 0x1) ? " Q1A" : "",
-               (dpll_phase_slew & 0x2) ? " Q1AA" : "",
-               (dpll_phase_slew & 0x4) ? " Q1B" : "",
-               (dpll_phase_slew & 0x8) ? " Q1BB" : ""
-                                         );
-    }
-    {
-        uint8_t dpll_phase_control_error;
-        ret = ad9545_read1(AD9545_REG1_310E + reg_offset, &dpll_phase_control_error);
-        if (ret != HAL_OK)
-            goto err;
-        printf("Phase control error %02X %s%s%s%s\n",
-               dpll_phase_control_error,
-               (dpll_phase_control_error & 0x1) ? " Q1A" : "",
-               (dpll_phase_control_error & 0x2) ? " Q1AA" : "",
-               (dpll_phase_control_error & 0x4) ? " Q1B" : "",
-               (dpll_phase_control_error & 0x8) ? " Q1BB" : ""
-                                                  );
-    }
+    ret = ad9545_read2(AD9545_REG2_310B + reg_offset, &dpll_status->fld_tub);
+    if (ret != HAL_OK)
+        goto err;
+    ret = ad9545_read6(AD9545_REG6_3103 + reg_offset, &dpll_status->ftw_history);
+    if (ret != HAL_OK)
+        goto err;
+    ret = ad9545_read1(AD9545_REG1_310D + reg_offset, &dpll_status->phase_slew);
+    if (ret != HAL_OK)
+        goto err;
+    ret = ad9545_read1(AD9545_REG1_310E + reg_offset, &dpll_status->phase_control_error);
+    if (ret != HAL_OK)
+        goto err;
 
     return ret;
 err:
@@ -993,31 +863,19 @@ err:
 static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
-    // read eeprom status
-    uint8_t eepromStatus;
-    ret = ad9545_read1(AD9545_LIVE_REG1_3000, &eepromStatus);
-    if (ret != HAL_OK)
-        goto err;
-//    printf("eeprom status %02X\n", eepromStatus);
 
-    // read temp
-    uint16_t temp;
-    ret = ad9545_read2(AD9545_REG2_INT_THERM, &temp);
+    ret = ad9545_read1(AD9545_LIVE_REG1_3000, &d->status.eeprom.raw);
     if (ret != HAL_OK)
         goto err;
-    printf("Internal temp %d C\n", temp/128);
-
-    // read misc status
-    uint8_t miscStatus;
-    ret = ad9545_read1(AD9545_REG1_3002, &miscStatus);
+    ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
     if (ret != HAL_OK)
         goto err;
-    printf("misc status %02X %s%s%s\n",
-           miscStatus,
-           (miscStatus & 0x01) ? " TEMP" : "",
-           (miscStatus & 0x02) ? " AUX_DPLL_LOCK" : "",
-           (miscStatus & 0x04) ? " AUX_DPLL_REF_FAULT" : ""
-                                 );
+    ret = ad9545_read1(AD9545_REG1_3002, &d->status.misc.raw);
+    if (ret != HAL_OK)
+        goto err;
+    ret = ad9545_read2(AD9545_REG2_INT_THERM, (uint16_t *)&d->status.internal_temp);
+    if (ret != HAL_OK)
+        goto err;
 
     ret = pllReadRefStatus(d);
     if (ret != HAL_OK)
@@ -1050,17 +908,11 @@ err:
 static OpStatusTypeDef pllReadSysclkLocked(Dev_ad9545 *d)
 {
     // read sysclk status
-    uint8_t sysclkStatus;
-    HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &sysclkStatus);
+    HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
     if (ret != HAL_OK)
         goto err;
-    d->sysclkStatus.locked = sysclkStatus & 0x1;
-    d->sysclkStatus.stable = sysclkStatus & 0x2;
-//    printf("sysclk: locked %d, stable %d\n", d->sysclkStatus.locked, d->sysclkStatus.stable);
     return ret;
 err:
-    d->sysclkStatus.locked = 0;
-    d->sysclkStatus.stable = 0;
     DEBUG_PRINT_RET(ret);
     return ret;
 }
@@ -1188,7 +1040,7 @@ void pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (d->sysclkStatus.locked && d->sysclkStatus.stable) {
+        if (d->status.sysclk.b.locked && d->status.sysclk.b.stable) {
             pllCalibrateApll(d);
             pllState = PLL_STATE_APLL_WAITCAL;
         }
@@ -1202,7 +1054,7 @@ void pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (d->sysclkStatus.locked && d->sysclkStatus.stable)
+        if (d->status.sysclk.b.locked && d->status.sysclk.b.stable)
             pllState = PLL_STATE_SYSCLK_LOCKED;
         if (stateTicks() > 2000) {
             printf("SYSCLK_WAITCAL timeout\n");
@@ -1214,7 +1066,7 @@ void pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (!d->sysclkStatus.locked) {
+        if (!d->status.sysclk.b.locked) {
             printf("SYSCLK unlocked\n");
             pllState = PLL_STATE_ERROR;
             break;
@@ -1240,38 +1092,10 @@ void pllRun(Dev_ad9545 *d)
                 pllState = PLL_STATE_ERROR;
                 break;
             }
-            if (0) {
-                // check DPLL FREERUN
-                uint8_t dpll0_OperStatus;
-                if (HAL_OK != ad9545_read1(AD9545_REG1_3101 + 0, &dpll0_OperStatus)) {
-                    pllState = PLL_STATE_ERROR;
-                    break;
-                }
-                uint8_t dpll1_OperStatus;
-                if (HAL_OK != ad9545_read1(AD9545_REG1_3101 + 0x100, &dpll1_OperStatus)) {
-                    pllState = PLL_STATE_ERROR;
-                    break;
-                }
-                int dpll0_freerun = dpll0_OperStatus & 0x01;
-                int dpll1_freerun = dpll1_OperStatus & 0x01;
-                if ((dpll0_freerun & dpll1_freerun))
-                    pllState = PLL_STATE_DIST_SYNC;
-            } else {
-                pllState = PLL_STATE_DIST_SYNC;
-            }
-        }
-        break;
-    case PLL_STATE_DIST_SYNC:
-        if (stateTicks() > 0) {
             if (DEV_OK != pllSyncAllDistDividers(d)) {
                 pllState = PLL_STATE_ERROR;
                 break;
             }
-//            osDelay(100);
-//            if (DEV_OK != pllResetOutputDividers(d)) {
-//                pllState = PLL_STATE_ERROR;
-//                break;
-//            }
             pllState = PLL_STATE_RUN;
         }
         break;
@@ -1288,7 +1112,7 @@ void pllRun(Dev_ad9545 *d)
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (!d->sysclkStatus.locked) {
+        if (!d->status.sysclk.b.locked) {
             printf("SYSCLK unlocked\n");
             pllState = PLL_STATE_ERROR;
             break;
@@ -1322,7 +1146,7 @@ void pllRun(Dev_ad9545 *d)
     //        }
     //    }
 
-    if (pllState == PLL_STATE_DIST_SYNC || pllState == PLL_STATE_RUN) {
+    if (pllState == PLL_STATE_RUN) {
         printf(ANSI_CLEARTERM ANSI_GOHOME);
         if (DEV_OK != pllIoUpdate(d)) {
             pllState = PLL_STATE_ERROR;
@@ -1330,6 +1154,7 @@ void pllRun(Dev_ad9545 *d)
         if (DEV_OK != pllReadStatus(d)) {
             pllState = PLL_STATE_ERROR;
         }
+        pllPrintStatus(d);
 //        osDelay(50);
     }
 //    osDelay(1000);

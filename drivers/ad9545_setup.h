@@ -20,6 +20,13 @@
 #include <stdint.h>
 
 typedef enum {
+    REFA = 0,
+    REFAA = 1,
+    REFB = 2,
+    REFBB = 3,
+} PllRef_TypeDef;
+
+typedef enum {
     DPLL0 = 0,
     DPLL1 = 1,
 } PllChannel_TypeDef;
