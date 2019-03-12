@@ -84,12 +84,25 @@ enum {
     AD9545_REG1_Sysclk_Input = 0x0201,
     AD9545_REG5_Sysclk_Ref_Frequency = 0x0202,
     AD9545_REG3_Sysclk_Stability_Timer = 0x0207,
+    AD9545_REG1_0280 = 0x0280,
+    AD9545_REG1_0282 = 0x0282,
+    AD9545_REG2_0285 = 0x0285,
+    AD9545_REG5_0289 = 0x0289,
 
     AD9545_REG1_0300 = 0x0300,
     AD9545_REG1_0304 = 0x0304,
 
     AD9545_REG4_0400 = 0x0400,
     AD9545_REG8_0404 = 0x0404,
+    AD9545_REG3_040C = 0x040C,
+    AD9545_REG3_0410 = 0x0410,
+    AD9545_REG2_0413 = 0x0413,
+
+    AD9545_REG4_0440 = 0x0440,
+    AD9545_REG8_0444 = 0x0444,
+    AD9545_REG3_044C = 0x044C,
+    AD9545_REG2_0450 = 0x0450,
+    AD9545_REG2_0453 = 0x0453,
 
     AD9545_REG1_10D7 = 0x10D7,
     AD9545_REG1_10D8 = 0x10D8,
@@ -130,6 +143,7 @@ enum {
     AD9545_REG3_1617 = 0x1617,
     AD9545_REG1_2000 = 0x2000,
     AD9545_REG1_2001 = 0x2001,
+    AD9545_REG1_200C = 0x200C,
     AD9545_REG1_2100 = 0x2100,
     AD9545_REG1_2102 = 0x2102,
     AD9545_REG1_2103 = 0x2103,
@@ -142,8 +156,8 @@ enum {
     AD9545_REG1_2203 = 0x2203,
     AD9545_REG1_2205 = 0x2205,
     AD9545_REG1_2207 = 0x2207,
-    AD9545_REG1_3000 = 0x3000,
-    AD9545_REG1_3001 = 0x3001,
+    AD9545_LIVE_REG1_3000 = 0x3000,
+    AD9545_LIVE_REG1_3001 = 0x3001,
     AD9545_REG1_3002 = 0x3002,
     AD9545_REG2_INT_THERM = 0x3003,
     AD9545_REG1_3005 = 0x3005,
@@ -152,17 +166,24 @@ enum {
     AD9545_REG1_3008 = 0x3008,
     AD9545_REG1_3009 = 0x3009,
     AD9545_REG1_300A = 0x300A,
+
     AD9545_REG1_3100 = 0x3100,
     AD9545_REG1_3101 = 0x3101,
     AD9545_REG1_3102 = 0x3102,
     AD9545_REG6_3103 = 0x3103,
     AD9545_REG2_3109 = 0x3109,
     AD9545_REG2_310B = 0x310B,
+    AD9545_REG1_310D = 0x310D,
+    AD9545_REG1_310E = 0x310E,
+
     AD9545_REG1_3200 = 0x3200,
     AD9545_REG1_3201 = 0x3201,
     AD9545_REG1_3202 = 0x3202,
+    AD9545_REG6_3203 = 0x3203,
     AD9545_REG2_3209 = 0x3209,
     AD9545_REG2_320B = 0x320B,
+    AD9545_REG1_320D = 0x320D,
+    AD9545_REG1_320E = 0x320E,
 };
 
 enum {
@@ -187,7 +208,7 @@ static OpStatusTypeDef pllIoUpdate(Dev_ad9545 *d)
     HAL_StatusTypeDef ret = ad9545_write1(0x000F, data);
     if (ret != HAL_OK)
         goto err;
-    osDelay(1);
+//    osDelay(1);
     return ret;
 err:
 //    DEBUG_PRINT_RET(ret);
@@ -207,7 +228,7 @@ static OpStatusTypeDef pllRegisterPulseBit(Dev_ad9545 *d, uint16_t address, uint
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(address, data)))
+    if (HAL_OK != (ret = ad9545_write1(address, data & ~bitmask)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
@@ -283,21 +304,25 @@ static OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    PllSysclkSetup_TypeDef sysclkSetup;
+    PllSysclkSetup_TypeDef sysclkSetup = {0};
     init_PllSysclkSetup(&sysclkSetup);
 
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup.Sysclk_FB_DIV_Ratio)))
         goto err;
-
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_Input, sysclkSetup.Sysclk_Input)))
         goto err;
-
     if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_Sysclk_Ref_Frequency, sysclkSetup.sysclk_Ref_Frequency_milliHz)))
         goto err;
-
     if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_Sysclk_Stability_Timer, sysclkSetup.Sysclk_Stability_Timer)))
         goto err;
-
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0280, sysclkSetup.TDC_Compensation_Source)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0282, sysclkSetup.DPLL_Compensation_Source)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0285, sysclkSetup.AuxDPLL_Bandwidth)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_0289, sysclkSetup.CompensationValue)))
+        goto err;
     if (HAL_OK != (ret = ad9545_write2(0x2903, sysclkSetup.Temperature_Low_Threshold)))
         goto err;
     if (HAL_OK != (ret = ad9545_write2(0x2905, sysclkSetup.Temperature_Hihg_Threshold)))
@@ -402,7 +427,7 @@ static OpStatusTypeDef pllSetupOutputDrivers(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    Pll_OutputDrivers_Setup_TypeDef setup;
+    Pll_OutputDrivers_Setup_TypeDef setup = {0};
     init_Pll_OutputDrivers_Setup(&setup);
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D7, setup.Driver_Config.raw)))
         goto err;
@@ -444,10 +469,10 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDistribution(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    Pll_OutputDividers_Setup_TypeDef setup;
+    Pll_OutputDividers_Setup_TypeDef setup = {0};
     init_Pll_OutputDividers_Setup(&setup);
     // channel 0
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DA, setup.Secondary_Clock_Path_0)))
@@ -531,7 +556,7 @@ err:
 static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    PllRefSetup_TypeDef refSetup;
+    PllRefSetup_TypeDef refSetup = {0};
     init_PllRefSetup(&refSetup);
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, refSetup.REFA_Receiver_Settings)))
         goto err;
@@ -542,16 +567,30 @@ static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 
     if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0400, refSetup.REFA_R_Divider)))
         goto err;
-
     if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0404, refSetup.REFA_Input_Period)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_040C, refSetup.REFA_Offset_Limit)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_0410, refSetup.REFA_Validation_Timer)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0413, refSetup.REFA_Jitter_Tolerance)))
         goto err;
 
     // REFERENCE INPUT B (REFB) REGISTERS—REGISTER 0x0440 TO REGISTER 0x0454
 
-    if (HAL_OK != (ret = ad9545_write4(0x0440, refSetup.REFB_R_Divider)))
+    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0440, refSetup.REFB_R_Divider)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0444, refSetup.REFB_Input_Period)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_044C, refSetup.REFB_Offset_Limit)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0450, refSetup.REFB_Validation_Timer)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0453, refSetup.REFB_Jitter_Tolerance)))
         goto err;
 
-    if (HAL_OK != (ret = ad9545_write8(0x0444, refSetup.REFB_Input_Period)))
+    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
         goto err;
 
     return ret;
@@ -560,22 +599,68 @@ err:
     return ret;
 }
 
-typedef enum {
-    DPLL0 = 0,
-    DPLL1 = 1,
-} PllChannel_TypeDef;
-
-static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d, PllChannel_TypeDef channel)
+static OpStatusTypeDef pllWriteProfile(Dev_ad9545 *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    Pll_DPLL_Setup_TypeDef dpll;
+
+    uint16_t reg_offset = AD9545_REG1_1200;
+    switch(channel) {
+    case DPLL0:
+        reg_offset += 0;
+        break;
+    case DPLL1:
+        reg_offset += 0x400;
+        break;
+    }
+    reg_offset += profileIndex * 0x20;
+
+    // DPLL TRANSLATION PROFILE REGISTERS
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x0, profile.Priority_and_Enable)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x1, profile.Profile_Ref_Source)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x2, profile.ZD_Feedback_Path)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x3, profile.Feedback_Mode.raw)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0x4, profile.Loop_BW)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0x8, profile.Hitless_FB_Divider)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0xC, profile.Buildout_FB_Divider)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x10, profile.Buildout_FB_Fraction)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x13, profile.Buildout_FB_Modulus)))
+        goto err;
+
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x17, profile.FastLock)))
+        goto err;
+
+    return ret;
+err:
+    DEBUG_PRINT_RET(ret);
+    return ret;
+}
+
+static OpStatusTypeDef pllSetupDPLLChannel(Dev_ad9545 *d, PllChannel_TypeDef channel)
+{
+    HAL_StatusTypeDef ret = HAL_ERROR;
+    Pll_DPLL_Setup_TypeDef dpll = {0};
+    init_DPLL_Setup(&dpll, channel);
     uint16_t reg_offset = 0x0;
     switch(channel) {
     case DPLL0:
-        init_DPLL0_Setup(&dpll);
         break;
     case DPLL1:
-        init_DPLL1_Setup(&dpll);
         reg_offset = 0x400;
         break;
     }
@@ -583,83 +668,45 @@ static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d, PllChannel_TypeDef channel)
     // DPLL CHANNEL REGISTERS
     if (HAL_OK != (ret = ad9545_write6(reg_offset + 0x1000, dpll.Freerun_Tuning_Word)))
         goto err;
+    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x1006, dpll.FTW_Offset_Clamp)))
+        goto err;
 
     // APLL CHANNEL REGISTERS
     if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x1081, dpll.APLL_M_Divider)))
         goto err;
 
-    // DPLL TRANSLATION PROFILE 0.0 REGISTERS
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1200, dpll.Priority_and_Enable)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1201, dpll.Profile_Ref_Source)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1202, dpll.ZD_Feedback_Path)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + AD9545_REG1_1203, dpll.Feedback_Mode)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_1204, dpll.Loop_BW)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_1208, dpll.Hitless_FB_Divider)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + AD9545_REG4_120C, dpll.Buildout_FB_Divider)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1210, dpll.Buildout_FB_Fraction)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1213, dpll.Buildout_FB_Modulus)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + AD9545_REG3_1217, dpll.FastLock)))
-        goto err;
+    for (int i=0; i<2; i++)
+        if (HAL_OK != (ret = pllWriteProfile(d, channel, i, dpll.profile[i])))
+            goto err;
 
     return ret;
 err:
     DEBUG_PRINT_RET(ret);
     return ret;
 }
-static OpStatusTypeDef pllSetupDPLL0(Dev_ad9545 *d)
-{
-    Pll_DPLL_Setup_TypeDef dpll;
-    init_DPLL0_Setup(&dpll);
-    return pllSetupDPLL(d, DPLL0);
-}
-static OpStatusTypeDef pllSetupDPLL1(Dev_ad9545 *d)
-{
-    Pll_DPLL_Setup_TypeDef dpll;
-    init_DPLL1_Setup(&dpll);
-    return pllSetupDPLL(d, DPLL1);
-}
 
-static OpStatusTypeDef pllSetupOperationalControl(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-//    uint8_t Divider_Q0A = 0;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2102, Divider_Q0A)))
-//        goto err;
-//    uint8_t Divider_Q0B = 0;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2103, Divider_Q0B)))
-//        goto err;
-//    uint8_t Divider_Q0C = 0;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2104, Divider_Q0C)))
-//        goto err;
-    Pll_DPLLMode_Setup_TypeDef dpll_mode;
+    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL0)))
+        goto err;
+    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL1)))
+        goto err;
+    return ret;
+err:
+    DEBUG_PRINT_RET(ret);
+    return ret;
+}
+
+static OpStatusTypeDef pllSetupDPLLMode(Dev_ad9545 *d)
+{
+    HAL_StatusTypeDef ret = HAL_ERROR;
+
+    Pll_DPLLMode_Setup_TypeDef dpll_mode = {0};
     init_Pll_DPLLMode_Setup(&dpll_mode);
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2105, dpll_mode.dpll0_mode.raw)))
         goto err;
-//    uint8_t Divider_Q1A = 0;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2202, Divider_Q1A)))
-//        goto err;
-//    uint8_t Divider_Q1B = 0;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2203, Divider_Q1B)))
-//        goto err;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2205, dpll_mode.dpll1_mode.raw)))
         goto err;
 
@@ -669,11 +716,17 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllManualOutputSync(Dev_ad9545 *d)
+static OpStatusTypeDef pllCalibrateAll(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    if (HAL_OK != (ret = pllRegisterPulseBit(d, AD9545_REG1_2000, 0x08)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x01)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x01)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
     return ret;
@@ -682,7 +735,26 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetup(Dev_ad9545 *d)
+static OpStatusTypeDef pllSyncAllDistDividers(Dev_ad9545 *d)
+{
+    HAL_StatusTypeDef ret = HAL_ERROR;
+
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x08)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x08)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
+        goto err;
+
+    return ret;
+err:
+    DEBUG_PRINT_RET(ret);
+    return ret;
+}
+
+static OpStatusTypeDef pllSetupUnused(Dev_ad9545 *d)
 {
 //    int reset_b = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin));
 //    printf("reset_b = %d\n", reset_b);
@@ -785,15 +857,155 @@ err:
     return ret;
 }
 
+static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDef channel)
+{
+    HAL_StatusTypeDef ret = DEV_ERROR;
+
+    printf(" === DPLL channel %d ===\n", channel);
+    uint16_t reg_offset = 0x0;
+    switch(channel) {
+    case DPLL0:
+        break;
+    case DPLL1:
+        reg_offset = 0x100;
+        break;
+    }
+    // read DPLL0 translation profile
+    uint8_t dpll_TrProfile;
+    ret = ad9545_read1(AD9545_REG1_3009 + reg_offset, &dpll_TrProfile);
+    if (ret != HAL_OK)
+        goto err;
+    printf("Translation profile %d.%s%s%s%s%s%s%s\n",
+           channel,
+           (dpll_TrProfile==0) ? "none" : "",
+           (dpll_TrProfile==0x1) ? "0" : "",
+           (dpll_TrProfile==0x2) ? "1" : "",
+           (dpll_TrProfile==0x4) ? "2" : "",
+           (dpll_TrProfile==0x8) ? "3" : "",
+           (dpll_TrProfile==0x10) ? "4" : "",
+           (dpll_TrProfile==0x20) ? "5" : ""
+                                    );
+
+    // read PLL0 status
+    uint8_t dpll_LockStatus;
+    ret = ad9545_read1(AD9545_REG1_3100 + reg_offset, &dpll_LockStatus);
+    if (ret != HAL_OK)
+        goto err;
+    printf("Lock status %02X %s%s%s%s%s%s\n",
+           dpll_LockStatus,
+           (dpll_LockStatus & 0x01) ? " ALL_LOCK" : "",
+           (dpll_LockStatus & 0x02) ? " D_PHASE_LOCK" : "",
+           (dpll_LockStatus & 0x04) ? " D_FREQ_LOCK" : "",
+           (dpll_LockStatus & 0x08) ? " A_LOCK" : "",
+           (dpll_LockStatus & 0x10) ? " A_CAL_BUSY" : "",
+           (dpll_LockStatus & 0x20) ? " A_CALIBRATED" : ""
+                                      );
+
+    // read PLL0 status
+    uint8_t dpll_OperStatus;
+    ret = ad9545_read1(AD9545_REG1_3101 + reg_offset, &dpll_OperStatus);
+    if (ret != HAL_OK)
+        goto err;
+    printf("Oper status %02X %s%s%s%s %s %d.%d\n",
+           dpll_OperStatus,
+           (dpll_OperStatus & 0x01) ? " FREERUN" : "",
+           (dpll_OperStatus & 0x02) ? " HOLDOVER" : "",
+           (dpll_OperStatus & 0x04) ? " REF_SWITCH" : "",
+           (dpll_OperStatus & 0x08) ? " ACTIVE" : "",
+           (dpll_OperStatus & 0x08) ? "current profile" : "last profile",
+           channel,
+           (dpll_OperStatus >> 4) & 0x3
+           );
+    // read PLL0 state
+    uint8_t dpll_OperState;
+    ret = ad9545_read1(AD9545_REG1_3102 + reg_offset, &dpll_OperState);
+    if (ret != HAL_OK)
+        goto err;
+    printf("state %02X %s%s%s%s%s\n",
+           dpll_OperState,
+           (dpll_OperState & 0x01) ? " HIST" : "",
+           (dpll_OperState & 0x02) ? " FREQ_CLAMP" : "",
+           (dpll_OperState & 0x04) ? " PHASE_SLEW_LIMIT" : "",
+           (dpll_OperState & 0x10) ? " FACQ_ACT" : "",
+           (dpll_OperState & 0x20) ? " FACQ_DONE" : ""
+                                     );
+
+    int freq_clamp = (dpll_OperState & 0x02);
+
+    // read PLL0 PLD/FLD tub
+    uint16_t dpll_PldTub;
+    ret = ad9545_read2(AD9545_REG2_3109 + reg_offset, &dpll_PldTub);
+    if (ret != HAL_OK)
+        goto err;
+    uint16_t dpll_FldTub;
+    ret = ad9545_read2(AD9545_REG2_310B + reg_offset, &dpll_FldTub);
+    if (ret != HAL_OK)
+        goto err;
+    printf("PLD tub %d, FLD tub %d\n", dpll_PldTub, dpll_FldTub);
+
+    {
+        uint64_t dpll_TWH;
+        ret = ad9545_read6(AD9545_REG6_3103 + reg_offset, &dpll_TWH);
+        if (ret != HAL_OK)
+            goto err;
+        Pll_DPLL_Setup_TypeDef dpll = {0};
+        init_DPLL_Setup(&dpll, channel);
+        int64_t twdelta = dpll_TWH - dpll.Freerun_Tuning_Word;
+        int64_t norm = dpll.Freerun_Tuning_Word/1000000000ULL;
+        if (freq_clamp)
+            printf("TW history %lld (FREQ_CLAMP)\n", dpll_TWH);
+        else
+            printf("TW history %lld (%lld ppb)\n", dpll_TWH, (twdelta/(norm)));
+    }
+    {
+        uint8_t dpll_phase_slew;
+        ret = ad9545_read1(AD9545_REG1_310D + reg_offset, &dpll_phase_slew);
+        if (ret != HAL_OK)
+            goto err;
+        printf("Phase slew %02X %s%s%s%s\n",
+               dpll_phase_slew,
+               (dpll_phase_slew & 0x1) ? " Q1A" : "",
+               (dpll_phase_slew & 0x2) ? " Q1AA" : "",
+               (dpll_phase_slew & 0x4) ? " Q1B" : "",
+               (dpll_phase_slew & 0x8) ? " Q1BB" : ""
+                                         );
+    }
+    {
+        uint8_t dpll_phase_control_error;
+        ret = ad9545_read1(AD9545_REG1_310E + reg_offset, &dpll_phase_control_error);
+        if (ret != HAL_OK)
+            goto err;
+        printf("Phase control error %02X %s%s%s%s\n",
+               dpll_phase_control_error,
+               (dpll_phase_control_error & 0x1) ? " Q1A" : "",
+               (dpll_phase_control_error & 0x2) ? " Q1AA" : "",
+               (dpll_phase_control_error & 0x4) ? " Q1B" : "",
+               (dpll_phase_control_error & 0x8) ? " Q1BB" : ""
+                                                  );
+    }
+
+    return ret;
+err:
+    DEBUG_PRINT_RET(ret);
+    return ret;
+}
+
 static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
     // read eeprom status
     uint8_t eepromStatus;
-    ret = ad9545_read1(AD9545_REG1_3000, &eepromStatus);
+    ret = ad9545_read1(AD9545_LIVE_REG1_3000, &eepromStatus);
     if (ret != HAL_OK)
         goto err;
 //    printf("eeprom status %02X\n", eepromStatus);
+
+    // read temp
+    uint16_t temp;
+    ret = ad9545_read2(AD9545_REG2_INT_THERM, &temp);
+    if (ret != HAL_OK)
+        goto err;
+    printf("Internal temp %d C\n", temp/128);
 
     // read misc status
     uint8_t miscStatus;
@@ -807,187 +1019,26 @@ static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
            (miscStatus & 0x04) ? " AUX_DPLL_REF_FAULT" : ""
                                  );
 
-    // read temp
-    uint16_t temp;
-    ret = ad9545_read2(AD9545_REG2_INT_THERM, &temp);
-    if (ret != HAL_OK)
-        goto err;
-    printf("internal temp %d C\n", temp/128);
-
     ret = pllReadRefStatus(d);
     if (ret != HAL_OK)
         goto err;
 
-    // read DPLL0 translation profile
-    uint8_t dpll0TrProfile;
-    ret = ad9545_read1(AD9545_REG1_3009, &dpll0TrProfile);
+    ret = pllReadDPLLChannelStatus(d, DPLL0);
     if (ret != HAL_OK)
         goto err;
-    printf("DPLL0 translation profile %s%s%s%s%s%s%s\n",
-           (dpll0TrProfile==0) ? "none" : "",
-           (dpll0TrProfile==0x1) ? "0.0" : "",
-           (dpll0TrProfile==0x2) ? "0.1" : "",
-           (dpll0TrProfile==0x4) ? "0.2" : "",
-           (dpll0TrProfile==0x8) ? "0.3" : "",
-           (dpll0TrProfile==0x10) ? "0.4" : "",
-           (dpll0TrProfile==0x20) ? "0.5" : ""
-           );
 
-    // read DPLL1 translation profile
-    uint8_t dpll1TrProfile;
-    ret = ad9545_read1(AD9545_REG1_300A, &dpll1TrProfile);
+    ret = pllReadDPLLChannelStatus(d, DPLL1);
     if (ret != HAL_OK)
         goto err;
-    printf("DPLL1 translation profile %s%s%s%s%s%s%s\n",
-           (dpll1TrProfile==0) ? "none" : "",
-           (dpll1TrProfile==0x1) ? "1.0" : "",
-           (dpll1TrProfile==0x2) ? "1.1" : "",
-           (dpll1TrProfile==0x4) ? "1.2" : "",
-           (dpll1TrProfile==0x8) ? "1.3" : "",
-           (dpll1TrProfile==0x10) ? "1.4" : "",
-           (dpll1TrProfile==0x20) ? "1.5" : ""
-           );
 
-
-    // read PLL0 status
-    uint8_t dpll0LockStatus;
-    ret = ad9545_read1(AD9545_REG1_3100, &dpll0LockStatus);
-    if (ret != HAL_OK)
-        goto err;
-    printf("PLL0 lock status %02X %s%s%s%s%s%s\n",
-           dpll0LockStatus,
-           (dpll0LockStatus & 0x01) ? " ALL_LOCK" : "",
-           (dpll0LockStatus & 0x02) ? " D_PHASE_LOCK" : "",
-           (dpll0LockStatus & 0x04) ? " D_FREQ_LOCK" : "",
-           (dpll0LockStatus & 0x08) ? " A_LOCK" : "",
-           (dpll0LockStatus & 0x10) ? " A_CAL_BUSY" : "",
-           (dpll0LockStatus & 0x20) ? " A_CALIBRATED" : ""
-                                 );
-
-    // read PLL0 status
-    uint8_t dpll0OperStatus;
-    ret = ad9545_read1(AD9545_REG1_3101, &dpll0OperStatus);
-    if (ret != HAL_OK)
-        goto err;
-    printf("PLL0 oper status %02X %s%s%s%s profile %d\n",
-           dpll0OperStatus,
-           (dpll0OperStatus & 0x01) ? " FREERUN" : "",
-           (dpll0OperStatus & 0x02) ? " HOLDOVER" : "",
-           (dpll0OperStatus & 0x04) ? " REF_SWITCH" : "",
-           (dpll0OperStatus & 0x08) ? " ACTIVE" : "",
-           (dpll0OperStatus >> 4) & 0x3
-                                 );
-    // read PLL0 state
-    uint8_t dpll0OperState;
-    ret = ad9545_read1(AD9545_REG1_3102, &dpll0OperState);
-    if (ret != HAL_OK)
-        goto err;
-    printf("PLL0 state %02X %s%s%s%s%s\n",
-           dpll0OperState,
-           (dpll0OperState & 0x01) ? " HIST" : "",
-           (dpll0OperState & 0x02) ? " FREQ_CLAMP" : "",
-           (dpll0OperState & 0x04) ? " PHASE_SLEW_LIMIT" : "",
-           (dpll0OperState & 0x10) ? " FACQ_ACT" : "",
-           (dpll0OperState & 0x20) ? " FACQ_DONE" : ""
-           );
-
-//    // read PLL0 FTW History
-//    uint64_t dpll0FtwHistory;
-//    ret = ad9545_read6(AD9545_REG6_3103, &dpll0FtwHistory);
-//    if (ret != HAL_OK)
-//        return ret;
-//    printf("PLL0 FTW history %llu\n", dpll0FtwHistory);
-
-    // read PLL0 PLD/FLD tub
-    uint16_t dpll0PldTub;
-    ret = ad9545_read2(AD9545_REG2_3109, &dpll0PldTub);
-    if (ret != HAL_OK)
-        goto err;
-    uint16_t dpll0FldTub;
-    ret = ad9545_read2(AD9545_REG2_310B, &dpll0FldTub);
-    if (ret != HAL_OK)
-        goto err;
-    printf("PLL0 PLD tub %d, FLD tub %d\n", dpll0PldTub, dpll0FldTub);
-
-
-    // read PLL1 status
-    {
-    uint8_t dpll1LockStatus;
-    ret = ad9545_read1(AD9545_REG1_3200, &dpll1LockStatus);
-    if (ret != HAL_OK)
-        return ret;
-    printf("PLL1 lock status %02X %s%s%s%s%s%s\n",
-           dpll1LockStatus,
-           (dpll1LockStatus & 0x01) ? " ALL_LOCK" : "",
-           (dpll1LockStatus & 0x02) ? " D_PHASE_LOCK" : "",
-           (dpll1LockStatus & 0x04) ? " D_FREQ_LOCK" : "",
-           (dpll1LockStatus & 0x08) ? " A_LOCK" : "",
-           (dpll1LockStatus & 0x10) ? " A_CAL_BUSY" : "",
-           (dpll1LockStatus & 0x20) ? " A_CALIBRATED" : ""
-                                 );
-
-    // read PLL1 status
-    uint8_t dpll1OperStatus;
-    ret = ad9545_read1(AD9545_REG1_3201, &dpll1OperStatus);
-    if (ret != HAL_OK)
-        return ret;
-    printf("PLL1 oper status %02X %s%s%s%s profile %d\n",
-           dpll1OperStatus,
-           (dpll1OperStatus & 0x01) ? " FREERUN" : "",
-           (dpll1OperStatus & 0x02) ? " HOLDOVER" : "",
-           (dpll1OperStatus & 0x04) ? " REF_SWITCH" : "",
-           (dpll1OperStatus & 0x08) ? " ACTIVE" : "",
-           (dpll1OperStatus >> 4) & 0x3
-                                 );
-    // read PLL1 state
-    uint8_t dpll1OperState;
-    ret = ad9545_read1(AD9545_REG1_3202, &dpll1OperState);
-    if (ret != HAL_OK)
-        return ret;
-    printf("PLL1 state %02X %s%s%s%s%s\n",
-           dpll1OperState,
-           (dpll1OperState & 0x01) ? " HIST" : "",
-           (dpll1OperState & 0x02) ? " FREQ_CLAMP" : "",
-           (dpll1OperState & 0x04) ? " PHASE_SLEW_LIMIT" : "",
-           (dpll1OperState & 0x10) ? " FACQ_ACT" : "",
-           (dpll1OperState & 0x20) ? " FACQ_DONE" : ""
-           );
-    }
-    /*
-    // read PLL1 status
-    uint8_t dpll1LockStatus;
-    ret = ad9545_read1(AD9545_REG1_3200, &dpll1LockStatus);
-    if (ret != HAL_OK)
-        return ret;
-    printf("PLL1 status %02X %s%s%s%s%s%s\n",
-           dpll1LockStatus,
-           (dpll1LockStatus & 0x01) ? " ALL_LOCK" : "",
-           (dpll1LockStatus & 0x02) ? " D_PHASE_LOCK" : "",
-           (dpll1LockStatus & 0x04) ? " D_FREQ_LOCK" : "",
-           (dpll1LockStatus & 0x08) ? " A_LOCK" : "",
-           (dpll1LockStatus & 0x10) ? " A_CAL_BUSY" : "",
-           (dpll1LockStatus & 0x20) ? " A_CALIBRATED" : ""
-                                 );
-*/
-    // read PLL1 PLD/FLD tub
-    uint16_t dpll1PldTub;
-    ret = ad9545_read2(AD9545_REG2_3209, &dpll1PldTub);
-    if (ret != HAL_OK)
-        goto err;
-    uint16_t dpll1FldTub;
-    ret = ad9545_read2(AD9545_REG2_320B, &dpll1FldTub);
-    if (ret != HAL_OK)
-        goto err;
-    printf("PLL1 PLD tub %d, FLD tub %d\n", dpll1PldTub, dpll1FldTub);
-
-    // read
-    for (int i=0x3000; i<=0x300A; i++) {
-        uint8_t data;
-        ret = ad9545_read1(i, &data);
-        if (ret != HAL_OK)
-            goto err;
-        printf("[%04X] = %02X\n", i, data);
-    }
+//    // read
+//    for (int i=0x3000; i<=0x300A; i++) {
+//        uint8_t data;
+//        ret = ad9545_read1(i, &data);
+//        if (ret != HAL_OK)
+//            goto err;
+//        printf("[%04X] = %02X\n", i, data);
+//    }
 
     //    osDelay(1000);
     return DEV_OK;
@@ -1000,12 +1051,12 @@ static OpStatusTypeDef pllReadSysclkLocked(Dev_ad9545 *d)
 {
     // read sysclk status
     uint8_t sysclkStatus;
-    HAL_StatusTypeDef ret = ad9545_read1(AD9545_REG1_3001, &sysclkStatus);
+    HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &sysclkStatus);
     if (ret != HAL_OK)
         goto err;
     d->sysclkStatus.locked = sysclkStatus & 0x1;
     d->sysclkStatus.stable = sysclkStatus & 0x2;
-    printf("sysclk: locked %d, stable %d\n", d->sysclkStatus.locked, d->sysclkStatus.stable);
+//    printf("sysclk: locked %d, stable %d\n", d->sysclkStatus.locked, d->sysclkStatus.stable);
     return ret;
 err:
     d->sysclkStatus.locked = 0;
@@ -1154,7 +1205,7 @@ void pllRun(Dev_ad9545 *d)
         if (d->sysclkStatus.locked && d->sysclkStatus.stable)
             pllState = PLL_STATE_SYSCLK_LOCKED;
         if (stateTicks() > 2000) {
-            printf("SYSCLK_WAITLOCK timeout\n");
+            printf("SYSCLK_WAITCAL timeout\n");
             pllState = PLL_STATE_ERROR;
         }
         break;
@@ -1164,62 +1215,60 @@ void pllRun(Dev_ad9545 *d)
             break;
         }
         if (!d->sysclkStatus.locked) {
+            printf("SYSCLK unlocked\n");
             pllState = PLL_STATE_ERROR;
             break;
         }
-        if (DEV_OK != pllSetupOutputDrivers(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllResetOutputDividers(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllSetup(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllSetupRef(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllSetupOperationalControl(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllSetupDPLL0(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllSetupDPLL1(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        pllState = PLL_STATE_DIST_SYNC;
-        break;
-    case PLL_STATE_DIST_SYNC:
-        if (stateTicks() > 1000) {
-            if (DEV_OK != pllSetupDistribution(d)) {
+        if (stateTicks() > 0) {
+            if (DEV_OK != pllSetupOutputDrivers(d)) {
                 pllState = PLL_STATE_ERROR;
                 break;
             }
-//            if (DEV_OK != pllManualOutputSync(d)) {
+            if (DEV_OK != pllSetupRef(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+            if (DEV_OK != pllSetupDPLL(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+            if (DEV_OK != pllSetupDPLLMode(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+            if (DEV_OK != pllSetupDistributionWithUpdate(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+            if (0) {
+                // check DPLL FREERUN
+                uint8_t dpll0_OperStatus;
+                if (HAL_OK != ad9545_read1(AD9545_REG1_3101 + 0, &dpll0_OperStatus)) {
+                    pllState = PLL_STATE_ERROR;
+                    break;
+                }
+                uint8_t dpll1_OperStatus;
+                if (HAL_OK != ad9545_read1(AD9545_REG1_3101 + 0x100, &dpll1_OperStatus)) {
+                    pllState = PLL_STATE_ERROR;
+                    break;
+                }
+                int dpll0_freerun = dpll0_OperStatus & 0x01;
+                int dpll1_freerun = dpll1_OperStatus & 0x01;
+                if ((dpll0_freerun & dpll1_freerun))
+                    pllState = PLL_STATE_DIST_SYNC;
+            } else {
+                pllState = PLL_STATE_DIST_SYNC;
+            }
+        }
+        break;
+    case PLL_STATE_DIST_SYNC:
+        if (stateTicks() > 0) {
+            if (DEV_OK != pllSyncAllDistDividers(d)) {
+                pllState = PLL_STATE_ERROR;
+                break;
+            }
+//            osDelay(100);
+//            if (DEV_OK != pllResetOutputDividers(d)) {
 //                pllState = PLL_STATE_ERROR;
 //                break;
 //            }
@@ -1240,6 +1289,7 @@ void pllRun(Dev_ad9545 *d)
             break;
         }
         if (!d->sysclkStatus.locked) {
+            printf("SYSCLK unlocked\n");
             pllState = PLL_STATE_ERROR;
             break;
         }
@@ -1280,12 +1330,13 @@ void pllRun(Dev_ad9545 *d)
         if (DEV_OK != pllReadStatus(d)) {
             pllState = PLL_STATE_ERROR;
         }
-        osDelay(50);
+//        osDelay(50);
     }
 //    osDelay(1000);
     if (oldState != pllState) {
         printf("PLL state changed %s -> %s\n", pllStateStr(oldState), pllStateStr(pllState));
         stateStartTick = HAL_GetTick();
     }
-//    printf("PLL FSM state %s\n", pllStateStr(pllState));
+    printf("PLL FSM state %s\n", pllStateStr(pllState));
+    osDelay(50);
 }

@@ -19,6 +19,11 @@
 
 #include <stdint.h>
 
+typedef enum {
+    DPLL0 = 0,
+    DPLL1 = 1,
+} PllChannel_TypeDef;
+
 typedef struct {
     uint8_t Sysclk_FB_DIV_Ratio;
     uint8_t Sysclk_Input;
@@ -26,30 +31,59 @@ typedef struct {
     uint32_t Sysclk_Stability_Timer;
     uint16_t Temperature_Low_Threshold;
     uint16_t Temperature_Hihg_Threshold;
+    uint16_t AuxDPLL_Bandwidth;
+    uint64_t CompensationValue;
+    uint8_t TDC_Compensation_Source;
+    uint8_t DPLL_Compensation_Source;
 } PllSysclkSetup_TypeDef;
 
 typedef struct {
     uint8_t REFA_Receiver_Settings;
-    uint8_t REFB_Receiver_Settings;
     uint32_t REFA_R_Divider;
     uint64_t REFA_Input_Period;
+    uint32_t REFA_Offset_Limit;
+    uint32_t REFA_Validation_Timer;
+    uint32_t REFA_Jitter_Tolerance;
+    uint8_t REFB_Receiver_Settings;
     uint32_t REFB_R_Divider;
     uint64_t REFB_Input_Period;
+    uint32_t REFB_Offset_Limit;
+    uint32_t REFB_Validation_Timer;
+    uint16_t REFB_Jitter_Tolerance;
 } PllRefSetup_TypeDef;
 
+typedef union
+{
+  struct
+  {
+      uint8_t enable_hitless:1;
+      uint8_t enable_ext_zd:1;
+      uint8_t tag_mode:3;
+      uint8_t reserved:2;
+      uint8_t loopfilter_base:1;
+  } b;
+  uint8_t raw;
+} DPLL_Feedback_Mode_REG_Type;
+
 typedef struct {
-    uint64_t Freerun_Tuning_Word;
-    uint8_t APLL_M_Divider;
     uint8_t Priority_and_Enable;
     uint8_t Profile_Ref_Source;
     uint8_t ZD_Feedback_Path;
-    uint8_t Feedback_Mode;
+    DPLL_Feedback_Mode_REG_Type Feedback_Mode;
     uint32_t Loop_BW;
     uint32_t Hitless_FB_Divider;
     uint32_t Buildout_FB_Divider;
     uint32_t Buildout_FB_Fraction;
     uint32_t Buildout_FB_Modulus;
     uint32_t FastLock;
+} Pll_DPLL_Profile_TypeDef;
+
+enum {DPLL_PROFILE_COUNT = 6};
+typedef struct {
+    uint64_t Freerun_Tuning_Word;
+    uint32_t FTW_Offset_Clamp;
+    uint8_t APLL_M_Divider;
+    Pll_DPLL_Profile_TypeDef profile[DPLL_PROFILE_COUNT];
 } Pll_DPLL_Setup_TypeDef;
 
 typedef union
@@ -114,8 +148,9 @@ typedef struct {
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
 void init_PllRefSetup(PllRefSetup_TypeDef *d);
-void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d);
-void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d);
+//void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d);
+//void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d);
+void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel);
 void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d);
 void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d);
 void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d);
