@@ -124,6 +124,16 @@ static void log_sensor_status(void)
     }
 }
 
+SensorStatus getMonStatus(Dev_powermon *pm)
+{
+    SensorStatus monStatus = SENSOR_CRITICAL;
+    if ((pm->monState == MON_STATE_READ)
+            && (getMonStateTicks(pm) > SENSORS_SETTLE_TICKS)) {
+        monStatus = pm_sensors_getStatus(pm);
+    }
+    return monStatus;
+}
+
 static int pm_initialized = 0;
 
 void powermon_task (void)
@@ -143,11 +153,7 @@ void powermon_task (void)
     int power_all_ok = (pgood
                     && (dev.pm.monState == MON_STATE_READ)
                     && (pm_sensors_getStatus(&dev.pm)) <= SENSOR_WARNING);
-    SensorStatus monStatus = SENSOR_CRITICAL;
-    if ((dev.pm.monState == MON_STATE_READ)
-            && (getMonStateTicks(&dev.pm) > SENSORS_SETTLE_TICKS)) {
-        monStatus = pm_sensors_getStatus(&dev.pm);
-    }
+    SensorStatus monStatus = getMonStatus(&dev.pm);
     switch (pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(&dev.pm);
@@ -230,20 +236,6 @@ void powermon_task (void)
         }
         break;
     }
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev.thset);
-    SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
-    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
-        pmStatus = SENSOR_CRITICAL;
-    SensorStatus systemStatus = SENSOR_NORMAL;
-    if (pmStatus > systemStatus)
-        systemStatus = pmStatus;
-    if (monStatus > systemStatus)
-        systemStatus = monStatus;
-    if (temperatureStatus > systemStatus)
-        systemStatus = temperatureStatus;
-
-    dev_led_set(&dev.leds, LED_RED, systemStatus >= SENSOR_CRITICAL);
-    dev_led_set(&dev.leds, LED_YELLOW, systemStatus >= SENSOR_WARNING);
 
     if ((pmState == PM_STATE_RAMP_5V)
             || (pmState == PM_STATE_RAMP)

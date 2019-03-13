@@ -19,6 +19,7 @@
 #define APP_TASK_POWERMON_H
 
 #include "dev_powermon.h"
+#include "devices.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,6 +38,7 @@ typedef enum {
 PmState getPmState(void);
 Dev_powermon getPmData(void);
 uint32_t getPmLoopCount(void);
+SensorStatus getPowermonStatus(Devices *dev);
 void create_task_powermon(void);
 
 #ifdef __cplusplus

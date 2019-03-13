@@ -26,7 +26,9 @@
 #include "dev_pll_print.h"
 #include "dev_types.h"
 #include "ansi_escape_codes.h"
+#include "logbuffer.h"
 #include "cmsis_os.h"
+#include "app_shared_data.h"
 
 #define DEBUG_PRINT_RET(x)     printf("%s failed: %s, I2C error 0x%08lX\n", __func__, OpStatusErrorStr(x), hPll->ErrorCode)
 
@@ -217,7 +219,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllRegisterPulseBit(Dev_ad9545 *d, uint16_t address, uint8_t bitmask)
+static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_ad9545 *d, uint16_t address, uint8_t bitmask)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -243,27 +245,39 @@ err:
 
 DeviceStatus pllDetect(Dev_ad9545 *d)
 {
+    int devicePresent = 0;
+    int deviceError = 0;
     HAL_StatusTypeDef ret = ad9545_detect();
-    d->present = (HAL_OK == ret);
-    if (d->present) {
+    devicePresent = (HAL_OK == ret);
+    if (devicePresent) {
         uint32_t data = 0;
         ad9545_read3(AD9545_REG_VENDOR_ID, &data);
-        d->present = (data == AD9545_VENDOR_ID);
+        devicePresent = (data == AD9545_VENDOR_ID);
     }
-    /*
-//    pllSendByte(AD9545_REG_VENDOR_ID);
-//    pllReceiveByte(&data);
-    pllReadRegister(AD9545_REG_VENDOR_ID, &data);
-    d->present = (data == AD9545_VENDOR_ID);
-//    pllReadRegister(AD9545_REG_INT_THERM, &data);
-//    printf("PLL therm: %04lX\n", data);
-*/
-    // scratchpad test
-    uint32_t test = 0x87654321;
-    ad9545_write4(0x0020, test);
-    uint32_t data = 0;
-    ad9545_read4(0x0020, &data);
-    d->present &= (data == test);
+    if (devicePresent) {
+        uint32_t test = 0xFF0055AA;
+        for (int i=0; i<100; i++) {
+            // scratchpad test
+            test = ~test;
+            ad9545_write4(0x0020, test);
+            uint32_t data = 0;
+            ad9545_read4(0x0020, &data);
+            if (data != test) {
+                deviceError = 1;
+                break;
+            }
+        }
+    }
+    if (devicePresent) {
+        if (deviceError) {
+            log_put(LOG_ERR, "PLL I2C data error");
+        } else {
+            log_put(LOG_INFO, "PLL AD9545 present");
+        }
+    } else {
+        log_put(LOG_ERR, "PLL AD9545 not found");
+    }
+    d->present = (devicePresent && !deviceError) ? DEVICE_NORMAL : DEVICE_FAIL;
     return d->present;
 }
 
@@ -333,29 +347,13 @@ static OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
-    // calibrate sysclk (requires IO Update, not autoclearing)
-    if (HAL_OK != (ret = pllRegisterPulseBit(d, AD9545_REG1_2000, 0x04)))
-        goto err;
-
-//    uint32_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT | 0x04; // calibrate
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
-//        goto err;
-//    if (HAL_OK != (ret = pllIoUpdate(d)))
-//        goto err;
-//    OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT; // clear calibrate bit
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
-//        goto err;
-//    // I/O registers update
-//    if (HAL_OK != (ret = pllIoUpdate(d)))
-//        goto err;
-
     return ret;
 err:
     DEBUG_PRINT_RET(ret);
     return ret;
 }
 
-static OpStatusTypeDef pllCalibrateApll(Dev_ad9545 *d)
+static OpStatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -389,7 +387,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllResetOutputDividers(Dev_ad9545 *d)
+static OpStatusTypeDef pllResetOutputDividers_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -448,7 +446,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllClearAutomute(Dev_ad9545 *d)
+static OpStatusTypeDef pllClearAutomute_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -718,15 +716,34 @@ err:
     return ret;
 }
 
+static OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d)
+{
+    HAL_StatusTypeDef ret = HAL_ERROR;
+
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x04)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
+        goto err;
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x04)))
+        goto err;
+    if (HAL_OK != (ret = pllIoUpdate(d)))
+        goto err;
+
+    return ret;
+err:
+    DEBUG_PRINT_RET(ret);
+    return ret;
+}
+
 static OpStatusTypeDef pllCalibrateAll(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x01)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x02)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x01)))
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x02)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
@@ -864,6 +881,9 @@ static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
 
+    ret = pllIoUpdate(d);
+    if (ret != HAL_OK)
+        goto err;
     ret = ad9545_read1(AD9545_LIVE_REG1_3000, &d->status.eeprom.raw);
     if (ret != HAL_OK)
         goto err;
@@ -905,7 +925,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadSysclkLocked(Dev_ad9545 *d)
+static OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d)
 {
     // read sysclk status
     HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
@@ -985,183 +1005,140 @@ err:
     return ret;
 }
 
-PllState pllState = PLL_STATE_INIT;
-
-static char *pllStateStr(PllState pllState)
-{
-    switch(pllState) {
-    case PLL_STATE_INIT: return "INIT";
-    case PLL_STATE_RESET: return "RESET";
-    case PLL_STATE_SETUP_SYSCLK: return "SETUP_SYSCLK";
-    case PLL_STATE_SYSCLK_WAITLOCK: return "SYSCLK_WAITLOCK";
-    case PLL_STATE_APLL_WAITCAL: return "APLL_WAITCAL";
-    case PLL_STATE_SYSCLK_LOCKED: return "SYSCLK_LOCKED";
-    case PLL_STATE_RUN: return "RUN";
-    case PLL_STATE_ERROR: return "ERROR";
-    default: return "unknown";
-    }
-}
-
 static void reset_I2C_Pll(void)
 {
     __HAL_I2C_DISABLE(hPll);
     __HAL_I2C_ENABLE(hPll);
 }
 
+/*
+1. Configure the system clock.
+2. Configure the DPLL (digital PLL)
+3. Configure the reference inputs.
+4. Configure the output drivers
+5. Configure the status pins (optional)
+*/
+
 void pllRun(Dev_ad9545 *d)
 {
-    const PllState oldState = pllState;
-    switch(pllState) {
-    case PLL_STATE_INIT:
-        reset_I2C_Pll();
-//        printf(ANSI_CLEARTERM ANSI_GOHOME);
-//        pllReset(d);
-        if (DEV_OK != pllSoftwareReset(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        pllState = PLL_STATE_RESET;
-        break;
+    const PllState oldState = d->fsm_state;
+    switch(d->fsm_state) {
     case PLL_STATE_RESET:
-        if (stateTicks() > 50) {
-            pllState = PLL_STATE_SETUP_SYSCLK;
+        reset_I2C_Pll();
+        pllDetect(d);
+        if (!d->present) {
+            osDelay(100);
             break;
         }
+        if (DEV_OK != pllSoftwareReset(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
+        }
+        d->fsm_state = PLL_STATE_SETUP_SYSCLK;
         break;
     case PLL_STATE_SETUP_SYSCLK:
         if (DEV_OK != pllSetupSysclk(d)) {
-            pllState = PLL_STATE_ERROR;
+            d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        pllState = PLL_STATE_SYSCLK_WAITLOCK;
+        if (DEV_OK != pllCalibrateSysclk(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
+        }
+        d->fsm_state = PLL_STATE_SYSCLK_WAITLOCK;
         break;
     case PLL_STATE_SYSCLK_WAITLOCK:
-        if (DEV_OK != pllReadSysclkLocked(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
         if (d->status.sysclk.b.locked && d->status.sysclk.b.stable) {
-            pllCalibrateApll(d);
-            pllState = PLL_STATE_APLL_WAITCAL;
+            d->fsm_state = PLL_STATE_SETUP;
         }
         if (stateTicks() > 2000) {
-            printf("SYSCLK_WAITLOCK timeout\n");
-            pllState = PLL_STATE_ERROR;
+            log_put(LOG_ERR, "PLL sysclock lock timeout");
+            d->fsm_state = PLL_STATE_ERROR;
         }
         break;
-    case PLL_STATE_APLL_WAITCAL:
-        if (DEV_OK != pllReadSysclkLocked(d)) {
-            pllState = PLL_STATE_ERROR;
+    case PLL_STATE_SETUP:
+        if (DEV_OK != pllSetupOutputDrivers(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        if (d->status.sysclk.b.locked && d->status.sysclk.b.stable)
-            pllState = PLL_STATE_SYSCLK_LOCKED;
-        if (stateTicks() > 2000) {
-            printf("SYSCLK_WAITCAL timeout\n");
-            pllState = PLL_STATE_ERROR;
-        }
-        break;
-    case PLL_STATE_SYSCLK_LOCKED:
-        if (DEV_OK != pllReadSysclkLocked(d)) {
-            pllState = PLL_STATE_ERROR;
+        if (DEV_OK != pllSetupDPLL(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        if (!d->status.sysclk.b.locked) {
-            printf("SYSCLK unlocked\n");
-            pllState = PLL_STATE_ERROR;
+        if (DEV_OK != pllSetupDPLLMode(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        if (stateTicks() > 0) {
-            if (DEV_OK != pllSetupOutputDrivers(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            if (DEV_OK != pllSetupRef(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            if (DEV_OK != pllSetupDPLL(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            if (DEV_OK != pllSetupDPLLMode(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            if (DEV_OK != pllSetupDistributionWithUpdate(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            if (DEV_OK != pllSyncAllDistDividers(d)) {
-                pllState = PLL_STATE_ERROR;
-                break;
-            }
-            pllState = PLL_STATE_RUN;
+        if (DEV_OK != pllSetupRef(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
         }
+        if (DEV_OK != pllSetupDistributionWithUpdate(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
+        }
+        if (DEV_OK != pllCalibrateAll(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
+        }
+        if (DEV_OK != pllSyncAllDistDividers(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
+            break;
+        }
+        d->fsm_state = PLL_STATE_RUN;
         break;
     case PLL_STATE_RUN:
-//        if (DEV_OK != pllClearAutomute(d)) {
-//            pllState = PLL_STATE_ERROR;
-//            break;
-//        }
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
-        if (DEV_OK != pllReadSysclkLocked(d)) {
-            pllState = PLL_STATE_ERROR;
-            break;
-        }
         if (!d->status.sysclk.b.locked) {
-            printf("SYSCLK unlocked\n");
-            pllState = PLL_STATE_ERROR;
+            log_put(LOG_ERR, "PLL sysclock unlocked");
+            d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-//        if (DEV_OK != pllManualOutputSync(d)) {
-//            pllState = PLL_STATE_ERROR;
-//            break;
-//        }
-//        if (DEV_OK != pllReadStatus(d)) {
-//            pllState = PLL_STATE_ERROR;
-//            break;
-//        }
-//        if (DEV_OK != pllReadAllRegisters(d)) {
-//            pllState = PLL_STATE_ERROR;
-//            break;
-//        }
+        d->recoveryCount = 0;
         break;
     case PLL_STATE_ERROR:
-        osDelay(100);
+        if (d->recoveryCount > 3) {
+            d->fsm_state = PLL_STATE_FATAL;
+            log_put(LOG_CRIT, "PLL fatal error");
+            break;
+        }
         if (stateTicks() > 1000) {
-            pllState = PLL_STATE_INIT;
+            d->recoveryCount++;
+            d->fsm_state = PLL_STATE_RESET;
         }
         break;
+    case PLL_STATE_FATAL:
+        d->present = DEVICE_FAIL;
+        break;
+    default:
+        d->fsm_state = PLL_STATE_RESET;
     }
-    d->pllState = pllState;
 
-    //    if (pllState == PLL_STATE_SETUP_SYSCLK || pllState == PLL_STATE_SYSCLK_LOCKED) {
-    //        if (pllReadSysclkLocked(d) != HAL_OK) {
-    //            pllState = PLL_STATE_ERROR;
-    //            break;
-    //        }
-    //    }
-
-    if (pllState == PLL_STATE_RUN) {
-        printf(ANSI_CLEARTERM ANSI_GOHOME);
-        if (DEV_OK != pllIoUpdate(d)) {
-            pllState = PLL_STATE_ERROR;
+    if (d->fsm_state != PLL_STATE_RESET &&
+            d->fsm_state != PLL_STATE_ERROR &&
+            d->fsm_state != PLL_STATE_FATAL) {
+        if (DEV_OK != pllReadSysclkStatus(d)) {
+            d->fsm_state = PLL_STATE_ERROR;
         }
+    }
+    if (d->fsm_state == PLL_STATE_RUN) {
         if (DEV_OK != pllReadStatus(d)) {
-            pllState = PLL_STATE_ERROR;
+            d->fsm_state = PLL_STATE_ERROR;
         }
-        pllPrintStatus(d);
-//        osDelay(50);
     }
-//    osDelay(1000);
-    if (oldState != pllState) {
-        printf("PLL state changed %s -> %s\n", pllStateStr(oldState), pllStateStr(pllState));
+    int stateChanged = oldState != d->fsm_state;
+    if (stateChanged) {
         stateStartTick = HAL_GetTick();
     }
-    printf("PLL FSM state %s\n", pllStateStr(pllState));
-    osDelay(50);
+    if (stateChanged && (oldState != PLL_STATE_RESET)) {
+        if (d->fsm_state == PLL_STATE_ERROR) {
+            log_put(LOG_ERR, "PLL interface error");
+        }
+        if (d->fsm_state == PLL_STATE_RUN) {
+            log_put(LOG_INFO, "PLL started");
+        }
+    }
+//    if (d->fsm_state == PLL_STATE_RUN) {
+//        printf(ANSI_CLEARTERM ANSI_GOHOME);
+//        pllPrintStatus(d);
+//    }
 }

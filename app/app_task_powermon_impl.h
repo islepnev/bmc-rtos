@@ -27,6 +27,7 @@ extern "C" {
 extern uint32_t pmLoopCount;
 extern PmState pmState;
 
+SensorStatus getMonStatus(Dev_powermon *pm);
 void powermon_task (void);
 
 #ifdef __cplusplus

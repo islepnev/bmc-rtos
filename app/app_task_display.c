@@ -24,6 +24,7 @@
 
 #include "cpu_cycle.h"
 #include "fpga_spi_hal.h"
+#include "ad9545_util.h"
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
@@ -91,14 +92,13 @@ static const char *mainStateStr(MainState state)
 static const char *pllStateStr(PllState state)
 {
     switch(state) {
-    case PLL_STATE_INIT:    return "INIT";
     case PLL_STATE_RESET:    return "RESET";
-    case PLL_STATE_SETUP_SYSCLK: return ANSI_YELLOW  "SETUP_SYSCLK"     ANSI_CLEAR;
+    case PLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
     case PLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
-    case PLL_STATE_APLL_WAITCAL: return ANSI_YELLOW  "APLL_WAITCAL"     ANSI_CLEAR;
-    case PLL_STATE_SYSCLK_LOCKED:     return ANSI_GREEN  "SYSCLK_LOCKED"     ANSI_CLEAR;
+    case PLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
     case PLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
     case PLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case PLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
     default: return "?";
     }
 }
@@ -208,6 +208,37 @@ void monPrintValues(const Dev_powermon *d)
     }
 }
 
+void pllPrint(const Dev_ad9545 *d)
+{
+    printf("PLL state:      %s", pllStateStr(d->fsm_state));
+    printf("%s\n", ANSI_CLEAR_EOL);
+    if (d->fsm_state == PLL_STATE_RUN) {
+        printf("Ref A:");
+        pllPrintRefStatusBits(d->status.ref[REFA]);
+        printf("%s\n", ANSI_CLEAR_EOL);
+        printf("Ref B:");
+        pllPrintRefStatusBits(d->status.ref[REFB]);
+        printf("%s\n", ANSI_CLEAR_EOL);
+        for (int channel=0; channel<DPLL_COUNT; channel++) {
+            int64_t ppb0 = pll_ftw_rel_ppb(d, channel);
+            const char *ref0str = "";
+            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
+            if (ref0 != PROFILE_REF_SOURCE_INVALID)
+                ref0str = pllProfileRefSourceStr(ref0);
+            printf("PLL%d: %s ref %-5s %lld ppb",
+                   channel,
+                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
+                   ref0str,
+                   (int64_t)ppb0
+                   );
+            printf("%s\n", ANSI_CLEAR_EOL);
+        }
+    } else {
+        for (int i=0; i<4; i++)
+            printf("%s\n", ANSI_CLEAR_EOL);
+    }
+}
+
 static void print_log_entry(uint32_t index)
 {
     LogEntry ent;
@@ -222,7 +253,7 @@ static void print_log_entry(uint32_t index)
     case LOG_ERR: prefix = ANSI_RED; break;
     default: prefix = ANSI_PUR; break;
     }
-    printf("%s%d %8ld.%03ld %s%s", prefix, ent.priority,
+    printf("%s%8ld.%03ld %s%s", prefix,
            ent.tick/1000, ent.tick%1000, ent.str, suffix);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -230,13 +261,15 @@ static void print_log_entry(uint32_t index)
 //static uint32_t log_rptr = 0;
 //static uint32_t log_n = 0;
 
-#define DISPLAY_POWERMON_Y 3
+#define DISPLAY_POWERMON_Y 2
 #define DISPLAY_POWERMON_H 4
-#define DISPLAY_SENSORS_Y (1 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
+#define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
 #define DISPLAY_SENSORS_H 16
-#define DISPLAY_MAIN_Y (1 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
-#define DISPLAY_MAIN_H 7
-#define DISPLAY_LOG_Y (1 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_MAIN_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
+#define DISPLAY_MAIN_H 5
+#define DISPLAY_PLL_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_PLL_H 5
+#define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
 #define DISPLAY_LOG_H (LOG_BUF_SIZE)
 
 static void print_goto(int line, int col)
@@ -312,19 +345,20 @@ static void update_display(const Devices * dev)
         monPrintValues(&dev->pm);
         dev_print_thermometers(dev);
 //    }
-    printf("%s\n", ANSI_CLEAR_EOL);
+//    printf("%s\n", ANSI_CLEAR_EOL);
 //    print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
     print_goto(DISPLAY_MAIN_Y, 1);
     if (getMainState() == MAIN_STATE_RUN) {
         printf("Main state:     %s", mainStateStr(getMainState()));
         printf("%s\n", ANSI_CLEAR_EOL);
-        printf("PLL state:      %s", pllStateStr(dev->pll.pllState));
-        printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
-        printf("%s\n", ANSI_CLEAR_EOL);
+//        printf("%s\n", ANSI_CLEAR_EOL);
     }
+    print_goto(DISPLAY_PLL_Y, 1);
+    pllPrint(&dev->pll);
     print_log_messages();
     printf(CSI"?25h"); // show cursor
+    printf("%s", ANSI_CLEAR_EOL);
     fflush(stdout);
     displayUpdateCount++;
 }

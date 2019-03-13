@@ -24,11 +24,11 @@
 
 #define APP_NAME_STR "TDC72VXS4 BMC"
 #define VERSION_MAJOR_NUM 1
-#define VERSION_MINOR_NUM 2
+#define VERSION_MINOR_NUM 3
 #define xstr(s) str(s)
 #define str(s) #s
 
-//#define VERSION_STR "1.2"
+//#define VERSION_STR "1.3"
 
 #define VERSION_STR xstr(VERSION_MAJOR_NUM)"."xstr(VERSION_MINOR_NUM)
 

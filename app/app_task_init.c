@@ -27,9 +27,9 @@ void setStaticPins(void)
 //    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      0);
 //    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      1);
 //    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        1);
-    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
-//    HAL_Delay(3000);
-//    // shutdown FPGA
+//    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
+//    HAL_Delay(5000);
+    // shutdown FPGA
 //    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, 0);
 //    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      0);
 }

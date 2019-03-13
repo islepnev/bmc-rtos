@@ -45,3 +45,17 @@ HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset)
     }
     return ret;
 }
+
+HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint16_t data = 0;
+    if (!pll->present || (pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
+        data |= 0x8;
+    else {
+        if (pll->status.sysclk.b.pll0_locked)
+            data |= 0x1;
+    }
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data);
+    return ret;
+}

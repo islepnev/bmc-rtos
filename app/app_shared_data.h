@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 extern Devices dev;
+extern int enable_pll_run;
 
 #ifdef __cplusplus
 }

@@ -56,7 +56,7 @@ void struct_at24c_init(Dev_at24c *d)
 
 void struct_ad9545_init(Dev_ad9545 *d)
 {
-    d->pllState = PLL_STATE_INIT;
+    d->fsm_state = PLL_STATE_RESET;
     d->present = DEVICE_UNKNOWN;
 }
 
@@ -68,7 +68,7 @@ void struct_Devices_init(Devices *d)
     struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);
-    struct_ad9545_init(&d->pll);
+//    struct_ad9545_init(&d->pll);
 }
 
 static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
@@ -78,12 +78,17 @@ static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
     uint8_t data = 0;
     if (HAL_OK == pca9548_read(&data))
         d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
     return d->present;
 }
 
 static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
-    d->present = (HAL_OK == dev_eepromConfig_Detect());
+    if (HAL_OK == dev_eepromConfig_Detect())
+        d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
 //    uint8_t data = 0;
 //    if (HAL_OK == dev_eepromConfig_Read(0, &data)) {
 //        d->present = DEVICE_NORMAL;
@@ -93,7 +98,11 @@ static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 
 static DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
 {
-    d->present = (HAL_OK == dev_eepromVxsPb_Detect());
+    if (HAL_OK == dev_eepromVxsPb_Detect())
+        d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
+
 //    uint8_t data = 0;
 //    if (HAL_OK == dev_eepromVxsPb_Read(0, &data)) {
 //        d->present = 1;
@@ -114,7 +123,11 @@ static DeviceStatus fpgaDetect(Dev_fpga *d)
     uint8_t id = data[0] & 0xFF;
     if (id == 0x00 || id == 0xFF)
         err++;
-    d->present = (err == 0);
+    if (err == 0)
+        d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
+
     d->id = id;
     return d->present;
 }
@@ -124,7 +137,7 @@ DeviceStatus getDeviceStatus(const Devices *d)
     if ((d->i2cmux.present == DEVICE_NORMAL)
 //            && (d->eeprom_config.present == DEVICE_NORMAL)
             && (d->eeprom_vxspb.present == DEVICE_NORMAL)
-            && (d->pll.present == DEVICE_NORMAL)
+//            && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
             )
         status = DEVICE_NORMAL;
@@ -141,7 +154,7 @@ DeviceStatus devDetect(Devices *d)
     dev_i2cmux_detect(&d->i2cmux);
     dev_eepromConfig_detect(&d->eeprom_config);
     dev_eepromVxsPb_detect(&d->eeprom_vxspb);
-    pllDetect(&d->pll);
+//    pllDetect(&d->pll);
     fpgaDetect(&d->fpga);
     return getDeviceStatus(d);
 }

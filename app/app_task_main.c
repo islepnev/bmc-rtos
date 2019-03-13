@@ -63,6 +63,58 @@ static uint32_t stateTicks(void)
     return HAL_GetTick() - stateStartTick;
 }
 
+SensorStatus getMiscStatus(Devices *d)
+{
+    if (d->i2cmux.present != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (d->eeprom_config.present != DEVICE_NORMAL)
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}
+
+SensorStatus getFpgaStatus(Dev_fpga *d)
+{
+    if (d->present != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (d->id != FPGA_DEVICE_ID)
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}
+
+SensorStatus getPllStatus(Dev_ad9545 *d)
+{
+    if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
+        return SENSOR_CRITICAL;
+    if (d->present != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (!d->status.sysclk.b.locked)
+        return SENSOR_CRITICAL;
+    if (!d->status.sysclk.b.stable ||
+            !d->status.sysclk.b.pll0_locked ||
+            !d->status.sysclk.b.pll1_locked
+            )
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}
+
+SensorStatus getSystemStatus(Devices *dev)
+{
+    const SensorStatus powermonStatus = getPowermonStatus(dev);
+    const SensorStatus miscStatus = getMiscStatus(dev);
+    const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
+    const SensorStatus pllStatus = getPllStatus(&dev->pll);
+    SensorStatus systemStatus = SENSOR_NORMAL;
+    if (powermonStatus > systemStatus)
+        systemStatus = powermonStatus;
+    if (miscStatus > systemStatus)
+        systemStatus = miscStatus;
+    if (fpgaStatus > systemStatus)
+        systemStatus = fpgaStatus;
+    if (pllStatus > systemStatus)
+        systemStatus = pllStatus;
+    return systemStatus;
+}
+
 static void task_main (void)
 {
     mainloopCount++;
@@ -109,15 +161,22 @@ static void task_main (void)
         devDetect(&dev);
         fpgaWriteBmcVersion();
         fpgaWriteBmcTemperature(&dev.thset);
+        fpgaWritePllStatus(&dev.pll);
     } else {
-        struct_Devices_init(&dev);
+//        struct_Devices_init(&dev);
     }
     if (mainState == MAIN_STATE_RUN) {
         devRun(&dev);
     }
+    enable_pll_run = (mainState == MAIN_STATE_RUN);
     if (oldState != mainState) {
         stateStartTick = HAL_GetTick();
     }
+
+    const SensorStatus systemStatus = getSystemStatus(&dev);
+    dev_led_set(&dev.leds, LED_RED, systemStatus >= SENSOR_CRITICAL);
+    dev_led_set(&dev.leds, LED_YELLOW, systemStatus >= SENSOR_WARNING);
+    dev_led_set(&dev.leds, LED_GREEN, systemStatus == SENSOR_NORMAL);
 
 //    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
 

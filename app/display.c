@@ -36,16 +36,30 @@ void print_adt7301_value(uint16_t rawTemp)
    }
 }
 
+static char *deviceStatusResultStr(DeviceStatus status)
+{
+    switch (status) {
+    case DEVICE_UNKNOWN:
+        return STR_RESULT_UNKNOWN;
+    case DEVICE_NORMAL:
+        return STR_RESULT_NORMAL;
+    case DEVICE_FAIL:
+        return STR_RESULT_FAIL;
+    default:
+        return "???";
+    }
+}
+
 void devPrintStatus(const Devices *d)
 {
-    printf("I2C mux:       %s", d->i2cmux.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("I2C mux:       %s", deviceStatusResultStr(d->i2cmux.present));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config: %s", d->eeprom_config.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM VXS PB: %s", d->eeprom_vxspb.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("PLL I2C:       %s", d->pll.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("FPGA ID: %02X  %s", d->fpga.id, d->fpga.present ? STR_RESULT_NORMAL : STR_RESULT_FAIL);
+//    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
+//    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("FPGA ID: %02X  %s", d->fpga.id, deviceStatusResultStr(d->fpga.present));
     printf("%s\n", ANSI_CLEAR_EOL);
 }

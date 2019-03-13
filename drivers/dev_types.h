@@ -58,14 +58,13 @@ typedef struct {
 } Dev_at24c;
 
 typedef enum {
-    PLL_STATE_INIT,
     PLL_STATE_RESET,
     PLL_STATE_SETUP_SYSCLK,
     PLL_STATE_SYSCLK_WAITLOCK,
-    PLL_STATE_APLL_WAITCAL,
-    PLL_STATE_SYSCLK_LOCKED,
+    PLL_STATE_SETUP,
     PLL_STATE_RUN,
-    PLL_STATE_ERROR
+    PLL_STATE_ERROR,
+    PLL_STATE_FATAL
 } PllState;
 
 //typedef struct {
@@ -75,9 +74,9 @@ typedef enum {
 
 typedef struct {
     DeviceStatus present;
-    PllState pllState;
-//    PllSysclkStatus sysclkStatus;
     AD9545_Status status;
+    PllState fsm_state;
+    uint32_t recoveryCount;
 } Dev_ad9545;
 
 #endif // DEV_TYPES_H

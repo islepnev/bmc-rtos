@@ -17,4 +17,5 @@
 
 #include "app_shared_data.h"
 
-Devices dev;
+Devices dev = {0};
+int enable_pll_run = 0;

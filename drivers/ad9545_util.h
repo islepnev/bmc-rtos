@@ -14,14 +14,26 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
+
+#ifndef AD9545_UTIL_H
+#define AD9545_UTIL_H
+
+#include <stdint.h>
 
 #include "dev_types.h"
 #include "ad9545_setup.h"
-#include "ad9545_status.h"
 
-//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // DEV_PLL_PRINT_H
+int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+void pllPrintRefStatusBits(Ref_Status_REG_Type r);
+ProfileRefSource_TypeDef pll_get_current_ref(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // AD9545_UTIL_H

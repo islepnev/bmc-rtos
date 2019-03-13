@@ -16,22 +16,18 @@
 */
 
 #include "dev_pll_print.h"
-
 #include <stdio.h>
+#include "ad9545_util.h"
 
 void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input)
 {
     Ref_Status_REG_Type r = d->status.ref[ref_input];
-    printf("Ref %d  %02X %s%s%s%s%s%s\n",
+    printf("Ref %d  %02X",
            ref_input,
-           r.raw,
-           r.b.slow   ? " SLOW" : "",
-           r.b.fast   ? " FAST" : "",
-           r.b.jitter ? " JITTER" : "",
-           r.b.fault  ? " FAULT" : "",
-           r.b.valid  ? " VALID" : "",
-           r.b.los    ? " LOS" : ""
-                        );
+           r.raw
+           );
+    pllPrintRefStatusBits(r);
+    printf("\n");
 }
 
 void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel)
@@ -88,14 +84,11 @@ void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel)
     }
     {
         uint64_t ftw = dpll_status->ftw_history;
-        Pll_DPLL_Setup_TypeDef dpll = {0};
-        init_DPLL_Setup(&dpll, channel);
-        int64_t twdelta = ftw - dpll.Freerun_Tuning_Word;
-        int64_t norm = dpll.Freerun_Tuning_Word/1000000000ULL;
+        double ppb = pll_ftw_rel_ppb(d, channel);
         if (dpll_status->state.b.freq_clamp)
             printf("TW history %lld (FREQ_CLAMP)\n", ftw);
         else
-            printf("TW history %lld (%lld ppb)\n", ftw, (twdelta/(norm)));
+            printf("TW history %lld (%lld ppb)\n", ftw, (int64_t) ppb);
     }
 
     printf("PLD tub %d, FLD tub %d\n", dpll_status->pld_tub, dpll_status->fld_tub);
@@ -116,8 +109,23 @@ void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel)
                                                       );
 }
 
+static char *pllStateStr(PllState pllState)
+{
+    switch(pllState) {
+    case PLL_STATE_RESET: return "RESET";
+    case PLL_STATE_SETUP_SYSCLK: return "SETUP_SYSCLK";
+    case PLL_STATE_SYSCLK_WAITLOCK: return "SYSCLK_WAITLOCK";
+    case PLL_STATE_SETUP: return "SETUP";
+    case PLL_STATE_RUN: return "RUN";
+    case PLL_STATE_ERROR: return "ERROR";
+    case PLL_STATE_FATAL: return "FATAL";
+    default: return "unknown";
+    }
+}
+
 void pllPrintStatus(const Dev_ad9545 *d)
 {
+    printf("PLL FSM state %s\n", pllStateStr(d->fsm_state));
     printf("EEPROM status %02X %s%s%s%s\n",
            d->status.eeprom.raw,
            d->status.eeprom.b.load_in_progress ? " LOAD" : "",

@@ -33,7 +33,8 @@ static void pllTask(void const *arg)
 {
     (void) arg;
     while(1) {
-        pllRun(&dev.pll);
+        if (enable_pll_run)
+            pllRun(&dev.pll);
         osDelay(pllTaskLoopDelay);
     }
 }

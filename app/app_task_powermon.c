@@ -44,6 +44,24 @@ uint32_t getPmLoopCount(void)
     return pmLoopCount;
 }
 
+SensorStatus getPowermonStatus(Devices *dev)
+{
+    const SensorStatus monStatus = getMonStatus(&dev->pm);
+    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
+    const PmState pmState = getPmState();
+    SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
+    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
+        pmStatus = SENSOR_CRITICAL;
+    SensorStatus systemStatus = SENSOR_NORMAL;
+    if (pmStatus > systemStatus)
+        systemStatus = pmStatus;
+    if (monStatus > systemStatus)
+        systemStatus = monStatus;
+    if (temperatureStatus > systemStatus)
+        systemStatus = temperatureStatus;
+    return systemStatus;
+}
+
 static void prvPowermonTask( void const *arg)
 {
     (void) arg;

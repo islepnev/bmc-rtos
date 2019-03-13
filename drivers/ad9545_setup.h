@@ -152,6 +152,17 @@ typedef struct {
 
 } Pll_OutputDividers_Setup_TypeDef;
 
+typedef enum {
+    PROFILE_REF_SOURCE_A = 0,
+    PROFILE_REF_SOURCE_AA = 1,
+    PROFILE_REF_SOURCE_B = 2,
+    PROFILE_REF_SOURCE_BB = 3,
+    PROFILE_REF_SOURCE_DPLL0 = 4,
+    PROFILE_REF_SOURCE_DPLL1 = 5,
+    PROFILE_REF_SOURCE_NCO0 = 8,
+    PROFILE_REF_SOURCE_NCO1 = 9,
+    PROFILE_REF_SOURCE_INVALID = 0xF,
+} ProfileRefSource_TypeDef;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
 void init_PllRefSetup(PllRefSetup_TypeDef *d);

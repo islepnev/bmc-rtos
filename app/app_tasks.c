@@ -28,10 +28,10 @@ void create_tasks(void)
 {
     printf("Creating tasks...");
     fflush(stdout);
-    create_task_heartbeat();
-//    create_task_powermon();
-//    create_task_main();
-//    create_task_display();
+//    create_task_heartbeat();
+    create_task_powermon();
+    create_task_main();
+    create_task_display();
     create_task_pll();
     printf("Ok\n");
     fflush(stdout);
