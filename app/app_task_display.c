@@ -22,7 +22,6 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 
-#include "cpu_cycle.h"
 #include "fpga_spi_hal.h"
 #include "ad9545_util.h"
 #include "adt7301_spi_hal.h"
@@ -50,7 +49,7 @@ osThreadId displayThreadId = NULL;
 enum { displayThreadStackSize = threadStackSize };
 
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayTaskLoopDelay = 100;
+static const uint32_t displayTaskLoopDelay = 500;
 
 static const char *pmStateStr(PmState state)
 {
@@ -87,7 +86,6 @@ static const char *mainStateStr(MainState state)
     default: return "?";
     }
 }
-
 
 static const char *pllStateStr(PllState state)
 {
@@ -249,11 +247,14 @@ static void print_log_entry(uint32_t index)
     const char *prefix = "";
     const char *suffix = ANSI_CLEAR_EOL ANSI_CLEAR;
     switch (ent.priority) {
-    case LOG_DEBUG: break;
-    case LOG_INFO: break;
-    case LOG_NOTICE: break;
-    case LOG_WARNING: prefix = ANSI_YELLOW; break;
+    case LOG_EMERG: prefix = ANSI_PUR; break;
+    case LOG_ALERT: prefix = ANSI_PUR; break;
+    case LOG_CRIT: prefix = ANSI_PUR; break;
     case LOG_ERR: prefix = ANSI_RED; break;
+    case LOG_WARNING: prefix = ANSI_YELLOW; break;
+    case LOG_NOTICE: break;
+    case LOG_INFO: break;
+    case LOG_DEBUG: break;
     default: prefix = ANSI_PUR; break;
     }
     printf("%s%8ld.%03ld %s%s", prefix,
@@ -308,6 +309,8 @@ static void print_log_messages(void)
 //    log_put(1, str);
 }
 
+static char statsBuffer[1000];
+
 static void update_display(const Devices * dev)
 {
     //    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
@@ -317,7 +320,6 @@ static void update_display(const Devices * dev)
     uint32_t uptimeSec = osKernelSysTick() / osKernelSysTickFrequency;
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
     printf("     Uptime: %-8ld", uptimeSec);
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
@@ -356,10 +358,17 @@ static void update_display(const Devices * dev)
         printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
 //        printf("%s\n", ANSI_CLEAR_EOL);
+    } else {
+        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
     }
     print_goto(DISPLAY_PLL_Y, 1);
     pllPrint(&dev->pll);
     print_log_messages();
+
+    vTaskGetRunTimeStats((char *)&statsBuffer);
+    printf("%s", statsBuffer);
+    printf("%s\n", ANSI_CLEAR_EOL);
+
     printf(CSI"?25h"); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
     fflush(stdout);

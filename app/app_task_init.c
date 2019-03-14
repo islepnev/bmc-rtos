@@ -18,7 +18,7 @@
 #include "app_task_init.h"
 #include "app_shared_data.h"
 #include "ad9545_i2c_hal.h"
-#include "cpu_cycle.h"
+#include "FreeRTOSConfig.h"
 
 void setStaticPins(void)
 {
@@ -36,7 +36,7 @@ void setStaticPins(void)
 
 void task_oneshot(void)
 {
-    enable_cpu_cycle_counter();
+    vConfigureTimerForRunTimeStats();
     setStaticPins();
     printf("Initializing...");
     fflush(stdout);

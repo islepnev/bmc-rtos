@@ -16,7 +16,6 @@
 //
 
 #include "dev_powermon.h"
-#include "cpu_cycle.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_pm_sensors.h"
@@ -148,7 +147,6 @@ void monClearMeasurements(Dev_powermon *d)
 int monDetect(Dev_powermon *d)
 {
     int count = 0;
-    enable_cpu_cycle_counter();
     for (int i=0; i<POWERMON_SENSORS; i++) {
         if (pm_sensor_detect(&d->sensors[i]))
             count++;

@@ -33,7 +33,6 @@
 #include "dev_types.h"
 #include "dev_mcu.h"
 #include "dev_leds.h"
-#include "cpu_cycle.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 
@@ -286,22 +285,22 @@ void powermon_task (void)
     }
 }
 
-static void unused1(void)
-{
-    enable_cpu_cycle_counter();
-    const uint32_t startTick = cpu_getCycles();
-    uint32_t time1 = cpu_getCycles();
-    uint32_t time2 = cpu_getCycles();
-    uint32_t time3 = cpu_getCycles();
-    uint32_t time4 = cpu_getCycles();
-    time1 -= startTick;
-    time2 -= startTick;
-    time3 -= startTick;
-    time4 -= startTick;
-    printf(ANSI_CLEAR "%-8ld %-8ld %-8ld %-8ld \n",
-           (uint32_t)((float)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
-           (uint32_t)((float)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
-           (uint32_t)((float)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
-           (uint32_t)((float)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
-           );
-}
+//static void unused1(void)
+//{
+//    enable_cpu_cycle_counter();
+//    const uint32_t startTick = cpu_getCycles();
+//    uint32_t time1 = cpu_getCycles();
+//    uint32_t time2 = cpu_getCycles();
+//    uint32_t time3 = cpu_getCycles();
+//    uint32_t time4 = cpu_getCycles();
+//    time1 -= startTick;
+//    time2 -= startTick;
+//    time3 -= startTick;
+//    time4 -= startTick;
+//    printf(ANSI_CLEAR "%-8ld %-8ld %-8ld %-8ld \n",
+//           (uint32_t)((float)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((float)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((float)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((float)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
+//           );
+//}

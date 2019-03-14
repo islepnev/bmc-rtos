@@ -169,7 +169,11 @@ standard names. */
 /* #define xPortSysTickHandler SysTick_Handler */
 
 /* USER CODE BEGIN Defines */
-/* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+void vConfigureTimerForRunTimeStats( void );
+uint32_t ulGetRunTimeCounterValue( void );
+#define configGENERATE_RUN_TIME_STATS     1
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
+#define portGET_RUN_TIME_COUNTER_VALUE() ulGetRunTimeCounterValue()
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */
