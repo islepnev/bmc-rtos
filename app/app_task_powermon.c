@@ -20,7 +20,6 @@
 #include "cmsis_os.h"
 
 #include "dev_powermon.h"
-#include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
 #include "app_task_powermon_impl.h"
@@ -44,10 +43,9 @@ uint32_t getPmLoopCount(void)
     return pmLoopCount;
 }
 
-SensorStatus getPowermonStatus(Devices *dev)
+SensorStatus getPowermonStatus(const Dev_powermon *pm)
 {
-    const SensorStatus monStatus = getMonStatus(&dev->pm);
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
+    const SensorStatus monStatus = getMonStatus(pm);
     const PmState pmState = getPmState();
     SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
     if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
@@ -57,8 +55,6 @@ SensorStatus getPowermonStatus(Devices *dev)
         systemStatus = pmStatus;
     if (monStatus > systemStatus)
         systemStatus = monStatus;
-    if (temperatureStatus > systemStatus)
-        systemStatus = temperatureStatus;
     return systemStatus;
 }
 

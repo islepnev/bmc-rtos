@@ -61,7 +61,7 @@ static uint32_t stateTicks(void)
     return HAL_GetTick() - stateStartTick;
 }
 
-SensorStatus oldSensorStatus[POWERMON_SENSORS];
+SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
 void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)

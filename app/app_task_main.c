@@ -63,7 +63,7 @@ static uint32_t stateTicks(void)
     return HAL_GetTick() - stateStartTick;
 }
 
-SensorStatus getMiscStatus(Devices *d)
+SensorStatus getMiscStatus(const Devices *d)
 {
     if (d->i2cmux.present != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
@@ -72,7 +72,7 @@ SensorStatus getMiscStatus(Devices *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getFpgaStatus(Dev_fpga *d)
+SensorStatus getFpgaStatus(const Dev_fpga *d)
 {
     if (d->present != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
@@ -81,7 +81,7 @@ SensorStatus getFpgaStatus(Dev_fpga *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getPllStatus(Dev_ad9545 *d)
+SensorStatus getPllStatus(const Dev_ad9545 *d)
 {
     if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
         return SENSOR_CRITICAL;
@@ -97,15 +97,18 @@ SensorStatus getPllStatus(Dev_ad9545 *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getSystemStatus(Devices *dev)
+SensorStatus getSystemStatus(const Devices *dev)
 {
-    const SensorStatus powermonStatus = getPowermonStatus(dev);
+    const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
+    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
     const SensorStatus pllStatus = getPllStatus(&dev->pll);
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
         systemStatus = powermonStatus;
+    if (temperatureStatus > systemStatus)
+        systemStatus = temperatureStatus;
     if (miscStatus > systemStatus)
         systemStatus = miscStatus;
     if (fpgaStatus > systemStatus)
