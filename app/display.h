@@ -40,7 +40,7 @@
 #define STR_RESULT_CRIT    ANSI_COL_RESULTS ANSI_RED    "CRITICAL" ANSI_CLEAR
 #define STR_RESULT_FAIL    ANSI_COL_RESULTS ANSI_RED    "FAIL"     ANSI_CLEAR
 
-void print_adt7301_value(uint16_t rawTemp);
+void print_adt7301_value(int16_t rawTemp);
 void devPrintStatus(const Devices *d);
 
 #ifdef __cplusplus

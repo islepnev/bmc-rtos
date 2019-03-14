@@ -79,10 +79,10 @@ static const char *sensorStatusStr(SensorStatus state)
     }
 }
 
-static void log_sensor_status(void)
+static void log_sensor_status(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &dev.pm.sensors[i];
+        const pm_sensor *sensor = &pm->sensors[i];
         SensorStatus status = pm_sensor_status(sensor);
         if (status != oldSensorStatus[i]) {
             enum { size = 50 };
@@ -124,7 +124,7 @@ static void log_sensor_status(void)
     }
 }
 
-SensorStatus getMonStatus(Dev_powermon *pm)
+SensorStatus getMonStatus(const Dev_powermon *pm)
 {
     SensorStatus monStatus = SENSOR_CRITICAL;
     if ((pm->monState == MON_STATE_READ)
@@ -138,6 +138,7 @@ static int pm_initialized = 0;
 
 void powermon_task (void)
 {
+    Dev_powermon *pm = &dev.pm;
     if (!pm_initialized) {
         clearOldSensorStatus();
         pm_initialized = 1;
@@ -145,23 +146,23 @@ void powermon_task (void)
     pmLoopCount++;
     int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
     const PmState oldState = pmState;
-    int pgood = dev_readPgood(&dev.pm);
+    int pgood = dev_readPgood(pm);
     int power_5v_ok = (pgood
-                    && (dev.pm.monState == MON_STATE_READ)
-                       && (getSensorIsValid_5V(&dev.pm))
+                    && (pm->monState == MON_STATE_READ)
+                       && (getSensorIsValid_5V(pm))
                        );
     int power_all_ok = (pgood
-                    && (dev.pm.monState == MON_STATE_READ)
-                    && (pm_sensors_getStatus(&dev.pm)) <= SENSOR_WARNING);
-    SensorStatus monStatus = getMonStatus(&dev.pm);
+                    && (pm->monState == MON_STATE_READ)
+                    && (pm_sensors_getStatus(pm)) <= SENSOR_WARNING);
+    const SensorStatus monStatus = getMonStatus(pm);
     switch (pmState) {
     case PM_STATE_INIT:
-        struct_powermon_init(&dev.pm);
+        struct_powermon_init(pm);
         struct_Devices_init(&dev);
         pmState = PM_STATE_RAMP_5V;
         break;
     case PM_STATE_STANDBY:
-        struct_powermon_init(&dev.pm);
+        struct_powermon_init(pm);
         struct_Devices_init(&dev);
         if (vmePresent && (stateTicks() > 2000)) {
             pmState = PM_STATE_RAMP_5V;
@@ -178,7 +179,7 @@ void powermon_task (void)
             break;
         }
         if (stateTicks() > RAMP_5V_TIMEOUT_TICKS) {
-            if (!dev.pm.fpga_core_pgood && !dev.pm.ltm_pgood) {
+            if (!pm->fpga_core_pgood && !pm->ltm_pgood) {
                 log_put(LOG_WARNING, "No power");
                 pmState = PM_STATE_STANDBY;
                 break;
@@ -212,7 +213,7 @@ void powermon_task (void)
             pmState = PM_STATE_PWRFAIL;
             break;
         }
-        if (dev.pm.monState != MON_STATE_READ) {
+        if (pm->monState != MON_STATE_READ) {
             log_put(LOG_ERR, "Error in STATE_RUN");
             pmState = PM_STATE_ERROR;
             break;
@@ -240,41 +241,41 @@ void powermon_task (void)
     if ((pmState == PM_STATE_RAMP_5V)
             || (pmState == PM_STATE_RAMP)
             || (pmState == PM_STATE_RUN)) {
-        dev_switchPower(&dev.pm, SWITCH_ON);
+        dev_switchPower(pm, SWITCH_ON);
     } else {
-        dev_switchPower(&dev.pm, SWITCH_OFF);
+        dev_switchPower(pm, SWITCH_OFF);
     }
 
     if ((pmState == PM_STATE_RAMP_5V)
             || (pmState == PM_STATE_RAMP)) {
-        runMon(&dev.pm);
+        runMon(pm);
     } else {
         if (pmState == PM_STATE_RUN) {
             uint32_t ticks = osKernelSysTick() - sensorReadTick;
             if (ticks > sensorReadInterval) {
                 sensorReadTick = osKernelSysTick();
-                runMon(&dev.pm);
+                runMon(pm);
             }
 
         }
         else  {
-            monClearMeasurements(&dev.pm);
+            monClearMeasurements(pm);
         }
     }
     if ((pmState == PM_STATE_RAMP)
             || (pmState == PM_STATE_RUN)
             ) {
-        log_sensor_status();
+        log_sensor_status(pm);
     } else {
         clearOldSensorStatus();
     }
     if ((pmState == PM_STATE_RUN)
-            && (getMonStateTicks(&dev.pm) > THERM_SETTLE_TICKS)
-            && getSensorIsValid_5V(&dev.pm)) {
+            && (getMonStateTicks(pm) > THERM_SETTLE_TICKS)
+            && getSensorIsValid_3V3(pm)) {
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
             thermReadTick = osKernelSysTick();
-            dev_read_thermometers(&dev);
+            dev_thset_read(&dev.thset);
         }
     } else {
         struct_thset_init(&dev.thset);

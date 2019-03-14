@@ -24,9 +24,9 @@ extern "C" {
 #include "stm32f7xx_hal.h"
 //#include <stdint.h>
 
-enum {TEMP_RAW_ERROR = 0xFFFF};
-uint16_t adt7301_read_temp(int source);
-int16_t adt7301_convert_temp_adt7301_scale32(uint16_t raw);
+enum {TEMP_RAW_ERROR = -1};
+HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data);
+int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
 
 #ifdef __cplusplus
 }

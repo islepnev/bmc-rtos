@@ -34,6 +34,7 @@ static const int tempMaxWarn = 60.0;
 void struct_thset_init(Dev_thset *d)
 {
     for (int i=0; i<DEV_THERM_COUNT; i++) {
+        d->th[i].valid = 0;
         d->th[i].rawTemp = TEMP_RAW_ERROR;
     }
 }
@@ -176,16 +177,22 @@ PgoodState dev_readPgood(Dev_powermon *pm)
     return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
 }
 
-static void dev_thset_read(Dev_thset *d)
+void dev_thset_read(Dev_thset *d)
 {
-    for(int i=0; i<DEV_THERM_COUNT; i++)
-        d->th[i].rawTemp = adt7301_read_temp(i);
+    for(int i=0; i<DEV_THERM_COUNT; i++) {
+        int16_t rawTemp;
+        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
+        d->th[i].valid = (ret == HAL_OK);
+        d->th[i].rawTemp = rawTemp;
+    }
 }
 
 SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for(int i=0; i<DEV_THERM_COUNT; i++) {
+        if (!d->th[i].valid)
+            continue;
         int16_t temp = adt7301_convert_temp_adt7301_scale32(d->th[i].rawTemp);
         temp /= 32;
         if (temp < tempMinCrit || temp > tempMaxCrit) {
@@ -198,12 +205,4 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
         }
     }
     return maxStatus;
-}
-
-void dev_read_thermometers(Devices *dev)
-{
-    if (pm_sensor_isValid(&dev->pm.sensors[SENSOR_VME_5V])) { // 5V
-        for (int i=0; i<DEV_THERM_COUNT; i++)
-            dev_thset_read(&dev->thset);
-    }
 }

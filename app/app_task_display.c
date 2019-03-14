@@ -107,7 +107,10 @@ static void dev_thset_print(const Dev_thset *d)
 {
     printf("Temp: ");
     for (int i=0; i<DEV_THERM_COUNT; i++) {
-        print_adt7301_value(d->th[i].rawTemp);
+        if (d->th[i].valid)
+            print_adt7301_value(d->th[i].rawTemp);
+        else
+            printf(" --- ");
         printf(" ");
     }
     const SensorStatus status = dev_thset_thermStatus(d);
@@ -116,7 +119,7 @@ static void dev_thset_print(const Dev_thset *d)
 
 void dev_print_thermometers(const Devices *dev)
 {
-    if (pm_sensor_isValid(&dev->pm.sensors[SENSOR_VME_5V])) { // 5V
+    if (getSensorIsValid_3V3(&dev->pm)) {
         dev_thset_print(&dev->thset);
     } else {
         printf("Temp: no power");

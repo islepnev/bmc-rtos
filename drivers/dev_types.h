@@ -36,8 +36,8 @@ typedef enum {
 enum {DEV_THERM_COUNT = 4};
 
 typedef struct {
-//    int present;
-    uint16_t rawTemp;
+    int valid;
+    int16_t rawTemp;
 } Dev_adt7301;
 
 typedef struct {

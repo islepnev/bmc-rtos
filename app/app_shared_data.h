@@ -27,6 +27,8 @@ extern "C" {
 extern Devices dev;
 extern int enable_pll_run;
 
+const Devices* getDevices(void);
+
 #ifdef __cplusplus
 }
 #endif
