@@ -21,13 +21,12 @@
 
 #include "ansi_escape_codes.h"
 #include "display.h"
-#include "ftoa.h"
 #include "dev_mcu.h"
 
-//const float SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
-const float SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
+//const double SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
+const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
 
-float monShuntVal(SensorIndex index)
+double monShuntVal(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.002;
@@ -47,7 +46,7 @@ float monShuntVal(SensorIndex index)
     return 0;
 }
 
-float monVoltageMarginWarn(SensorIndex index)
+double monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.03;
@@ -67,7 +66,7 @@ float monVoltageMarginWarn(SensorIndex index)
     return 0;
 }
 
-float monVoltageMarginCrit(SensorIndex index)
+double monVoltageMarginCrit(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.1;
@@ -87,7 +86,7 @@ float monVoltageMarginCrit(SensorIndex index)
     return 0;
 }
 
-float monVoltageNom(SensorIndex index)
+double monVoltageNom(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 1.5;
@@ -167,7 +166,7 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     d->sensorStatus = SENSOR_CRITICAL;
     d->lastStatusUpdatedTick = 0;
     d->busAddress = sensorBusAddress(index);
-    d->hasShunt = monShuntVal(index) > 1e-6f;
+    d->hasShunt = monShuntVal(index) > 1e-6;
     d->shuntVal = monShuntVal(index);
     d->busNomVoltage = monVoltageNom(index);
     d->label = monLabel(index);
@@ -182,11 +181,11 @@ SensorStatus pm_sensor_status(const pm_sensor *d)
         return SENSOR_UNKNOWN;
     }
 
-    float V = d->busVoltage;
-    float VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
-    float VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
-    float VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
-    float VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
+    double V = d->busVoltage;
+    double VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
+    double VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
+    double VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
+    double VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
     int VNorm = (V > VMinWarn) && (V < VMaxWarn);
     int VWarn = (V > VMinCrit) && (V < VMaxCrit);
     if (VNorm && VWarn)
@@ -217,7 +216,7 @@ void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
     }
 }
 
-void pm_sensor_set_readVoltage(pm_sensor *d, float value)
+void pm_sensor_set_readVoltage(pm_sensor *d, double value)
 {
     d->busVoltage = value;
     if (value > d->busVoltageMax)
@@ -226,7 +225,7 @@ void pm_sensor_set_readVoltage(pm_sensor *d, float value)
         d->busVoltageMin = value;
 }
 
-void pm_sensor_set_readCurrent(pm_sensor *d, float value)
+void pm_sensor_set_readCurrent(pm_sensor *d, double value)
 {
     d->current = value;
     if (value > d->currentMax)
@@ -298,7 +297,7 @@ int pm_sensor_read(pm_sensor *d)
         err++;
     }
     if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &data)) {
-        const float shuntVoltage = (int16_t)data * 2.5e-6f;
+        const double shuntVoltage = (int16_t)data * 2.5e-6f;
         if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
             pm_sensor_set_readCurrent(d, shuntVoltage / d->shuntVal);
         }

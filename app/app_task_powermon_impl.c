@@ -86,11 +86,11 @@ static void log_sensor_status(const Dev_powermon *pm)
         if (status != oldSensorStatus[i]) {
             enum { size = 50 };
             static char str[size];
-            const float volt = sensor->busVoltage;
+            const double volt = sensor->busVoltage;
             const int volt_int = volt;
             int volt_frac = 1000 * (volt - volt_int);
             if (volt_frac < 0) volt_frac = -volt_frac;
-            float curr = sensor->current;
+            double curr = sensor->current;
             int neg = (curr < 0);
             if (neg) curr = -curr;
             const int curr_int = curr;
@@ -298,9 +298,9 @@ void powermon_task (void)
 //    time3 -= startTick;
 //    time4 -= startTick;
 //    printf(ANSI_CLEAR "%-8ld %-8ld %-8ld %-8ld \n",
-//           (uint32_t)((float)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((float)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((float)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((float)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
+//           (uint32_t)((double)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((double)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((double)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
+//           (uint32_t)((double)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
 //           );
 //}

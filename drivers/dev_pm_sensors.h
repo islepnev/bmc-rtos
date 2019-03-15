@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 enum {POWERMON_SENSORS = 13};
-#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6f
+#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
     SENSOR_1V5,
@@ -52,18 +52,18 @@ typedef struct {
     uint32_t lastStatusUpdatedTick;
     uint16_t busAddress;
     int hasShunt;
-    float shuntVal;
-    float busNomVoltage;
+    double shuntVal;
+    double busNomVoltage;
     const char *label;
     // measurements
-    float busVoltage;
-//    float shuntVoltage;
-    float current;
+    double busVoltage;
+//    double shuntVoltage;
+    double current;
     // calculated
-    float busVoltageMin;
-    float busVoltageMax;
-    float currentMin;
-    float currentMax;
+    double busVoltageMin;
+    double busVoltageMax;
+    double currentMin;
+    double currentMax;
 } pm_sensor;
 
 void struct_pm_sensor_clear_measurements(pm_sensor *d);

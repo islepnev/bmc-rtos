@@ -30,7 +30,6 @@
 #include "dev_types.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
-#include "ftoa.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_mcu.h"
@@ -125,23 +124,23 @@ void dev_print_thermometers(const Devices *dev)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void print_pm_switches(const pm_switches sw)
+static void print_pm_switches(const pm_switches *sw)
 {
     printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s",
-           sw.switch_5v  ? STR_ON : STR_OFF,
-           sw.switch_3v3 ? STR_ON : STR_OFF,
-           sw.switch_1v5 ? STR_ON : STR_OFF,
-           sw.switch_1v0 ? STR_ON : STR_OFF);
+           sw->switch_5v  ? STR_ON : STR_OFF,
+           sw->switch_3v3 ? STR_ON : STR_OFF,
+           sw->switch_1v5 ? STR_ON : STR_OFF,
+           sw->switch_1v0 ? STR_ON : STR_OFF);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void pm_pgood_print(const Dev_powermon pm)
+static void pm_pgood_print(const Dev_powermon *pm)
 {
 //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("Intermediate 1.5V: %s", pm.ltm_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("Intermediate 1.5V: %s", pm->ltm_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("FPGA Core 1.0V:    %s", pm.fpga_core_pgood ? STR_RESULT_NORMAL : pm.sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("FPGA Core 1.0V:    %s", pm->fpga_core_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -152,10 +151,6 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
         if (d->deviceStatus == DEVICE_FAIL) {
             printf("FAIL");
         }
-        const int fractdigits = 3;
-        char str1[10], str3[10];
-        //    char str2[10];
-        ftoa(d->busVoltage, str1, fractdigits);
         SensorStatus status = pm_sensor_status(d);
         const char *color = "";
         switch (status) {
@@ -164,17 +159,14 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
         case SENSOR_WARNING: color = ANSI_YELLOW; break;
         case SENSOR_CRITICAL: color = ANSI_RED; break;
         }
-        printf("%s%8s%s", color, str1, ANSI_CLEAR);
+        printf("%s%8.3f%s", color, d->busVoltage, ANSI_CLEAR);
         if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            ftoa(d->current, str3, fractdigits);
-            printf(" %8s", str3);
-            ftoa(d->currentMax, str3, fractdigits);
-            printf(" %8s", str3);
+            printf(" %8.3f %8.3f", d->current, d->currentMax);
         } else {
             printf("         ");
         }
-        printf(" %s   %ld", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF,
-               pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz());
+//        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
+        printf(" %s", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF);
     } else {
         printf(ANSI_CLEAR_EOL);
     }
@@ -353,8 +345,8 @@ static void update_display(const Devices * dev)
     print_goto(DISPLAY_POWERMON_Y, 1);
     printf("Powermon state: %s", pmStateStr(pmState));
     printf("%s\n", ANSI_CLEAR_EOL);
-    print_pm_switches(dev->pm.sw);
-    pm_pgood_print(dev->pm);
+    print_pm_switches(&dev->pm.sw);
+    pm_pgood_print(&dev->pm);
     printf("%s\n", ANSI_CLEAR_EOL);
     // Sensors
 //    print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
