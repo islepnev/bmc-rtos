@@ -20,9 +20,8 @@
 static const uint8_t sysclk_fb_div = 31;
 static const uint32_t ref_r_divide = 209;
 
-static const uint64_t sysclk_Ref_Frequency_milliHz = 38880000ULL * 1000; // milliHertz
-//static const uint64_t sysclk_Ref_Frequency_milliHz = 38879880ULL * 1000; // milliHertz
-static const double sysclkVcoFreq = sysclk_Ref_Frequency_milliHz * 1e-3 * sysclk_fb_div * 2;
+static const uint64_t sysclk_Ref_Frequency_milliHz = 38880000000ULL;
+static const double sysclkVcoFreq = sysclk_Ref_Frequency_milliHz * sysclk_fb_div * 2 / 1000;
 static const double sysclk_rel_offset = -2.5e-6;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
@@ -34,7 +33,7 @@ void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
     d->Temperature_Low_Threshold = (int16_t)128 * -5;
     d->Temperature_Hihg_Threshold = (int16_t)128 * 70;
     d->AuxDPLL_Bandwidth = 500 * 10; // deciHertz
-    d->CompensationValue = -sysclk_rel_offset * (double)(1ULL<<45); // rel. error * 2^45
+    d->CompensationValue = (-1.0) * sysclk_rel_offset * (double)(1ULL<<45); // rel. error * 2^45
     d->TDC_Compensation_Source = 0x11;
     d->DPLL_Compensation_Source = 0x11;
 }
