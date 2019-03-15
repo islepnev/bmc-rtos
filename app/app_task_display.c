@@ -242,7 +242,7 @@ void pllPrint(const Dev_ad9545 *d)
 
 static void print_log_entry(uint32_t index)
 {
-    LogEntry ent;
+    struct LogEntry ent;
     log_get(index, &ent);
     const char *prefix = "";
     const char *suffix = ANSI_CLEAR_EOL ANSI_CLEAR;
@@ -309,6 +309,22 @@ static void print_log_messages(void)
 //    log_put(1, str);
 }
 
+static void print_uptime_str(void)
+{
+    uint32_t ss = osKernelSysTick() / osKernelSysTickFrequency;
+    uint16_t dd = ss / 86400;
+    ss -= dd*86400;
+    uint16_t hh = ss / 3600;
+    ss -= hh*3600;
+    uint16_t mm = ss / 60;
+    ss -= mm*60;
+    if (dd > 1)
+        printf("%u days ", dd);
+    if (dd == 1)
+        printf("%u day ", dd);
+    printf("%2u:%02u:%02lu", hh, mm, ss);
+}
+
 static char statsBuffer[1000];
 
 static void update_display(const Devices * dev)
@@ -317,9 +333,9 @@ static void update_display(const Devices * dev)
     printf(ANSI_GOHOME ANSI_CLEAR);
     printf(CSI"?25l"); // hide cursor
     // Title
-    uint32_t uptimeSec = osKernelSysTick() / osKernelSysTickFrequency;
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
-    printf("     Uptime: %-8ld", uptimeSec);
+    printf("     Uptime: ");
+    print_uptime_str();
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),

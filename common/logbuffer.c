@@ -23,7 +23,7 @@
 
 static unsigned int log_wptr = 0;
 static unsigned int log_count = 0;
-static LogEntry buf[LOG_BUF_SIZE];
+static struct LogEntry buf[LOG_BUF_SIZE];
 
 void log_put_long(LogPriority priority, uint32_t tick, const char *str)
 {
@@ -43,7 +43,7 @@ void log_put(LogPriority priority, const char *str)
     log_put_long(priority, osKernelSysTick(), str);
 }
 
-void log_get(int index, LogEntry *dest)
+void log_get(int index, struct LogEntry *dest)
 {
     if (!dest)
         return;

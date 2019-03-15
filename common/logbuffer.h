@@ -38,14 +38,14 @@ typedef enum {
 enum {LOG_BUF_SIZE = 10};
 enum {LOG_LINE_SIZE = 100};
 
-typedef struct {
+struct LogEntry {
     LogPriority priority;
     uint32_t tick;
     char str[LOG_LINE_SIZE]; // null-terminated
-} LogEntry;
+};
 
 void log_put(LogPriority priority, const char *str);
-void log_get(int index, LogEntry *dest);
+void log_get(int index, struct LogEntry *dest);
 uint32_t log_get_wptr(void);
 uint32_t log_get_count(void);
 
