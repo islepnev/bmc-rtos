@@ -17,12 +17,14 @@
 
 #include "ad9545_setup.h"
 
-#define SYSCLK_REF_FREQ_MILLIHZ 38880000000ULL
-
+static const uint64_t SYSCLK_REF_FREQ_MILLIHZ = 38880000000ULL;
 static const uint8_t sysclk_fb_div = 31;
 static const uint32_t ref_r_divide = 209;
 
-static const double sysclkVcoFreq = SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
+double sysclkVcoFreq(void)
+{
+    return SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
+}
 static const double sysclk_rel_offset = -2.5e-6;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
@@ -100,7 +102,7 @@ enum {
 static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
 {
     const double targetFreq = 312.5e6;
-    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq);
+    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq());
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
     d->APLL_M_Divider = 8;
     // Translation Profile 0.0
@@ -125,7 +127,7 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
 static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
 {
     const double targetFreq = 325e6;
-    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq);
+    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq());
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
     d->APLL_M_Divider = 10;
     // Translation Profile 1.0
