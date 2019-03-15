@@ -39,7 +39,7 @@ typedef struct {
     uint16_t Temperature_Low_Threshold;
     uint16_t Temperature_Hihg_Threshold;
     uint16_t AuxDPLL_Bandwidth;
-    uint64_t CompensationValue;
+    int64_t CompensationValue;
     uint8_t TDC_Compensation_Source;
     uint8_t DPLL_Compensation_Source;
 } PllSysclkSetup_TypeDef;
