@@ -17,18 +17,18 @@
 
 #include "ad9545_setup.h"
 
+static const uint64_t sysclk_Ref_Freq_milliHz = 38880000000ULL;
 static const uint8_t sysclk_fb_div = 31;
 static const uint32_t ref_r_divide = 209;
 
-static const uint64_t sysclk_Ref_Frequency_milliHz = 38880000000ULL;
-static const double sysclkVcoFreq = sysclk_Ref_Frequency_milliHz * sysclk_fb_div * 2 / 1000;
+static const double sysclkVcoFreq = sysclk_Ref_Freq_milliHz * sysclk_fb_div * 2 / 1000;
 static const double sysclk_rel_offset = -2.5e-6;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
 {
     d->Sysclk_FB_DIV_Ratio = sysclk_fb_div;
     d->Sysclk_Input = 0x01;
-    d->sysclk_Ref_Frequency_milliHz = sysclk_Ref_Frequency_milliHz;
+    d->sysclk_Ref_Frequency_milliHz = sysclk_Ref_Freq_milliHz;
     d->Sysclk_Stability_Timer = 0x32;
     d->Temperature_Low_Threshold = (int16_t)128 * -5;
     d->Temperature_Hihg_Threshold = (int16_t)128 * 70;
