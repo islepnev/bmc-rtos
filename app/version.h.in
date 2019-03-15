@@ -23,10 +23,10 @@
 #endif
 
 #define APP_NAME_STR "TDC72VXS4 BMC"
-#define VERSION_MAJOR_NUM 1
-#define VERSION_MINOR_NUM 3
-#define GIT_BRANCH tdc72vxs4_rtos-pll-wip
-#define GIT_COMMIT_HASH c6300bb
+#define VERSION_MAJOR_NUM @PROJECT_VERSION_MAJOR@
+#define VERSION_MINOR_NUM @PROJECT_VERSION_MINOR@
+#define GIT_BRANCH @GIT_BRANCH@
+#define GIT_COMMIT_HASH @GIT_COMMIT_HASH@
 #define xstr(s) str(s)
 #define str(s) #s
 

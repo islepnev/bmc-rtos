@@ -14,9 +14,11 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 SET(STM32_MIN_HEAP_SIZE 0x20000)
 SET(STM32_MIN_STACK_SIZE 0x2000)
 
-PROJECT(tdc72vxs4_rtos C)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+cmake_policy(SET CMP0048 NEW)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(tdc72vxs4_rtos VERSION 1.3 LANGUAGES C)
+
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
@@ -67,6 +69,10 @@ file(GLOB_RECURSE FREERTOS_SOURCES
     ${FREERTOS_DIR}/Source/event_groups.c
 
 )
+set(DATA_FILE
+   README.md
+   app/version.h.in
+)
 
 set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
@@ -76,8 +82,59 @@ ADD_EXECUTABLE(${ELF}
     ${STM32HAL_SOURCES}
     ${FREERTOS_SOURCES}
     ${PROJECT_SOURCES}
+    ${DATA_FILE}
 )
 TARGET_LINK_LIBRARIES(${ELF})
 STM32_SET_TARGET_PROPERTIES(${ELF})
 STM32_ADD_HEX_BIN_TARGETS(${ELF})
 STM32_PRINT_SIZE_OF_TARGETS(${ELF})
+
+# first we can indicate the documentation build as an option and set it to ON by default
+option(BUILD_DOC "Build documentation" ON)
+
+# check if Doxygen is installed
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
+
+find_package (Git)
+if (GIT_FOUND)
+      message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
+endif (GIT_FOUND)
+
+# Get the current working branch
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/app/version.h.in
+  ${CMAKE_SOURCE_DIR}/app/version.h
+)
+list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/app/version.h)
