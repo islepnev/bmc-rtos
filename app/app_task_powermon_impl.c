@@ -44,6 +44,8 @@ const uint32_t RAMP_5V_TIMEOUT_TICKS = 3000;
 const uint32_t POWERFAIL_DELAY_TICKS = 3000;
 const uint32_t ERROR_DELAY_TICKS = 3000;
 
+const uint32_t log_sensor_status_duration_ticks = 3000;
+
 uint32_t pmLoopCount = 0;
 
 PmState pmState = PM_STATE_INIT;
@@ -78,7 +80,7 @@ static const char *sensorStatusStr(SensorStatus state)
     }
 }
 
-static void log_sensor_status(const Dev_powermon *pm)
+static void log_sensor_status_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &pm->sensors[i];
@@ -115,7 +117,8 @@ static void log_sensor_status(const Dev_powermon *pm)
                 log_put(LOG_WARNING, str);
                 break;
             case SENSOR_NORMAL:
-                log_put(LOG_INFO, str);
+                if (pm_sensor_get_sensorStatus_Duration(sensor) >= log_sensor_status_duration_ticks)
+                    log_put(LOG_INFO, str);
                 break;
             }
             oldSensorStatus[i] = status;
@@ -264,7 +267,7 @@ void powermon_task (void)
     if ((pmState == PM_STATE_RAMP)
             || (pmState == PM_STATE_RUN)
             ) {
-        log_sensor_status(pm);
+        log_sensor_status_change(pm);
     } else {
         clearOldSensorStatus();
     }
