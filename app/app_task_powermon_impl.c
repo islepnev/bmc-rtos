@@ -166,12 +166,12 @@ void powermon_task (void)
     case PM_STATE_STANDBY:
         struct_powermon_init(pm);
         struct_Devices_init(&dev);
-        if (vmePresent && (stateTicks() > 2000)) {
+        if (vmePresent && enable_power && (stateTicks() > 2000)) {
             pmState = PM_STATE_RAMP_5V;
         }
         break;
     case PM_STATE_RAMP_5V:
-        if (!vmePresent) {
+        if (!vmePresent || !enable_power) {
             pmState = PM_STATE_STANDBY;
             break;
         }
@@ -191,7 +191,7 @@ void powermon_task (void)
         }
         break;
     case PM_STATE_RAMP:
-        if (!vmePresent) {
+        if (!vmePresent || !enable_power) {
             pmState = PM_STATE_STANDBY;
             break;
         }
@@ -206,7 +206,7 @@ void powermon_task (void)
         }
         break;
     case PM_STATE_RUN:
-        if (!vmePresent) {
+        if (!vmePresent || !enable_power) {
             pmState = PM_STATE_STANDBY;
             break;
         }

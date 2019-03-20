@@ -8,6 +8,7 @@
 #define ANSI_GOHOME    CSI "1;1H"
 
 #define ANSI_BOLD      CSI "1m"
+#define ANSI_BLINK     CSI "5m"
 
 #define ANSI_BLACK     CSI "30m"
 #define ANSI_RED       CSI "31m"

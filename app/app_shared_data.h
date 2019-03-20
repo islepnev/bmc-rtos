@@ -26,6 +26,8 @@ extern "C" {
 
 extern Devices dev;
 extern int enable_pll_run;
+extern int enable_power;
+extern int enable_stats_display;
 
 const Devices* getDevices(void);
 

@@ -15,20 +15,17 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "app_tasks.h"
-#include "app_task_heartbeat.h"
-#include "app_task_powermon.h"
-#include "app_task_main.h"
-#include "app_task_display.h"
-#include "app_task_cli.h"
-#include "app_task_pll.h"
+#ifndef APP_TASK_CLI_H
+#define APP_TASK_CLI_H
 
-void create_tasks(void)
-{
-    // create_task_heartbeat();
-    create_task_display();
-    create_task_cli();
-    create_task_powermon();
-    create_task_main();
-    create_task_pll();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void create_task_cli(void);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // APP_TASK_CLI_H

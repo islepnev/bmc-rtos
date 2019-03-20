@@ -283,6 +283,7 @@ static void print_header(void)
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
     printf("     Uptime: ");
     print_uptime_str();
+    printf(" %10s %14s", enable_power ? "" : "Power-OFF", enable_stats_display? "" : ANSI_BLINK "Press any key");
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
@@ -373,9 +374,14 @@ static void print_log_messages(void)
     }
 }
 
+static int old_enable_stats_display = 0;
+
 static void update_display(const Devices * dev)
 {
-    //    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+    if (enable_stats_display && !old_enable_stats_display) {
+        force_refresh = 1;
+    }
+    old_enable_stats_display = enable_stats_display;
     if (force_refresh) {
         printf(ANSI_CLEARTERM);
         force_refresh = 0;
@@ -384,7 +390,9 @@ static void update_display(const Devices * dev)
     printf(CSI"?25l"); // hide cursor
     print_header();
     print_powermon(&dev->pm);
-    print_sensors(&dev->pm);
+    if (enable_stats_display) {
+        print_sensors(&dev->pm);
+    }
     print_thset(&dev->thset);
     print_main(dev);
     print_pll(&dev->pll);
@@ -398,33 +406,19 @@ static void update_display(const Devices * dev)
 
     printf(CSI"?25h"); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
-    fflush(stdout);
+//    fflush(stdout);
     displayUpdateCount++;
-}
-
-static void read_keys(void)
-{
-    int ch = getchar();
-    if (ch == EOF)
-        return;
-    force_refresh = 1;
-    log_put(LOG_INFO, "char");
-    switch (ch) {
-        case ' ':
-//        osSignalSet(displayThreadId, SIGNAL_REFRESH_DISPLAY);
-        break;
-    }
 }
 
 static void displayTask(void const *arg)
 {
     (void) arg;
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
-    fflush(stdout);
+//    fflush(stdout);
     while(1) {
         update_display(&dev);
-//        read_keys();
-//        osSignalWait(SIGNAL_REFRESH_DISPLAY, displayTaskLoopDelay);
         osDelay(displayTaskLoopDelay);
     }
 }

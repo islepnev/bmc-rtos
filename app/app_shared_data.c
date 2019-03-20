@@ -19,6 +19,8 @@
 
 Devices dev = {0};
 int enable_pll_run = 0;
+int enable_power = 1;
+int enable_stats_display = 1;
 
 const Devices* getDevices(void)
 {

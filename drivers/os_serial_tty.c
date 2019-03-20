@@ -57,6 +57,9 @@ void serial_console_interrupt_handler(USART_TypeDef *usart)
     if (LL_USART_IsActiveFlag_RXNE(usart) && LL_USART_IsEnabledIT_RXNE(usart)) {
         USART_RXNE_Callback_FromISR(usart);
     }
+    if (LL_USART_IsActiveFlag_ORE(usart)) {
+        LL_USART_ClearFlag_ORE(usart);
+    }
 }
 
 int __io_getchar (void)
@@ -86,4 +89,5 @@ void initialize_serial_console_hardware(void)
 {
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
     message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
+    LL_USART_EnableIT_RXNE(tty_usart);
 }
