@@ -220,7 +220,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-UART_HandleTypeDef * const stdio_uart = &huart3;
+
 /* USER CODE END 1 */
 
 /**

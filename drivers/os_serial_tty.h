@@ -15,20 +15,22 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef DEBUG_HELPERS_H
-#define DEBUG_HELPERS_H
+#ifndef OS_SERIAL_TTY_H
+#define OS_SERIAL_TTY_H
+
+#include "stm32f7xx_ll_usart.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void led_show_error(void);
-void led_blink_error(void);
-void debug_print(const char *ptr, int len);
-void debug_printf(const char *format, ...);
+void initialize_serial_console_hardware(void);
+void serial_console_interrupt_handler(USART_TypeDef *usart);
+int __io_getchar (void);
+int __io_putchar(int ch);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEBUG_HELPERS_H
+#endif // OS_SERIAL_TTY_H

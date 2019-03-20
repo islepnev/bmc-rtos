@@ -65,7 +65,6 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN Private defines */
-extern UART_HandleTypeDef * const stdio_uart;
 /* USER CODE END Private defines */
 
 extern void _Error_Handler(char *, int);

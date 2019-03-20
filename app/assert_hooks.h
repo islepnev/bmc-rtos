@@ -25,9 +25,10 @@
 extern "C" {
 #endif
 
+extern void vApplicationExitHook(int result);
+
+// FreeRTOS callbacks
 extern void vAssertCalled( unsigned long ulLine, const uint8_t * const pcFileName );
-/* Prototypes for the standard FreeRTOS callback/hook functions implemented
-within this file. */
 extern void vApplicationMallocFailedHook( void );
 //extern void vApplicationIdleHook( void );
 extern void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );

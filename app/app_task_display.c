@@ -21,6 +21,8 @@
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
+#include "usart.h"
+#include "task.h"
 
 #include "fpga_spi_hal.h"
 #include "ad9545_util.h"
@@ -49,6 +51,7 @@ enum { displayThreadStackSize = threadStackSize };
 
 static uint32_t displayUpdateCount = 0;
 static const uint32_t displayTaskLoopDelay = 500;
+static int force_refresh = 0;
 
 static const char *pmStateStr(PmState state)
 {
@@ -98,30 +101,6 @@ static const char *pllStateStr(PllState state)
     case PLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
     default: return "?";
     }
-}
-
-static void dev_thset_print(const Dev_thset *d)
-{
-    printf("Temp: ");
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        if (d->th[i].valid)
-            print_adt7301_value(d->th[i].rawTemp);
-        else
-            printf(" --- ");
-        printf(" ");
-    }
-    const SensorStatus status = dev_thset_thermStatus(d);
-    printf("%s", sensorStatusStr(status));
-}
-
-void dev_print_thermometers(const Devices *dev)
-{
-    if (getSensorIsValid_3V3(&dev->pm)) {
-        dev_thset_print(&dev->thset);
-    } else {
-        printf("Temp: no power");
-    }
-    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_pm_switches(const pm_switches *sw)
@@ -267,6 +246,7 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_PLL_H 5
 #define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
 #define DISPLAY_LOG_H (LOG_BUF_SIZE)
+#define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
 static void print_goto(int line, int col)
 {
@@ -277,28 +257,6 @@ static void print_clearbox(int line1, int height)
 {
     for(int i=line1; i<line1+height; i++)
         printf("\x1B[%d;H\x1B[K", i);
-}
-
-static void print_log_messages(void)
-{
-//    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
-    print_goto(DISPLAY_LOG_Y, 1);
-    const uint32_t log_count = log_get_count();
-    const uint32_t log_wptr = log_get_wptr();
-    if (log_count < LOG_BUF_SIZE) {
-        for (uint32_t i=0; i<log_wptr; i++)
-            print_log_entry(i);
-        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
-            printf("%s\n", ANSI_CLEAR_EOL);
-    } else {
-        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
-            print_log_entry(i);
-        for (uint32_t i=0; i<log_wptr; i++)
-            print_log_entry(i);
-    }
-//    char str[16];
-//    snprintf(str, 16, "%ld", log_n++);
-//    log_put(1, str);
 }
 
 static void print_uptime_str(void)
@@ -319,11 +277,8 @@ static void print_uptime_str(void)
 
 static char statsBuffer[1000];
 
-static void update_display(const Devices * dev)
+static void print_header(void)
 {
-    //    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
-    printf(ANSI_GOHOME ANSI_CLEAR);
-    printf(CSI"?25l"); // hide cursor
     // Title
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
     printf("     Uptime: ");
@@ -339,27 +294,49 @@ static void update_display(const Devices * dev)
            getMainLoopCount(),
            displayUpdateCount);
 //    printf("\n");
+}
+
+static void print_powermon(const Dev_powermon *pm)
+{
     // Powermon
     const PmState pmState = getPmState();
 //    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
     print_goto(DISPLAY_POWERMON_Y, 1);
     printf("Powermon state: %s", pmStateStr(pmState));
     printf("%s\n", ANSI_CLEAR_EOL);
-    print_pm_switches(&dev->pm.sw);
-    pm_pgood_print(&dev->pm);
+    print_pm_switches(&pm->sw);
+    pm_pgood_print(pm);
     printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void print_sensors(const Dev_powermon *pm)
+{
     // Sensors
-//    print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
     print_goto(DISPLAY_SENSORS_Y, 1);
-//    if (pmState == PM_STATE_RAMP || pmState == PM_STATE_RUN) {
-        SensorStatus sensors = pm_sensors_getStatus(&dev->pm);
-        printf("System power supplies: %s\n", sensorStatusStr(sensors));
-//        printf("\n");
-        monPrintValues(&dev->pm);
-        dev_print_thermometers(dev);
-//    }
-//    printf("%s\n", ANSI_CLEAR_EOL);
-//    print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
+    SensorStatus sensors = pm_sensors_getStatus(pm);
+    printf("System power supplies: %s\n", sensorStatusStr(sensors));
+    //        printf("\n");
+    monPrintValues(pm);
+}
+
+static void print_thset(const Dev_thset *d)
+{
+    print_goto(DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H - 1, 1);
+    printf("Temp: ");
+    for (int i=0; i<DEV_THERM_COUNT; i++) {
+        if (d->th[i].valid)
+            printf("%5.1f", d->th[i].rawTemp / 32.0);
+        else
+            printf(" --- ");
+        printf(" ");
+    }
+    const SensorStatus status = dev_thset_thermStatus(d);
+    printf("%s", sensorStatusStr(status));
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void print_main(const Devices *dev)
+{
     print_goto(DISPLAY_MAIN_Y, 1);
     if (getMainState() == MAIN_STATE_RUN) {
         printf("Main state:     %s", mainStateStr(getMainState()));
@@ -369,13 +346,55 @@ static void update_display(const Devices * dev)
     } else {
         print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
     }
+}
+
+static void print_pll(const Dev_ad9545 *pll)
+{
     print_goto(DISPLAY_PLL_Y, 1);
-    pllPrint(&dev->pll);
+    pllPrint(pll);
+}
+
+static void print_log_messages(void)
+{
+//    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
+    print_goto(DISPLAY_LOG_Y, 1);
+    const uint32_t log_count = log_get_count();
+    const uint32_t log_wptr = log_get_wptr();
+    if (log_count < LOG_BUF_SIZE) {
+        for (uint32_t i=0; i<log_wptr; i++)
+            print_log_entry(i);
+        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
+            printf("%s\n", ANSI_CLEAR_EOL);
+    } else {
+        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
+            print_log_entry(i);
+        for (uint32_t i=0; i<log_wptr; i++)
+            print_log_entry(i);
+    }
+}
+
+static void update_display(const Devices * dev)
+{
+    //    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+    if (force_refresh) {
+        printf(ANSI_CLEARTERM);
+        force_refresh = 0;
+    }
+    printf(ANSI_GOHOME ANSI_CLEAR);
+    printf(CSI"?25l"); // hide cursor
+    print_header();
+    print_powermon(&dev->pm);
+    print_sensors(&dev->pm);
+    print_thset(&dev->thset);
+    print_main(dev);
+    print_pll(&dev->pll);
     print_log_messages();
 
+    print_clearbox(DISPLAY_STATS_Y, uxTaskGetNumberOfTasks()); // FIXME: get number of threads
+    print_goto(DISPLAY_STATS_Y, 1);
     vTaskGetRunTimeStats((char *)&statsBuffer);
     printf("%s", statsBuffer);
-    printf("%s\n", ANSI_CLEAR_EOL);
+    printf(ANSI_CLEAR_EOL);
 
     printf(CSI"?25h"); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
@@ -388,6 +407,8 @@ static void read_keys(void)
     int ch = getchar();
     if (ch == EOF)
         return;
+    force_refresh = 1;
+    log_put(LOG_INFO, "char");
     switch (ch) {
         case ' ':
 //        osSignalSet(displayThreadId, SIGNAL_REFRESH_DISPLAY);
@@ -398,7 +419,8 @@ static void read_keys(void)
 static void displayTask(void const *arg)
 {
     (void) arg;
-    printf(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR);
+    printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
+    fflush(stdout);
     while(1) {
         update_display(&dev);
 //        read_keys();

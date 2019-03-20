@@ -34,9 +34,12 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
+#include "stm32f7xx_ll_usart.h"
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
+
+extern void serial_console_interrupt_handler(USART_TypeDef *usart);
 
 void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 {
@@ -225,8 +228,8 @@ void TIM1_UP_TIM10_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
   /* USER CODE BEGIN USART3_IRQn 0 */
+    serial_console_interrupt_handler(USART3);
   /* USER CODE END USART3_IRQn 0 */
-  HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART3_IRQn 1 */
 
   /* USER CODE END USART3_IRQn 1 */

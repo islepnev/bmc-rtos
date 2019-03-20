@@ -15,20 +15,18 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "stm32f7xx_hal.h"
-#include "usart.h"
+#include <stdarg.h>
+
+#include "stm32f7xx_ll_usart.h"
 #include "led_gpio_hal.h"
+
+extern USART_TypeDef * const tty_usart;
 
 static void debug_send_char(const char c)
 {
     // wait for UART ready
-    while (1) {
-        volatile HAL_UART_StateTypeDef state = HAL_UART_GetState(stdio_uart);
-        if (state == HAL_UART_STATE_READY)
-            break;
-    }
-    // use HAL_MAX_DELAY for CPU polling mode
-    HAL_UART_Transmit(stdio_uart, (uint8_t *) &c, 1, HAL_MAX_DELAY);
+    while(! LL_USART_IsActiveFlag_TXE(tty_usart)) {;}
+    LL_USART_TransmitData8(tty_usart, (uint8_t)c);
 }
 
 void debug_print(const char *ptr, int len)
@@ -41,6 +39,20 @@ void debug_print(const char *ptr, int len)
         }
         debug_send_char(*ptr++);
     }
+}
+
+void debug_printf(const char *format, ...)
+{
+    enum {buf_size = 100};
+  static va_list args;
+  static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+
+  va_start(args, format);
+  size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+  va_end(args);
+  size_t n_written = (n > buf_size) ? buf_size : n;
+  if (n_written > 0)
+      debug_print(buffer, n_written); // exclude trailing \0
 }
 
 static const int LED_BLINK_CPUDELAY = 200000;

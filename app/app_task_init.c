@@ -19,6 +19,8 @@
 #include "app_shared_data.h"
 #include "ad9545_i2c_hal.h"
 #include "FreeRTOSConfig.h"
+#include "os_serial_tty.h"
+#include "debug_helpers.h"
 
 void setStaticPins(void)
 {
@@ -36,10 +38,10 @@ void setStaticPins(void)
 
 void task_oneshot(void)
 {
+    debug_printf("\nInitializing...");
+
     vConfigureTimerForRunTimeStats();
     setStaticPins();
-    printf("Initializing...");
-    fflush(stdout);
 
     // light all leds
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
@@ -60,6 +62,7 @@ void task_oneshot(void)
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
-    printf("Ok\n");
-    fflush(stdout);
+    // required for console I/O
+    initialize_serial_console_hardware();
+    debug_printf("Ok\n");
 }

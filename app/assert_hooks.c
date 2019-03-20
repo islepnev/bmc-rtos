@@ -18,6 +18,16 @@
 #include "assert_hooks.h"
 #include "debug_helpers.h"
 
+void vApplicationExitHook(int result)
+{
+    taskDISABLE_INTERRUPTS();
+    led_show_error();
+    debug_printf("Program exited with code %d", result);
+    while(1) {
+        led_blink_error();
+    }
+}
+
 void vAssertCalled( uint32_t ulLine, const uint8_t *pcFile )
 {
     volatile unsigned long ul = 0;
@@ -25,13 +35,10 @@ void vAssertCalled( uint32_t ulLine, const uint8_t *pcFile )
     ( void ) pcFile;
     ( void ) ulLine;
 
-    taskDISABLE_INTERRUPTS(); // game over
+    taskDISABLE_INTERRUPTS();
     led_show_error();
 
-    static const char str[] = "assert called\n";
-    debug_print(str, sizeof(str));
-
-//    printf("\nError: assert called at %s:%ld\n", pcFile, ulLine);
+    debug_printf("\nassert failed at %s:%ld\n", pcFile, ulLine);
 
     taskENTER_CRITICAL();
     {
@@ -48,7 +55,7 @@ void vAssertCalled( uint32_t ulLine, const uint8_t *pcFile )
 
 void vApplicationMallocFailedHook( void )
 {
-    taskDISABLE_INTERRUPTS(); // game over
+    taskDISABLE_INTERRUPTS();
     led_show_error();
     static const char str[] = "Error: malloc failed\n";
     debug_print(str, sizeof(str));
@@ -61,7 +68,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
     (void) pxTask;
     (void) pcTaskName;
-    taskDISABLE_INTERRUPTS(); // game over
+    taskDISABLE_INTERRUPTS();
     led_show_error();
     static const char str[] = "Error: stack overflow\n";
     debug_print(str, sizeof(str));
