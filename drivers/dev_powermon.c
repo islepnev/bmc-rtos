@@ -94,6 +94,11 @@ void pm_read_pgood(Dev_powermon *pm)
     pm->ltm_pgood = readPowerGood1v5();
 }
 
+PgoodState get_all_pgood(const Dev_powermon *pm)
+{
+    return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
+}
+
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 {
 //    pm_read_pgood(pm);
@@ -113,10 +118,10 @@ void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
     if (!pm->sw.switch_1v0) {
         pm->sw.switch_3v3 = 0;
     }
-    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      pm->sw.switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        pm->sw.switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      pm->sw.switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_5V_GPIO_Port,        ON_5V_Pin,        pm->sw.switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 int pm_sensors_isAllValid(const Dev_powermon *d)

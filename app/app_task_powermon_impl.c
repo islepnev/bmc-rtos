@@ -181,7 +181,7 @@ void powermon_task (void)
             break;
         }
         if (stateTicks() > RAMP_5V_TIMEOUT_TICKS) {
-            if (!pm->fpga_core_pgood && !pm->ltm_pgood) {
+            if (!get_all_pgood(pm)) {
                 log_put(LOG_WARNING, "No power");
                 pmState = PM_STATE_STANDBY;
                 break;

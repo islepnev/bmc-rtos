@@ -174,7 +174,7 @@ void dev_switchPower(Dev_powermon *pm, SwitchOnOff state)
 PgoodState dev_readPgood(Dev_powermon *pm)
 {
     pm_read_pgood(pm);
-    return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
+    return get_all_pgood(pm);
 }
 
 void dev_thset_read(Dev_thset *d)

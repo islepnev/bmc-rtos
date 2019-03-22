@@ -21,6 +21,11 @@
 #include "ad9545_status.h"
 
 typedef enum {
+    PGOOD_FAIL = 0,
+    PGOOD_OK = 1 }
+PgoodState;
+
+typedef enum {
     SENSOR_UNKNOWN  = 0,
     SENSOR_NORMAL   = 1, // numeric value used
     SENSOR_WARNING  = 2,

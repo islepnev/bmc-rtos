@@ -76,6 +76,7 @@ uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 int getSensorIsValid_5V(const Dev_powermon *pm);
 int getSensorIsValid_3V3(const Dev_powermon *pm);
+PgoodState get_all_pgood(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

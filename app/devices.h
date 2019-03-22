@@ -29,10 +29,6 @@ extern "C" {
 #include "dev_leds.h"
 
 enum { FPGA_DEVICE_ID = 0xD0};
-typedef enum {
-    PGOOD_FAIL = 0,
-    PGOOD_OK = 1 }
-PgoodState;
 
 typedef struct {
     Dev_Leds leds;
