@@ -18,8 +18,11 @@
 #include "dev_powermon.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
+#include "logbuffer.h"
 #include "dev_pm_sensors.h"
 #include "cmsis_os.h"
+
+static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
 int monIsOn(const pm_switches sw, SensorIndex index)
 {
@@ -131,13 +134,20 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
             return 0;
     return 1;
 }
+
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        SensorStatus status = pm_sensor_status(&d->sensors[i]);
-        if (status > maxStatus)
-            maxStatus = status;
+        DeviceStatus deviceStatus = d->sensors[i].deviceStatus;
+        if (deviceStatus != DEVICE_NORMAL)
+            maxStatus = SENSOR_CRITICAL;
+        int isOn = monIsOn(d->sw, i);
+        if (isOn) {
+            SensorStatus status = pm_sensor_status(&d->sensors[i]);
+            if (status > maxStatus)
+                maxStatus = status;
+        }
     }
     return maxStatus;
 }
@@ -145,6 +155,7 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 void monClearMeasurements(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
+        struct_pm_sensor_clear_minmax(&d->sensors[i]);
         struct_pm_sensor_clear_measurements(&d->sensors[i]);
     }
 }
@@ -153,8 +164,13 @@ int monDetect(Dev_powermon *d)
 {
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        if (pm_sensor_detect(&d->sensors[i]))
+        pm_sensor_reset_i2c_master();
+        DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
+        if (s == DEVICE_NORMAL) {
             count++;
+        } else {
+            pm_sensor_reset_i2c_master();
+        }
     }
     return count;
 }
@@ -163,8 +179,10 @@ int monReadValues(Dev_powermon *d)
 {
     int err = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        err += pm_sensor_read(&d->sensors[i]);
-//        printMonValue(deviceAddr, busVolt * 1.25e-3, shuntVolt * 2.5e-6, monShuntVal[i]);
+        pm_sensor *sensor = &d->sensors[i];
+        DeviceStatus s = pm_sensor_read(sensor);
+        if (s != DEVICE_NORMAL)
+            err++;
     }
     return err;
 }
@@ -183,20 +201,29 @@ MonState runMon(Dev_powermon *pm)
 {
     pm->monCycle++;
     const MonState oldState = pm->monState;
-    if (!pm->sw.switch_5v) {
-        pm->monState = MON_STATE_INIT;
-        return 1;
-    }
     switch(pm->monState) {
     case MON_STATE_INIT:
-        struct_powermon_sensors_init(pm);
+        monClearMeasurements(pm);
         pm->monState = MON_STATE_DETECT;
         break;
-    case MON_STATE_DETECT:
-        // all but two devices up
-        if (monDetect(pm) > POWERMON_SENSORS - 2)
+    case MON_STATE_DETECT: {
+        pm_sensor_reset_i2c_master();
+        int num_detected = monDetect(pm);
+        if (num_detected == 0) {
+            pm->monState = MON_STATE_INIT;
+            break;
+        }
+        if (num_detected == POWERMON_SENSORS) {
+            log_put(LOG_INFO, "All sensors present");
             pm->monState = MON_STATE_READ;
+            break;
+        }
+        if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
+            log_put(LOG_ERR, "Sensor detect timeout");
+            pm->monState = MON_STATE_READ;
+        }
         break;
+    }
     case MON_STATE_READ:
         if (monReadValues(pm) == 0)
             pm->monState = MON_STATE_READ;
@@ -204,6 +231,7 @@ MonState runMon(Dev_powermon *pm)
             pm->monState = MON_STATE_ERROR;
         break;
     case MON_STATE_ERROR:
+        log_put(LOG_ERR, "Sensor read error");
         pm->monErrors++;
         pm->monState = MON_STATE_INIT;
         break;

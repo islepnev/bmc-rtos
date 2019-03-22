@@ -21,10 +21,12 @@
 
 #include "ansi_escape_codes.h"
 #include "display.h"
+#include "logbuffer.h"
 #include "dev_mcu.h"
 
 //const double SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
 const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
+const int ERROR_COUNT_LIMIT = 3;
 
 double monShuntVal(SensorIndex index)
 {
@@ -248,29 +250,10 @@ uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
     return HAL_GetTick() - d->lastStatusUpdatedTick;
 }
 
-static void reset_I2C_Powermon(void)
+void pm_sensor_reset_i2c_master(void)
 {
     __HAL_I2C_DISABLE(&hi2c4);
     __HAL_I2C_ENABLE(&hi2c4);
-}
-
-int pm_sensor_detect(pm_sensor *d)
-{
-    reset_I2C_Powermon();
-
-    d->lastStatusUpdatedTick = HAL_GetTick();
-    uint16_t deviceAddr = d->busAddress;
-    uint16_t manuf_id;
-    uint16_t device_id;
-    int detected =(
-                (HAL_OK == ina226_i2c_Detect(deviceAddr))
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id))
-                && (manuf_id == INA226_MANUFACTURER_ID)
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id))
-                && (device_id == INA226_DEVICE_ID)
-            );
-    pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
-    return detected;
 }
 
 typedef union {
@@ -285,51 +268,72 @@ typedef union {
     uint16_t raw;
 } configreg_t;
 
-int pm_sensor_read(pm_sensor *d)
+// default value 0x4127
+configreg_t default_configreg = {
+    .bit.mode = 7,     // 7: Shunt and Bus, Continuous
+    .bit.vshct = 4,    // 4: 1 ms
+    .bit.vbusct = 4,   // 4: 1 ms
+    .bit.avg = 1,      // 1: 4 averages
+    .bit.reserved = 4, // should be 4
+    .bit.rst = 0       // 0: no reset
+};
+
+static HAL_StatusTypeDef pm_sensor_write_conf(pm_sensor *d)
 {
-    int err = 0;
-    struct_pm_sensor_clear_measurements(d);
     uint16_t deviceAddr = d->busAddress;
     uint16_t data;
-    if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &data)) {
-        pm_sensor_set_readVoltage(d, (int16_t)data * 1.25e-3f);
-    } else {
-        err++;
-    }
-    if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &data)) {
-        const double shuntVoltage = (int16_t)data * 2.5e-6f;
-        if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            pm_sensor_set_readCurrent(d, shuntVoltage / d->shuntVal);
+    data = default_configreg.raw;
+    HAL_StatusTypeDef ret = ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data);
+    return ret;
+}
+
+DeviceStatus pm_sensor_detect(pm_sensor *d)
+{
+    d->lastStatusUpdatedTick = HAL_GetTick();
+    uint16_t deviceAddr = d->busAddress;
+    uint16_t manuf_id;
+    uint16_t device_id;
+    int detected =(
+                // (HAL_OK == ina226_i2c_Detect(deviceAddr))
+                (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id))
+                && (manuf_id == INA226_MANUFACTURER_ID)
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id))
+                && (device_id == INA226_DEVICE_ID)
+                && (HAL_OK == pm_sensor_write_conf(d))
+            );
+    pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
+    return d->deviceStatus;
+}
+
+DeviceStatus pm_sensor_read(pm_sensor *d)
+{
+    uint16_t deviceAddr = d->busAddress;
+    uint16_t rawVoltage = 0;
+    uint16_t rawCurrent = 0;
+    configreg_t configreg = {0};
+    int err = 0;
+    while (1) {
+        if ((HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage))
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawCurrent))
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw))
+                && (configreg.raw == default_configreg.raw)) {
+            break;
         }
-    } else {
         err++;
-    }
-    // default value 0x4127
-    configreg_t config;
-    config.bit.mode = 7;     // 7: Shunt and Bus, Continuous
-    config.bit.vshct = 4;    // 4: 1 ms
-    config.bit.vbusct = 4;   // 4: 1 ms
-    config.bit.avg = 1;      // 1: 4 averages
-    config.bit.reserved = 4; // should be 4
-    config.bit.rst = 0;      // 0: no reset
-    data = config.raw;
-    if (HAL_OK != ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data)) {
-        err++;
-    }
-    if (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &data)) {
-        if (data != config.raw) {
-            printf("%04X != %04X\n", data, config.raw);
-            err++;
+        if (err > ERROR_COUNT_LIMIT) {
+            log_put(LOG_ERR, "Sensor failed");
+            pm_sensor_set_deviceStatus(d, DEVICE_FAIL);
+            pm_sensor_set_sensorStatus(d, SENSOR_UNKNOWN);
+            struct_pm_sensor_clear_measurements(d);
+            return d->deviceStatus;
         }
-    } else {
-        err++;
     }
-    if (err) {
-        pm_sensor_set_deviceStatus(d, err ? DEVICE_FAIL : DEVICE_NORMAL);
-        pm_sensor_set_sensorStatus(d, SENSOR_NORMAL);
-    } else {
-        pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
-    }
-    //        printMonValue(deviceAddr, busVolt * 1.25e-3, shuntVolt * 2.5e-6, monShuntVal[i]);
-    return err;
+    pm_sensor_set_readVoltage(d, (int16_t)rawVoltage * 1.25e-3f);
+    const double shuntVoltage = (int16_t)rawCurrent * 2.5e-6f;
+    double readCurrent = 0;
+    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
+        readCurrent = shuntVoltage / d->shuntVal;
+    pm_sensor_set_readCurrent(d, readCurrent);
+    pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
+    return d->deviceStatus;
 }

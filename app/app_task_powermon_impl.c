@@ -164,8 +164,6 @@ void powermon_task (void)
         pmState = PM_STATE_RAMP_5V;
         break;
     case PM_STATE_STANDBY:
-        struct_powermon_init(pm);
-        struct_Devices_init(&dev);
         if (vmePresent && enable_power && (stateTicks() > 2000)) {
             pmState = PM_STATE_RAMP_5V;
         }
@@ -248,7 +246,8 @@ void powermon_task (void)
         dev_switchPower(pm, SWITCH_OFF);
     }
 
-    if ((pmState == PM_STATE_RAMP_5V)
+    if ((pmState == PM_STATE_STANDBY)
+            || (pmState == PM_STATE_RAMP_5V)
             || (pmState == PM_STATE_RAMP)) {
         runMon(pm);
     } else {
@@ -259,9 +258,6 @@ void powermon_task (void)
                 runMon(pm);
             }
 
-        }
-        else  {
-            monClearMeasurements(pm);
         }
     }
     if ((pmState == PM_STATE_RAMP)

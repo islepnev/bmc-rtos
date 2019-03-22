@@ -125,29 +125,26 @@ static void pm_pgood_print(const Dev_powermon *pm)
 
 static void pm_sensor_print(const pm_sensor *d, int isOn)
 {
-    printf("%6s: ", d->label);
-    if (isOn && d->deviceStatus != DEVICE_UNKNOWN) {
-        if (d->deviceStatus == DEVICE_FAIL) {
-            printf("FAIL");
-        }
-        SensorStatus status = pm_sensor_status(d);
+    printf("%10s", d->label);
+    if (d->deviceStatus == DEVICE_NORMAL) {
+        SensorStatus sensorStatus = pm_sensor_status(d);
         const char *color = "";
-        switch (status) {
-        case SENSOR_UNKNOWN: color = ANSI_YELLOW; break;
-        case SENSOR_NORMAL: color = ANSI_GREEN; break;
-        case SENSOR_WARNING: color = ANSI_YELLOW; break;
-        case SENSOR_CRITICAL: color = ANSI_RED; break;
+        switch (sensorStatus) {
+        case SENSOR_UNKNOWN:  color = ANSI_YELLOW; break;
+        case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
+        case SENSOR_WARNING:  color = ANSI_YELLOW; break;
+        case SENSOR_CRITICAL: color = ANSI_RED;    break;
         }
-        printf("%s%8.3f%s", color, d->busVoltage, ANSI_CLEAR);
+        printf("%s % 6.3f%s", color, d->busVoltage, ANSI_CLEAR);
         if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            printf(" %8.3f %8.3f", d->current, d->currentMax);
+            printf(" % 6.3f % 6.3f", d->current, d->currentMax);
         } else {
             printf("         ");
         }
 //        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
         printf(" %s", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF);
     } else {
-        printf(ANSI_CLEAR_EOL);
+        printf(" %s", STR_RESULT_UNKNOWN);
     }
 }
 
@@ -164,16 +161,15 @@ static const char *monStateStr(MonState monState)
 
 void monPrintValues(const Dev_powermon *d)
 {
-    printf("Sensors state:  %s %s",
-           monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
-    if (d->monErrors)
-        printf("     %d errors", d->monErrors);
-    printf("%s\n", ANSI_CLEAR_EOL);
-//    if (d->monState == MON_STATE_READ)
+//    printf("Sensors state:  %s %s",
+//           monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
+//    if (d->monErrors)
+//        printf("     %d errors", d->monErrors);
+//    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("%10s %6s %6s %6s", "sensor ", "  V  ", "  A  ", " A max ");
+    printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-//            uint16_t deviceAddr = monAddr[i];
-//            printMonValue(deviceAddr, monValuesBus[i], monValuesShunt[i], monShuntVal(deviceAddr));
             pm_sensor_print(&d->sensors[i], monIsOn(d->sw, i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
@@ -283,7 +279,12 @@ static void print_header(void)
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
     printf("     Uptime: ");
     print_uptime_str();
-    printf(" %10s %14s", enable_power ? "" : "Power-OFF", enable_stats_display? "" : ANSI_BLINK "Press any key");
+    printf("     %s%s%s%s%s",
+           ANSI_BOLD ANSI_BLINK,
+           enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
+           ANSI_BGR_BLUE " ",
+           enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
+           ANSI_BGR_BLUE);
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
@@ -314,8 +315,8 @@ static void print_sensors(const Dev_powermon *pm)
 {
     // Sensors
     print_goto(DISPLAY_SENSORS_Y, 1);
-    SensorStatus sensors = pm_sensors_getStatus(pm);
-    printf("System power supplies: %s\n", sensorStatusStr(sensors));
+    SensorStatus sensorStatus = pm_sensors_getStatus(pm);
+    printf("System power supplies: %s\n", sensorStatusStr(sensorStatus));
     //        printf("\n");
     monPrintValues(pm);
 }

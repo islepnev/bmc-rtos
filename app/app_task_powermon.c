@@ -26,7 +26,7 @@
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = threadStackSize };
-static const uint32_t powermonTaskLoopDelay = 2;
+static const uint32_t powermonTaskLoopDelay = 10;
 
 PmState getPmState(void)
 {

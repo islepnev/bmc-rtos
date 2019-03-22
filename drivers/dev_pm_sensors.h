@@ -18,6 +18,7 @@
 #ifndef DEV_PM_SENSORS_H
 #define DEV_PM_SENSORS_H
 
+#include <stdint.h>
 #include <unistd.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_types.h"
@@ -66,13 +67,15 @@ typedef struct {
     double currentMax;
 } pm_sensor;
 
+void struct_pm_sensor_clear_minmax(pm_sensor *d);
 void struct_pm_sensor_clear_measurements(pm_sensor *d);
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index);
 SensorStatus pm_sensor_status(const pm_sensor *d);
 int pm_sensor_isValid(const pm_sensor *d);
 uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d);
-int pm_sensor_detect(pm_sensor *d);
-int pm_sensor_read(pm_sensor *d);
+void pm_sensor_reset_i2c_master(void);
+DeviceStatus pm_sensor_detect(pm_sensor *d);
+DeviceStatus pm_sensor_read(pm_sensor *d);
 
 #ifdef __cplusplus
 }
