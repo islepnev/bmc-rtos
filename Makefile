@@ -35,4 +35,4 @@ ifeq ($(findstring distclean,$(MAKECMDGOALS)),)
 endif
 
 flash:
-	openocd -f interface/stlink-v2-1.cfg -f target/stm32f7x.cfg -c "program build/freertos-stm32f769i_discovery.elf verify reset exit"
+	openocd -f interface/stlink-v2-1.cfg -f target/stm32f7x.cfg -c "program build/ttvxs_rtos.elf verify reset exit"
