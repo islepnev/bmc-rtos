@@ -18,12 +18,14 @@
 #include "logbuffer.h"
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include "cmsis_os.h"
 
 static unsigned int log_wptr = 0;
 static unsigned int log_count = 0;
-static struct LogEntry buf[LOG_BUF_SIZE];
+static LogEntry buf[LOG_BUF_SIZE];
 
 void log_put_long(LogPriority priority, uint32_t tick, const char *str)
 {
@@ -38,12 +40,26 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
     log_count++;
 }
 
+void log_printf(LogPriority priority, const char *format, ...)
+{
+    enum {buf_size = 100};
+    static va_list args;
+    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+
+    va_start(args, format);
+    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    va_end(args);
+    size_t n_written = (n > buf_size) ? buf_size : n;
+    if (n_written > 0)
+        log_put_long(priority, osKernelSysTick(), buffer);
+}
+
 void log_put(LogPriority priority, const char *str)
 {
     log_put_long(priority, osKernelSysTick(), str);
 }
 
-void log_get(int index, struct LogEntry *dest)
+void log_get(int index, LogEntry *dest)
 {
     if (!dest)
         return;

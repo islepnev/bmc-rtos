@@ -32,6 +32,7 @@
 #include "dev_types.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
+#include "dev_pll_print.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_mcu.h"
@@ -58,7 +59,6 @@ static const char *pmStateStr(PmState state)
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
     case PM_STATE_STANDBY: return "STANDBY";
-    case PM_STATE_RAMP_5V: return ANSI_YELLOW "RAMP_5V" ANSI_CLEAR;
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
@@ -92,6 +92,7 @@ static const char *mainStateStr(MainState state)
 static const char *pllStateStr(PllState state)
 {
     switch(state) {
+    case PLL_STATE_INIT:    return "INIT";
     case PLL_STATE_RESET:    return "RESET";
     case PLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
     case PLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
@@ -117,9 +118,10 @@ static void pm_pgood_print(const Dev_powermon *pm)
 {
 //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("Intermediate 1.5V: %s", pm->ltm_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF);
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("FPGA Core 1.0V:    %s", pm->fpga_core_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF);
+    printf("Power good: 1.5V: %3s, 1.0V core %3s",
+           pm->ltm_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF,
+           pm->fpga_core_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF
+    );
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -170,7 +172,7 @@ void monPrintValues(const Dev_powermon *d)
     printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }
@@ -244,6 +246,9 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_LOG_H (LOG_BUF_SIZE)
 #define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
+#define DISPLAY_PLL_DETAIL_Y DISPLAY_POWERMON_Y
+#define DISPLAY_PLL_DETAIL_H (DISPLAY_LOG_Y - DISPLAY_PLL_DETAIL_Y)
+
 static void print_goto(int line, int col)
 {
     printf("\x1B[%d;%dH", line, col);
@@ -300,25 +305,31 @@ static void print_header(void)
 
 static void print_powermon(const Dev_powermon *pm)
 {
-    // Powermon
     const PmState pmState = getPmState();
 //    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
     print_goto(DISPLAY_POWERMON_Y, 1);
     printf("Powermon state: %s", pmStateStr(pmState));
     printf("%s\n", ANSI_CLEAR_EOL);
-    print_pm_switches(&pm->sw);
-    pm_pgood_print(pm);
-    printf("%s\n", ANSI_CLEAR_EOL);
+    if (pmState == PM_STATE_INIT) {
+        print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
+    } else {
+        print_pm_switches(&pm->sw);
+        pm_pgood_print(pm);
+        printf("%s\n", ANSI_CLEAR_EOL);
+    }
 }
 
 static void print_sensors(const Dev_powermon *pm)
 {
-    // Sensors
-    print_goto(DISPLAY_SENSORS_Y, 1);
-    SensorStatus sensorStatus = pm_sensors_getStatus(pm);
-    printf("System power supplies: %s\n", sensorStatusStr(sensorStatus));
-    //        printf("\n");
-    monPrintValues(pm);
+    const PmState pmState = getPmState();
+    if (pmState == PM_STATE_INIT) {
+        print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
+    } else {
+        print_goto(DISPLAY_SENSORS_Y, 1);
+        SensorStatus sensorStatus = pm_sensors_getStatus(pm);
+        printf("System power supplies: %s\n", sensorStatusStr(sensorStatus));
+        monPrintValues(pm);
+    }
 }
 
 static void print_thset(const Dev_thset *d)
@@ -377,6 +388,24 @@ static void print_log_messages(void)
 
 static int old_enable_stats_display = 0;
 
+static void display_summary(const Devices * dev)
+{
+    print_powermon(&dev->pm);
+    if (enable_stats_display) {
+        print_sensors(&dev->pm);
+    }
+    print_thset(&dev->thset);
+    print_main(dev);
+    print_pll(&dev->pll);
+}
+
+static void display_pll_detail(const Devices * dev)
+{
+    print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
+    print_goto(DISPLAY_PLL_DETAIL_Y, 1);
+    pllPrintStatus(&dev->pll);
+}
+
 static void update_display(const Devices * dev)
 {
     if (enable_stats_display && !old_enable_stats_display) {
@@ -390,16 +419,19 @@ static void update_display(const Devices * dev)
     printf(ANSI_GOHOME ANSI_CLEAR);
     printf(CSI"?25l"); // hide cursor
     print_header();
-    print_powermon(&dev->pm);
-    if (enable_stats_display) {
-        print_sensors(&dev->pm);
+    switch (display_mode) {
+    case DISPLAY_SUMMARY:
+        display_summary(dev);
+        break;
+    case DISPLAY_PLL_DETAIL:
+        display_pll_detail(dev);
+        break;
+    default:
+        break;
     }
-    print_thset(&dev->thset);
-    print_main(dev);
-    print_pll(&dev->pll);
     print_log_messages();
 
-    print_clearbox(DISPLAY_STATS_Y, uxTaskGetNumberOfTasks()); // FIXME: get number of threads
+    print_clearbox(DISPLAY_STATS_Y, uxTaskGetNumberOfTasks());
     print_goto(DISPLAY_STATS_Y, 1);
     vTaskGetRunTimeStats((char *)&statsBuffer);
     printf("%s", statsBuffer);

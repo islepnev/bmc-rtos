@@ -22,36 +22,26 @@
 #include <unistd.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_types.h"
+#include "dev_pm_sensors_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {POWERMON_SENSORS = 13};
-#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
-
 typedef enum {
-    SENSOR_1V5,
-    SENSOR_5V,
-    SENSOR_VME_5V,
-    SENSOR_3V3,
-    SENSOR_VME_3V3,
-    SENSOR_FPGA_CORE_1V0,
-    SENSOR_FPGA_MGT_1V0,
-    SENSOR_FPGA_MGT_1V2,
-    SENSOR_FPGA_1V8,
-    SENSOR_TDC_A,
-    SENSOR_TDC_B,
-    SENSOR_TDC_C,
-    SENSOR_CLOCK_2V5
-} SensorIndex;
+    RAMP_NONE = 0,
+    RAMP_UP   = 1,
+    RAMP_DOWN = 2,
+} RampState;
 
 typedef struct {
     SensorIndex index;
     DeviceStatus deviceStatus;
     SensorStatus sensorStatus;
+    RampState rampState;
     uint32_t lastStatusUpdatedTick;
     uint16_t busAddress;
+    int isOptional;
     int hasShunt;
     double shuntVal;
     double busNomVoltage;
@@ -73,7 +63,6 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index);
 SensorStatus pm_sensor_status(const pm_sensor *d);
 int pm_sensor_isValid(const pm_sensor *d);
 uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d);
-void pm_sensor_reset_i2c_master(void);
 DeviceStatus pm_sensor_detect(pm_sensor *d);
 DeviceStatus pm_sensor_read(pm_sensor *d);
 

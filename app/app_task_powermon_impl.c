@@ -36,15 +36,14 @@
 #include "logbuffer.h"
 #include "app_shared_data.h"
 
-const int TEST_RESTART = 0; // debug only
-const uint32_t SENSORS_SETTLE_TICKS = 200;
-const uint32_t THERM_SETTLE_TICKS = 1000;
-const uint32_t RAMP_TIMEOUT_TICKS = 3000;
-const uint32_t RAMP_5V_TIMEOUT_TICKS = 3000;
-const uint32_t POWERFAIL_DELAY_TICKS = 3000;
-const uint32_t ERROR_DELAY_TICKS = 3000;
+static const int TEST_RESTART = 0; // debug only
+static const uint32_t SENSORS_SETTLE_TICKS = 200;
+static const uint32_t THERM_SETTLE_TICKS = 1000;
+static const uint32_t RAMP_TIMEOUT_TICKS = 3000;
+static const uint32_t POWERFAIL_DELAY_TICKS = 3000;
+static const uint32_t ERROR_DELAY_TICKS = 3000;
 
-const uint32_t log_sensor_status_duration_ticks = 3000;
+static const uint32_t log_sensor_status_duration_ticks = 3000;
 
 uint32_t pmLoopCount = 0;
 
@@ -62,8 +61,8 @@ static uint32_t stateTicks(void)
     return HAL_GetTick() - stateStartTick;
 }
 
-SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
-void clearOldSensorStatus(void)
+static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
+static void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
         oldSensorStatus[i] = SENSOR_NORMAL;
@@ -84,6 +83,8 @@ static void log_sensor_status_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &pm->sensors[i];
+        if (sensor->rampState != RAMP_NONE)
+            continue;
         SensorStatus status = pm_sensor_status(sensor);
         if (status != oldSensorStatus[i]) {
             enum { size = 50 };
@@ -148,68 +149,44 @@ void powermon_task (void)
     pmLoopCount++;
     int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
     const PmState oldState = pmState;
-    int pgood = dev_readPgood(pm);
-    int power_5v_ok = (pgood
-                    && (pm->monState == MON_STATE_READ)
-                       && (getSensorIsValid_5V(pm))
-                       );
-    int power_all_ok = (pgood
-                    && (pm->monState == MON_STATE_READ)
-                    && (pm_sensors_getStatus(pm)) <= SENSOR_WARNING);
-    const SensorStatus monStatus = getMonStatus(pm);
+    pm_read_pgood(pm);
+    int power_input_ok = get_input_power_valid(pm);
+    int power_critical_ok = get_critical_power_valid(pm);
     switch (pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
         struct_Devices_init(&dev);
-        pmState = PM_STATE_RAMP_5V;
+        pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_STANDBY:
-        if (vmePresent && enable_power && (stateTicks() > 2000)) {
-            pmState = PM_STATE_RAMP_5V;
-        }
-        break;
-    case PM_STATE_RAMP_5V:
-        if (!vmePresent || !enable_power) {
-            pmState = PM_STATE_STANDBY;
-            break;
-        }
-        if (power_5v_ok) {
-            log_put(LOG_NOTICE, "5V Ok");
-            pmState = PM_STATE_RAMP;
-            break;
-        }
-        if (stateTicks() > RAMP_5V_TIMEOUT_TICKS) {
-            if (!get_all_pgood(pm)) {
-                log_put(LOG_WARNING, "No power");
-                pmState = PM_STATE_STANDBY;
-                break;
+        if (vmePresent && enable_power) {
+            if (power_input_ok) {
+                log_put(LOG_NOTICE, "Input power Ok");
+                pmState = PM_STATE_RAMP;
             }
-            log_put(LOG_ERR, "RAMP_5V timeout");
-            pmState = PM_STATE_PWRFAIL;
         }
         break;
     case PM_STATE_RAMP:
-        if (!vmePresent || !enable_power) {
+        if (!vmePresent || !enable_power || !power_input_ok) {
             pmState = PM_STATE_STANDBY;
             break;
         }
-        if (pgood
-                && (monStatus <= SENSOR_WARNING)) {
-            log_put(LOG_NOTICE, "power supplies ready");
+        if (power_critical_ok) {
+            log_put(LOG_NOTICE, "Critical power supplies ready");
             pmState = PM_STATE_RUN;
         }
         if (stateTicks() > RAMP_TIMEOUT_TICKS) {
-            log_put(LOG_ERR, "RAMP timeout");
+            log_put(LOG_ERR, "Critical power supplies failure");
             pmState = PM_STATE_PWRFAIL;
         }
         break;
     case PM_STATE_RUN:
-        if (!vmePresent || !enable_power) {
+        if (!vmePresent || !enable_power || !power_input_ok) {
             pmState = PM_STATE_STANDBY;
             break;
         }
-        if (!power_all_ok) {
-            log_put(LOG_ERR, "Power failure in RUN");
+        if (!power_critical_ok) {
+            log_put(LOG_ERR, "Critical power supplies failure");
             pmState = PM_STATE_PWRFAIL;
             break;
         }
@@ -238,16 +215,17 @@ void powermon_task (void)
         break;
     }
 
-    if ((pmState == PM_STATE_RAMP_5V)
-            || (pmState == PM_STATE_RAMP)
+    if ((pmState == PM_STATE_RAMP)
             || (pmState == PM_STATE_RUN)) {
-        dev_switchPower(pm, SWITCH_ON);
+        update_power_switches(pm, SWITCH_ON);
     } else {
-        dev_switchPower(pm, SWITCH_OFF);
+        update_power_switches(pm, SWITCH_OFF);
     }
 
+    for (int i=0; i<POWERMON_SENSORS; i++)
+        pm->sensors[i].rampState = (pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
+
     if ((pmState == PM_STATE_STANDBY)
-            || (pmState == PM_STATE_RAMP_5V)
             || (pmState == PM_STATE_RAMP)) {
         runMon(pm);
     } else {
@@ -268,8 +246,7 @@ void powermon_task (void)
         clearOldSensorStatus();
     }
     if ((pmState == PM_STATE_RUN)
-            && (getMonStateTicks(pm) > THERM_SETTLE_TICKS)
-            && getSensorIsValid_3V3(pm)) {
+            && (getMonStateTicks(pm) > THERM_SETTLE_TICKS)) {
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
             thermReadTick = osKernelSysTick();
@@ -283,23 +260,3 @@ void powermon_task (void)
         stateStartTick = osKernelSysTick();
     }
 }
-
-//static void unused1(void)
-//{
-//    enable_cpu_cycle_counter();
-//    const uint32_t startTick = cpu_getCycles();
-//    uint32_t time1 = cpu_getCycles();
-//    uint32_t time2 = cpu_getCycles();
-//    uint32_t time3 = cpu_getCycles();
-//    uint32_t time4 = cpu_getCycles();
-//    time1 -= startTick;
-//    time2 -= startTick;
-//    time3 -= startTick;
-//    time4 -= startTick;
-//    printf(ANSI_CLEAR "%-8ld %-8ld %-8ld %-8ld \n",
-//           (uint32_t)((double)time1 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((double)time2 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((double)time3 * 1e3f / HAL_RCC_GetHCLKFreq()),
-//           (uint32_t)((double)time4 * 1e3f / HAL_RCC_GetHCLKFreq())
-//           );
-//}

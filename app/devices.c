@@ -57,7 +57,7 @@ void struct_at24c_init(Dev_at24c *d)
 
 void struct_ad9545_init(Dev_ad9545 *d)
 {
-    d->fsm_state = PLL_STATE_RESET;
+    d->fsm_state = PLL_STATE_INIT;
     d->present = DEVICE_UNKNOWN;
 }
 
@@ -69,7 +69,6 @@ void struct_Devices_init(Devices *d)
     struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);
-//    struct_ad9545_init(&d->pll);
 }
 
 static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
@@ -145,11 +144,6 @@ DeviceStatus getDeviceStatus(const Devices *d)
     return status;
 }
 
-void devReset(Devices *d)
-{
-    pllReset(&d->pll);
-}
-
 DeviceStatus devDetect(Devices *d)
 {
     dev_i2cmux_detect(&d->i2cmux);
@@ -164,11 +158,6 @@ DeviceStatus devRun(Devices *d)
 {
 //    pllRun(&d->pll); // FIXME
     return getDeviceStatus(d);
-}
-
-void dev_switchPower(Dev_powermon *pm, SwitchOnOff state)
-{
-    update_power_switches(pm, state);
 }
 
 PgoodState dev_readPgood(Dev_powermon *pm)

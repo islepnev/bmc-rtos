@@ -30,7 +30,7 @@ extern "C" {
 
 enum { FPGA_DEVICE_ID = 0xD0};
 
-typedef struct {
+typedef struct Devices {
     Dev_Leds leds;
     Dev_thset thset;
     Dev_fpga fpga;
@@ -48,11 +48,9 @@ void struct_at24c_init(Dev_at24c *d);
 void struct_ad9545_init(Dev_ad9545 *d);
 void struct_Devices_init(Devices *d);
 
-void devReset(Devices *d);
 DeviceStatus getDeviceStatus(const Devices *d);
 DeviceStatus devDetect(Devices *d);
 DeviceStatus devRun(Devices *d);
-void dev_switchPower(Dev_powermon *pm, SwitchOnOff state);
 PgoodState dev_readPgood(Dev_powermon *pm);
 void dev_thset_read(Dev_thset *d);
 //void dev_print_thermometers(const Devices *dev);

@@ -19,14 +19,13 @@
 
 #include "stm32f7xx_ll_usart.h"
 #include "led_gpio_hal.h"
-
-extern USART_TypeDef * const tty_usart;
+#include "bsp.h"
 
 static void debug_send_char(const char c)
 {
     // wait for UART ready
-    while(! LL_USART_IsActiveFlag_TXE(tty_usart)) {;}
-    LL_USART_TransmitData8(tty_usart, (uint8_t)c);
+    while(! LL_USART_IsActiveFlag_TXE(TTY_USART)) {;}
+    LL_USART_TransmitData8(TTY_USART, (uint8_t)c);
 }
 
 void debug_print(const char *ptr, int len)

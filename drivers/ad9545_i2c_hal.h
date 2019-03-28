@@ -25,8 +25,6 @@
 extern "C" {
 #endif
 
-extern I2C_HandleTypeDef * const hPll;
-
 void pllSetStaticPins(void);
 HAL_StatusTypeDef ad9545_detect(void);
 HAL_StatusTypeDef ad9545_read1(uint16_t reg, uint8_t *data);

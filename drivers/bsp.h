@@ -14,15 +14,23 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
 
-#include "dev_types.h"
-#include "ad9545_setup.h"
-#include "ad9545_status.h"
+// TDC72VHL v4 board specific definitions
 
-//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
-void pllPrintStatus(const Dev_ad9545 *d);
+#ifndef BSP_H
+#define BSP_H
 
-#endif // DEV_PLL_PRINT_H
+#include <stdint.h>
+
+#define TTY_USART USART3
+
+extern struct __I2C_HandleTypeDef * const hPll;
+extern const uint8_t pllDeviceAddr;
+
+extern struct __I2C_HandleTypeDef * const hi2c_sensors;
+
+void pllSetStaticPins(void);
+void pllReset(void);
+void pm_sensor_reset_i2c_master(void);
+
+#endif // BSP_H

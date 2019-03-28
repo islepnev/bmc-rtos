@@ -17,6 +17,7 @@
 
 #include "ina226_i2c_hal.h"
 #include "i2c.h"
+#include "bsp.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 
@@ -24,7 +25,7 @@ HAL_StatusTypeDef ina226_i2c_Detect(uint16_t deviceAddr)
 {
     HAL_StatusTypeDef ret;
     uint32_t Trials = 2;
-    ret = HAL_I2C_IsDeviceReady(&hi2c4, deviceAddr << 1, Trials, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_IsDeviceReady(hi2c_sensors, deviceAddr << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
 }
 
@@ -33,7 +34,7 @@ HAL_StatusTypeDef ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *d
     HAL_StatusTypeDef ret;
     int Size = 2;
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(&hi2c4, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Mem_Read(hi2c_sensors, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = ((uint16_t)pData[0] << 8) | pData[1];
@@ -49,6 +50,6 @@ HAL_StatusTypeDef ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t d
     uint8_t pData[Size];
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
-    ret = HAL_I2C_Mem_Write(&hi2c4, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Mem_Write(hi2c_sensors, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
     return ret;
 }

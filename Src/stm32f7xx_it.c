@@ -34,10 +34,11 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
-#include "stm32f7xx_ll_usart.h"
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
+
+#include "stm32f7xx_ll_usart.h"
 
 extern void serial_console_interrupt_handler(USART_TypeDef *usart);
 
@@ -99,7 +100,6 @@ void HardFault_Handler(void)
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern UART_HandleTypeDef huart3;
 
 extern TIM_HandleTypeDef htim1;
 

@@ -19,14 +19,12 @@
 #define DEV_PLL_H
 
 #include <unistd.h>
-//#include "stm32f7xx_hal_def.h"
 #include "dev_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pllReset(Dev_ad9545 *d);
 DeviceStatus pllDetect(Dev_ad9545 *d);
 void pllRun(Dev_ad9545 *d);
 

@@ -20,26 +20,27 @@
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_pm_sensors.h"
+#include "bsp.h"
 #include "cmsis_os.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
-int monIsOn(const pm_switches sw, SensorIndex index)
+int monIsOn(const pm_switches *sw, SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return sw.switch_1v5;
-    case SENSOR_5V: return sw.switch_5v;
+    case SENSOR_1V5: return sw->switch_1v5;
+    case SENSOR_5V: return sw->switch_5v;
     case SENSOR_VME_5V: return 1;
-    case SENSOR_3V3: return sw.switch_3v3;
+    case SENSOR_3V3: return sw->switch_3v3;
     case SENSOR_VME_3V3: return 1;
-    case SENSOR_FPGA_CORE_1V0: return sw.switch_1v0;
-    case SENSOR_FPGA_MGT_1V0: return sw.switch_1v0;
-    case SENSOR_FPGA_MGT_1V2: return sw.switch_1v0;
-    case SENSOR_FPGA_1V8: return sw.switch_3v3;
-    case SENSOR_TDC_A: return sw.switch_3v3;
-    case SENSOR_TDC_B: return sw.switch_3v3;
-    case SENSOR_TDC_C: return sw.switch_3v3;
-    case SENSOR_CLOCK_2V5: return sw.switch_3v3;
+    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0;
+    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0;
+    case SENSOR_FPGA_MGT_1V2: return sw->switch_1v0;
+    case SENSOR_FPGA_1V8: return sw->switch_3v3;
+    case SENSOR_TDC_A: return sw->switch_3v3;
+    case SENSOR_TDC_B: return sw->switch_3v3;
+    case SENSOR_TDC_C: return sw->switch_3v3;
+    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
     }
     return 0;
 }
@@ -139,12 +140,15 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        DeviceStatus deviceStatus = d->sensors[i].deviceStatus;
+        const pm_sensor *sensor = &d->sensors[i];
+        if (sensor->isOptional)
+            continue;
+        DeviceStatus deviceStatus = sensor->deviceStatus;
         if (deviceStatus != DEVICE_NORMAL)
             maxStatus = SENSOR_CRITICAL;
-        int isOn = monIsOn(d->sw, i);
+        int isOn = monIsOn(&d->sw, i);
         if (isOn) {
-            SensorStatus status = pm_sensor_status(&d->sensors[i]);
+            SensorStatus status = pm_sensor_status(sensor);
             if (status > maxStatus)
                 maxStatus = status;
         }
@@ -180,9 +184,11 @@ int monReadValues(Dev_powermon *d)
     int err = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         pm_sensor *sensor = &d->sensors[i];
-        DeviceStatus s = pm_sensor_read(sensor);
-        if (s != DEVICE_NORMAL)
-            err++;
+        if (sensor->deviceStatus == DEVICE_NORMAL) {
+            DeviceStatus s = pm_sensor_read(sensor);
+            if (s != DEVICE_NORMAL)
+                err++;
+        }
     }
     return err;
 }
@@ -214,12 +220,12 @@ MonState runMon(Dev_powermon *pm)
             break;
         }
         if (num_detected == POWERMON_SENSORS) {
-            log_put(LOG_INFO, "All sensors present");
+            log_printf(LOG_INFO, "All %d sensors present", num_detected);
             pm->monState = MON_STATE_READ;
             break;
         }
         if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
-            log_put(LOG_ERR, "Sensor detect timeout");
+            log_printf(LOG_ERR, "Sensor detect timeout, %d of %d found", num_detected, POWERMON_SENSORS);
             pm->monState = MON_STATE_READ;
         }
         break;
@@ -244,12 +250,18 @@ MonState runMon(Dev_powermon *pm)
     return pm->monState;
 }
 
-int getSensorIsValid_5V(const Dev_powermon *pm)
+int get_input_power_valid(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(&pm->sensors[SENSOR_5V]);
+    return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
 }
 
-int getSensorIsValid_3V3(const Dev_powermon *pm)
+int get_critical_power_valid(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(&pm->sensors[SENSOR_3V3]);
+    for (int i=0; i < POWERMON_SENSORS; i++) {
+        const pm_sensor *sensor = &pm->sensors[i];
+        if (!sensor->isOptional)
+            if (!pm_sensor_isValid(sensor))
+                return 0;
+    }
+    return 1;
 }
