@@ -21,14 +21,13 @@
 #include <stdio.h>
 #include <errno.h>
 #include "cmsis_os.h"
+#include "bsp.h"
 #include "stm32f7xx_ll_usart.h"
 
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
 osMessageQDef(message_q_ttytx, 1, uint32_t);
 osMessageQId (message_q_ttyrx_id);
 osMessageQId (message_q_ttytx_id);
-
-USART_TypeDef * const tty_usart = USART3;
 
 static void USART_TXE_Callback_FromISR(USART_TypeDef *usart)
 {
@@ -79,8 +78,8 @@ int __io_putchar(int ch)
     if (!message_q_ttytx_id)
         return EIO;
     if (osOK == osMessagePut(message_q_ttytx_id, ch, osWaitForever)) {
-        LL_USART_EnableIT_TXE(tty_usart);
-        LL_USART_TransmitData8(tty_usart, ch);
+        LL_USART_EnableIT_TXE(TTY_USART);
+        LL_USART_TransmitData8(TTY_USART, ch);
     }
     return 0;
 }
@@ -89,5 +88,5 @@ void initialize_serial_console_hardware(void)
 {
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
     message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
-    LL_USART_EnableIT_RXNE(tty_usart);
+    LL_USART_EnableIT_RXNE(TTY_USART);
 }

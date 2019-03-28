@@ -24,8 +24,14 @@
 extern "C" {
 #endif
 
+typedef enum {
+    DISPLAY_SUMMARY,
+    DISPLAY_PLL_DETAIL,
+} display_mode_t;
+
 extern Devices dev;
 extern int enable_pll_run;
+extern display_mode_t display_mode;
 extern int enable_power;
 extern int enable_stats_display;
 

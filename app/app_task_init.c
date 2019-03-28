@@ -21,28 +21,16 @@
 #include "FreeRTOSConfig.h"
 #include "os_serial_tty.h"
 #include "debug_helpers.h"
+#include "dev_leds.h"
 
-void setStaticPins(void)
+static void setStaticPins(void)
 {
     pllSetStaticPins();
-//    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, 0);
-//    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      0);
-//    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      1);
-//    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        1);
 //    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
-//    HAL_Delay(5000);
-    // shutdown FPGA
-//    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, 0);
-//    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      0);
 }
 
-void task_oneshot(void)
+static void display_led_test(void)
 {
-    debug_printf("\nInitializing...");
-
-    vConfigureTimerForRunTimeStats();
-    setStaticPins();
-
     // light all leds
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
@@ -62,6 +50,15 @@ void task_oneshot(void)
     dev_led_set(&dev.leds, LED_RED,    LED_ON);
     dev_led_set(&dev.leds, LED_YELLOW, LED_ON);
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
+}
+
+void task_oneshot(void)
+{
+    debug_printf("\nInitializing...");
+
+    vConfigureTimerForRunTimeStats();
+    setStaticPins();
+    display_led_test();
     // required for console I/O
     initialize_serial_console_hardware();
     debug_printf("Ok\n");

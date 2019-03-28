@@ -17,8 +17,9 @@
 
 #include "devices.h"
 #include "adt7301_spi_hal.h"
-#include "pca9548_i2c_hal.h"
-#include "dev_pll.h"
+#include "dev_sfpiic.h"
+//#include "dev_vxsiic.h"
+//#include "dev_pll.h"
 #include "fpga_spi_hal.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
@@ -45,11 +46,6 @@ void struct_fpga_init(Dev_fpga *d)
     d->id = 0;
 }
 
-void struct_pca9548_init(Dev_pca9548 *d)
-{
-    d->present = DEVICE_UNKNOWN;
-}
-
 void struct_at24c_init(Dev_at24c *d)
 {
     d->present = DEVICE_UNKNOWN;
@@ -57,7 +53,7 @@ void struct_at24c_init(Dev_at24c *d)
 
 void struct_ad9545_init(Dev_ad9545 *d)
 {
-    d->fsm_state = PLL_STATE_RESET;
+    d->fsm_state = PLL_STATE_INIT;
     d->present = DEVICE_UNKNOWN;
 }
 
@@ -66,22 +62,7 @@ void struct_Devices_init(Devices *d)
     struct_dev_leds_init(&d->leds);
     struct_thset_init(&d->thset);
     struct_fpga_init(&d->fpga);
-    struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
-    struct_at24c_init(&d->eeprom_vxspb);
-//    struct_ad9545_init(&d->pll);
-}
-
-static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
-{
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
-    uint8_t data = 0;
-    if (HAL_OK == pca9548_read(&data))
-        d->present = DEVICE_NORMAL;
-    else
-        d->present = DEVICE_FAIL;
-    return d->present;
 }
 
 static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
@@ -93,20 +74,6 @@ static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 //    uint8_t data = 0;
 //    if (HAL_OK == dev_eepromConfig_Read(0, &data)) {
 //        d->present = DEVICE_NORMAL;
-//    }
-    return d->present;
-}
-
-static DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
-{
-    if (HAL_OK == dev_eepromVxsPb_Detect())
-        d->present = DEVICE_NORMAL;
-    else
-        d->present = DEVICE_FAIL;
-
-//    uint8_t data = 0;
-//    if (HAL_OK == dev_eepromVxsPb_Read(0, &data)) {
-//        d->present = 1;
 //    }
     return d->present;
 }
@@ -135,9 +102,9 @@ static DeviceStatus fpgaDetect(Dev_fpga *d)
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
-    if ((d->i2cmux.present == DEVICE_NORMAL)
+    if ((d->sfpiic.present == DEVICE_NORMAL)
+            && (d->vxsiic.present == DEVICE_NORMAL)
 //            && (d->eeprom_config.present == DEVICE_NORMAL)
-            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
 //            && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
             )
@@ -145,16 +112,9 @@ DeviceStatus getDeviceStatus(const Devices *d)
     return status;
 }
 
-void devReset(Devices *d)
-{
-    pllReset(&d->pll);
-}
-
 DeviceStatus devDetect(Devices *d)
 {
-    dev_i2cmux_detect(&d->i2cmux);
     dev_eepromConfig_detect(&d->eeprom_config);
-    dev_eepromVxsPb_detect(&d->eeprom_vxspb);
 //    pllDetect(&d->pll);
     fpgaDetect(&d->fpga);
     return getDeviceStatus(d);
@@ -166,15 +126,10 @@ DeviceStatus devRun(Devices *d)
     return getDeviceStatus(d);
 }
 
-void dev_switchPower(Dev_powermon *pm, SwitchOnOff state)
-{
-    update_power_switches(pm, state);
-}
-
 PgoodState dev_readPgood(Dev_powermon *pm)
 {
     pm_read_pgood(pm);
-    return (pm->fpga_core_pgood && pm->ltm_pgood) ? PGOOD_OK : PGOOD_FAIL;
+    return get_all_pgood(pm);
 }
 
 void dev_thset_read(Dev_thset *d)

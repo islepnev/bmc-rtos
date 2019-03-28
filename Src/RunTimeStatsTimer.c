@@ -16,7 +16,7 @@
 */
 
 #include <stdint.h>
-#include "stm32f7xx_hal_conf.h"
+#include "stm32f7xx_hal.h"
 #include "core_cm7.h"
 
 /* Simple shift divide for scaling to avoid an overflow occurring too soon. */

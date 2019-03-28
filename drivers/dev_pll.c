@@ -20,6 +20,7 @@
 #include "stm32f7xx_hal.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "bsp.h"
 #include "ad9545_i2c_hal.h"
 #include "ad9545_setup.h"
 #include "ad9545_status.h"
@@ -29,8 +30,6 @@
 #include "logbuffer.h"
 #include "cmsis_os.h"
 #include "app_shared_data.h"
-
-#define DEBUG_PRINT_RET(x)     printf("%s failed: %s, I2C error 0x%08lX\n", __func__, OpStatusErrorStr(x), hPll->ErrorCode)
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -56,6 +55,12 @@ static char *OpStatusErrorStr(OpStatusTypeDef status)
     case DEV_ERROR: return "Device error";
     default:return "";
     }
+}
+
+void DEBUG_PRINT_RET(const char *func, int ret)
+{
+    printf("%s failed: %s, I2C error 0x%08lX\n",
+           func, OpStatusErrorStr(ret), hPll->ErrorCode);
 }
 
 typedef union
@@ -196,16 +201,6 @@ enum {
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
 
-void pllReset(Dev_ad9545 *d)
-{
-    // toggle reset_b pin
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
-//    osDelay(10);
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
-    osDelay(50);
-    // wait 50 ms (see FSM)
-}
-
 static OpStatusTypeDef pllIoUpdate(Dev_ad9545 *d)
 {
     uint8_t data = 1;
@@ -215,7 +210,7 @@ static OpStatusTypeDef pllIoUpdate(Dev_ad9545 *d)
 //    osDelay(1);
     return ret;
 err:
-//    DEBUG_PRINT_RET(ret);
+//    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -239,7 +234,7 @@ static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_ad9545 *d, uint16_t addres
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -274,8 +269,6 @@ DeviceStatus pllDetect(Dev_ad9545 *d)
         } else {
             log_put(LOG_INFO, "PLL AD9545 present");
         }
-    } else {
-        log_put(LOG_ERR, "PLL AD9545 not found");
     }
     d->present = (devicePresent && !deviceError) ? DEVICE_NORMAL : DEVICE_FAIL;
     return d->present;
@@ -312,7 +305,7 @@ static OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -349,7 +342,7 @@ static OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -383,7 +376,7 @@ static OpStatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -419,7 +412,7 @@ static OpStatusTypeDef pllResetOutputDividers_unused(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -442,7 +435,7 @@ static OpStatusTypeDef pllSetupOutputDrivers(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -465,7 +458,7 @@ static OpStatusTypeDef pllClearAutomute_unused(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -549,7 +542,7 @@ static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -595,7 +588,7 @@ static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -647,7 +640,7 @@ static OpStatusTypeDef pllWriteProfile(Dev_ad9545 *d, PllChannel_TypeDef channel
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -681,7 +674,7 @@ static OpStatusTypeDef pllSetupDPLLChannel(Dev_ad9545 *d, PllChannel_TypeDef cha
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -695,7 +688,7 @@ static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d)
         goto err;
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -712,7 +705,7 @@ static OpStatusTypeDef pllSetupDPLLMode(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -731,7 +724,7 @@ static OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -750,7 +743,7 @@ static OpStatusTypeDef pllCalibrateAll(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -769,7 +762,7 @@ static OpStatusTypeDef pllSyncAllDistDividers(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -804,7 +797,7 @@ static OpStatusTypeDef pllSetupUnused(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -825,7 +818,7 @@ static OpStatusTypeDef pllReadRefStatus(Dev_ad9545 *d)
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -873,7 +866,7 @@ static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDe
 
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -921,7 +914,7 @@ static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
     //    osDelay(1000);
     return DEV_OK;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -933,7 +926,7 @@ static OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d)
         goto err;
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -1001,7 +994,7 @@ static OpStatusTypeDef pllReadAllRegisters(Dev_ad9545 *d)
     }
     return ret;
 err:
-    DEBUG_PRINT_RET(ret);
+    DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
 
@@ -1023,18 +1016,28 @@ void pllRun(Dev_ad9545 *d)
 {
     const PllState oldState = d->fsm_state;
     switch(d->fsm_state) {
+    case PLL_STATE_INIT:
+        if (enable_pll_run && enable_power)
+            d->fsm_state = PLL_STATE_RESET;
+        break;
     case PLL_STATE_RESET:
         reset_I2C_Pll();
+        pllReset();
+        osDelay(50);
         pllDetect(d);
-        if (!d->present) {
-            osDelay(100);
+        if (DEVICE_NORMAL == d->present) {
+            if (DEV_OK != pllSoftwareReset(d)) {
+                d->fsm_state = PLL_STATE_ERROR;
+                break;
+            }
+            d->fsm_state = PLL_STATE_SETUP_SYSCLK;
             break;
         }
-        if (DEV_OK != pllSoftwareReset(d)) {
+        if (stateTicks() > 2000) {
+            log_put(LOG_ERR, "PLL AD9545 not found");
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        d->fsm_state = PLL_STATE_SETUP_SYSCLK;
         break;
     case PLL_STATE_SETUP_SYSCLK:
         if (DEV_OK != pllSetupSysclk(d)) {
@@ -1103,17 +1106,23 @@ void pllRun(Dev_ad9545 *d)
         }
         if (stateTicks() > 1000) {
             d->recoveryCount++;
-            d->fsm_state = PLL_STATE_RESET;
+            d->fsm_state = PLL_STATE_INIT;
         }
         break;
     case PLL_STATE_FATAL:
         d->present = DEVICE_FAIL;
+        if (stateTicks() > 2000) {
+            // recover
+            d->recoveryCount = 0;
+            d->fsm_state = PLL_STATE_INIT;
+        }
         break;
     default:
-        d->fsm_state = PLL_STATE_RESET;
+        d->fsm_state = PLL_STATE_INIT;
     }
 
-    if (d->fsm_state != PLL_STATE_RESET &&
+    if (d->fsm_state != PLL_STATE_INIT &&
+            d->fsm_state != PLL_STATE_RESET &&
             d->fsm_state != PLL_STATE_ERROR &&
             d->fsm_state != PLL_STATE_FATAL) {
         if (DEV_OK != pllReadSysclkStatus(d)) {
@@ -1137,8 +1146,4 @@ void pllRun(Dev_ad9545 *d)
             log_put(LOG_INFO, "PLL started");
         }
     }
-//    if (d->fsm_state == PLL_STATE_RUN) {
-//        printf(ANSI_CLEARTERM ANSI_GOHOME);
-//        pllPrintStatus(d);
-//    }
 }

@@ -26,9 +26,8 @@ extern "C" {
 
 typedef enum {
     PM_STATE_INIT,
-    PM_STATE_STANDBY, // bus power switches off
-    PM_STATE_RAMP_5V, // voltage ramp up
-    PM_STATE_RAMP,    // voltage ramp up
+    PM_STATE_STANDBY,
+    PM_STATE_RAMP,
     PM_STATE_RUN,
     PM_STATE_PWRFAIL,
     PM_STATE_ERROR

@@ -34,10 +34,11 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
-#include "stm32f7xx_ll_usart.h"
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
+
+#include "stm32f7xx_ll_usart.h"
 
 extern void serial_console_interrupt_handler(USART_TypeDef *usart);
 
@@ -99,7 +100,7 @@ void HardFault_Handler(void)
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern UART_HandleTypeDef huart3;
+extern ETH_HandleTypeDef heth;
 
 extern TIM_HandleTypeDef htim1;
 
@@ -223,16 +224,30 @@ void TIM1_UP_TIM10_IRQHandler(void)
 }
 
 /**
-* @brief This function handles USART3 global interrupt.
+* @brief This function handles USART2 global interrupt.
 */
-void USART3_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART3_IRQn 0 */
-    serial_console_interrupt_handler(USART3);
-  /* USER CODE END USART3_IRQn 0 */
-  /* USER CODE BEGIN USART3_IRQn 1 */
+  /* USER CODE BEGIN USART2_IRQn 0 */
+    serial_console_interrupt_handler(USART2);
+  /* USER CODE END USART2_IRQn 0 */
+  /* USER CODE BEGIN USART2_IRQn 1 */
 
-  /* USER CODE END USART3_IRQn 1 */
+  /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
+* @brief This function handles Ethernet global interrupt.
+*/
+void ETH_IRQHandler(void)
+{
+  /* USER CODE BEGIN ETH_IRQn 0 */
+
+  /* USER CODE END ETH_IRQn 0 */
+  HAL_ETH_IRQHandler(&heth);
+  /* USER CODE BEGIN ETH_IRQn 1 */
+
+  /* USER CODE END ETH_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

@@ -23,5 +23,6 @@
 
 //void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
 //void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+void pllPrintStatus(const Dev_ad9545 *d);
 
 #endif // DEV_PLL_PRINT_H

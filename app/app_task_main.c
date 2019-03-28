@@ -33,6 +33,7 @@
 //#include "display.h"
 //#include "dev_mcu.h"
 //#include "dev_leds.h"
+#include "logbuffer.h"
 #include "devices.h"
 #include "version.h"
 
@@ -40,7 +41,10 @@
 #include "app_task_powermon.h"
 #include "app_tasks.h"
 
+static const uint32_t MAIN_DETECT_TIMEOUT_TICKS = 5000;
+
 enum { mainThreadStackSize = threadStackSize };
+static const uint32_t mainTaskLoopDelay = 10;
 
 static uint32_t mainloopCount = 0;
 
@@ -64,7 +68,9 @@ static uint32_t stateTicks(void)
 
 SensorStatus getMiscStatus(const Devices *d)
 {
-    if (d->i2cmux.present != DEVICE_NORMAL)
+    if (d->sfpiic.present != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (d->vxsiic.present != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
     if (d->eeprom_config.present != DEVICE_NORMAL)
         return SENSOR_WARNING;
@@ -137,8 +143,8 @@ static void task_main (void)
         }
         if (getDeviceStatus(&dev) == DEVICE_NORMAL)
             mainState = MAIN_STATE_RUN;
-        if (stateTicks() > 2000) {
-            printf("DETECT timeout\n");
+        if (stateTicks() > MAIN_DETECT_TIMEOUT_TICKS) {
+            log_printf(LOG_ERR, "DETECT timeout");
             mainState = MAIN_STATE_ERROR;
         }
         break;
@@ -154,11 +160,6 @@ static void task_main (void)
         break;
     }
 
-//    dev_led_set(&dev.leds, LED_RED, mainState == PM_STATE_PWRFAIL || mainState == PM_STATE_ERROR);
-
-    if (mainState == MAIN_STATE_INIT) {
-        devReset(&dev);
-    }
     if (mainState == MAIN_STATE_DETECT || mainState == MAIN_STATE_RUN) {
         devDetect(&dev);
         fpgaWriteBmcVersion();
@@ -170,7 +171,7 @@ static void task_main (void)
     if (mainState == MAIN_STATE_RUN) {
         devRun(&dev);
     }
-    enable_pll_run = (mainState == MAIN_STATE_RUN);
+    enable_pll_run = (pmState == PM_STATE_RUN);
     if (oldState != mainState) {
         stateStartTick = HAL_GetTick();
     }
@@ -179,11 +180,6 @@ static void task_main (void)
     dev_led_set(&dev.leds, LED_RED, systemStatus >= SENSOR_CRITICAL);
     dev_led_set(&dev.leds, LED_YELLOW, systemStatus >= SENSOR_WARNING);
     dev_led_set(&dev.leds, LED_GREEN, systemStatus == SENSOR_NORMAL);
-
-//    dev_led_set(&dev.leds, LED_YELLOW, devStatus != DEVICE_NORMAL);
-
-//    int systemPowerState = getPowerMonState(&dev.pm);
-//    dev_led_set(&dev.leds, LED_RED, !systemPowerState);
 }
 
 static void prvAppMainTask( void const *arg)
@@ -191,8 +187,7 @@ static void prvAppMainTask( void const *arg)
     while (1)
     {
         task_main();
-//        osThreadYield();
-        osDelay(5);
+        osDelay(mainTaskLoopDelay);
     }
 }
 

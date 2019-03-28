@@ -17,20 +17,26 @@
 
 #include "pca9548_i2c_hal.h"
 
-//#include "stm32f7xx.h"
 #include "stm32f7xx_hal.h"
-//#include "main.h"
 #include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 
-enum { PCA9548_I2C_ADDRESS = 0x74 };
+enum { PCA9548_BASE_I2C_ADDRESS = 0x71 };
 
-HAL_StatusTypeDef pca9548_read(uint8_t *data)
+HAL_StatusTypeDef pca9548_detect(int subdevice)
+{
+    HAL_StatusTypeDef ret;
+    uint32_t Trials = 2;
+    ret = HAL_I2C_IsDeviceReady(&hi2c2, (PCA9548_BASE_I2C_ADDRESS + subdevice) << 1, Trials, I2C_TIMEOUT_MS);
+    return ret;
+}
+
+HAL_StatusTypeDef pca9548_read(uint8_t *data, int subdevice)
 {
     HAL_StatusTypeDef ret;
     uint8_t pData;
-    ret = HAL_I2C_Master_Receive(&hi2c4, PCA9548_I2C_ADDRESS << 1, &pData, 1, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Master_Receive(&hi2c2, (PCA9548_BASE_I2C_ADDRESS + subdevice) << 1, &pData, 1, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData;

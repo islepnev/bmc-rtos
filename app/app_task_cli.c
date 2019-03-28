@@ -53,6 +53,18 @@ static void cliTask(void const *arg)
     {
         char ch = getchar();
         switch(ch) {
+        case ' ':
+            switch (display_mode) {
+            case DISPLAY_SUMMARY:
+                display_mode = DISPLAY_PLL_DETAIL;
+                break;
+            case DISPLAY_PLL_DETAIL:
+                display_mode = DISPLAY_SUMMARY;
+                break;
+            default:
+                break;
+            }
+            break;
         case 'p':
         case 'P':
             enable_power = !enable_power;

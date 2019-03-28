@@ -112,6 +112,7 @@ void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel)
 static char *pllStateStr(PllState pllState)
 {
     switch(pllState) {
+    case PLL_STATE_INIT: return "INIT";
     case PLL_STATE_RESET: return "RESET";
     case PLL_STATE_SETUP_SYSCLK: return "SETUP_SYSCLK";
     case PLL_STATE_SYSCLK_WAITLOCK: return "SYSCLK_WAITLOCK";

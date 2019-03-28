@@ -45,25 +45,9 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
 
     switch (source)
     {
-    case 0:
-        port = ADT_CS_B0_GPIO_Port;
-        cs_pin = ADT_CS_B0_Pin;
-        break;
-    case 1:
-        port = ADT_CS_B1_GPIO_Port;
-        cs_pin = ADT_CS_B1_Pin;
-        break;
-    case 2:
-        port = ADT_CS_B2_GPIO_Port;
-        cs_pin = ADT_CS_B2_Pin;
-        break;
-    case 3:
-        port = ADT_CS_B3_GPIO_Port;
-        cs_pin = ADT_CS_B3_Pin;
-        break;
     default:
-        port = ADT_CS_B0_GPIO_Port;
-        cs_pin = ADT_CS_B0_Pin;
+        port = ADT_CS_B_GPIO_Port;
+        cs_pin = ADT_CS_B_Pin;
         break;
     }
 

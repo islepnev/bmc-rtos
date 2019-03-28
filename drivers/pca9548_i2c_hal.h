@@ -25,7 +25,8 @@
 extern "C" {
 #endif
 
-HAL_StatusTypeDef pca9548_read(uint8_t *data);
+HAL_StatusTypeDef pca9548_detect(int subdevice);
+HAL_StatusTypeDef pca9548_read(uint8_t *data, int subdevice);
 
 #ifdef __cplusplus
 }

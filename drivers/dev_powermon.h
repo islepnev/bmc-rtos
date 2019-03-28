@@ -27,26 +27,28 @@
 extern "C" {
 #endif
 
-typedef enum {
+typedef enum SwitchOnOff {
     SWITCH_OFF = 0,
     SWITCH_ON = 1,
 } SwitchOnOff;
 
-typedef struct {
+typedef struct pm_switches {
     SwitchOnOff switch_5v;
+    SwitchOnOff switch_5v_fmc;
     SwitchOnOff switch_3v3;
-    SwitchOnOff switch_1v5;
-    SwitchOnOff switch_1v0;
+    SwitchOnOff switch_2v5;
+    SwitchOnOff switch_1v0_core;
+    SwitchOnOff switch_1v0_mgt;
 } pm_switches;
 
-typedef enum {
+typedef enum MonState {
     MON_STATE_INIT = 0,
     MON_STATE_DETECT = 1,
     MON_STATE_READ = 2,
     MON_STATE_ERROR = 3
 } MonState;
 
-typedef struct {
+typedef struct Dev_powermon {
     MonState monState;
     uint32_t stateStartTick;
     int monErrors;
@@ -54,8 +56,11 @@ typedef struct {
 //    DeviceStatus present;
    pm_sensor sensors[POWERMON_SENSORS];
    int vmePresent;
-   int fpga_core_pgood;
-   int ltm_pgood;
+   int pgood_3v3;
+   int pgood_2v5;
+   int pgood_1v0_core;
+   int pgood_1v0_mgt;
+   int pgood_3v3_fmc;
    pm_switches sw;
 } Dev_powermon;
 
@@ -66,7 +71,7 @@ void struct_powermon_init(Dev_powermon *d);
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state);
-int monIsOn(const pm_switches sw, SensorIndex index);
+int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
@@ -74,8 +79,9 @@ int pm_sensors_isAllValid(const Dev_powermon *d);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
-int getSensorIsValid_5V(const Dev_powermon *pm);
-int getSensorIsValid_3V3(const Dev_powermon *pm);
+int get_input_power_valid(const Dev_powermon *pm);
+int get_critical_power_valid(const Dev_powermon *pm);
+PgoodState get_all_pgood(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

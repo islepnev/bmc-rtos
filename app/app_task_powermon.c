@@ -22,11 +22,12 @@
 #include "dev_powermon.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
+#include "app_task_sfpiic_impl.h"
 #include "app_task_powermon_impl.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = threadStackSize };
-static const uint32_t powermonTaskLoopDelay = 2;
+static const uint32_t powermonTaskLoopDelay = 10;
 
 PmState getPmState(void)
 {
@@ -64,6 +65,7 @@ static void prvPowermonTask( void const *arg)
 
     while (1)
     {
+        sfpiic_task();
         powermon_task();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {

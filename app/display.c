@@ -33,11 +33,11 @@ static char *deviceStatusResultStr(DeviceStatus status)
 
 void devPrintStatus(const Devices *d)
 {
-    printf("I2C mux:       %s", deviceStatusResultStr(d->i2cmux.present));
+    printf("SFP I2C mux:       %s", deviceStatusResultStr(d->sfpiic.present));
+    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("VXS I2C mux:       %s", deviceStatusResultStr(d->vxsiic.present));
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
     printf("%s\n", ANSI_CLEAR_EOL);
 //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
 //    printf("%s\n", ANSI_CLEAR_EOL);

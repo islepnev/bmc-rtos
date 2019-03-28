@@ -19,6 +19,12 @@
 
 #include <stdint.h>
 #include "ad9545_status.h"
+#include "vxsiic_status.h"
+
+typedef enum {
+    PGOOD_FAIL = 0,
+    PGOOD_OK = 1 }
+PgoodState;
 
 typedef enum {
     SENSOR_UNKNOWN  = 0,
@@ -33,31 +39,37 @@ typedef enum {
     DEVICE_FAIL = 2
 } DeviceStatus;
 
-enum {DEV_THERM_COUNT = 4};
+enum {DEV_THERM_COUNT = 1};
 
-typedef struct {
+typedef struct Dev_adt7301 {
     int valid;
     int16_t rawTemp;
 } Dev_adt7301;
 
-typedef struct {
+typedef struct Dev_thset {
     Dev_adt7301 th[DEV_THERM_COUNT];
 } Dev_thset;
 
-typedef struct {
+typedef struct Dev_fpga {
     DeviceStatus present;
     uint8_t id;
 } Dev_fpga;
 
-typedef struct {
+typedef struct Dev_sfpiic {
     DeviceStatus present;
-} Dev_pca9548;
+} Dev_sfpiic;
 
-typedef struct {
+typedef struct Dev_vxsiic {
+    DeviceStatus present;
+    vxsiic_status_t status;
+} Dev_vxsiic;
+
+typedef struct Dev_at24c {
     DeviceStatus present;
 } Dev_at24c;
 
 typedef enum {
+    PLL_STATE_INIT,
     PLL_STATE_RESET,
     PLL_STATE_SETUP_SYSCLK,
     PLL_STATE_SYSCLK_WAITLOCK,
@@ -67,12 +79,7 @@ typedef enum {
     PLL_STATE_FATAL
 } PllState;
 
-//typedef struct {
-//    int locked;
-//    int stable;
-//} PllSysclkStatus;
-
-typedef struct {
+typedef struct Dev_ad9545 {
     DeviceStatus present;
     AD9545_Status status;
     PllState fsm_state;

@@ -18,25 +18,29 @@
 #include "dev_powermon.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
+#include "logbuffer.h"
 #include "dev_pm_sensors.h"
+#include "bsp.h"
 #include "cmsis_os.h"
 
-int monIsOn(const pm_switches sw, SensorIndex index)
+static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
+
+int monIsOn(const pm_switches *sw, SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return sw.switch_1v5;
-    case SENSOR_5V: return sw.switch_5v;
-    case SENSOR_VME_5V: return 1;
-    case SENSOR_3V3: return sw.switch_3v3;
-    case SENSOR_VME_3V3: return 1;
-    case SENSOR_FPGA_CORE_1V0: return sw.switch_1v0;
-    case SENSOR_FPGA_MGT_1V0: return sw.switch_1v0;
-    case SENSOR_FPGA_MGT_1V2: return sw.switch_1v0;
-    case SENSOR_FPGA_1V8: return sw.switch_3v3;
-    case SENSOR_TDC_A: return sw.switch_3v3;
-    case SENSOR_TDC_B: return sw.switch_3v3;
-    case SENSOR_TDC_C: return sw.switch_3v3;
-    case SENSOR_CLOCK_2V5: return sw.switch_3v3;
+    case SENSOR_VPC_3V3: return 1;
+    case SENSOR_5V: return 1;
+    case SENSOR_VXS_5V: return 1;
+    case SENSOR_2V5: return sw->switch_2v5;
+    case SENSOR_3V3: return sw->switch_3v3;
+    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0_core;
+    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0_mgt;
+    case SENSOR_FPGA_MGT_1V2: return sw->switch_2v5;
+    case SENSOR_FPGA_1V8: return sw->switch_2v5;
+    case SENSOR_VADJ: return sw->switch_2v5;
+    case SENSOR_FMC_5V: return sw->switch_5v_fmc;
+    case SENSOR_FMC_12V: return sw->switch_5v_fmc;
+    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
     }
     return 0;
 }
@@ -57,28 +61,48 @@ void struct_powermon_init(Dev_powermon *d)
     struct_powermon_sensors_init(d);
 //    d->present = DEVICE_UNKNOWN;
     d->vmePresent = 0;
-    d->fpga_core_pgood = 0;
-    d->ltm_pgood = 0;
+    d->pgood_1v0_core = 0;
+    d->pgood_1v0_mgt = 0;
+    d->pgood_2v5 = 0;
+    d->pgood_3v3 = 0;
+    d->pgood_3v3_fmc = 0;
     d->sw.switch_5v = 1;
     d->sw.switch_3v3 = 1;
-    d->sw.switch_1v5 = 1;
-    d->sw.switch_1v0 = 1;
+    d->sw.switch_2v5 = 1;
+    d->sw.switch_1v0_core = 1;
+    d->sw.switch_1v0_mgt = 1;
+    d->sw.switch_5v_fmc = 1;
 }
 
-static int readPowerGoodFpga(void)
+static int read_pgood_1v0_core(void)
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin));
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin));
 }
 
-static int readPowerGood1v5(void)
+static int read_pgood_1v0_mgt(void)
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin));
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin));
+}
+
+static int read_pgood_2v5(void)
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin));
+}
+
+static int read_pgood_3v3(void)
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin));
+}
+
+static int read_pgood_3v3_fmc(void)
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin));
 }
 
 static int readLiveInsertPin(void)
 {
     GPIO_PinState state;
-    state = HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    state = 1; // TODO: HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
     return (GPIO_PIN_RESET == state);
 }
 
@@ -90,33 +114,32 @@ int pm_read_liveInsert(Dev_powermon *pm)
 
 void pm_read_pgood(Dev_powermon *pm)
 {
-    pm->fpga_core_pgood = readPowerGoodFpga();
-    pm->ltm_pgood = readPowerGood1v5();
+    pm->pgood_1v0_core = read_pgood_1v0_core();
+    pm->pgood_1v0_mgt  = read_pgood_1v0_mgt();
+    pm->pgood_2v5      = read_pgood_2v5();
+    pm->pgood_3v3      = read_pgood_3v3();
+    pm->pgood_3v3_fmc  = read_pgood_3v3_fmc();
+}
+
+PgoodState get_all_pgood(const Dev_powermon *pm)
+{
+    return (pm->pgood_1v0_core && pm->pgood_1v0_mgt && pm->pgood_2v5 && pm->pgood_3v3 && pm->pgood_3v3_fmc) ? PGOOD_OK : PGOOD_FAIL;
 }
 
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 {
-//    pm_read_pgood(pm);
-    pm->sw.switch_5v  = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]); // VME 5V and 3.3V
-    pm->sw.switch_1v5 = state; // monBusValid(0x42); // 5V
-    pm->sw.switch_1v0 = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_1V5]); //pm->ltm_pgood; // 1.5V
-    pm->sw.switch_3v3 = state; // && pm_sensor_isValid(&pm->sensors[SENSOR_VME_3V3]); // pm->fpga_core_pgood && pm->sw.switch_1v0 && pm->sw.switch_1v5;
-    if (!pm->sw.switch_5v) {
-        pm->sw.switch_3v3 = 0;
-        pm->sw.switch_1v5 = 0;
-        pm->sw.switch_1v0 = 0;
-    }
-    if (!pm->sw.switch_1v5) {
-        pm->sw.switch_1v0 = 0;
-        pm->sw.switch_3v3 = 0;
-    }
-    if (!pm->sw.switch_1v0) {
-        pm->sw.switch_3v3 = 0;
-    }
-    HAL_GPIO_WritePin(GPIOC, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_1_5V_Pin,      pm->sw.switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOJ, ON_5V_Pin,        pm->sw.switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    pm->sw.switch_1v0_core = state;
+    pm->sw.switch_1v0_mgt = state;
+    pm->sw.switch_2v5 = state;
+    pm->sw.switch_3v3 = state;
+    pm->sw.switch_5v_fmc = state;
+    pm->sw.switch_5v = 1;
+    HAL_GPIO_WritePin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, pm->sw.switch_1v0_core ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  pm->sw.switch_1v0_mgt  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      pm->sw.switch_2v5      ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      pm->sw.switch_3v3      ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   pm->sw.switch_5v_fmc   ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   pm->sw.switch_5v       ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 int pm_sensors_isAllValid(const Dev_powermon *d)
@@ -126,13 +149,23 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
             return 0;
     return 1;
 }
+
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        SensorStatus status = pm_sensor_status(&d->sensors[i]);
-        if (status > maxStatus)
-            maxStatus = status;
+        const pm_sensor *sensor = &d->sensors[i];
+        if (sensor->isOptional)
+            continue;
+        DeviceStatus deviceStatus = sensor->deviceStatus;
+        if (deviceStatus != DEVICE_NORMAL)
+            maxStatus = SENSOR_CRITICAL;
+        int isOn = monIsOn(&d->sw, i);
+        if (isOn) {
+            SensorStatus status = pm_sensor_status(sensor);
+            if (status > maxStatus)
+                maxStatus = status;
+        }
     }
     return maxStatus;
 }
@@ -140,6 +173,7 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
 void monClearMeasurements(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
+        struct_pm_sensor_clear_minmax(&d->sensors[i]);
         struct_pm_sensor_clear_measurements(&d->sensors[i]);
     }
 }
@@ -148,8 +182,13 @@ int monDetect(Dev_powermon *d)
 {
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        if (pm_sensor_detect(&d->sensors[i]))
+        pm_sensor_reset_i2c_master();
+        DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
+        if (s == DEVICE_NORMAL) {
             count++;
+        } else {
+            pm_sensor_reset_i2c_master();
+        }
     }
     return count;
 }
@@ -158,8 +197,12 @@ int monReadValues(Dev_powermon *d)
 {
     int err = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        err += pm_sensor_read(&d->sensors[i]);
-//        printMonValue(deviceAddr, busVolt * 1.25e-3, shuntVolt * 2.5e-6, monShuntVal[i]);
+        pm_sensor *sensor = &d->sensors[i];
+        if (sensor->deviceStatus == DEVICE_NORMAL) {
+            DeviceStatus s = pm_sensor_read(sensor);
+            if (s != DEVICE_NORMAL)
+                err++;
+        }
     }
     return err;
 }
@@ -178,20 +221,29 @@ MonState runMon(Dev_powermon *pm)
 {
     pm->monCycle++;
     const MonState oldState = pm->monState;
-    if (!pm->sw.switch_5v) {
-        pm->monState = MON_STATE_INIT;
-        return 1;
-    }
     switch(pm->monState) {
     case MON_STATE_INIT:
-        struct_powermon_sensors_init(pm);
+        monClearMeasurements(pm);
         pm->monState = MON_STATE_DETECT;
         break;
-    case MON_STATE_DETECT:
-        // all but two devices up
-        if (monDetect(pm) > POWERMON_SENSORS - 2)
+    case MON_STATE_DETECT: {
+        pm_sensor_reset_i2c_master();
+        int num_detected = monDetect(pm);
+        if (num_detected == 0) {
+            pm->monState = MON_STATE_INIT;
+            break;
+        }
+        if (num_detected == POWERMON_SENSORS) {
+            log_printf(LOG_INFO, "All %d sensors present", num_detected);
             pm->monState = MON_STATE_READ;
+            break;
+        }
+        if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
+            log_printf(LOG_ERR, "Sensor detect timeout, %d of %d found", num_detected, POWERMON_SENSORS);
+            pm->monState = MON_STATE_READ;
+        }
         break;
+    }
     case MON_STATE_READ:
         if (monReadValues(pm) == 0)
             pm->monState = MON_STATE_READ;
@@ -199,6 +251,7 @@ MonState runMon(Dev_powermon *pm)
             pm->monState = MON_STATE_ERROR;
         break;
     case MON_STATE_ERROR:
+        log_put(LOG_ERR, "Sensor read error");
         pm->monErrors++;
         pm->monState = MON_STATE_INIT;
         break;
@@ -211,12 +264,18 @@ MonState runMon(Dev_powermon *pm)
     return pm->monState;
 }
 
-int getSensorIsValid_5V(const Dev_powermon *pm)
+int get_input_power_valid(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(&pm->sensors[SENSOR_5V]);
+    return pm_sensor_isValid(&pm->sensors[SENSOR_VXS_5V]);
 }
 
-int getSensorIsValid_3V3(const Dev_powermon *pm)
+int get_critical_power_valid(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(&pm->sensors[SENSOR_3V3]);
+    for (int i=0; i < POWERMON_SENSORS; i++) {
+        const pm_sensor *sensor = &pm->sensors[i];
+        if (!sensor->isOptional)
+            if (!pm_sensor_isValid(sensor))
+                return 0;
+    }
+    return 1;
 }
