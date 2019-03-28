@@ -284,25 +284,6 @@ static OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d)
     if (ret != HAL_OK)
         goto err;
 
-    if (0) for (int n=0; ; n++) {
-        // scratchpad test
-        uint32_t test = 0x87654321;
-        ret = ad9545_write4(0x0020, test);
-        if (ret != HAL_OK)
-            goto err;
-        uint32_t data = 0;
-        ret = ad9545_read4(0x0020, &data);
-        if (ret != HAL_OK)
-            goto err;
-        if (data != test) {
-            printf("%08lx %08lx\n", data, test);
-        }
-        if (n%1000 == 0) {
-            printf(".");
-            fflush(stdout);
-        }
-    }
-
     return ret;
 err:
     DEBUG_PRINT_RET(__func__, ret);
