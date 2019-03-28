@@ -18,6 +18,7 @@
 #include "app_task_heartbeat.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include "cmsis_os.h"
 #include "dev_leds.h"
 #include "app_tasks.h"

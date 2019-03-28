@@ -18,6 +18,7 @@
 #include "app_task_powermon_impl.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "cmsis_os.h"
 #include "i2c.h"

@@ -20,11 +20,15 @@
 #include "bsp.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "i2c.h"
+#include "spi.h"
 
 struct __I2C_HandleTypeDef * const hPll = &hi2c2;
 const uint8_t pllDeviceAddr = 0x4A;
 
 struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c4;
+
+SPI_HandleTypeDef * const fpga_spi = &hspi1;
+SPI_HandleTypeDef * const therm_spi = &hspi4;
 
 void pllSetStaticPins(void)
 {

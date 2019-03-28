@@ -16,7 +16,7 @@
 */
 
 #include <stdint.h>
-#include "stm32f7xx_hal_conf.h"
+#include "stm32f7xx_hal.h"
 #include "core_cm7.h"
 
 /* Simple shift divide for scaling to avoid an overflow occurring too soon. */
@@ -25,7 +25,7 @@
 static const uint32_t prescale_bits = runtimeSHIFT_13;
 static const uint32_t overflow_bit = runtimeOVERFLOW_BIT_13;
 
-void vConfigureTimerForRunTimeStats( void )
+void configureTimerForRunTimeStats( void )
 {
     /* Enable TRCENA. */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
@@ -40,7 +40,7 @@ void vConfigureTimerForRunTimeStats( void )
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-uint32_t ulGetRunTimeCounterValue( void )
+uint32_t getRunTimeCounterValue( void )
 {
     static uint32_t last_value = 0, overflows = 0;
     uint32_t cycles = DWT->CYCCNT;

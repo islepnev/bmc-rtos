@@ -16,6 +16,7 @@
 //
 
 #include "dev_powermon.h"
+#include "main.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "logbuffer.h"

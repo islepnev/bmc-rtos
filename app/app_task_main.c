@@ -18,6 +18,7 @@
 #include "app_task_main.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"

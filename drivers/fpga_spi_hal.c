@@ -21,6 +21,8 @@
 #include "stm32f7xx_hal.h"
 #include "main.h"
 #include "spi.h"
+#include "bsp.h"
+#include "logbuffer.h"
 
 static const int SPI_TIMEOUT_MS = HAL_MAX_DELAY;
 
@@ -80,7 +82,7 @@ HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
     HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
-        printf("fpga_spi_hal_write_reg: SPI error %d\n", ret);
+        log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error %d\n", ret);
         return ret;
     }
     return ret;

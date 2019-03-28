@@ -59,7 +59,7 @@ static char *OpStatusErrorStr(OpStatusTypeDef status)
 
 void DEBUG_PRINT_RET(const char *func, int ret)
 {
-    printf("%s failed: %s, I2C error 0x%08lX\n",
+    log_printf(LOG_ERR, "%s failed: %s, I2C error 0x%08lX\n",
            func, OpStatusErrorStr(ret), hPll->ErrorCode);
 }
 
@@ -283,25 +283,6 @@ static OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d)
     ret = ad9545_write1(0x0000, 0);
     if (ret != HAL_OK)
         goto err;
-
-    if (0) for (int n=0; ; n++) {
-        // scratchpad test
-        uint32_t test = 0x87654321;
-        ret = ad9545_write4(0x0020, test);
-        if (ret != HAL_OK)
-            goto err;
-        uint32_t data = 0;
-        ret = ad9545_read4(0x0020, &data);
-        if (ret != HAL_OK)
-            goto err;
-        if (data != test) {
-            printf("%08lx %08lx\n", data, test);
-        }
-        if (n%1000 == 0) {
-            printf(".");
-            fflush(stdout);
-        }
-    }
 
     return ret;
 err:
@@ -759,41 +740,6 @@ static OpStatusTypeDef pllSyncAllDistDividers(Dev_ad9545 *d)
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupUnused(Dev_ad9545 *d)
-{
-//    int reset_b = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin));
-//    printf("reset_b = %d\n", reset_b);
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    // config1
-    if (0) {
-        uint8_t config1 = 0; // 1 << 5;
-        ret = ad9545_write1(0x0001, config1);
-        if (ret != HAL_OK)
-            return ret;
-        uint8_t data = 0;
-        ret = ad9545_read1(0x0001, &data);
-        if (ret != HAL_OK)
-            return ret;
-        printf("config1 %02X\n", data);
-        if (data != config1) {
-            printf("config1 write error\n");
-            return HAL_ERROR;
-        }
-    }
-    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
-        goto err;
-
-//    // I/O registers update
-//    if (HAL_OK != (ret = pllIoUpdate(d)))
-//        goto err;
 
     return ret;
 err:
