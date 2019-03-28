@@ -26,7 +26,7 @@
  *
  *----------------------------------------------------------------------------
  *
- * Portions Copyright Â© 2016 STMicroelectronics International N.V. All rights reserved.
+ * Portions Copyright © 2016 STMicroelectronics International N.V. All rights reserved.
  * Portions Copyright (c) 2013 ARM LIMITED
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@
   * @file    cmsis_os.c
   * @author  MCD Application Team
   * @date    13-July-2017
-  * @brief   CMSIS-RTOS API implementation for FreeRTOS V9.0.0
+  * @brief   CMSIS-RTOS API implementation for FreeRTOS V10.0.1
   ******************************************************************************
   * @attention
   *

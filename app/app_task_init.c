@@ -56,7 +56,7 @@ void task_oneshot(void)
 {
     debug_printf("\nInitializing...");
 
-    vConfigureTimerForRunTimeStats();
+    configureTimerForRunTimeStats();
     setStaticPins();
     display_led_test();
     // required for console I/O
