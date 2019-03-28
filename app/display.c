@@ -17,6 +17,8 @@
 
 #include "display.h"
 
+#include <stdio.h>
+
 static char *deviceStatusResultStr(DeviceStatus status)
 {
     switch (status) {

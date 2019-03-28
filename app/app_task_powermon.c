@@ -17,6 +17,8 @@
 
 #include "app_task_powermon.h"
 
+#include <stdio.h>
+
 #include "cmsis_os.h"
 
 #include "dev_powermon.h"

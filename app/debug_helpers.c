@@ -16,6 +16,7 @@
 //
 
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "stm32f7xx_ll_usart.h"
 #include "led_gpio_hal.h"
