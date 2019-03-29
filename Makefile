@@ -36,17 +36,17 @@ SRC_DIRS := app common drivers FreeRTOS Inc Src STM32Cube cubemx
 
 import-cubemx:
 	rm -f Inc/*.h Src/*.c
-	cp -fp cubemx/Inc/*.h Inc/
-	cp -fp cubemx/Src/*.c Src/
-	cp -fp cubemx/Src/system_stm32f7xx.c STM32Cube/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/
+	cp -fp cubemx/Core/Inc/*.h Inc/
+	cp -fp cubemx/Core/Src/*.c Src/
+	cp -fp cubemx/Core/Src/system_stm32f7xx.c STM32Cube/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/
 	rm -f  Src/system_stm32f7xx.c Src/syscalls.c
 	sed -i -e '/RCC_OscInitStruct.PLL.PLLQ/a\' -e '  RCC_OscInitStruct.PLL.PLLR = 2;' Src/main.c
 	rm -rf FreeRTOS
 	cp -rp cubemx/Middlewares/Third_Party/FreeRTOS ./
 
 export-cubemx:
-	cp -fp Inc/*.h cubemx/Inc/
-	cp -fp Src/*.c cubemx/Src/
+	cp -fp Inc/*.h cubemx/Core/Inc/
+	cp -fp Src/*.c cubemx/Core/Src/
 
 format:
 	@find $(SRC_DIRS) -iname '*.h' -o -iname '*.c' -o -iname '*.s' | while read f; do \
