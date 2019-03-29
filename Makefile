@@ -29,10 +29,32 @@ distclean:
 	@- $(RM) ./build/*.txt
 	@- $(RM) ./build/*.ld
 
-ifeq ($(findstring distclean,$(MAKECMDGOALS)),)
-    $(MAKECMDGOALS): ./build/Makefile
-	@ $(MAKE) -C build $(MAKECMDGOALS)
-endif
-
 flash:
 	openocd -f interface/stlink-v2.cfg -f target/stm32f7x.cfg -c "program build/tdc72vxs4_rtos.elf verify reset exit"
+
+SRC_DIRS := app common drivers FreeRTOS Inc Src STM32Cube cubemx
+
+import-cubemx:
+	rm -f Inc/*.h Src/*.c
+	cp -fp cubemx/Inc/*.h Inc/
+	cp -fp cubemx/Src/*.c Src/
+	cp -fp cubemx/Src/system_stm32f7xx.c STM32Cube/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/
+	rm -f  Src/system_stm32f7xx.c Src/syscalls.c
+	sed -i -e '/RCC_OscInitStruct.PLL.PLLQ/a\' -e '  RCC_OscInitStruct.PLL.PLLR = 2;' Src/main.c
+	rm -rf FreeRTOS
+	cp -rp cubemx/Middlewares/Third_Party/FreeRTOS ./
+
+export-cubemx:
+	cp -fp Inc/*.h cubemx/Inc/
+	cp -fp Src/*.c cubemx/Src/
+
+format:
+	@find $(SRC_DIRS) -iname '*.h' -o -iname '*.c' -o -iname '*.s' | while read f; do \
+	    dos2unix -q $$f; \
+	    sed -i -e 's/[ \t]*$$//' $$f; \
+	done
+
+#ifeq ($(findstring distclean,$(MAKECMDGOALS)),)
+#    $(MAKECMDGOALS): ./build/Makefile
+#	@ $(MAKE) -C build $(MAKECMDGOALS)
+#endif
