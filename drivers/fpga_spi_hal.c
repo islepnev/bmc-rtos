@@ -21,6 +21,7 @@
 #include "stm32f7xx_hal.h"
 #include "main.h"
 #include "spi.h"
+#include "bsp.h"
 #include "logbuffer.h"
 
 static const int SPI_TIMEOUT_MS = HAL_MAX_DELAY;

@@ -178,8 +178,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
-SPI_HandleTypeDef * const fpga_spi = &hspi5;
-SPI_HandleTypeDef * const therm_spi = &hspi2;
+
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
