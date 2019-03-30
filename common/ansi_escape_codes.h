@@ -36,4 +36,7 @@
 #define ANSI_COL30     CSI "30G"
 #define ANSI_COL40     CSI "40G"
 
+#define ANSI_SHOW_CURSOR CSI"?25h"
+#define ANSI_HIDE_CURSOR CSI"?25l"
+
 #endif /* ANSI_ESCAPE_CODES_H */
