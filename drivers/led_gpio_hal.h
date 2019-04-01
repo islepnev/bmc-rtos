@@ -35,6 +35,7 @@ typedef enum {
     LED_ON = 1
 } LedState;
 
+void led_all_set_state(LedState state);
 void led_set_state(DeviceLeds led, LedState state);
 void led_toggle(DeviceLeds led);
 

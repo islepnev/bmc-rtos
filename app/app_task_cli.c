@@ -24,6 +24,7 @@
 #include "microrl.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"
+#include "debug_helpers.h"
 
 enum { cliThreadStackSize = threadStackSize };
 
@@ -59,6 +60,9 @@ static void cliTask(void const *arg)
                 display_mode = DISPLAY_PLL_DETAIL;
                 break;
             case DISPLAY_PLL_DETAIL:
+                display_mode = DISPLAY_NONE;
+                break;
+            case DISPLAY_NONE:
                 display_mode = DISPLAY_SUMMARY;
                 break;
             default:
@@ -87,7 +91,7 @@ void create_task_cli(void)
 {
     osThreadId threadId = osThreadCreate(osThread (cli), NULL);
     if (threadId == NULL) {
-        printf("Failed to create cli thread\n");
+        debug_printf("Failed to create cli thread\n");
     }
 
 }

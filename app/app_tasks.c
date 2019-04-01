@@ -25,7 +25,7 @@
 
 void create_tasks(void)
 {
-    // create_task_heartbeat();
+    create_task_heartbeat();
     create_task_display();
     create_task_cli();
     create_task_powermon();

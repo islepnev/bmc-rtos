@@ -19,6 +19,13 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "main.h"
 
+void led_all_set_state(LedState state)
+{
+    led_set_state(LED_RED,       state);
+    led_set_state(LED_YELLOW,    state);
+    led_set_state(LED_GREEN,     state);
+}
+
 void led_set_state(DeviceLeds led, LedState state)
 {
     switch(led) {

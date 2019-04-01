@@ -27,6 +27,7 @@ extern "C" {
 typedef enum {
     DISPLAY_SUMMARY,
     DISPLAY_PLL_DETAIL,
+    DISPLAY_NONE,
 } display_mode_t;
 
 extern Devices dev;

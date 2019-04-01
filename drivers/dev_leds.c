@@ -38,6 +38,8 @@ void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state)
     case LED_GREEN :
         d->led_green = state;
         break;
+    default:
+        break;
     }
     led_set_state(led, state);
 }
@@ -56,6 +58,8 @@ void dev_leds_toggle(Dev_Leds *d, DeviceLeds led)
     case LED_GREEN :
         d->led_green = ! d->led_green;
         dev_led_set(d, led, d->led_green);
+        break;
+    default:
         break;
     }
 }

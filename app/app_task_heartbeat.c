@@ -18,10 +18,10 @@
 #include "app_task_heartbeat.h"
 
 #include <stdint.h>
-#include <stdio.h>
 #include "cmsis_os.h"
 #include "dev_leds.h"
 #include "app_tasks.h"
+#include "debug_helpers.h"
 
 enum { heartbeatThreadStackSize = threadStackSize };
 
@@ -39,6 +39,8 @@ static void prvQueueSendTask(void const *arg)
 {
     (void) arg;
     const uint32_t ulValueToSend = 100UL;
+
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
 
     for( ;; )
     {
@@ -61,6 +63,8 @@ static void prvQueueReceiveTask(void const *arg)
     uint32_t ulReceivedValue;
     const uint32_t ulExpectedValue = 100UL;
 
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+
     for( ;; )
     {
         osEvent event = osMessageGet(message_q_id, osWaitForever);
@@ -76,8 +80,8 @@ static void prvQueueReceiveTask(void const *arg)
     }
 }
 
-osThreadDef(rxThread, prvQueueReceiveTask, osPriorityBelowNormal,      1, heartbeatThreadStackSize);
-osThreadDef(txThread, prvQueueSendTask,    osPriorityLow, 1, heartbeatThreadStackSize);
+osThreadDef(heartbeat_deq, prvQueueReceiveTask, osPriorityLow,  1, heartbeatThreadStackSize);
+osThreadDef(heartbeat_enq, prvQueueSendTask,    osPriorityIdle, 1, heartbeatThreadStackSize);
 
 void create_task_heartbeat(void)
 {
@@ -85,13 +89,13 @@ void create_task_heartbeat(void)
 
     if( message_q_id != NULL )
     {
-        osThreadId rxThreadId = osThreadCreate(osThread (rxThread), NULL);
-        osThreadId txThreadId = osThreadCreate(osThread (txThread), NULL);
+        osThreadId rxThreadId = osThreadCreate(osThread (heartbeat_deq), NULL);
+        osThreadId txThreadId = osThreadCreate(osThread (heartbeat_enq), NULL);
         if (rxThreadId == NULL) {
-            printf("Failed to create Rx thread\n");
+            debug_printf("Failed to create heartbeat_deq thread\n");
         }
         if (txThreadId == NULL) {
-            printf("Failed to create Tx thread\n");
+            debug_printf("Failed to create heartbeat_enq thread\n");
         }
     }
 }
