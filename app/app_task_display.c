@@ -290,14 +290,18 @@ static void print_header(void)
 {
     // Title
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
-    printf("     Uptime: ");
-    print_uptime_str();
-    printf("     %s%s%s%s%s",
-           ANSI_BOLD ANSI_BLINK,
-           enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
-           ANSI_BGR_BLUE " ",
-           enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
-           ANSI_BGR_BLUE);
+    if (display_mode == DISPLAY_NONE) {
+        printf("     display refresh paused");
+    } else {
+        printf("     Uptime: ");
+        print_uptime_str();
+        printf("     %s%s%s%s%s",
+               ANSI_BOLD ANSI_BLINK,
+               enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
+               ANSI_BGR_BLUE " ",
+               enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
+               ANSI_BGR_BLUE);
+    }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
@@ -414,8 +418,21 @@ static void display_pll_detail(const Devices * dev)
     pllPrintStatus(&dev->pll);
 }
 
+static display_mode_t old_display_mode = DISPLAY_NONE;
+
 static void update_display(const Devices * dev)
 {
+    if (display_mode == DISPLAY_NONE) {
+        if (old_display_mode != display_mode) {
+            printf(ANSI_CLEARTERM);
+            printf(ANSI_GOHOME ANSI_CLEAR);
+            print_header();
+            printf(ANSI_SHOW_CURSOR); // show cursor
+        }
+    }
+    old_display_mode = display_mode;
+    if (display_mode == DISPLAY_NONE)
+        return;
     if (enable_stats_display && !old_enable_stats_display) {
         force_refresh = 1;
     }
@@ -433,6 +450,8 @@ static void update_display(const Devices * dev)
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail(dev);
+        break;
+    case DISPLAY_NONE:
         break;
     default:
         break;

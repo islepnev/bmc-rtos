@@ -60,6 +60,9 @@ static void cliTask(void const *arg)
                 display_mode = DISPLAY_PLL_DETAIL;
                 break;
             case DISPLAY_PLL_DETAIL:
+                display_mode = DISPLAY_NONE;
+                break;
+            case DISPLAY_NONE:
                 display_mode = DISPLAY_SUMMARY;
                 break;
             default:
