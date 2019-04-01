@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-void task_oneshot(void);
+void app_task_init(void);
 
 #ifdef __cplusplus
 }

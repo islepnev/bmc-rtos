@@ -167,6 +167,10 @@ void monClearMeasurements(Dev_powermon *d)
 
 int monDetect(Dev_powermon *d)
 {
+    if (HAL_I2C_STATE_READY != hi2c_sensors->State) {
+        log_printf(LOG_ERR, "%s: I2C not ready, state %d", __func__, hi2c_sensors->State);
+        return 0;
+    }
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         pm_sensor_reset_i2c_master();

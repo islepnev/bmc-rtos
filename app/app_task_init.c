@@ -26,7 +26,7 @@
 static void setStaticPins(void)
 {
     pllSetStaticPins();
-//    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
+    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
 }
 
 static void display_led_test(void)
@@ -52,7 +52,7 @@ static void display_led_test(void)
     dev_led_set(&dev.leds, LED_GREEN,  LED_OFF);
 }
 
-void task_oneshot(void)
+void app_task_init(void)
 {
     debug_printf("\nInitializing...");
 
