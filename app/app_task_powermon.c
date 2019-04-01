@@ -17,8 +17,6 @@
 
 #include "app_task_powermon.h"
 
-#include <stdio.h>
-
 #include "cmsis_os.h"
 
 #include "dev_powermon.h"
@@ -26,6 +24,7 @@
 #include "app_tasks.h"
 #include "app_task_sfpiic_impl.h"
 #include "app_task_powermon_impl.h"
+#include "debug_helpers.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = threadStackSize };
@@ -65,6 +64,8 @@ static void prvPowermonTask( void const *arg)
 {
     (void) arg;
 
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+
     while (1)
     {
         sfpiic_task();
@@ -78,12 +79,12 @@ static void prvPowermonTask( void const *arg)
     }
 }
 
-osThreadDef(powermonThread, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
 
 void create_task_powermon(void)
 {
-    powermonThreadId = osThreadCreate(osThread (powermonThread), NULL);
+    powermonThreadId = osThreadCreate(osThread (powermon), NULL);
     if (powermonThreadId == NULL) {
-        printf("Failed to create Powermon thread\n");
+        debug_printf("Failed to create powermon thread\n");
     }
 }

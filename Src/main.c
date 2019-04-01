@@ -120,7 +120,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-    task_oneshot();
+    app_task_init();
     create_tasks();
 
   /* USER CODE END 2 */

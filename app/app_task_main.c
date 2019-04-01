@@ -34,6 +34,7 @@
 //#include "display.h"
 //#include "dev_mcu.h"
 //#include "dev_leds.h"
+#include "debug_helpers.h"
 #include "logbuffer.h"
 #include "devices.h"
 #include "version.h"
@@ -185,6 +186,7 @@ static void task_main (void)
 
 static void prvAppMainTask( void const *arg)
 {
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while (1)
     {
         task_main();
@@ -192,12 +194,12 @@ static void prvAppMainTask( void const *arg)
     }
 }
 
-osThreadDef(mainThread, prvAppMainTask, osPriorityNormal,      1, mainThreadStackSize);
+osThreadDef(main, prvAppMainTask, osPriorityNormal,      1, mainThreadStackSize);
 
 void create_task_main(void)
 {
-    osThreadId mainThreadId = osThreadCreate(osThread (mainThread), NULL);
+    osThreadId mainThreadId = osThreadCreate(osThread (main), NULL);
     if (mainThreadId == NULL) {
-        printf("Failed to create Main thread\n");
+        debug_printf("Failed to create main thread\n");
     }
 }

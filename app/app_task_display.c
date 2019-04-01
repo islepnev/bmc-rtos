@@ -41,6 +41,7 @@
 #include "devices.h"
 #include "version.h"
 #include "logbuffer.h"
+#include "debug_helpers.h"
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
@@ -424,7 +425,7 @@ static void update_display(const Devices * dev)
         force_refresh = 0;
     }
     printf(ANSI_GOHOME ANSI_CLEAR);
-    printf(CSI"?25l"); // hide cursor
+    printf(ANSI_HIDE_CURSOR); // hide cursor
     print_header();
     switch (display_mode) {
     case DISPLAY_SUMMARY:
@@ -444,7 +445,7 @@ static void update_display(const Devices * dev)
     printf("%s", statsBuffer);
     printf(ANSI_CLEAR_EOL);
 
-    printf(CSI"?25h"); // show cursor
+    printf(ANSI_SHOW_CURSOR); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
 //    fflush(stdout);
     displayUpdateCount++;
@@ -463,12 +464,12 @@ static void displayTask(void const *arg)
     }
 }
 
-osThreadDef(displayThread, displayTask, osPriorityIdle,      1, displayThreadStackSize);
+osThreadDef(display, displayTask, osPriorityIdle,      1, displayThreadStackSize);
 
 void create_task_display(void)
 {
-    displayThreadId = osThreadCreate(osThread (displayThread), NULL);
+    displayThreadId = osThreadCreate(osThread (display), NULL);
     if (displayThreadId == NULL) {
-        printf("Failed to create Display thread\n");
+        debug_printf("Failed to create display thread\n");
     }
 }

@@ -27,7 +27,9 @@ extern "C" {
 typedef enum {
     LED_RED = 1,
     LED_YELLOW = 2,
-    LED_GREEN = 3
+    LED_GREEN = 3,
+    LED_INT_RED = 4,
+    LED_INT_GREEN = 5
 } DeviceLeds;
 
 typedef enum {
@@ -35,6 +37,7 @@ typedef enum {
     LED_ON = 1
 } LedState;
 
+void led_all_set_state(LedState state);
 void led_set_state(DeviceLeds led, LedState state);
 void led_toggle(DeviceLeds led);
 
