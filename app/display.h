@@ -40,6 +40,7 @@
 #define STR_RESULT_CRIT    ANSI_COL_RESULTS ANSI_RED    "CRITICAL" ANSI_CLEAR
 #define STR_RESULT_FAIL    ANSI_COL_RESULTS ANSI_RED    "FAIL"     ANSI_CLEAR
 
+char *deviceStatusResultStr(DeviceStatus status);
 void devPrintStatus(const Devices *d);
 
 #ifdef __cplusplus

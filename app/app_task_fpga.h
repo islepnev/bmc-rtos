@@ -12,34 +12,20 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_POWERMON_H
-#define APP_TASK_POWERMON_H
-
-#include "dev_powermon.h"
+#ifndef APP_TASK_FPGA_H
+#define APP_TASK_FPGA_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    PM_STATE_INIT,
-    PM_STATE_STANDBY,
-    PM_STATE_RAMP,
-    PM_STATE_RUN,
-    PM_STATE_PWRFAIL,
-    PM_STATE_ERROR
-} PmState;
-
-PmState getPmState(void);
-Dev_powermon getPmData(void);
-SensorStatus getPowermonStatus(const Dev_powermon *pm);
-void create_task_powermon(void);
+void create_task_fpga(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_POWERMON_H
+#endif // APP_TASK_FPGA_H

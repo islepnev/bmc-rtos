@@ -18,6 +18,15 @@
 #include "assert_hooks.h"
 #include "debug_helpers.h"
 
+#include "stm32f7xx_hal.h"
+#include "core_cm7.h"
+
+static void dump_extra_debug(void)
+{
+    debug_printf("OS ticks: %lu\n", HAL_GetTick());
+    debug_printf("CPU cycles: %lu\n", DWT->CYCCNT);
+}
+
 void vApplicationExitHook(int result)
 {
     taskDISABLE_INTERRUPTS();
@@ -57,8 +66,8 @@ void vApplicationMallocFailedHook( void )
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    static const char str[] = "Error: malloc failed\n";
-    debug_print(str, sizeof(str));
+    debug_print("Error: malloc failed\n");
+    dump_extra_debug();
     while(1) {
         led_blink_error();
     }
@@ -70,8 +79,10 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
     (void) pcTaskName;
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    static const char str[] = "Error: stack overflow\n";
-    debug_print(str, sizeof(str));
+    debug_print("\nError: stack overflow in task '");
+    debug_print(pcTaskName);
+    debug_print("'\n");
+    dump_extra_debug();
     while(1) {
         led_blink_error();
     }

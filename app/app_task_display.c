@@ -50,7 +50,7 @@
 
 osThreadId displayThreadId = NULL;
 
-enum { displayThreadStackSize = threadStackSize };
+enum { displayThreadStackSize = 1000 };
 
 static uint32_t displayUpdateCount = 0;
 static const uint32_t displayTaskLoopDelay = 500;
@@ -241,8 +241,10 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
 #define DISPLAY_SENSORS_H 16
 #define DISPLAY_MAIN_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
-#define DISPLAY_MAIN_H 5
-#define DISPLAY_PLL_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_MAIN_H 4
+#define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_FPGA_H 1
+#define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_PLL_H 5
 #define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
 #define DISPLAY_LOG_H (LOG_BUF_SIZE)
@@ -302,11 +304,6 @@ static void print_header(void)
            HAL_GetHalVersion(),
            HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
            );
-    if (0) printf("PmLoop %-8ld Mainloop %-8ld DisplayUpdate %-6ld\n",
-           getPmLoopCount(),
-           getMainLoopCount(),
-           displayUpdateCount);
-//    printf("\n");
 }
 
 static void print_powermon(const Dev_powermon *pm)
@@ -357,14 +354,21 @@ static void print_thset(const Dev_thset *d)
 static void print_main(const Devices *dev)
 {
     print_goto(DISPLAY_MAIN_Y, 1);
-    if (getMainState() == MAIN_STATE_RUN) {
+//    if (getMainState() == MAIN_STATE_RUN) {
         printf("Main state:     %s", mainStateStr(getMainState()));
         printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
 //        printf("%s\n", ANSI_CLEAR_EOL);
-    } else {
-        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
-    }
+//    } else {
+//        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
+//    }
+}
+
+static void print_fpga(const Dev_fpga *fpga)
+{
+    print_goto(DISPLAY_FPGA_Y, 1);
+    printf("FPGA ID: %04X %s", fpga->id, deviceStatusResultStr(fpga->present));
+    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_pll(const Dev_ad9545 *pll)
@@ -402,6 +406,7 @@ static void display_summary(const Devices * dev)
     }
     print_thset(&dev->thset);
     print_main(dev);
+    print_fpga(&dev->fpga);
     print_pll(&dev->pll);
 }
 
@@ -483,6 +488,6 @@ void create_task_display(void)
 {
     displayThreadId = osThreadCreate(osThread (display), NULL);
     if (displayThreadId == NULL) {
-        debug_printf("Failed to create display thread\n");
+        debug_print("Failed to create display thread\n");
     }
 }

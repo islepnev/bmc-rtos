@@ -18,13 +18,13 @@
 #include "app_task_pll.h"
 
 #include <stdint.h>
-#include <stdio.h>
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 #include "app_tasks.h"
 #include "app_shared_data.h"
 #include "dev_pll.h"
+#include "debug_helpers.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
@@ -33,6 +33,7 @@ static const uint32_t pllTaskLoopDelay = 10;
 static void pllTask(void const *arg)
 {
     (void) arg;
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while(1) {
         if (enable_pll_run)
             pllRun(&dev.pll);
@@ -40,12 +41,12 @@ static void pllTask(void const *arg)
     }
 }
 
-osThreadDef(pllThread, pllTask, osPriorityIdle,      1, pllThreadStackSize);
+osThreadDef(pll, pllTask, osPriorityIdle,      1, pllThreadStackSize);
 
 void create_task_pll(void)
 {
-    pllThreadId = osThreadCreate(osThread (pllThread), NULL);
+    pllThreadId = osThreadCreate(osThread (pll), NULL);
     if (pllThreadId == NULL) {
-        printf("Failed to create Pll thread\n");
+        debug_print("Failed to create pll thread\n");
     }
 }

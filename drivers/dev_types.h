@@ -51,12 +51,13 @@ typedef struct Dev_thset {
 
 typedef struct Dev_fpga {
     DeviceStatus present;
-    uint8_t id;
+    uint16_t id;
 } Dev_fpga;
 
 typedef struct Dev_pca9548 {
     DeviceStatus present;
 } Dev_pca9548;
+
 
 typedef struct Dev_at24c {
     DeviceStatus present;

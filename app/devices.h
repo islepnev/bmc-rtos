@@ -28,7 +28,7 @@ extern "C" {
 #include "dev_powermon.h"
 #include "dev_leds.h"
 
-enum { FPGA_DEVICE_ID = 0xD0};
+enum { FPGA_DEVICE_ID = 0xD02F};
 
 typedef struct Devices {
     Dev_Leds leds;
@@ -42,7 +42,6 @@ typedef struct Devices {
 } Devices;
 
 void struct_thset_init(Dev_thset *d);
-void struct_fpga_init(Dev_fpga *d);
 void struct_pca9548_init(Dev_pca9548 *d);
 void struct_at24c_init(Dev_at24c *d);
 void struct_ad9545_init(Dev_ad9545 *d);

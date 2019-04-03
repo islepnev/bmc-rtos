@@ -17,17 +17,16 @@
 
 #include "app_task_powermon.h"
 
-#include <stdio.h>
-
 #include "cmsis_os.h"
 
 #include "dev_powermon.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
 #include "app_task_powermon_impl.h"
+#include "debug_helpers.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = threadStackSize };
+enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
 PmState getPmState(void)
@@ -38,11 +37,6 @@ PmState getPmState(void)
 Dev_powermon getPmData(void)
 {
     return dev.pm;
-}
-
-uint32_t getPmLoopCount(void)
-{
-    return pmLoopCount;
 }
 
 SensorStatus getPowermonStatus(const Dev_powermon *pm)
@@ -64,6 +58,8 @@ static void prvPowermonTask( void const *arg)
 {
     (void) arg;
 
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+
     while (1)
     {
         powermon_task();
@@ -76,12 +72,12 @@ static void prvPowermonTask( void const *arg)
     }
 }
 
-osThreadDef(powermonThread, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
 
 void create_task_powermon(void)
 {
-    powermonThreadId = osThreadCreate(osThread (powermonThread), NULL);
+    powermonThreadId = osThreadCreate(osThread (powermon), NULL);
     if (powermonThreadId == NULL) {
-        printf("Failed to create Powermon thread\n");
+        debug_print("Failed to create powermon thread\n");
     }
 }

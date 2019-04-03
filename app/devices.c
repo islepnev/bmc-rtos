@@ -19,7 +19,6 @@
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "dev_pll.h"
-#include "fpga_spi_hal.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
 #include "i2c.h"
@@ -37,12 +36,6 @@ void struct_thset_init(Dev_thset *d)
         d->th[i].valid = 0;
         d->th[i].rawTemp = TEMP_RAW_ERROR;
     }
-}
-
-void struct_fpga_init(Dev_fpga *d)
-{
-    d->present = DEVICE_UNKNOWN;
-    d->id = 0;
 }
 
 void struct_pca9548_init(Dev_pca9548 *d)
@@ -65,7 +58,6 @@ void struct_Devices_init(Devices *d)
 {
     struct_dev_leds_init(&d->leds);
     struct_thset_init(&d->thset);
-    struct_fpga_init(&d->fpga);
     struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);
@@ -110,33 +102,13 @@ static DeviceStatus dev_eepromVxsPb_detect(Dev_at24c *d)
     return d->present;
 }
 
-static DeviceStatus fpgaDetect(Dev_fpga *d)
-{
-    uint16_t data[2] = {0,0};
-    int err = 0;
-    for (int i=0; i<2; i++) {
-        if (HAL_OK != fpga_spi_hal_read_reg(i, &data[i])) {
-            err++;
-            break;
-        }
-    }
-    uint8_t id = data[0] & 0xFF;
-    if (id == 0x00 || id == 0xFF)
-        err++;
-    if (err == 0)
-        d->present = DEVICE_NORMAL;
-    else
-        d->present = DEVICE_FAIL;
-
-    d->id = id;
-    return d->present;
-}
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
-    if ((d->i2cmux.present == DEVICE_NORMAL)
-//            && (d->eeprom_config.present == DEVICE_NORMAL)
-            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
+    if (1
+//            && (d->i2cmux.present == DEVICE_NORMAL)
+            && (d->eeprom_config.present == DEVICE_NORMAL)
+//            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
 //            && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
             )
@@ -146,11 +118,9 @@ DeviceStatus getDeviceStatus(const Devices *d)
 
 DeviceStatus devDetect(Devices *d)
 {
-    dev_i2cmux_detect(&d->i2cmux);
+//    dev_i2cmux_detect(&d->i2cmux);
     dev_eepromConfig_detect(&d->eeprom_config);
-    dev_eepromVxsPb_detect(&d->eeprom_vxspb);
-//    pllDetect(&d->pll);
-    fpgaDetect(&d->fpga);
+//    dev_eepromVxsPb_detect(&d->eeprom_vxspb);
     return getDeviceStatus(d);
 }
 

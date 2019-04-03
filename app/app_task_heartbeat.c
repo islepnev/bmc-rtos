@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include "cmsis_os.h"
 #include "dev_leds.h"
+#include "bsp.h"
 #include "app_tasks.h"
 #include "debug_helpers.h"
 
@@ -32,7 +33,7 @@ osMessageQId (message_q_id);           // Declare an ID for the message queue
 
 static void task_heartbeat_rtos(void)
 {
-    led_toggle(LED_GREEN);
+    led_toggle(LED_HEARTBEAT);
 }
 
 static void prvQueueSendTask(void const *arg)
@@ -92,10 +93,10 @@ void create_task_heartbeat(void)
         osThreadId rxThreadId = osThreadCreate(osThread (heartbeat_deq), NULL);
         osThreadId txThreadId = osThreadCreate(osThread (heartbeat_enq), NULL);
         if (rxThreadId == NULL) {
-            debug_printf("Failed to create heartbeat_deq thread\n");
+            debug_print("Failed to create heartbeat_deq thread\n");
         }
         if (txThreadId == NULL) {
-            debug_printf("Failed to create heartbeat_enq thread\n");
+            debug_print("Failed to create heartbeat_enq thread\n");
         }
     }
 }

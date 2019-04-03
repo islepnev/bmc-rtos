@@ -19,7 +19,7 @@
 
 #include <stdio.h>
 
-static char *deviceStatusResultStr(DeviceStatus status)
+char *deviceStatusResultStr(DeviceStatus status)
 {
     switch (status) {
     case DEVICE_UNKNOWN:
@@ -43,6 +43,4 @@ void devPrintStatus(const Devices *d)
     printf("%s\n", ANSI_CLEAR_EOL);
 //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("FPGA ID: %02X  %s", d->fpga.id, deviceStatusResultStr(d->fpga.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
 }

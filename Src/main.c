@@ -25,7 +25,6 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "assert_hooks.h"
@@ -99,7 +98,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-  MX_I2C3_SMBUS_Init();
+//  MX_I2C3_SMBUS_Init();
   MX_I2C4_Init();
   MX_SPI1_Init();
   MX_SPI4_Init();
@@ -107,9 +106,8 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-    task_oneshot();
+    app_task_init();
     create_tasks();
-
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

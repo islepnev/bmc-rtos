@@ -23,24 +23,19 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 
-#include "dev_fpga.h"
-//#include "adt7301_spi_hal.h"
-//#include "pca9548_i2c_hal.h"
-//#include "ina226_i2c_hal.h"
 #include "dev_types.h"
-//#include "dev_eeprom.h"
 #include "dev_powermon.h"
-//#include "ansi_escape_codes.h"
-//#include "display.h"
-//#include "dev_mcu.h"
 //#include "dev_leds.h"
+#include "debug_helpers.h"
 #include "logbuffer.h"
 #include "devices.h"
 #include "version.h"
+#include "i2c.h"
 
 #include "app_shared_data.h"
 #include "app_task_powermon.h"
 #include "app_tasks.h"
+#include "system_status.h"
 
 static const uint32_t MAIN_DETECT_TIMEOUT_TICKS = 5000;
 
@@ -65,61 +60,6 @@ static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
     return HAL_GetTick() - stateStartTick;
-}
-
-SensorStatus getMiscStatus(const Devices *d)
-{
-    if (d->i2cmux.present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->eeprom_config.present != DEVICE_NORMAL)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getFpgaStatus(const Dev_fpga *d)
-{
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->id != FPGA_DEVICE_ID)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getPllStatus(const Dev_ad9545 *d)
-{
-    if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
-        return SENSOR_CRITICAL;
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.locked)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.stable ||
-            !d->status.sysclk.b.pll0_locked ||
-            !d->status.sysclk.b.pll1_locked
-            )
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getSystemStatus(const Devices *dev)
-{
-    const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
-    const SensorStatus miscStatus = getMiscStatus(dev);
-    const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
-    const SensorStatus pllStatus = getPllStatus(&dev->pll);
-    SensorStatus systemStatus = SENSOR_NORMAL;
-    if (powermonStatus > systemStatus)
-        systemStatus = powermonStatus;
-    if (temperatureStatus > systemStatus)
-        systemStatus = temperatureStatus;
-    if (miscStatus > systemStatus)
-        systemStatus = miscStatus;
-    if (fpgaStatus > systemStatus)
-        systemStatus = fpgaStatus;
-    if (pllStatus > systemStatus)
-        systemStatus = pllStatus;
-    return systemStatus;
 }
 
 static void task_main (void)
@@ -159,13 +99,8 @@ static void task_main (void)
         break;
     }
 
-    if (mainState == MAIN_STATE_DETECT || mainState == MAIN_STATE_RUN) {
+    if (mainState == MAIN_STATE_DETECT) {
         devDetect(&dev);
-        fpgaWriteBmcVersion();
-        fpgaWriteBmcTemperature(&dev.thset);
-        fpgaWritePllStatus(&dev.pll);
-    } else {
-//        struct_Devices_init(&dev);
     }
     if (mainState == MAIN_STATE_RUN) {
         devRun(&dev);
@@ -183,6 +118,7 @@ static void task_main (void)
 
 static void prvAppMainTask( void const *arg)
 {
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while (1)
     {
         task_main();
@@ -190,12 +126,12 @@ static void prvAppMainTask( void const *arg)
     }
 }
 
-osThreadDef(mainThread, prvAppMainTask, osPriorityNormal,      1, mainThreadStackSize);
+osThreadDef(main, prvAppMainTask, osPriorityNormal,      1, mainThreadStackSize);
 
 void create_task_main(void)
 {
-    osThreadId mainThreadId = osThreadCreate(osThread (mainThread), NULL);
+    osThreadId mainThreadId = osThreadCreate(osThread (main), NULL);
     if (mainThreadId == NULL) {
-        printf("Failed to create Main thread\n");
+        debug_print("Failed to create main thread\n");
     }
 }

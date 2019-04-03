@@ -24,7 +24,7 @@ extern "C" {
 
 void led_show_error(void);
 void led_blink_error(void);
-void debug_print(const char *ptr, int len);
+void debug_print(const char *str);
 void debug_printf(const char *format, ...);
 
 #ifdef __cplusplus

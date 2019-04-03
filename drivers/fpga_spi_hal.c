@@ -49,8 +49,8 @@ void fpga_spi_hal_spi_nss_b(NssState state)
 HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
 {
     enum {Size = 2}; // number of 16-bit words
-    uint16_t txBuf[1];
-    uint16_t rxBuf[1];
+    uint16_t txBuf[2];
+    uint16_t rxBuf[2] = {0};
     txBuf[0] = (0x8000 | (addr & 0x7FFF));
     txBuf[1] = 0;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
@@ -75,11 +75,13 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
 HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
 {
     enum {Size = 2};
-    uint16_t txBuf[1];
-    txBuf[0] = (0x8000 | (addr & 0x7FFF));
+    uint16_t txBuf[2];
+    uint16_t rxBuf[2] = {0};
+    txBuf[0] = (0x0000 | (addr & 0x7FFF));
     txBuf[1] = data;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
+//    HAL_StatusTypeDef ret = HAL_SPI_Transmit(fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
         log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error %d\n", ret);

@@ -26,6 +26,7 @@
 #include "logbuffer.h"
 #include "debug_helpers.h"
 
+osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };
 
 // print callback for microrl library
@@ -89,9 +90,9 @@ osThreadDef(cli, cliTask,    osPriorityLow, 1, cliThreadStackSize);
 
 void create_task_cli(void)
 {
-    osThreadId threadId = osThreadCreate(osThread (cli), NULL);
-    if (threadId == NULL) {
-        debug_printf("Failed to create cli thread\n");
+    cliThreadId = osThreadCreate(osThread (cli), NULL);
+    if (cliThreadId == NULL) {
+        debug_print("Failed to create cli thread\n");
     }
 
 }

@@ -25,7 +25,8 @@ extern "C" {
 #endif
 
 // for use with GCC flags -fstack-usage -Wstack-usage=N
-enum { threadStackSize = 4000 };
+// Note: debug_printf stack overhead is 100 bytes
+enum { threadStackSize = 400 };
 
 enum {
     SIGNAL_REFRESH_DISPLAY = 1000,
@@ -35,6 +36,10 @@ enum {
 extern osThreadId powermonThreadId;
 extern osThreadId displayThreadId;
 extern osThreadId keyboardThreadId;
+extern osThreadId pllThreadId;
+extern osThreadId fpgaThreadId;
+extern osThreadId cliThreadId;
+extern osThreadId vxsiicThreadId;
 
 void create_tasks(void);
 

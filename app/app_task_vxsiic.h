@@ -15,26 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TDC72VHL v4 board specific definitions
+#ifndef APP_TASK_VXSIIC_H
+#define APP_TASK_VXSIIC_H
 
-#ifndef BSP_H
-#define BSP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <stdint.h>
+void create_task_vxsiic(void);
 
-#define TTY_USART USART3
-#define LED_HEARTBEAT LED_GREEN
+#ifdef __cplusplus
+}
+#endif
 
-extern struct __I2C_HandleTypeDef * const hPll;
-extern const uint8_t pllDeviceAddr;
-
-extern struct __I2C_HandleTypeDef * const hi2c_sensors;
-
-extern struct __SPI_HandleTypeDef * const fpga_spi;
-extern struct __SPI_HandleTypeDef * const therm_spi;
-
-void pllSetStaticPins(void);
-void pllReset(void);
-void pm_sensor_reset_i2c_master(void);
-
-#endif // BSP_H
+#endif // APP_TASK_VXSIIC_H
