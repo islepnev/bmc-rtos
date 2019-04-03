@@ -18,6 +18,7 @@
 #include "display.h"
 
 #include <stdio.h>
+#include "devices.h"
 
 static char *deviceStatusResultStr(DeviceStatus status)
 {
@@ -33,7 +34,7 @@ static char *deviceStatusResultStr(DeviceStatus status)
     }
 }
 
-void devPrintStatus(const Devices *d)
+void devPrintStatus(const struct Devices *d)
 {
     printf("SFP I2C mux:       %s", deviceStatusResultStr(d->sfpiic.present));
     printf("%s\n", ANSI_CLEAR_EOL);
@@ -43,6 +44,4 @@ void devPrintStatus(const Devices *d)
     printf("%s\n", ANSI_CLEAR_EOL);
 //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("FPGA ID: %02X  %s", d->fpga.id, deviceStatusResultStr(d->fpga.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
 }

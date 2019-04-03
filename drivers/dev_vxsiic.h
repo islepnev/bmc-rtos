@@ -20,7 +20,8 @@
 
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
-#include "dev_types.h"
+#include "dev_common_types.h"
+#include "dev_vxsiic_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +30,7 @@ extern "C" {
 //HAL_StatusTypeDef vxsiic_detect(void);
 //HAL_StatusTypeDef vxsiic_read(int slot, uint8_t address, uint8_t *data);
 DeviceStatus dev_vxsiic_detect(Dev_vxsiic *d);
-HAL_StatusTypeDef vxsiic_read(Dev_vxsiic *d);
+HAL_StatusTypeDef dev_vxsiic_read(Dev_vxsiic *d);
 
 #ifdef __cplusplus
 }

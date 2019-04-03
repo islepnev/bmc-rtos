@@ -30,7 +30,7 @@
 static void setStaticPins(void)
 {
     pllSetStaticPins();
-    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
+    update_power_switches(get_dev_powermon(), SWITCH_ON); // FIXME
 }
 
 static int test_cpu_tick(void)
@@ -40,10 +40,10 @@ static int test_cpu_tick(void)
     for (int i=0; i<10; i++)
         ticks = DWT->CYCCNT;
     if (ticks == start_ticks) {
-            debug_printf("CPU cycle counter stopped\n");
+            debug_print("CPU cycle counter stopped\n");
             return -1;
     }
-    debug_printf("CPU cycle counter Ok\n");
+    debug_print("CPU cycle counter Ok\n");
     return 0;
 }
 
@@ -83,12 +83,12 @@ static void test_timers(void)
 void app_task_init(void)
 {
     led_all_set_state(LED_ON);
-    debug_printf(ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
+    initialize_serial_console_hardware();
+    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
     setStaticPins();
     test_timers();
     // required for console I/O
-    initialize_serial_console_hardware();
-    debug_printf("Waiting for threads to start\n");
+    debug_print("Waiting for threads to start\n");
     led_all_set_state(LED_OFF);
 }

@@ -24,15 +24,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    MAIN_STATE_INIT,
-    MAIN_STATE_DETECT,
-    MAIN_STATE_RUN,
-    MAIN_STATE_ERROR
-} MainState;
-
-MainState getMainState(void);
-uint32_t getMainLoopCount(void);
 void create_task_main(void);
 
 #ifdef __cplusplus

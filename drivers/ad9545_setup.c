@@ -99,15 +99,51 @@ enum {
     DPLL_MODE_PROFILE_SELECT_FALLBACK_HOLDOVER = 2,
     DPLL_MODE_PROFILE_SELECT_MANUAL = 3,
 };
-static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
+
+static uint64_t get_dpll0_default_ftw(void)
 {
     const double targetFreq = 312.5e6;
-    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq());
+    return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
+}
+
+static uint64_t get_dpll1_default_ftw(void)
+{
+    const double targetFreq = 325e6;
+    return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
+}
+
+uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel)
+{
+    switch (channel) {
+    case DPLL0:
+        return get_dpll0_default_ftw();
+    case DPLL1:
+        return get_dpll1_default_ftw();
+    default:
+        return 0;
+    }
+}
+
+ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel)
+{
+    switch (channel) {
+    case DPLL0:
+        return PROFILE_REF_SOURCE_A;
+    case DPLL1:
+        return PROFILE_REF_SOURCE_A;
+    default:
+        return PROFILE_REF_SOURCE_A;
+    }
+}
+
+static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
+{
+    d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL0);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
     d->APLL_M_Divider = 8;
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
-    d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
+    d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL0);
     d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
@@ -126,13 +162,12 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
 
 static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
 {
-    const double targetFreq = 325e6;
-    d->Freerun_Tuning_Word = (1ULL << 48) * (targetFreq / sysclkVcoFreq());
+    d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL1);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
     d->APLL_M_Divider = 10;
     // Translation Profile 1.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
-    d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
+    d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL1);
     d->profile[0].ZD_Feedback_Path = PROFILE_INT_ZD_FEEDBACK_OUT1A;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;

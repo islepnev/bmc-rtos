@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #define TTY_USART USART2
+#define LED_HEARTBEAT LED_INT_GREEN
 
 extern struct __I2C_HandleTypeDef * const hPll;
 extern const uint8_t pllDeviceAddr;

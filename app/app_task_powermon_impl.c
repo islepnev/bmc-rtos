@@ -27,11 +27,12 @@
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
+#include "dev_pm_sensors_types.h"
 #include "dev_powermon.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "devices.h"
-#include "dev_types.h"
+#include "dev_powermon_types.h"
 #include "dev_mcu.h"
 #include "dev_leds.h"
 #include "logbuffer.h"
@@ -48,7 +49,7 @@ static const uint32_t log_sensor_status_duration_ticks = 3000;
 
 uint32_t pmLoopCount = 0;
 
-PmState pmState = PM_STATE_INIT;
+//PmState pmState = PM_STATE_INIT;
 
 static const uint32_t sensorReadInterval = 100;
 static uint32_t sensorReadTick = 0;
@@ -59,7 +60,7 @@ static uint32_t thermReadTick = 0;
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
@@ -119,7 +120,7 @@ static void log_sensor_status_change(const Dev_powermon *pm)
                 log_put(LOG_WARNING, str);
                 break;
             case SENSOR_NORMAL:
-                if (pm_sensor_get_sensorStatus_Duration(sensor) >= log_sensor_status_duration_ticks)
+//                if (pm_sensor_get_sensorStatus_Duration(sensor) >= log_sensor_status_duration_ticks)
                     log_put(LOG_INFO, str);
                 break;
             }
@@ -128,79 +129,69 @@ static void log_sensor_status_change(const Dev_powermon *pm)
     }
 }
 
-SensorStatus getMonStatus(const Dev_powermon *pm)
-{
-    SensorStatus monStatus = SENSOR_CRITICAL;
-    if ((pm->monState == MON_STATE_READ)
-            && (getMonStateTicks(pm) > SENSORS_SETTLE_TICKS)) {
-        monStatus = pm_sensors_getStatus(pm);
-    }
-    return monStatus;
-}
-
 static int pm_initialized = 0;
 
-void powermon_task (void)
+void task_powermon_run (void)
 {
-    Dev_powermon *pm = &dev.pm;
+    Dev_powermon *pm = get_dev_powermon();
     if (!pm_initialized) {
         clearOldSensorStatus();
         pm_initialized = 1;
     }
     pmLoopCount++;
     int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
-    const PmState oldState = pmState;
+    const PmState oldState = pm->pmState; // pmState;
     pm_read_pgood(pm);
     int power_input_ok = get_input_power_valid(pm);
     int power_critical_ok = get_critical_power_valid(pm);
-    switch (pmState) {
+    switch (pm->pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
-        struct_Devices_init(&dev);
-        pmState = PM_STATE_STANDBY;
+        struct_Devices_init(getDevices());
+        pm->pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_STANDBY:
         if (vmePresent && enable_power) {
             if (power_input_ok) {
                 log_put(LOG_NOTICE, "Input power Ok");
-                pmState = PM_STATE_RAMP;
+                pm->pmState = PM_STATE_RAMP;
             }
         }
         break;
     case PM_STATE_RAMP:
         if (!vmePresent || !enable_power || !power_input_ok) {
-            pmState = PM_STATE_STANDBY;
+            pm->pmState = PM_STATE_STANDBY;
             break;
         }
         if (power_critical_ok) {
             log_put(LOG_NOTICE, "Critical power supplies ready");
-            pmState = PM_STATE_RUN;
+            pm->pmState = PM_STATE_RUN;
         }
         if (stateTicks() > RAMP_TIMEOUT_TICKS) {
             if (!pm->pgood_3v3) {
                 log_put(LOG_ERR, "3.3V power failure");
             }
             log_put(LOG_ERR, "Critical power supplies failure");
-            pmState = PM_STATE_PWRFAIL;
+            pm->pmState = PM_STATE_PWRFAIL;
         }
         break;
     case PM_STATE_RUN:
         if (!vmePresent || !enable_power || !power_input_ok) {
-            pmState = PM_STATE_STANDBY;
+            pm->pmState = PM_STATE_STANDBY;
             break;
         }
         if (!power_critical_ok) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            pmState = PM_STATE_PWRFAIL;
+            pm->pmState = PM_STATE_PWRFAIL;
             break;
         }
         if (pm->monState != MON_STATE_READ) {
             log_put(LOG_ERR, "Error in STATE_RUN");
-            pmState = PM_STATE_ERROR;
+            pm->pmState = PM_STATE_ERROR;
             break;
         }
         if (TEST_RESTART && (stateTicks() > 5000)) {
-            pmState = PM_STATE_STANDBY;
+            pm->pmState = PM_STATE_STANDBY;
             break;
         }
         break;
@@ -208,32 +199,32 @@ void powermon_task (void)
 //        dev_switchPower(&dev.pm, SWITCH_OFF);
 //        dev_readPgood(&dev.pm);
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
-            pmState = PM_STATE_STANDBY;
+            pm->pmState = PM_STATE_STANDBY;
         }
         break;
     case PM_STATE_ERROR:
 //        dev_switchPower(&dev.pm, SWITCH_OFF);
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            pmState = PM_STATE_STANDBY;
+            pm->pmState = PM_STATE_STANDBY;
         }
         break;
     }
 
-    if ((pmState == PM_STATE_RAMP)
-            || (pmState == PM_STATE_RUN)) {
+    if ((pm->pmState == PM_STATE_RAMP)
+            || (pm->pmState == PM_STATE_RUN)) {
         update_power_switches(pm, SWITCH_ON);
     } else {
         update_power_switches(pm, SWITCH_OFF);
     }
 
     for (int i=0; i<POWERMON_SENSORS; i++)
-        pm->sensors[i].rampState = (pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
+        pm->sensors[i].rampState = (pm->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
-    if ((pmState == PM_STATE_STANDBY)
-            || (pmState == PM_STATE_RAMP)) {
+    if ((pm->pmState == PM_STATE_STANDBY)
+            || (pm->pmState == PM_STATE_RAMP)) {
         runMon(pm);
     } else {
-        if (pmState == PM_STATE_RUN) {
+        if (pm->pmState == PM_STATE_RUN) {
             uint32_t ticks = osKernelSysTick() - sensorReadTick;
             if (ticks > sensorReadInterval) {
                 sensorReadTick = osKernelSysTick();
@@ -242,25 +233,25 @@ void powermon_task (void)
 
         }
     }
-    if ((pmState == PM_STATE_RAMP)
-            || (pmState == PM_STATE_RUN)
+    if ((pm->pmState == PM_STATE_RAMP)
+            || (pm->pmState == PM_STATE_RUN)
             ) {
         log_sensor_status_change(pm);
     } else {
         clearOldSensorStatus();
     }
-    if ((pmState == PM_STATE_RUN)
+    if ((pm->pmState == PM_STATE_RUN)
             && (getMonStateTicks(pm) > THERM_SETTLE_TICKS)) {
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
             thermReadTick = osKernelSysTick();
-            dev_thset_read(&dev.thset);
+            dev_thset_read(get_dev_thset());
         }
     } else {
-        struct_thset_init(&dev.thset);
+        struct_thset_init(get_dev_thset());
     }
 
-    if (oldState != pmState) {
+    if (oldState != pm->pmState) {
         stateStartTick = osKernelSysTick();
     }
 }

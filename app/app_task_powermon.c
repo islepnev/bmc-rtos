@@ -27,40 +27,10 @@
 #include "debug_helpers.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = threadStackSize };
+enum { powermonThreadStackSize = 200 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
-PmState getPmState(void)
-{
-    return pmState;
-}
-
-Dev_powermon getPmData(void)
-{
-    return dev.pm;
-}
-
-uint32_t getPmLoopCount(void)
-{
-    return pmLoopCount;
-}
-
-SensorStatus getPowermonStatus(const Dev_powermon *pm)
-{
-    const SensorStatus monStatus = getMonStatus(pm);
-    const PmState pmState = getPmState();
-    SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
-    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
-        pmStatus = SENSOR_CRITICAL;
-    SensorStatus systemStatus = SENSOR_NORMAL;
-    if (pmStatus > systemStatus)
-        systemStatus = pmStatus;
-    if (monStatus > systemStatus)
-        systemStatus = monStatus;
-    return systemStatus;
-}
-
-static void prvPowermonTask( void const *arg)
+static void start_task_powermon( void const *arg)
 {
     (void) arg;
 
@@ -68,8 +38,8 @@ static void prvPowermonTask( void const *arg)
 
     while (1)
     {
-        sfpiic_task();
-        powermon_task();
+        task_sfpiic_run();
+        task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;
@@ -79,12 +49,12 @@ static void prvPowermonTask( void const *arg)
     }
 }
 
-osThreadDef(powermon, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, start_task_powermon, osPriorityHigh,      1, powermonThreadStackSize);
 
 void create_task_powermon(void)
 {
     powermonThreadId = osThreadCreate(osThread (powermon), NULL);
     if (powermonThreadId == NULL) {
-        debug_printf("Failed to create powermon thread\n");
+        debug_print("Failed to create powermon thread\n");
     }
 }

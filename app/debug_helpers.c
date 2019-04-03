@@ -21,38 +21,47 @@
 #include "stm32f7xx_ll_usart.h"
 #include "led_gpio_hal.h"
 #include "bsp.h"
+#include "ansi_escape_codes.h"
 
-static void debug_send_char(const char c)
+static inline void debug_send_char(const char c)
 {
     // wait for UART ready
     while(! LL_USART_IsActiveFlag_TXE(TTY_USART)) {;}
     LL_USART_TransmitData8(TTY_USART, (uint8_t)c);
 }
 
-void debug_print(const char *ptr, int len)
+static inline void debug_print_impl(const char *ptr)
 {
-    static int n;
-    static const char r = '\r';
-    for (n = 0; n < len; n++) {
+    enum { max_print_len = 1000 };
+    for (int n = 0; n < max_print_len; n++) {
+        if (*ptr == '\0')
+            break;
         if (*ptr == '\n') {
-            debug_send_char(r);
+            debug_send_char('\r');
         }
         debug_send_char(*ptr++);
     }
 }
 
+void debug_print(const char *str)
+{
+    debug_print_impl("\r" ANSI_CLEAR ANSI_CLEAR_EOL);
+    debug_print_impl(str);
+    debug_print_impl(ANSI_CLEAR_EOL);
+}
+
 void debug_printf(const char *format, ...)
 {
     enum {buf_size = 100};
-  static va_list args;
-  static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+    static va_list args;
+    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
-  va_start(args, format);
-  size_t n = vsnprintf(buffer, sizeof buffer, format, args);
-  va_end(args);
-  size_t n_written = (n > buf_size) ? buf_size : n;
-  if (n_written > 0)
-      debug_print(buffer, n_written); // exclude trailing \0
+    va_start(args, format);
+    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    va_end(args);
+    size_t n_written = (n > buf_size) ? buf_size : n;
+    if (n_written > 0)
+        debug_print(buffer);
 }
 
 static const int LED_BLINK_CPUDELAY = 200000;

@@ -18,25 +18,10 @@
 #ifndef APP_TASK_POWERMON_H
 #define APP_TASK_POWERMON_H
 
-#include "dev_powermon.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    PM_STATE_INIT,
-    PM_STATE_STANDBY,
-    PM_STATE_RAMP,
-    PM_STATE_RUN,
-    PM_STATE_PWRFAIL,
-    PM_STATE_ERROR
-} PmState;
-
-PmState getPmState(void);
-Dev_powermon getPmData(void);
-uint32_t getPmLoopCount(void);
-SensorStatus getPowermonStatus(const Dev_powermon *pm);
 void create_task_powermon(void);
 
 #ifdef __cplusplus

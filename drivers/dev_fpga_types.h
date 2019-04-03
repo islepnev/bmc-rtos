@@ -14,21 +14,12 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef VXSIIC_STATUS_H
-#define VXSIIC_STATUS_H
+#ifndef DEV_FPGA_TYPES_H
+#define DEV_FPGA_TYPES_H
 
-enum {VXSIIC_SLOTS = 18};
+typedef struct Dev_fpga {
+    DeviceStatus present;
+    uint16_t id;
+} Dev_fpga;
 
-struct vxsiic_slot_status_t {
-   int present;
-};
-
-typedef struct vxsiic_slot_status_t vxsiic_slot_status_t;
-
-struct vxsiic_status_t {
-   vxsiic_slot_status_t slot[VXSIIC_SLOTS];
-};
-
-typedef struct vxsiic_status_t vxsiic_status_t;
-
-#endif // VXSIIC_STATUS_H
+#endif // DEV_FPGA_TYPES_H

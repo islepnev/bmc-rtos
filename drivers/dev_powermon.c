@@ -21,30 +21,11 @@
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_pm_sensors.h"
+#include "dev_pm_sensors_types.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
-
-int monIsOn(const pm_switches *sw, SensorIndex index)
-{
-    switch(index) {
-    case SENSOR_VPC_3V3: return 1;
-    case SENSOR_5V: return 1;
-    case SENSOR_VXS_5V: return 1;
-    case SENSOR_2V5: return sw->switch_2v5;
-    case SENSOR_3V3: return sw->switch_3v3;
-    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0_core;
-    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0_mgt;
-    case SENSOR_FPGA_MGT_1V2: return sw->switch_2v5;
-    case SENSOR_FPGA_1V8: return sw->switch_2v5;
-    case SENSOR_VADJ: return sw->switch_2v5;
-    case SENSOR_FMC_5V: return sw->switch_5v_fmc;
-    case SENSOR_FMC_12V: return sw->switch_5v_fmc;
-    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
-    }
-    return 0;
-}
 
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
@@ -151,26 +132,6 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
     return 1;
 }
 
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
-{
-    SensorStatus maxStatus = SENSOR_NORMAL;
-    for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &d->sensors[i];
-        if (sensor->isOptional)
-            continue;
-        DeviceStatus deviceStatus = sensor->deviceStatus;
-        if (deviceStatus != DEVICE_NORMAL)
-            maxStatus = SENSOR_CRITICAL;
-        int isOn = monIsOn(&d->sw, i);
-        if (isOn) {
-            SensorStatus status = pm_sensor_status(sensor);
-            if (status > maxStatus)
-                maxStatus = status;
-        }
-    }
-    return maxStatus;
-}
-
 void monClearMeasurements(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
@@ -181,6 +142,10 @@ void monClearMeasurements(Dev_powermon *d)
 
 int monDetect(Dev_powermon *d)
 {
+    if (HAL_I2C_STATE_READY != hi2c_sensors->State) {
+        log_printf(LOG_ERR, "%s: I2C not ready, state %d", __func__, hi2c_sensors->State);
+        return 0;
+    }
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         pm_sensor_reset_i2c_master();
@@ -210,12 +175,12 @@ int monReadValues(Dev_powermon *d)
 
 void pm_setStateStartTick(Dev_powermon *pm)
 {
-    pm->stateStartTick = HAL_GetTick();
+    pm->stateStartTick = osKernelSysTick();
 }
 
 uint32_t getMonStateTicks(const Dev_powermon *pm)
 {
-    return HAL_GetTick() - pm->stateStartTick;
+    return osKernelSysTick() - pm->stateStartTick;
 }
 
 MonState runMon(Dev_powermon *pm)

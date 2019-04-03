@@ -18,17 +18,21 @@
 #ifndef DEV_FPGA_H
 #define DEV_FPGA_H
 
-#include <unistd.h>
 #include "stm32f7xx_hal_def.h"
-#include "dev_types.h"
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+struct Dev_fpga;
+struct Dev_thset;
+struct Dev_pll;
+
+DeviceStatus fpgaDetect(struct Dev_fpga *d);
 HAL_StatusTypeDef fpgaWriteBmcVersion(void);
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset);
-HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll);
+HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);
+HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_pll *pll);
 
 #ifdef __cplusplus
 }

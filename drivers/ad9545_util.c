@@ -19,14 +19,13 @@
 #include <stdio.h>
 #include "ad9545_setup.h"
 
-int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, PllChannel_TypeDef channel)
+int64_t pll_ftw_rel_ppb(const Dev_pll *d, PllChannel_TypeDef channel)
 {
     const DPLL_Status *dpll_status = &d->status.dpll[channel];
     uint64_t ftw = dpll_status->ftw_history;
-    Pll_DPLL_Setup_TypeDef dpll = {0};
-    init_DPLL_Setup(&dpll, channel);
-    int64_t twdelta = ftw - dpll.Freerun_Tuning_Word;
-    int64_t norm = dpll.Freerun_Tuning_Word/1000000000ULL;
+    uint64_t default_ftw = get_dpll_default_ftw(channel);
+    int64_t twdelta = ftw - default_ftw;
+    int64_t norm = default_ftw/1000000000ULL;
     return twdelta/norm;
 }
 
@@ -58,7 +57,7 @@ const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r)
     }
 }
 
-ProfileRefSource_TypeDef pll_get_current_ref(const Dev_ad9545 *d, PllChannel_TypeDef channel)
+ProfileRefSource_TypeDef pll_get_current_ref(const Dev_pll *d, PllChannel_TypeDef channel)
 {
 //    int active = d->status.dpll[channel].operation.b.active;
 //    if (!active)

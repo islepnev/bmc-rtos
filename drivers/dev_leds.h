@@ -18,19 +18,12 @@
 #ifndef DEV_LEDS_H
 #define DEV_LEDS_H
 
-#include "led_gpio_hal.h"
+#include "dev_leds_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-    LedState led_red;
-    LedState led_yellow;
-    LedState led_green;
-} Dev_Leds;
-
-void struct_dev_leds_init(Dev_Leds *d);
 void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state);
 void dev_leds_toggle(Dev_Leds *d, DeviceLeds led);
 

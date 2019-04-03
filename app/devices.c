@@ -25,6 +25,7 @@
 #include "dev_powermon.h"
 #include "i2c.h"
 #include "display.h"
+#include "dev_leds_types.h"
 
 // Temperature limits
 static const int tempMinCrit = -40;
@@ -40,18 +41,12 @@ void struct_thset_init(Dev_thset *d)
     }
 }
 
-void struct_fpga_init(Dev_fpga *d)
-{
-    d->present = DEVICE_UNKNOWN;
-    d->id = 0;
-}
-
 void struct_at24c_init(Dev_at24c *d)
 {
     d->present = DEVICE_UNKNOWN;
 }
 
-void struct_ad9545_init(Dev_ad9545 *d)
+void struct_ad9545_init(Dev_pll *d)
 {
     d->fsm_state = PLL_STATE_INIT;
     d->present = DEVICE_UNKNOWN;
@@ -61,7 +56,6 @@ void struct_Devices_init(Devices *d)
 {
     struct_dev_leds_init(&d->leds);
     struct_thset_init(&d->thset);
-    struct_fpga_init(&d->fpga);
     struct_at24c_init(&d->eeprom_config);
 }
 
@@ -78,27 +72,6 @@ static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
     return d->present;
 }
 
-static DeviceStatus fpgaDetect(Dev_fpga *d)
-{
-    uint16_t data[2] = {0,0};
-    int err = 0;
-    for (int i=0; i<2; i++) {
-        if (HAL_OK != fpga_spi_hal_read_reg(i, &data[i])) {
-            err++;
-            break;
-        }
-    }
-    uint8_t id = data[0] & 0xFF;
-    if (id == 0x00 || id == 0xFF)
-        err++;
-    if (err == 0)
-        d->present = DEVICE_NORMAL;
-    else
-        d->present = DEVICE_FAIL;
-
-    d->id = id;
-    return d->present;
-}
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
@@ -115,8 +88,6 @@ DeviceStatus getDeviceStatus(const Devices *d)
 DeviceStatus devDetect(Devices *d)
 {
     dev_eepromConfig_detect(&d->eeprom_config);
-//    pllDetect(&d->pll);
-    fpgaDetect(&d->fpga);
     return getDeviceStatus(d);
 }
 

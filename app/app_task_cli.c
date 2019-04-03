@@ -17,81 +17,22 @@
 
 #include "app_task_cli.h"
 
-#include <stdio.h>
-#include <stdint.h>
+#include "app_task_cli_impl.h"
 #include "cmsis_os.h"
 #include "app_tasks.h"
-#include "microrl.h"
-#include "app_shared_data.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
 
+osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };
-
-// print callback for microrl library
-static void print (const char * str)
-{
-    fprintf (stdout, "%s", str);
-}
-
-// execute callback for microrl library
-// do what you want here, but don't write to argv!!! read only!!
-int execute (int argc, const char * const * argv)
-{
-    return 0;
-}
-
-static void cliTask(void const *arg)
-{
-    (void) arg;
-
-    static microrl_t rl;
-    static microrl_t * prl = &rl;
-    microrl_init (prl, print);
-    microrl_set_execute_callback (prl, execute);
-    setvbuf(stdin, NULL, _IONBF, 0);
-    for( ;; )
-    {
-        char ch = getchar();
-        switch(ch) {
-        case ' ':
-            switch (display_mode) {
-            case DISPLAY_SUMMARY:
-                display_mode = DISPLAY_PLL_DETAIL;
-                break;
-            case DISPLAY_PLL_DETAIL:
-                display_mode = DISPLAY_NONE;
-                break;
-            case DISPLAY_NONE:
-                display_mode = DISPLAY_SUMMARY;
-                break;
-            default:
-                break;
-            }
-            break;
-        case 'p':
-        case 'P':
-            enable_power = !enable_power;
-            if (enable_power)
-                log_put(LOG_INFO, "Received command power ON");
-            else
-                log_put(LOG_INFO, "Received command power OFF");
-            break;
-        default:
-            enable_stats_display = !enable_stats_display;
-            break;
-        }
-//        microrl_insert_char (prl, ch);
-    }
-}
 
 osThreadDef(cli, cliTask,    osPriorityLow, 1, cliThreadStackSize);
 
 void create_task_cli(void)
 {
-    osThreadId threadId = osThreadCreate(osThread (cli), NULL);
-    if (threadId == NULL) {
-        debug_printf("Failed to create cli thread\n");
+    cliThreadId = osThreadCreate(osThread (cli), NULL);
+    if (cliThreadId == NULL) {
+        debug_print("Failed to create cli thread\n");
     }
 
 }

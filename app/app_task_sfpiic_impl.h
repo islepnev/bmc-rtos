@@ -17,6 +17,6 @@
 #ifndef APP_TASK_SFPIIC_IMPL_H
 #define APP_TASK_SFPIIC_IMPL_H
 
-void sfpiic_task(void);
+void task_sfpiic_run(void);
 
 #endif // APP_TASK_SFPIIC_IMPL_H

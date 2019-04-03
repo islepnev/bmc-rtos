@@ -20,8 +20,9 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "main.h"
 #include "dev_vxsiic.h"
-#include "dev_types.h"
+//#include "dev_types.h"
 #include "app_shared_data.h"
+#include "debug_helpers.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
@@ -39,17 +40,26 @@ static vxsiic_state_t old_state = VXSIIC_STATE_RESET;
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 static void struct_vxs_i2c_init(Dev_vxsiic *d)
 {
     d->present = DEVICE_UNKNOWN;
+    for (int i=0; i<VXSIIC_SLOTS; i++) {
+        vxsiic_slot_status_t zz = {0};
+        d->status.slot[i] = zz;
+    }
 }
 
-void vxsiic_task(void)
+void task_vxsiic_init(void)
 {
-    Dev_vxsiic *d = &dev.vxsiic;
+
+}
+
+void task_vxsiic_run(void)
+{
+    Dev_vxsiic *d = get_dev_vxsiic();
     switch (state) {
     case VXSIIC_STATE_RESET: {
         struct_vxs_i2c_init(d);
@@ -59,7 +69,10 @@ void vxsiic_task(void)
         break;
     }
     case VXSIIC_STATE_RUN:
+        if (HAL_OK == dev_vxsiic_read(d))
             state = VXSIIC_STATE_PAUSE;
+        else
+            state = VXSIIC_STATE_ERROR;
         break;
     case VXSIIC_STATE_PAUSE:
         if (stateTicks() > POLL_DELAY_TICKS) {
@@ -73,6 +86,7 @@ void vxsiic_task(void)
         break;
     }
     if (old_state != state) {
+        old_state = state;
         stateStartTick = osKernelSysTick();
     }
 }

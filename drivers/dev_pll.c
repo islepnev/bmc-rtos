@@ -25,7 +25,7 @@
 #include "ad9545_setup.h"
 #include "ad9545_status.h"
 #include "dev_pll_print.h"
-#include "dev_types.h"
+#include "dev_pll_types.h"
 #include "ansi_escape_codes.h"
 #include "logbuffer.h"
 #include "cmsis_os.h"
@@ -34,7 +34,7 @@
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 typedef enum {
@@ -201,7 +201,7 @@ enum {
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
 
-static OpStatusTypeDef pllIoUpdate(Dev_ad9545 *d)
+static OpStatusTypeDef pllIoUpdate(Dev_pll *d)
 {
     uint8_t data = 1;
     HAL_StatusTypeDef ret = ad9545_write1(0x000F, data);
@@ -214,7 +214,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_ad9545 *d, uint16_t address, uint8_t bitmask)
+static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_pll *d, uint16_t address, uint8_t bitmask)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -238,7 +238,7 @@ err:
     return ret;
 }
 
-DeviceStatus pllDetect(Dev_ad9545 *d)
+DeviceStatus pllDetect(Dev_pll *d)
 {
     int devicePresent = 0;
     int deviceError = 0;
@@ -274,7 +274,7 @@ DeviceStatus pllDetect(Dev_ad9545 *d)
     return d->present;
 }
 
-static OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d)
+static OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     ret = ad9545_write1(0x0000, 0x81);
@@ -290,7 +290,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupSysclk(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -327,7 +327,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
+static OpStatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -361,7 +361,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllResetOutputDividers_unused(Dev_ad9545 *d)
+static OpStatusTypeDef pllResetOutputDividers_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -397,7 +397,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupOutputDrivers(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupOutputDrivers(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -420,7 +420,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllClearAutomute_unused(Dev_ad9545 *d)
+static OpStatusTypeDef pllClearAutomute_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -443,7 +443,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     Pll_OutputDividers_Setup_TypeDef setup = {0};
@@ -527,7 +527,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupRef(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     PllRefSetup_TypeDef refSetup = {0};
@@ -573,7 +573,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllWriteProfile(Dev_ad9545 *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
+static OpStatusTypeDef pllWriteProfile(Dev_pll *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -625,7 +625,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDPLLChannel(Dev_ad9545 *d, PllChannel_TypeDef channel)
+static OpStatusTypeDef pllSetupDPLLChannel(Dev_pll *d, PllChannel_TypeDef channel)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     Pll_DPLL_Setup_TypeDef dpll = {0};
@@ -659,7 +659,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupDPLL(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -673,7 +673,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDPLLMode(Dev_ad9545 *d)
+static OpStatusTypeDef pllSetupDPLLMode(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -690,7 +690,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d)
+static OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -709,7 +709,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllCalibrateAll(Dev_ad9545 *d)
+static OpStatusTypeDef pllCalibrateAll(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -728,7 +728,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSyncAllDistDividers(Dev_ad9545 *d)
+static OpStatusTypeDef pllSyncAllDistDividers(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -747,7 +747,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadRefStatus(Dev_ad9545 *d)
+static OpStatusTypeDef pllReadRefStatus(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
     uint8_t refa;
@@ -768,7 +768,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDef channel)
+static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_pll *d, PllChannel_TypeDef channel)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
 
@@ -816,7 +816,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
+static OpStatusTypeDef pllReadStatus(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = DEV_ERROR;
 
@@ -864,7 +864,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d)
+static OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d)
 {
     // read sysclk status
     HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
@@ -876,7 +876,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadAllRegisters(Dev_ad9545 *d)
+static OpStatusTypeDef pllReadAllRegisters(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     typedef struct {
@@ -958,7 +958,7 @@ static void reset_I2C_Pll(void)
 5. Configure the status pins (optional)
 */
 
-void pllRun(Dev_ad9545 *d)
+void pllRun(Dev_pll *d)
 {
     const PllState oldState = d->fsm_state;
     switch(d->fsm_state) {
@@ -1082,7 +1082,7 @@ void pllRun(Dev_ad9545 *d)
     }
     int stateChanged = oldState != d->fsm_state;
     if (stateChanged) {
-        stateStartTick = HAL_GetTick();
+        stateStartTick = osKernelSysTick();
     }
     if (stateChanged && (oldState != PLL_STATE_RESET)) {
         if (d->fsm_state == PLL_STATE_ERROR) {

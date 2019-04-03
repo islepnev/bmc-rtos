@@ -17,34 +17,35 @@
 
 #include "app_task_vxsiic.h"
 
-#include <stdio.h>
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "app_task_vxsiic_impl.h"
 #include "debug_helpers.h"
 
-enum { vxsiicThreadStackSize = threadStackSize };
+osThreadId vxsiicThreadId = NULL;
+enum { vxsiicThreadStackSize = 1000 };
 static const uint32_t vxsiicTaskLoopDelay = 10;
 
-static void vxsiic_thread_task( void const *arg)
+static void start_thread_vxsiic( void const *arg)
 {
     (void) arg;
 
     debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    task_vxsiic_init();
 
     while (1)
     {
-        vxsiic_task();
+        task_vxsiic_run();
         osDelay(vxsiicTaskLoopDelay);
     }
 }
 
-osThreadDef(vxsiic, vxsiic_thread_task,    osPriorityLow, 1, vxsiicThreadStackSize);
+osThreadDef(vxsiic, start_thread_vxsiic,    osPriorityNormal, 1, vxsiicThreadStackSize);
 
 void create_task_vxsiic(void)
 {
-    powermonThreadId = osThreadCreate(osThread (vxsiic), NULL);
-    if (powermonThreadId == NULL) {
-        debug_printf("Failed to create vxsiic thread\n");
+    vxsiicThreadId = osThreadCreate(osThread (vxsiic), NULL);
+    if (vxsiicThreadId == NULL) {
+        debug_print("Failed to create vxsiic thread\n");
     }
 }

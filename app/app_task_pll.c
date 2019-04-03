@@ -20,7 +20,6 @@
 #include <stdint.h>
 
 #include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
 #include "app_tasks.h"
 #include "app_shared_data.h"
 #include "dev_pll.h"
@@ -33,9 +32,10 @@ static const uint32_t pllTaskLoopDelay = 10;
 static void pllTask(void const *arg)
 {
     (void) arg;
+    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while(1) {
         if (enable_pll_run)
-            pllRun(&dev.pll);
+            pllRun(get_dev_pll());
         osDelay(pllTaskLoopDelay);
     }
 }
@@ -46,6 +46,6 @@ void create_task_pll(void)
 {
     pllThreadId = osThreadCreate(osThread (pll), NULL);
     if (pllThreadId == NULL) {
-        debug_printf("Failed to create pll thread\n");
+        debug_print("Failed to create pll thread\n");
     }
 }

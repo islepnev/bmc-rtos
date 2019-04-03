@@ -18,51 +18,12 @@
 #ifndef DEV_POWERMON_H
 #define DEV_POWERMON_H
 
-#include <unistd.h>
-#include "stm32f7xx_hal_def.h"
-#include "dev_types.h"
-#include "dev_pm_sensors.h"
+//#include "dev_types.h"
+#include "dev_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum SwitchOnOff {
-    SWITCH_OFF = 0,
-    SWITCH_ON = 1,
-} SwitchOnOff;
-
-typedef struct pm_switches {
-    SwitchOnOff switch_5v;
-    SwitchOnOff switch_5v_fmc;
-    SwitchOnOff switch_3v3;
-    SwitchOnOff switch_2v5;
-    SwitchOnOff switch_1v0_core;
-    SwitchOnOff switch_1v0_mgt;
-} pm_switches;
-
-typedef enum MonState {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-} MonState;
-
-typedef struct Dev_powermon {
-    MonState monState;
-    uint32_t stateStartTick;
-    int monErrors;
-    int monCycle;
-//    DeviceStatus present;
-   pm_sensor sensors[POWERMON_SENSORS];
-   int vmePresent;
-   int pgood_3v3;
-   int pgood_2v5;
-   int pgood_1v0_core;
-   int pgood_1v0_mgt;
-   int pgood_3v3_fmc;
-   pm_switches sw;
-} Dev_powermon;
 
 void struct_powermon_sensors_init(Dev_powermon *d);
 void struct_powermon_init(Dev_powermon *d);
@@ -76,7 +37,6 @@ void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
 int pm_sensors_isAllValid(const Dev_powermon *d);
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 int get_input_power_valid(const Dev_powermon *pm);

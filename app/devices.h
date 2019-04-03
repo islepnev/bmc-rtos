@@ -23,10 +23,14 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "stm32f7xx_hal.h"
 #include "dev_types.h"
-#include "dev_powermon.h"
-#include "dev_leds.h"
+#include "dev_fpga_types.h"
+#include "dev_pll_types.h"
+#include "dev_thset_types.h"
+#include "dev_sfpiic_types.h"
+#include "dev_vxsiic_types.h"
+#include "dev_powermon_types.h"
+#include "dev_leds_types.h"
 
 enum { FPGA_DEVICE_ID = 0xD0};
 
@@ -37,14 +41,13 @@ typedef struct Devices {
     Dev_sfpiic sfpiic;
     Dev_vxsiic vxsiic;
     Dev_at24c eeprom_config;
-    Dev_ad9545 pll;
+    Dev_pll pll;
     Dev_powermon pm;
 } Devices;
 
 void struct_thset_init(Dev_thset *d);
-void struct_fpga_init(Dev_fpga *d);
 void struct_at24c_init(Dev_at24c *d);
-void struct_ad9545_init(Dev_ad9545 *d);
+void struct_ad9545_init(Dev_pll *d);
 void struct_Devices_init(Devices *d);
 
 DeviceStatus getDeviceStatus(const Devices *d);

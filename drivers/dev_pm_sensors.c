@@ -16,6 +16,7 @@
 //
 
 #include "dev_pm_sensors.h"
+#include "dev_pm_sensors_types.h"
 #include "ina226_i2c_hal.h"
 #include "i2c.h"
 
@@ -23,6 +24,7 @@
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_mcu.h"
+#include "cmsis_os.h"
 
 //const double SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
 const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
@@ -59,44 +61,12 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     struct_pm_sensor_clear_minmax(d);
 }
 
-SensorStatus pm_sensor_status(const pm_sensor *d)
-{
-    if (d->deviceStatus != DEVICE_NORMAL) {
-//        printf("%s: device unknown\n", d->label);
-        return SENSOR_UNKNOWN;
-    }
-
-    double V = d->busVoltage;
-    double VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
-    double VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
-    double VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
-    double VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
-    int VNorm = (V > VMinWarn) && (V < VMaxWarn);
-    int VWarn = (V > VMinCrit) && (V < VMaxCrit);
-    if (VNorm && VWarn)
-        return SENSOR_NORMAL;
-    if (VWarn)
-        return SENSOR_WARNING;
-//    int isOn = 1; // FIXME: monIsOn(deviceAddr);
-//    return isOn ? inRange2 : 1;
-    return SENSOR_CRITICAL;
-}
-
-int pm_sensor_isValid(const pm_sensor *d)
-{
-    SensorStatus status = pm_sensor_status(d);
-    if (status == SENSOR_NORMAL || status == SENSOR_WARNING)
-        return 1;
-    else
-        return 0;
-}
-
 static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
 {
     DeviceStatus oldStatus = d->deviceStatus;
     if (oldStatus != status) {
         d->deviceStatus = status;
-        d->lastStatusUpdatedTick = HAL_GetTick();
+        d->lastStatusUpdatedTick = osKernelSysTick();
     }
 }
 
@@ -123,13 +93,13 @@ static void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
     SensorStatus oldStatus = d->sensorStatus;
     if (oldStatus != status) {
         d->sensorStatus = status;
-        d->lastStatusUpdatedTick = HAL_GetTick();
+        d->lastStatusUpdatedTick = osKernelSysTick();
     }
 }
 
 uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
 {
-    return HAL_GetTick() - d->lastStatusUpdatedTick;
+    return osKernelSysTick() - d->lastStatusUpdatedTick;
 }
 
 typedef union {
@@ -165,7 +135,7 @@ static HAL_StatusTypeDef pm_sensor_write_conf(pm_sensor *d)
 
 DeviceStatus pm_sensor_detect(pm_sensor *d)
 {
-    d->lastStatusUpdatedTick = HAL_GetTick();
+    d->lastStatusUpdatedTick = osKernelSysTick();
     uint16_t deviceAddr = d->busAddress;
     uint16_t manuf_id;
     uint16_t device_id;

@@ -20,7 +20,6 @@
 
 #include <stdint.h>
 #include "ansi_escape_codes.h"
-#include "devices.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -40,7 +39,8 @@
 #define STR_RESULT_CRIT    ANSI_COL_RESULTS ANSI_RED    "CRITICAL" ANSI_CLEAR
 #define STR_RESULT_FAIL    ANSI_COL_RESULTS ANSI_RED    "FAIL"     ANSI_CLEAR
 
-void devPrintStatus(const Devices *d);
+struct Devices;
+void devPrintStatus(const struct Devices *d);
 
 #ifdef __cplusplus
 }

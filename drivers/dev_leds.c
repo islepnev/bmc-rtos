@@ -16,15 +16,7 @@
 //
 
 #include "dev_leds.h"
-#include "stm32f7xx_hal.h"
 #include "led_gpio_hal.h"
-
-void struct_dev_leds_init(Dev_Leds *d)
-{
-    d->led_red = LED_OFF;
-    d->led_yellow = LED_OFF;
-    d->led_green = LED_OFF;
-}
 
 void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state)
 {

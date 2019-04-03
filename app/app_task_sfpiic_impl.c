@@ -20,7 +20,7 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "main.h"
 #include "dev_sfpiic.h"
-#include "dev_types.h"
+#include "dev_sfpiic_types.h"
 #include "app_shared_data.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
@@ -39,7 +39,7 @@ static sfpiic_state_t old_state = SFPIIC_STATE_RESET;
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 static void struct_sfpiic_init(Dev_sfpiic *d)
@@ -47,9 +47,9 @@ static void struct_sfpiic_init(Dev_sfpiic *d)
     d->present = DEVICE_UNKNOWN;
 }
 
-void sfpiic_task(void)
+void task_sfpiic_run(void)
 {
-    Dev_sfpiic *d = &dev.sfpiic;
+    Dev_sfpiic *d = get_dev_sfpiic();
     switch (state) {
     case SFPIIC_STATE_RESET: {
         struct_sfpiic_init(d);

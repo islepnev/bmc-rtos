@@ -18,15 +18,14 @@
 #ifndef DEV_PLL_H
 #define DEV_PLL_H
 
-#include <unistd.h>
-#include "dev_types.h"
+#include "dev_pll_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DeviceStatus pllDetect(Dev_ad9545 *d);
-void pllRun(Dev_ad9545 *d);
+DeviceStatus pllDetect(Dev_pll *d);
+void pllRun(Dev_pll *d);
 
 #ifdef __cplusplus
 }

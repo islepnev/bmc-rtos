@@ -18,6 +18,15 @@
 #ifndef APP_TASK_VXSIIC_IMPL_H
 #define APP_TASK_VXSIIC_IMPL_H
 
-void vxsiic_task(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void task_vxsiic_init(void);
+void task_vxsiic_run(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_VXSIIC_IMPL_H
