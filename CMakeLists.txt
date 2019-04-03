@@ -12,7 +12,7 @@ SET(CMAKE_MODULE_PATH cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 
 SET(STM32_MIN_HEAP_SIZE 0x20000)
-SET(STM32_MIN_STACK_SIZE 0x2000)
+SET(STM32_MIN_STACK_SIZE 0x200)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
@@ -78,6 +78,7 @@ file(GLOB_RECURSE FREERTOS_SOURCES
 
 )
 set(DATA_FILE
+   doc/Doxyfile.in
    README.md
    app/version.h.in
 )
@@ -95,6 +96,7 @@ ADD_EXECUTABLE(${ELF}
 TARGET_LINK_LIBRARIES(${ELF})
 STM32_SET_TARGET_PROPERTIES(${ELF})
 STM32_ADD_HEX_BIN_TARGETS(${ELF})
+STM32_ADD_DUMP_TARGET(${ELF})
 STM32_PRINT_SIZE_OF_TARGETS(${ELF})
 
 # Stack Smashing Protection
@@ -117,11 +119,11 @@ if (DOXYGEN_FOUND)
     message("Doxygen build started")
 
     # note the option ALL which allows to build the docs together with the application
-#    add_custom_target( doc_doxygen ALL
-#        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#        COMMENT "Generating API documentation with Doxygen"
-#        VERBATIM )
+    add_custom_target( doc_doxygen
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
