@@ -19,11 +19,12 @@
 
 #include "app_task_main_impl.h"
 
-#include "dev_types.h"
+//#include "devices_types.h"
+#include "dev_powermon_types.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
 #include "devices.h"
-#include "version.h"
+#include "system_status.h"
 
 #include "app_shared_data.h"
 #include "led_gpio_hal.h"
@@ -54,63 +55,6 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-SensorStatus getMiscStatus(const Devices *d)
-{
-    if (d->sfpiic.present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->vxsiic.present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->eeprom_config.present != DEVICE_NORMAL)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getFpgaStatus(const Dev_fpga *d)
-{
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->id != FPGA_DEVICE_ID)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getPllStatus(const Dev_pll *d)
-{
-    if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
-        return SENSOR_CRITICAL;
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.locked)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.stable ||
-            !d->status.sysclk.b.pll0_locked ||
-            !d->status.sysclk.b.pll1_locked
-            )
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
-SensorStatus getSystemStatus(const Devices *dev)
-{
-    const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
-    const SensorStatus miscStatus = getMiscStatus(dev);
-    const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
-    const SensorStatus pllStatus = getPllStatus(&dev->pll);
-    SensorStatus systemStatus = SENSOR_NORMAL;
-    if (powermonStatus > systemStatus)
-        systemStatus = powermonStatus;
-    if (temperatureStatus > systemStatus)
-        systemStatus = temperatureStatus;
-    if (miscStatus > systemStatus)
-        systemStatus = miscStatus;
-    if (fpgaStatus > systemStatus)
-        systemStatus = fpgaStatus;
-    if (pllStatus > systemStatus)
-        systemStatus = pllStatus;
-    return systemStatus;
-}
-
 void task_main_init(void)
 {
 
@@ -126,7 +70,7 @@ void task_main_run(void)
     switch (mainState) {
     case MAIN_STATE_INIT:
         if (pmState == PM_STATE_RUN) {
-            struct_Devices_init(getDevices());
+            struct_thset_init(get_dev_thset());
             mainState = MAIN_STATE_DETECT;
         }
         break;
@@ -153,12 +97,6 @@ void task_main_run(void)
         break;
     }
 
-    if (mainState == MAIN_STATE_DETECT || mainState == MAIN_STATE_RUN) {
-        devDetect(getDevices());
-    }
-    if (mainState == MAIN_STATE_RUN) {
-        devRun(getDevices());
-    }
     enable_pll_run = (pmState == PM_STATE_RUN);
     if (oldState != mainState) {
         stateStartTick = osKernelSysTick();

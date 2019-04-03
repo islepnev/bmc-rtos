@@ -16,10 +16,3 @@
 */
 
 #include "dev_leds_types.h"
-
-void struct_dev_leds_init(Dev_Leds *d)
-{
-    d->led_red = LED_OFF;
-    d->led_yellow = LED_OFF;
-    d->led_green = LED_OFF;
-}

@@ -14,20 +14,18 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_LEDS_TYPES_H
-#define DEV_LEDS_TYPES_H
 
-typedef enum {
-    LED_RED = 1,
-    LED_YELLOW = 2,
-    LED_GREEN = 3,
-    LED_INT_RED = 4,
-    LED_INT_GREEN = 5
-} DeviceLeds;
+#ifndef LOGENTRY_H
+#define LOGENTRY_H
 
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
+#include "logbuffer.h"
 
-#endif // DEV_LEDS_TYPES_H
+enum {LOG_LINE_SIZE = 100};
+
+struct LogEntry {
+    LogPriority priority;
+    uint32_t tick;
+    char str[LOG_LINE_SIZE]; // null-terminated
+};
+
+#endif // LOGENTRY_H

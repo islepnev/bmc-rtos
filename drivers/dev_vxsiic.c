@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
+#include "bsp_pin_defs.h"
 #include "dev_vxsiic_types.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"

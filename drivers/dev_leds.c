@@ -18,40 +18,12 @@
 #include "dev_leds.h"
 #include "led_gpio_hal.h"
 
-void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state)
+void dev_led_set(DeviceLeds led, LedState state)
 {
-    switch(led) {
-    case LED_RED :
-        d->led_red = state;
-        break;
-    case LED_YELLOW :
-        d->led_yellow = state;
-        break;
-    case LED_GREEN :
-        d->led_green = state;
-        break;
-    default:
-        break;
-    }
     led_set_state(led, state);
 }
 
-void dev_leds_toggle(Dev_Leds *d, DeviceLeds led)
+void dev_leds_toggle(DeviceLeds led)
 {
-    switch(led) {
-    case LED_RED :
-        d->led_red = ! d->led_red;
-        dev_led_set(d, led, d->led_red);
-        break;
-    case LED_YELLOW :
-        d->led_yellow = ! d->led_yellow;
-        dev_led_set(d, led, d->led_yellow);
-        break;
-    case LED_GREEN :
-        d->led_green = ! d->led_green;
-        dev_led_set(d, led, d->led_green);
-        break;
-    default:
-        break;
-    }
+    led_toggle(led);
 }

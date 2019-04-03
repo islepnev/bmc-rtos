@@ -19,6 +19,7 @@
 
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
+#include "bsp_pin_defs.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 

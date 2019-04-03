@@ -18,7 +18,7 @@
 #include "display.h"
 
 #include <stdio.h>
-#include "devices.h"
+#include "devices_types.h"
 
 static char *deviceStatusResultStr(DeviceStatus status)
 {

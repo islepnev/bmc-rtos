@@ -18,7 +18,6 @@
 #include "app_task_vxsiic_impl.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal_gpio.h"
-#include "main.h"
 #include "dev_vxsiic.h"
 //#include "dev_types.h"
 #include "app_shared_data.h"

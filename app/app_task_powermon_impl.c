@@ -21,20 +21,16 @@
 #include <stdio.h>
 
 #include "cmsis_os.h"
-#include "i2c.h"
+//#include "i2c.h"
 
-#include "app_task_powermon.h"
-#include "adt7301_spi_hal.h"
-#include "pca9548_i2c_hal.h"
-#include "ina226_i2c_hal.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_powermon.h"
-#include "ansi_escape_codes.h"
-#include "display.h"
+//#include "ansi_escape_codes.h"
+//#include "display.h"
 #include "devices.h"
 #include "dev_powermon_types.h"
-#include "dev_mcu.h"
-#include "dev_leds.h"
+//#include "dev_mcu.h"
+//#include "dev_leds.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 
@@ -147,7 +143,6 @@ void task_powermon_run (void)
     switch (pm->pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
-        struct_Devices_init(getDevices());
         pm->pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_STANDBY:

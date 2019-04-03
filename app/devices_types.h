@@ -14,20 +14,27 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_LEDS_TYPES_H
-#define DEV_LEDS_TYPES_H
 
-typedef enum {
-    LED_RED = 1,
-    LED_YELLOW = 2,
-    LED_GREEN = 3,
-    LED_INT_RED = 4,
-    LED_INT_GREEN = 5
-} DeviceLeds;
+#ifndef DEVICES_TYPES_H
+#define DEVICES_TYPES_H
 
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
+#include "dev_eeprom_types.h"
+#include "dev_fpga_types.h"
+#include "dev_pll_types.h"
+#include "dev_thset_types.h"
+#include "dev_sfpiic_types.h"
+#include "dev_vxsiic_types.h"
+#include "dev_powermon_types.h"
+#include "dev_leds_types.h"
 
-#endif // DEV_LEDS_TYPES_H
+typedef struct Devices {
+    Dev_thset thset;
+    Dev_fpga fpga;
+    Dev_sfpiic sfpiic;
+    Dev_vxsiic vxsiic;
+    Dev_at24c eeprom_config;
+    Dev_pll pll;
+    Dev_powermon pm;
+} Devices;
+
+#endif // DEVICES_TYPES_H

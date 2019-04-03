@@ -24,10 +24,10 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 /* USER CODE END Includes */
 
 extern SPI_HandleTypeDef hspi2;

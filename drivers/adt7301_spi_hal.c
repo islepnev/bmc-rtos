@@ -16,21 +16,11 @@
 //
 
 #include "adt7301_spi_hal.h"
-#include "main.h"
 #include "spi.h"
 #include "bsp.h"
+#include "bsp_pin_defs.h"
 
 static const int SPI_TIMEOUT_MS = 10;
-
-/**
-  * @brief  Converts raw temperature value
-  * @param  raw: 14-bit raw value from ADT7301 temperature sensor
-  * @retval temperature in degrees Celsius multiplied by 32
-  */
-int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw)
-{
-    return (int16_t)(raw << 2) >> 2;
-}
 
 /**
   * @brief Read the temperature data from the specified sensor
@@ -60,7 +50,7 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
             uint16_t result = SPI_receive_buffer;
             *data = result;
         } else {
-            *data = TEMP_RAW_ERROR;
+            *data = 0;
         }
     }
     return ret;

@@ -21,7 +21,7 @@
 #include "quadspi.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "bsp_pin_defs.h"
 /* USER CODE END 0 */
 
 QSPI_HandleTypeDef hqspi;

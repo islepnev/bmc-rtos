@@ -47,23 +47,23 @@ static int test_cpu_tick(void)
     return 0;
 }
 
-static int test_hal_systick(void)
+static int test_os_systick(void)
 {
-    const uint32_t start_ticks = HAL_GetTick();
+    const uint32_t start_ticks = osKernelSysTick();
     uint32_t tick_i1 = 0;
     uint32_t i = 0;
-    const uint32_t tick_freq_hz = 1000U / uwTickFreq;
+    const uint32_t tick_freq_hz = osKernelSysTickFrequency;
     const uint32_t cpu_cycles_per_tick = SystemCoreClock / tick_freq_hz; // loop cannot be faster than 1 cpu clock
     while(1) {
         if (i > cpu_cycles_per_tick) {
-            debug_printf("HAL systick timer %d Hz stopped\n", tick_freq_hz);
+            debug_printf("OS systick timer %d Hz stopped\n", tick_freq_hz);
             return -1;
         }
-        const uint32_t tick = HAL_GetTick();
+        const uint32_t tick = osKernelSysTick();
         if (tick > start_ticks && tick_i1 == 0)
             tick_i1 = i;
         if (tick > start_ticks+1) {
-            debug_printf("HAL systick timer %d Hz Ok\n", tick_freq_hz);
+            debug_printf("OS systick timer %d Hz Ok\n", tick_freq_hz);
             break;
         }
         i++;
@@ -74,7 +74,7 @@ static int test_hal_systick(void)
 static void test_timers(void)
 {
     int ret0 = test_cpu_tick();
-    int ret1 = test_hal_systick();
+    int ret1 = test_os_systick();
     if (ret0 || ret1) {
         exit(1);
     }

@@ -14,20 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_LEDS_TYPES_H
-#define DEV_LEDS_TYPES_H
 
-typedef enum {
-    LED_RED = 1,
-    LED_YELLOW = 2,
-    LED_GREEN = 3,
-    LED_INT_RED = 4,
-    LED_INT_GREEN = 5
-} DeviceLeds;
+#ifndef APP_TASK_FPGA_IMPL_H
+#define APP_TASK_FPGA_IMPL_H
 
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // DEV_LEDS_TYPES_H
+void fpga_task_init(void);
+void fpga_task_run(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // APP_TASK_FPGA_IMPL_H

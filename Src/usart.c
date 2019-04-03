@@ -21,6 +21,8 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "bsp_pin_defs.h"
+#include "main.h"
 #include "stm32f7xx_ll_usart.h"
 /* USER CODE END 0 */
 

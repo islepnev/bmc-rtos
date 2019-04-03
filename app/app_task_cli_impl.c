@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "app_tasks.h"
 #include "microrl.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"

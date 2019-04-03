@@ -15,24 +15,24 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_sfpiic_impl.h"
+#include "app_task_eeprom_config_impl.h"
 #include "cmsis_os.h"
-#include "dev_sfpiic.h"
-#include "dev_sfpiic_types.h"
+#include "dev_eeprom.h"
+#include "dev_eeprom_types.h"
 #include "app_shared_data.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 typedef enum {
-    SFPIIC_STATE_RESET,
-    SFPIIC_STATE_RUN,
-    SFPIIC_STATE_PAUSE,
-    SFPIIC_STATE_ERROR,
-} sfpiic_state_t;
+    STATE_RESET,
+    STATE_RUN,
+    STATE_PAUSE,
+    STATE_ERROR,
+} state_t;
 
-static sfpiic_state_t state = SFPIIC_STATE_RESET;
-static sfpiic_state_t old_state = SFPIIC_STATE_RESET;
+static state_t state = STATE_RESET;
+static state_t old_state = STATE_RESET;
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -40,37 +40,50 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static void struct_sfpiic_init(Dev_sfpiic *d)
+static void struct_at24c_init(Dev_at24c *d)
 {
     d->present = DEVICE_UNKNOWN;
 }
 
-void task_sfpiic_run(void)
+static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
-    Dev_sfpiic *d = get_dev_sfpiic();
+    if (HAL_OK == dev_eepromConfig_Detect())
+        d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
+//    uint8_t data = 0;
+//    if (HAL_OK == dev_eepromConfig_Read(0, &data)) {
+//        d->present = DEVICE_NORMAL;
+//    }
+    return d->present;
+}
+
+void task_eeprom_config_run(void)
+{
+    Dev_at24c *d = get_dev_eeprom_config();
     switch (state) {
-    case SFPIIC_STATE_RESET: {
-        struct_sfpiic_init(d);
-        DeviceStatus status = dev_sfpiic_detect(d);
+    case STATE_RESET: {
+        struct_at24c_init(d);
+        DeviceStatus status = dev_eepromConfig_detect(d);
         if (status == DEVICE_NORMAL)
-            state = SFPIIC_STATE_RUN;
+            state = STATE_RUN;
         break;
     }
-    case SFPIIC_STATE_RUN:
-        if (HAL_OK != dev_sfpiic_read(d)) {
-            state = SFPIIC_STATE_ERROR;
-            break;
-        }
-        state = SFPIIC_STATE_PAUSE;
+    case STATE_RUN:
+//        if (HAL_OK != dev_eepromConfig_Read()) {
+//            state = STATE_ERROR;
+//            break;
+//        }
+        state = STATE_PAUSE;
         break;
-    case SFPIIC_STATE_PAUSE:
+    case STATE_PAUSE:
         if (stateTicks() > POLL_DELAY_TICKS) {
-            state = SFPIIC_STATE_RUN;
+            state = STATE_RUN;
         }
         break;
-    case SFPIIC_STATE_ERROR:
+    case STATE_ERROR:
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = SFPIIC_STATE_RESET;
+            state = STATE_RESET;
         }
         break;
     }

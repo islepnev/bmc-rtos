@@ -44,6 +44,7 @@ INCLUDE_DIRECTORIES(
    drivers
    common
    app
+   bsp
 )
 
 file(GLOB_RECURSE USER_SOURCES
@@ -59,6 +60,7 @@ file(GLOB_RECURSE USER_INCLUDES
    common/*.h
    drivers/*.h
    app/*.h
+   bsp/*.h
 )
 
 SET(PROJECT_SOURCES

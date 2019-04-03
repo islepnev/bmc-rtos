@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
-void dev_led_set(Dev_Leds *d, DeviceLeds led, LedState state);
-void dev_leds_toggle(Dev_Leds *d, DeviceLeds led);
+void dev_led_set(DeviceLeds led, LedState state);
+void dev_leds_toggle(DeviceLeds led);
 
 #ifdef __cplusplus
 }

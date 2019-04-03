@@ -21,7 +21,7 @@
 #include "sdmmc.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "bsp_pin_defs.h"
 /* USER CODE END 0 */
 
 SD_HandleTypeDef hsd1;

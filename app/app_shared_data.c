@@ -17,7 +17,7 @@
 
 #include "app_shared_data.h"
 
-#include "devices.h"
+#include "devices_types.h"
 
 static Devices dev = {0};
 int enable_pll_run = 0;
@@ -68,4 +68,9 @@ Dev_vxsiic *get_dev_vxsiic(void)
 Dev_sfpiic *get_dev_sfpiic(void)
 {
     return &dev.sfpiic;
+}
+
+Dev_at24c *get_dev_eeprom_config(void)
+{
+    return &dev.eeprom_config;
 }

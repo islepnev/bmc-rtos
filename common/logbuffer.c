@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "cmsis_os.h"
+#include "logentry.h"
 
 static unsigned int log_wptr = 0;
 static unsigned int log_count = 0;

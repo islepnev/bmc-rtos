@@ -14,20 +14,17 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_LEDS_TYPES_H
-#define DEV_LEDS_TYPES_H
 
-typedef enum {
-    LED_RED = 1,
-    LED_YELLOW = 2,
-    LED_GREEN = 3,
-    LED_INT_RED = 4,
-    LED_INT_GREEN = 5
-} DeviceLeds;
+#ifndef DEV_THSET_H
+#define DEV_THSET_H
 
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
+#include <stdint.h>
+#include "dev_common_types.h"
 
-#endif // DEV_LEDS_TYPES_H
+struct Dev_thset;
+
+void struct_thset_init(struct Dev_thset *d);
+int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
+SensorStatus dev_thset_thermStatus(const struct Dev_thset *d);
+
+#endif // DEV_THSET_H
