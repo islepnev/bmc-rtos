@@ -26,6 +26,7 @@
 #include "ansi_escape_codes.h"
 #include "debug_helpers.h"
 #include "led_gpio_hal.h"
+#include "bsp.h"
 
 static void setStaticPins(void)
 {

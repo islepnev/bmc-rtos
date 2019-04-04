@@ -103,13 +103,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN2_Init();
-  MX_FMC_Init();
+//  MX_CAN2_Init();
+//  MX_FMC_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_I2C4_Init();
-  MX_QUADSPI_Init();
+//  MX_QUADSPI_Init();
 //  MX_SDMMC1_SD_Init();
   MX_SPI2_Init();
   MX_SPI5_Init();

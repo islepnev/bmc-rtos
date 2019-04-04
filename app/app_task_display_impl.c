@@ -311,7 +311,7 @@ static char statsBuffer[1000];
 static void print_header(void)
 {
     // Title
-    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
     if (display_mode == DISPLAY_NONE) {
         printf("     display refresh paused");
     } else {

@@ -58,7 +58,7 @@ void fpga_task_init(void)
     struct_fpga_init(get_dev_fpga());
 }
 
-int old_enable_power = 0;
+static int old_enable_power = 0;
 
 void fpga_task_run(void)
 {
@@ -71,6 +71,7 @@ void fpga_task_run(void)
     case FPGA_STATE_STANDBY:
         if (enable_power)
             state = FPGA_STATE_RUN;
+        d->present = DEVICE_UNKNOWN;
         break;
     case FPGA_STATE_RUN:
         if (!enable_power)

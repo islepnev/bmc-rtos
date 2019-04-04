@@ -18,14 +18,23 @@
 #ifndef DEV_PLL_H
 #define DEV_PLL_H
 
+#include "dev_common_types.h"
 #include "dev_pll_types.h"
+#include "ad9545_setup.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 DeviceStatus pllDetect(Dev_pll *d);
-void pllRun(Dev_pll *d);
+OpStatusTypeDef pllSetup(Dev_pll *d);
+
+void reset_I2C_Pll(void);
+OpStatusTypeDef pllSoftwareReset(Dev_pll *d);
+OpStatusTypeDef pllSetupSysclk(Dev_pll *d);
+OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d);
+OpStatusTypeDef pllReadStatus(Dev_pll *d);
+OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d);
 
 #ifdef __cplusplus
 }
