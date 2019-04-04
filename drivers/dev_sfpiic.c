@@ -16,6 +16,7 @@
 //
 
 #include "dev_sfpiic.h"
+#include "dev_sfpiic_types.h"
 
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
@@ -29,7 +30,7 @@ enum { PCA9548_BASE_I2C_ADDRESS = 0x74 };
 
 static HAL_StatusTypeDef sfp_i2c_detect(void)
 {
-    HAL_StatusTypeDef ret;
+    HAL_StatusTypeDef ret = HAL_ERROR;
     uint32_t Trials = 2;
     ret = HAL_I2C_IsDeviceReady(hi2c, PCA9548_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
@@ -37,7 +38,7 @@ static HAL_StatusTypeDef sfp_i2c_detect(void)
 
 static HAL_StatusTypeDef sfp_i2c_read(int slot, uint8_t address, uint8_t *data)
 {
-    HAL_StatusTypeDef ret;
+    HAL_StatusTypeDef ret = HAL_ERROR;
     return ret;
 }
 
@@ -70,11 +71,11 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
     return d->present;
 }
 
-HAL_StatusTypeDef dev_sfpiic_read(Dev_sfpiic *d)
+DeviceStatus dev_sfpiic_read(Dev_sfpiic *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data = 0;
-    ret = pca9548_read(&data);
-    return ret;
+    if (HAL_OK != pca9548_read(&data))
+        d->present = DEVICE_FAIL;
+    return d->present;
 }
 

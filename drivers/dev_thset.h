@@ -26,5 +26,6 @@ struct Dev_thset;
 void struct_thset_init(struct Dev_thset *d);
 int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
 SensorStatus dev_thset_thermStatus(const struct Dev_thset *d);
+void dev_thset_read(struct Dev_thset *d);
 
 #endif // DEV_THSET_H

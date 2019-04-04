@@ -15,27 +15,18 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ASSERT_HOOKS_H
-#define ASSERT_HOOKS_H
-
-#include "FreeRTOS.h"
-#include "task.h"
+#ifndef DEBUG_HELPERS_H
+#define DEBUG_HELPERS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void vApplicationExitHook(int result);
-
-// FreeRTOS callbacks
-extern void vAssertCalled( unsigned long ulLine, const uint8_t * const pcFileName );
-extern void vApplicationMallocFailedHook( void );
-//extern void vApplicationIdleHook( void );
-extern void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
-//extern void vApplicationTickHook( void );
+void debug_print(const char *str);
+void debug_printf(const char *format, ...);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // ASSERT_HOOKS_H
+#endif // DEBUG_HELPERS_H

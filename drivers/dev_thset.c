@@ -17,6 +17,7 @@
 
 #include "dev_thset.h"
 #include "dev_thset_types.h"
+#include "adt7301_spi_hal.h"
 
 // Temperature limits
 static const int tempMinCrit = -40;
@@ -60,4 +61,14 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
         }
     }
     return maxStatus;
+}
+
+void dev_thset_read(Dev_thset *d)
+{
+    for(int i=0; i<DEV_THERM_COUNT; i++) {
+        int16_t rawTemp;
+        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
+        d->th[i].valid = (ret == HAL_OK);
+        d->th[i].rawTemp = rawTemp;
+    }
 }

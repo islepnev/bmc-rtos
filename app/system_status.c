@@ -17,8 +17,23 @@
 
 #include "system_status.h"
 #include "devices_types.h"
+#include "dev_thset.h"
 
 enum { FPGA_DEVICE_ID = 0xD0};
+
+DeviceStatus getDeviceStatus(const Devices *d)
+{
+    DeviceStatus status = DEVICE_FAIL;
+    if ((d->sfpiic.present == DEVICE_NORMAL)
+            && (d->sfpiic.present == DEVICE_NORMAL)
+            && (d->vxsiic.present == DEVICE_NORMAL)
+            && (d->eeprom_config.present == DEVICE_NORMAL)
+            && (d->pll.present == DEVICE_NORMAL)
+            && (d->fpga.present == DEVICE_NORMAL)
+            )
+        status = DEVICE_NORMAL;
+    return status;
+}
 
 SensorStatus getMiscStatus(const Devices *d)
 {
@@ -56,13 +71,13 @@ SensorStatus getPllStatus(const Dev_pll *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getSystemStatus(const Devices *dev)
+SensorStatus getSystemStatus(const Devices *d)
 {
-    const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
-    const SensorStatus miscStatus = getMiscStatus(dev);
-    const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
-    const SensorStatus pllStatus = getPllStatus(&dev->pll);
+    const SensorStatus powermonStatus = getPowermonStatus(&d->pm);
+    const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
+    const SensorStatus miscStatus = getMiscStatus(d);
+    const SensorStatus fpgaStatus = getFpgaStatus(&d->fpga);
+    const SensorStatus pllStatus = getPllStatus(&d->pll);
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
         systemStatus = powermonStatus;

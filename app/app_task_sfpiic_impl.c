@@ -20,6 +20,7 @@
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
 #include "app_shared_data.h"
+#include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
@@ -51,13 +52,12 @@ void task_sfpiic_run(void)
     switch (state) {
     case SFPIIC_STATE_RESET: {
         struct_sfpiic_init(d);
-        DeviceStatus status = dev_sfpiic_detect(d);
-        if (status == DEVICE_NORMAL)
+        if (DEVICE_NORMAL == dev_sfpiic_detect(d))
             state = SFPIIC_STATE_RUN;
         break;
     }
     case SFPIIC_STATE_RUN:
-        if (HAL_OK != dev_sfpiic_read(d)) {
+        if (DEVICE_NORMAL != dev_sfpiic_read(d)) {
             state = SFPIIC_STATE_ERROR;
             break;
         }
@@ -69,6 +69,9 @@ void task_sfpiic_run(void)
         }
         break;
     case SFPIIC_STATE_ERROR:
+        if (old_state != state) {
+            log_printf(LOG_ERR, "SFP IIC error");
+        }
         if (stateTicks() > ERROR_DELAY_TICKS) {
             state = SFPIIC_STATE_RESET;
         }

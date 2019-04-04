@@ -21,6 +21,7 @@
 #include "dev_common_types.h"
 
 struct Devices;
-SensorStatus getSystemStatus(const struct Devices *dev);
+DeviceStatus getDeviceStatus(const struct Devices *d);
+SensorStatus getSystemStatus(const struct Devices *d);
 
 #endif // SYSTEM_STATUS_H

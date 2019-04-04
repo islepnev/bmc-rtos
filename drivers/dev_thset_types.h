@@ -17,6 +17,8 @@
 #ifndef DEV_THSET_TYPES_H
 #define DEV_THSET_TYPES_H
 
+#include <stdint.h>
+
 enum {DEV_THERM_COUNT = 1};
 
 typedef struct Dev_adt7301 {

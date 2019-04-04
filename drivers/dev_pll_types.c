@@ -15,25 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_H
-#define DEVICES_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
-
 #include "dev_common_types.h"
+#include "dev_pll.h"
 
-struct Dev_thset;
-struct Dev_at24c;
-struct Dev_pll;
-struct Dev_powermon;
-struct Devices;
-
-#ifdef __cplusplus
+SensorStatus get_pll_sensor_status(const Dev_pll *pll)
+{
+    if (DEVICE_NORMAL != pll->present)
+        return SENSOR_UNKNOWN;
+    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
+        return SENSOR_CRITICAL;
+    if (!pll->status.dpll[0].lock_status.b.all_lock)
+        return SENSOR_WARNING;
+    if (!pll->status.dpll[1].lock_status.b.all_lock)
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
 }
-#endif
-
-#endif // DEVICES_H

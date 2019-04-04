@@ -21,8 +21,11 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-#include "main.h"
 #include "bsp_pin_defs.h"
+#include "error_handler.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_spi.h"
+#include "stm32f7xx_hal_rcc.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;

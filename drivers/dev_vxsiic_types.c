@@ -15,25 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_H
-#define DEVICES_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
-#include "dev_common_types.h"
+#include "dev_vxsiic_types.h"
 
-struct Dev_thset;
-struct Dev_at24c;
-struct Dev_pll;
-struct Dev_powermon;
-struct Devices;
-
-#ifdef __cplusplus
+uint8_t get_vxsiic_board_count(const Dev_vxsiic *d)
+{
+    uint8_t count = 0;
+    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
+        const vxsiic_slot_status_t *status = &d->status.slot[i];
+        if (status->present)
+            count++;
+    }
+    return count;
 }
-#endif
-
-#endif // DEVICES_H

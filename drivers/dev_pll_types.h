@@ -39,4 +39,6 @@ typedef struct Dev_pll {
     uint32_t recoveryCount;
 } Dev_pll;
 
+SensorStatus get_pll_sensor_status(const Dev_pll *pll);
+
 #endif // DEV_PLL_TYPES_H

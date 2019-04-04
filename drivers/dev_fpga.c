@@ -17,7 +17,7 @@
 
 #include "dev_fpga.h"
 
-#include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_def.h"
 #include "spi.h"
 #include "fpga_spi_hal.h"
 #include "version.h"
@@ -69,19 +69,15 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
     return d->present;
 }
 
-HAL_StatusTypeDef fpgaWriteBmcVersion(void)
+DeviceStatus fpgaWriteBmcVersion(Dev_fpga *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_0, VERSION_MAJOR_NUM);
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_7, VERSION_MINOR_NUM);
-    if (ret != HAL_OK)
-        return ret;
-    return ret;
+    if ((HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_0, VERSION_MAJOR_NUM))
+     || (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_7, VERSION_MINOR_NUM)))
+            d->present = DEVICE_FAIL;
+    return d->present;
 }
 
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset)
+DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset *thset)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     for (int i=0; i<4; i++) {
@@ -92,11 +88,11 @@ HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset)
     return ret;
 }
 
-HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_pll *pll)
+DeviceStatus fpgaWritePllStatus(Dev_fpga *d, const struct Dev_pll *pll)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
-    if ((DEVICE_NORMAL != pll->present) || (pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
+    if (SENSOR_NORMAL == get_pll_sensor_status(pll))
         data |= 0x8;
     else {
         if (pll->status.sysclk.b.pll0_locked)

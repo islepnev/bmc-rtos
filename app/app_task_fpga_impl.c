@@ -24,19 +24,22 @@
 #include "dev_fpga_types.h"
 #include "dev_fpga.h"
 #include "debug_helpers.h"
+#include "logbuffer.h"
+
+#include "fpga_spi_hal.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
-static const uint32_t POLL_DELAY_TICKS  = 1000;
+static const uint32_t POLL_DELAY_TICKS  = 100;
 
 typedef enum {
-    FPGA_STATE_RESET,
+    FPGA_STATE_STANDBY,
     FPGA_STATE_RUN,
     FPGA_STATE_PAUSE,
     FPGA_STATE_ERROR,
 } fpga_state_t;
 
-static fpga_state_t state = FPGA_STATE_RESET;
-static fpga_state_t old_state = FPGA_STATE_RESET;
+static fpga_state_t state = FPGA_STATE_STANDBY;
+static fpga_state_t old_state = FPGA_STATE_STANDBY;
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -55,32 +58,43 @@ void fpga_task_init(void)
     struct_fpga_init(get_dev_fpga());
 }
 
+int old_enable_power = 0;
+
 void fpga_task_run(void)
 {
+    if (old_enable_power != enable_power) {
+        old_enable_power = enable_power;
+        fpga_enable_interface(enable_power);
+    }
     Dev_fpga *d = get_dev_fpga();
-    old_state = state;
     switch (state) {
-    case FPGA_STATE_RESET:
-        if (DEVICE_NORMAL == fpgaDetect(d))
+    case FPGA_STATE_STANDBY:
+        if (enable_power)
             state = FPGA_STATE_RUN;
-        else
-            state = FPGA_STATE_ERROR;
         break;
     case FPGA_STATE_RUN:
-        if ((HAL_OK != fpgaWriteBmcVersion()) ||
-                (HAL_OK != fpgaWriteBmcTemperature(get_dev_thset())) ||
-                (HAL_OK != fpgaWritePllStatus(get_dev_pll())))
+        if (!enable_power)
+            state = FPGA_STATE_STANDBY;
+        if ((DEVICE_NORMAL != fpgaDetect(d)) ||
+                (DEVICE_NORMAL != fpgaWriteBmcVersion(d)) ||
+                (DEVICE_NORMAL != fpgaWriteBmcTemperature(d, get_dev_thset())) ||
+                (DEVICE_NORMAL != fpgaWritePllStatus(d, get_dev_pll())))
             state = FPGA_STATE_ERROR;
         state = FPGA_STATE_PAUSE;
         break;
     case FPGA_STATE_PAUSE:
+        if (!enable_power)
+            state = FPGA_STATE_STANDBY;
         if (stateTicks() > POLL_DELAY_TICKS) {
             state = FPGA_STATE_RUN;
         }
         break;
     case FPGA_STATE_ERROR:
+        if (old_state != state) {
+            log_printf(LOG_ERR, "FPGA SPI error");
+        }
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = FPGA_STATE_RESET;
+            state = FPGA_STATE_RUN;
         }
         break;
     default:
@@ -89,4 +103,5 @@ void fpga_task_run(void)
     if (old_state != state) {
         stateStartTick = osKernelSysTick();
     }
+    old_state = state;
 }

@@ -16,32 +16,3 @@
 */
 
 #include "display.h"
-
-#include <stdio.h>
-#include "devices_types.h"
-
-static char *deviceStatusResultStr(DeviceStatus status)
-{
-    switch (status) {
-    case DEVICE_UNKNOWN:
-        return STR_RESULT_UNKNOWN;
-    case DEVICE_NORMAL:
-        return STR_RESULT_NORMAL;
-    case DEVICE_FAIL:
-        return STR_RESULT_FAIL;
-    default:
-        return "???";
-    }
-}
-
-void devPrintStatus(const struct Devices *d)
-{
-    printf("SFP I2C mux:       %s", deviceStatusResultStr(d->sfpiic.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("VXS I2C mux:       %s", deviceStatusResultStr(d->vxsiic.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-//    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
-//    printf("%s\n", ANSI_CLEAR_EOL);
-}

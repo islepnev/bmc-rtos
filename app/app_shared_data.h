@@ -24,8 +24,10 @@ extern "C" {
 
 typedef enum {
     DISPLAY_SUMMARY,
-    DISPLAY_PLL_DETAIL,
+    DISPLAY_LOG,
     DISPLAY_BOARDS,
+    DISPLAY_PLL_DETAIL,
+    DISPLAY_TASKS,
     DISPLAY_NONE,
 } display_mode_t;
 

@@ -17,11 +17,11 @@
 
 #include "app_task_vxsiic_impl.h"
 #include "cmsis_os.h"
-#include "stm32f7xx_hal_gpio.h"
 #include "dev_vxsiic.h"
-//#include "dev_types.h"
+#include "dev_vxsiic_types.h"
 #include "app_shared_data.h"
 #include "debug_helpers.h"
+#include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
@@ -68,7 +68,7 @@ void task_vxsiic_run(void)
         break;
     }
     case VXSIIC_STATE_RUN:
-        if (HAL_OK == dev_vxsiic_read(d))
+        if (DEVICE_NORMAL == dev_vxsiic_read(d))
             state = VXSIIC_STATE_PAUSE;
         else
             state = VXSIIC_STATE_ERROR;
@@ -79,6 +79,9 @@ void task_vxsiic_run(void)
         }
         break;
     case VXSIIC_STATE_ERROR:
+        if (old_state != state) {
+            log_printf(LOG_ERR, "VXS IIC error");
+        }
         if (stateTicks() > ERROR_DELAY_TICKS) {
             state = VXSIIC_STATE_RESET;
         }

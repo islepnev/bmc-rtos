@@ -59,7 +59,7 @@ static char *OpStatusErrorStr(OpStatusTypeDef status)
 
 void DEBUG_PRINT_RET(const char *func, int ret)
 {
-    log_printf(LOG_ERR, "%s failed: %s, I2C error 0x%08lX\n",
+    log_printf(LOG_ERR, "%s failed: %s, I2C error 0x%08lX",
            func, OpStatusErrorStr(ret), hPll->ErrorCode);
 }
 

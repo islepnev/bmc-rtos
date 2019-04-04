@@ -18,7 +18,6 @@
 #ifndef DEV_FPGA_H
 #define DEV_FPGA_H
 
-#include "stm32f7xx_hal_def.h"
 #include "dev_common_types.h"
 
 #ifdef __cplusplus
@@ -30,9 +29,9 @@ struct Dev_thset;
 struct Dev_pll;
 
 DeviceStatus fpgaDetect(struct Dev_fpga *d);
-HAL_StatusTypeDef fpgaWriteBmcVersion(void);
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);
-HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_pll *pll);
+DeviceStatus fpgaWriteBmcVersion(struct Dev_fpga *d);
+DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset *thset);
+DeviceStatus fpgaWritePllStatus(struct Dev_fpga *d, const struct Dev_pll *pll);
 
 #ifdef __cplusplus
 }

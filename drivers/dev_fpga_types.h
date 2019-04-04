@@ -18,6 +18,9 @@
 #ifndef DEV_FPGA_TYPES_H
 #define DEV_FPGA_TYPES_H
 
+#include <stdint.h>
+#include "dev_common_types.h"
+
 typedef struct Dev_fpga {
     DeviceStatus present;
     uint16_t id;

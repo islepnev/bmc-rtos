@@ -14,7 +14,10 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef SSS_H
-#define SSS_H
+#ifndef ERROR_HANDLER_IMPL_H
+#define ERROR_HANDLER_IMPL_H
 
-#endif // SSS_H
+void led_show_error(void);
+void led_blink_error(void);
+
+#endif // ERROR_HANDLER_IMPL_H

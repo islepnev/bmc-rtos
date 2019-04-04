@@ -19,14 +19,16 @@
 #define DEV_EEPROM_H
 
 #include <unistd.h>
-#include "stm32f7xx_hal_def.h"
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-HAL_StatusTypeDef dev_eepromConfig_Detect(void);
-HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data);
+struct Dev_at24c;
+
+DeviceStatus dev_eepromConfig_detect(struct Dev_at24c *d);
+DeviceStatus dev_eepromConfig_read(struct Dev_at24c *d);
 
 #ifdef __cplusplus
 }

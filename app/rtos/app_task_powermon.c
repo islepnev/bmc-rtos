@@ -27,7 +27,7 @@
 #include "debug_helpers.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = 200 };
+enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
 static void start_task_powermon( void const *arg)

@@ -42,7 +42,7 @@ typedef enum {
 } MainState;
 
 //MainState getMainState(void);
-static MainState mainState = MAIN_STATE_INIT;
+static MainState state = MAIN_STATE_INIT;
 
 //MainState getMainState(void)
 //{
@@ -63,42 +63,46 @@ void task_main_init(void)
 void task_main_run(void)
 {
     mainloopCount++;
-    const MainState oldState = mainState;
+    const MainState old_state = state;
     const PmState pmState = get_dev_powermon_const()->pmState;
 //    led_toggle(LED_YELLOW);
 
-    switch (mainState) {
+    switch (state) {
     case MAIN_STATE_INIT:
         if (pmState == PM_STATE_RUN) {
-            struct_thset_init(get_dev_thset());
-            mainState = MAIN_STATE_DETECT;
+            state = MAIN_STATE_DETECT;
         }
         break;
     case MAIN_STATE_DETECT:
         if (pmState != PM_STATE_RUN) {
-            mainState = MAIN_STATE_INIT;
+            state = MAIN_STATE_INIT;
         }
         if (getDeviceStatus(getDevicesConst()) == DEVICE_NORMAL)
-            mainState = MAIN_STATE_RUN;
+            state = MAIN_STATE_RUN;
         if (stateTicks() > MAIN_DETECT_TIMEOUT_TICKS) {
             log_printf(LOG_ERR, "DETECT timeout");
-            mainState = MAIN_STATE_ERROR;
+            state = MAIN_STATE_ERROR;
         }
         break;
     case MAIN_STATE_RUN:
+        if (getDeviceStatus(getDevicesConst()) != DEVICE_NORMAL)
+            state = MAIN_STATE_ERROR;
         if (pmState != PM_STATE_RUN) {
-            mainState = MAIN_STATE_INIT;
+            state = MAIN_STATE_INIT;
         }
         break;
     case MAIN_STATE_ERROR:
+        if (old_state != state) {
+            log_printf(LOG_ERR, "System error");
+        }
         if (stateTicks() > 2000) {
-            mainState = MAIN_STATE_INIT;
+            state = MAIN_STATE_INIT;
         }
         break;
     }
 
     enable_pll_run = (pmState == PM_STATE_RUN);
-    if (oldState != mainState) {
+    if (old_state != state) {
         stateStartTick = osKernelSysTick();
     }
 

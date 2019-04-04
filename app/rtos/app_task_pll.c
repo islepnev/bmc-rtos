@@ -36,8 +36,7 @@ static void pllTask(void const *arg)
     debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while(1) {
         task_eeprom_config_run();
-        if (enable_pll_run)
-            pllRun(get_dev_pll());
+        pllRun(get_dev_pll());
         osDelay(pllTaskLoopDelay);
     }
 }

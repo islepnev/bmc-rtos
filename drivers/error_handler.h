@@ -14,26 +14,28 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef ERROR_HANDLER_H
+#define ERROR_HANDLER_H
 
-#ifndef DEVICES_H
-#define DEVICES_H
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+void app_exit_handler(int result);
+void Error_Handler(void);
 
-#include "dev_common_types.h"
-
-struct Dev_thset;
-struct Dev_at24c;
-struct Dev_pll;
-struct Dev_powermon;
-struct Devices;
+/*
+#include "FreeRTOS.h"
+#include "task.h"
+// FreeRTOS callbacks
+extern void vApplicationMallocFailedHook( void );
+extern void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
+*/
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEVICES_H
+#endif // ERROR_HANDLER_H

@@ -29,7 +29,7 @@
 //#include "display.h"
 #include "devices.h"
 #include "dev_powermon_types.h"
-//#include "dev_mcu.h"
+#include "dev_thset.h"
 //#include "dev_leds.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
@@ -192,7 +192,6 @@ void task_powermon_run (void)
         break;
     case PM_STATE_PWRFAIL:
 //        dev_switchPower(&dev.pm, SWITCH_OFF);
-//        dev_readPgood(&dev.pm);
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
             pm->pmState = PM_STATE_STANDBY;
         }

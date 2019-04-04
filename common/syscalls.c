@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #include "debug_helpers.h"
-#include "rtos/assert_hooks.h"
+#include "error_handler.h"
 
 #define FreeRTOS
 #define MAX_STACK_SIZE 0x2000
@@ -73,7 +73,7 @@ int _close(int file)
 
 void _exit(int status)
 {
-    vApplicationExitHook(status);
+    app_exit_handler(status);
     while (1) {
     }
 }

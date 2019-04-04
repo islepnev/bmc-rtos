@@ -19,17 +19,16 @@
 #define DEV_SFPIIC_H
 
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
-#include "dev_sfpiic_types.h"
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//HAL_StatusTypeDef sfp_i2c_detect(void);
-//HAL_StatusTypeDef sfp_i2c_read(int slot, uint8_t address, uint8_t *data);
-DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d);
-HAL_StatusTypeDef dev_sfpiic_read(Dev_sfpiic *d);
+struct Dev_sfpiic;
+
+DeviceStatus dev_sfpiic_detect(struct Dev_sfpiic *d);
+DeviceStatus dev_sfpiic_read(struct Dev_sfpiic *d);
 
 #ifdef __cplusplus
 }

@@ -15,44 +15,15 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "adt7301_spi_hal.h"
 #include "dev_sfpiic.h"
 //#include "dev_vxsiic.h"
 //#include "dev_pll.h"
 #include "devices_types.h"
-#include "fpga_spi_hal.h"
+//#include "fpga_spi_hal.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
-#include "dev_thset.h"
-#include "i2c.h"
-#include "display.h"
+//#include "dev_thset.h"
+//#include "i2c.h"
+//#include "display.h"
 #include "dev_leds_types.h"
 
-DeviceStatus getDeviceStatus(const Devices *d)
-{
-    DeviceStatus status = DEVICE_FAIL;
-    if ((d->sfpiic.present == DEVICE_NORMAL)
-            && (d->vxsiic.present == DEVICE_NORMAL)
-//            && (d->eeprom_config.present == DEVICE_NORMAL)
-//            && (d->pll.present == DEVICE_NORMAL)
-            && (d->fpga.present == DEVICE_NORMAL)
-            )
-        status = DEVICE_NORMAL;
-    return status;
-}
-
-PgoodState dev_readPgood(Dev_powermon *pm)
-{
-    pm_read_pgood(pm);
-    return get_all_pgood(pm);
-}
-
-void dev_thset_read(Dev_thset *d)
-{
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        int16_t rawTemp;
-        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
-        d->th[i].valid = (ret == HAL_OK);
-        d->th[i].rawTemp = rawTemp;
-    }
-}

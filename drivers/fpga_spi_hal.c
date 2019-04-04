@@ -26,6 +26,19 @@
 
 static const int SPI_TIMEOUT_MS = HAL_MAX_DELAY;
 
+void fpga_enable_interface(int enable)
+{
+    if (!enable) {
+        FPGA_RX_GPIO_Port->ODR &= FPGA_RX_Pin;
+        FPGA_TX_GPIO_Port->ODR &= FPGA_TX_Pin;
+        FPGA_NSS_GPIO_Port->ODR &= FPGA_NSS_Pin;
+        FPGA_MOSI_GPIO_Port->ODR &= FPGA_MOSI_Pin;
+        FPGA_SCLK_GPIO_Port->ODR &= FPGA_SCLK_Pin;
+        FPGA_INIT_B_GPIO_Port->ODR &= FPGA_INIT_B_Pin;
+        FPGA_DONE_GPIO_Port->ODR &= FPGA_DONE_Pin;
+    }
+}
+
 typedef enum {
     NSS_ASSERT = 0,
     NSS_DEASSERT = 1,

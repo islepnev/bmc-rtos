@@ -21,7 +21,7 @@
 #include "app_tasks.h"
 #include "debug_helpers.h"
 
-static const uint32_t displayTaskLoopDelay = 500;
+static const uint32_t displayTaskLoopDelay = 50;
 osThreadId displayThreadId = NULL;
 enum { displayThreadStackSize = 1000 };
 

@@ -16,6 +16,7 @@
 //
 
 #include "dev_eeprom.h"
+#include "dev_eeprom_types.h"
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
 
@@ -24,20 +25,25 @@ static I2C_HandleTypeDef * const hi2c = &hi2c3;
 
 static const int I2C_TIMEOUT_MS = 10;
 
-HAL_StatusTypeDef dev_eepromConfig_Detect(void)
+static void struct_at24c_init(Dev_at24c *d)
+{
+    d->present = DEVICE_UNKNOWN;
+}
+
+static HAL_StatusTypeDef at24c_detect(uint8_t address)
 {
     HAL_StatusTypeDef ret;
     uint32_t Trials = 10;
-    ret = HAL_I2C_IsDeviceReady(hi2c, eeprom_Config_busAddress << 1, Trials, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_IsDeviceReady(hi2c, address << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
 }
 
-HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data)
+HAL_StatusTypeDef at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
 {
     HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(hi2c, eeprom_Config_busAddress << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Mem_Read(hi2c, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData[0];
@@ -45,3 +51,27 @@ HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data)
     }
     return ret;
 }
+
+DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
+{
+    struct_at24c_init(d);
+    if (HAL_OK == at24c_detect(eeprom_Config_busAddress))
+        d->present = DEVICE_NORMAL;
+    else
+        d->present = DEVICE_FAIL;
+//    uint8_t data = 0;
+//    if (HAL_OK == at24c_read(eeprom_Config_busAddress, 0, &data)) {
+//        d->present = DEVICE_NORMAL;
+//    }
+    return d->present;
+}
+
+DeviceStatus dev_eepromConfig_read(Dev_at24c *d)
+{
+    uint8_t data = 0;
+    if (HAL_OK != at24c_read(eeprom_Config_busAddress, 0, &data)) {
+        d->present = DEVICE_FAIL;
+    }
+    return d->present;
+}
+
