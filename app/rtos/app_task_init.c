@@ -28,10 +28,10 @@
 #include "led_gpio_hal.h"
 #include "bsp.h"
 
-static void setStaticPins(void)
+static void setStaticPins(int enable)
 {
-    pllSetStaticPins();
-    update_power_switches(get_dev_powermon(), SWITCH_ON); // FIXME
+    pllSetStaticPins(enable);
+    update_power_switches(get_dev_powermon(), enable ? SWITCH_ON : SWITCH_OFF);
 }
 
 static int test_cpu_tick(void)
@@ -87,7 +87,7 @@ void app_task_init(void)
     initialize_serial_console_hardware();
     debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
-    setStaticPins();
+    setStaticPins(enable_power);
     test_timers();
     // required for console I/O
     debug_print("Waiting for threads to start\n");

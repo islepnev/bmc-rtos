@@ -25,7 +25,6 @@
 extern "C" {
 #endif
 
-void pll_enable_interface(int enable);
 HAL_StatusTypeDef ad9545_detect(void);
 HAL_StatusTypeDef ad9545_read1(uint16_t reg, uint8_t *data);
 HAL_StatusTypeDef ad9545_write1(uint16_t reg, uint8_t data);

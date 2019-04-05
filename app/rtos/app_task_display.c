@@ -35,7 +35,7 @@ static void start_display_task(void const *arg)
     }
 }
 
-osThreadDef(display, start_display_task, osPriorityIdle,      1, displayThreadStackSize);
+osThreadDef(display, start_display_task, osPriorityLow,      1, displayThreadStackSize);
 
 void create_task_display(void)
 {

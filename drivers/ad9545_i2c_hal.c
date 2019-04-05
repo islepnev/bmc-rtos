@@ -20,24 +20,8 @@
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
 #include "bsp.h"
-#include "bsp_pin_defs.h"
 
 static const int I2C_TIMEOUT_MS = 100;
-
-void pll_enable_interface(int enable)
-{
-    if (!enable) {
-        PLL_M0_GPIO_Port->ODR &= PLL_M0_Pin;
-        PLL_M3_GPIO_Port->ODR &= PLL_M3_Pin;
-        PLL_M4_GPIO_Port->ODR &= PLL_M4_Pin;
-        PLL_M5_GPIO_Port->ODR &= PLL_M5_Pin;
-        PLL_M6_GPIO_Port->ODR &= PLL_M6_Pin;
-        PLL_RESET_B_GPIO_Port->ODR &= PLL_RESET_B_Pin;
-        PLL_SCL_GPIO_Port->ODR &= PLL_SCL_Pin;
-        PLL_SDA_GPIO_Port->ODR &= PLL_SDA_Pin;
-    }
-}
-
 
 HAL_StatusTypeDef ad9545_detect(void)
 {

@@ -20,8 +20,11 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_ll_gpio.h"
 #include "i2c.h"
 #include "spi.h"
+#include "usart.h"
+#include "error_handler.h"
 
 struct __I2C_HandleTypeDef * const hPll = &hi2c4;
 const uint8_t pllDeviceAddr = 0x4A;
@@ -31,13 +34,16 @@ struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c2;
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi5;
 struct __SPI_HandleTypeDef * const therm_spi = &hspi2;
 
-void pllSetStaticPins(void)
+void pllSetStaticPins(int enable)
 {
-    //    HAL_GPIO_WritePin(PLL_M0_GPIO_Port, PLL_M0_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(PLL_M3_GPIO_Port, PLL_M3_Pin, GPIO_PIN_RESET); // M3=0 - do not load eeprom
-    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, GPIO_PIN_SET);   // M4=1 - I2C mode
-    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, GPIO_PIN_RESET); // M5=0 - I2C address offset
-    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, GPIO_PIN_SET);   // M6=1 - I2C address offset
+    GPIO_PinState low = GPIO_PIN_RESET;
+    GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    //    HAL_GPIO_WritePin(PLL_M0_GPIO_Port, PLL_M0_Pin, low);
+    HAL_GPIO_WritePin(PLL_M3_GPIO_Port, PLL_M3_Pin, low); // M3=0 - do not load eeprom
+    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, high);   // M4=1 - I2C mode
+    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, low); // M5=0 - I2C address offset
+    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, high);   // M6=1 - I2C address offset
+    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, high);
 }
 
 void pllReset()
@@ -51,4 +57,52 @@ void pm_sensor_reset_i2c_master(void)
 {
     __HAL_I2C_DISABLE(hi2c_sensors);
     __HAL_I2C_ENABLE(hi2c_sensors);
+}
+
+void fpga_enable_interface(int enable)
+{
+    GPIO_PinState low = GPIO_PIN_RESET;
+    GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;
+
+    HAL_GPIO_WritePin(FPGA_RX_GPIO_Port, FPGA_RX_Pin, high);
+    HAL_GPIO_WritePin(FPGA_TX_GPIO_Port, FPGA_TX_Pin, high);
+    HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port, I2C_RESET2_B_Pin, high);
+    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, high);
+    HAL_GPIO_WritePin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin,   high);
+    HAL_GPIO_WritePin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, high);
+    HAL_GPIO_WritePin(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   high);
+    HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port,    FPGA_NSS_Pin,    high);
+//    HAL_GPIO_WritePin(FPGA_SCLK_GPIO_Port,   FPGA_NSS_Pin,    low);
+//    HAL_GPIO_WritePin(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   low);
+//    HAL_GPIO_WritePin(FPGA_MISO_GPIO_Port,   FPGA_MISO_Pin,   low);
+
+    if (enable) {
+//        LL_GPIO_SetPinMode(FPGA_SCLK_GPIO_Port,   FPGA_SCLK_Pin,   GPIO_MODE_AF_PP);
+//        LL_GPIO_SetPinMode(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   GPIO_MODE_AF_PP);
+//        LL_GPIO_SetPinMode(FPGA_MISO_GPIO_Port,   FPGA_MISO_Pin,   GPIO_MODE_AF_PP);
+        __HAL_UART_ENABLE(&huart6);
+//        MX_SPI5_Init();
+//        __HAL_SPI_ENABLE(fpga_spi);
+    } else {
+//        __HAL_SPI_DISABLE(fpga_spi);
+        __HAL_UART_DISABLE(&huart6);
+//        HAL_SPI_MspDeInit(fpga_spi);
+//        if (HAL_SPI_DeInit(fpga_spi) != HAL_OK)
+//        {
+//          Error_Handler();
+//        }
+
+//        LL_GPIO_SetPinMode(FPGA_SCLK_GPIO_Port,   FPGA_SCLK_Pin,   GPIO_MODE_ANALOG);
+//        LL_GPIO_SetPinMode(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   GPIO_MODE_ANALOG);
+//        LL_GPIO_SetPinMode(FPGA_MISO_GPIO_Port,   FPGA_MISO_Pin,   GPIO_MODE_ANALOG);
+
+//        FPGA_RX_GPIO_Port->ODR &= ~FPGA_RX_Pin;
+//        FPGA_TX_GPIO_Port->ODR &= ~FPGA_TX_Pin;
+//        FPGA_NSS_GPIO_Port->ODR &= ~FPGA_NSS_Pin;
+//        FPGA_MOSI_GPIO_Port->ODR &= ~FPGA_MOSI_Pin;
+//        FPGA_MISO_GPIO_Port->ODR &= ~FPGA_MISO_Pin;
+//        FPGA_SCLK_GPIO_Port->ODR &= ~FPGA_SCLK_Pin;
+//        FPGA_INIT_B_GPIO_Port->ODR &= ~FPGA_INIT_B_Pin;
+//        FPGA_DONE_GPIO_Port->ODR &= ~FPGA_DONE_Pin;
+    }
 }

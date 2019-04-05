@@ -33,8 +33,10 @@ extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 extern struct __SPI_HandleTypeDef * const fpga_spi;
 extern struct __SPI_HandleTypeDef * const therm_spi;
 
-void pllSetStaticPins(void);
+void pll_enable_interface(int enable);
+void pllSetStaticPins(int enable);
 void pllReset(void);
 void pm_sensor_reset_i2c_master(void);
+void fpga_enable_interface(int enable);
 
 #endif // BSP_H

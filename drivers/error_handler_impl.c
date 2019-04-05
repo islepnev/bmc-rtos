@@ -33,6 +33,7 @@ void led_show_error(void)
     led_set_state(LED_GREEN, LED_OFF);
     led_set_state(LED_YELLOW, LED_OFF);
     led_set_state(LED_RED, LED_ON);
+    led_set_state(LED_INT_RED, LED_ON);
 }
 
 static void led_blink_morse(DeviceLeds led, const int buf[], unsigned int size)

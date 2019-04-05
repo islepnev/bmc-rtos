@@ -42,7 +42,7 @@ void pll_task_run(void)
 {
     if (old_enable_power != enable_power) {
         old_enable_power = enable_power;
-        pll_enable_interface(enable_power);
+        pllSetStaticPins(enable_power);
     }
     Dev_pll *d = get_dev_pll();
     const PllState old_state = d->fsm_state;

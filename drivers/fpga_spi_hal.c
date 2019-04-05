@@ -19,47 +19,13 @@
 #include <stdint.h>
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal.h"
-#include "stm32f7xx_ll_gpio.h"
 #include "spi.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "logbuffer.h"
 
-static const int SPI_TIMEOUT_MS = HAL_MAX_DELAY;
+static const int SPI_TIMEOUT_MS = 100; // HAL_MAX_DELAY;
 
-void fpga_enable_interface(int enable)
-{
-    if (enable) {
-        LL_GPIO_SetPinMode(FPGA_RX_GPIO_Port, FPGA_RX_Pin, GPIO_MODE_AF_PP);
-        LL_GPIO_SetPinMode(FPGA_TX_GPIO_Port, FPGA_TX_Pin, GPIO_MODE_AF_PP);
-        LL_GPIO_SetPinMode(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, GPIO_MODE_INPUT);
-        LL_GPIO_SetPinMode(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   GPIO_MODE_INPUT);
-        LL_GPIO_SetPinMode(FPGA_NSS_GPIO_Port,    FPGA_NSS_Pin,    GPIO_MODE_OUTPUT_PP);
-        LL_GPIO_SetPinMode(FPGA_SCLK_GPIO_Port,   FPGA_SCLK_Pin,   GPIO_MODE_AF_PP);
-        LL_GPIO_SetPinMode(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   GPIO_MODE_AF_PP);
-        LL_GPIO_SetPinMode(FPGA_MISO_GPIO_Port,   FPGA_MISO_Pin,   GPIO_MODE_AF_PP);
-        __HAL_SPI_ENABLE(fpga_spi);
-    } else {
-        __HAL_SPI_DISABLE(fpga_spi);
-        LL_GPIO_SetPinMode(FPGA_RX_GPIO_Port,     FPGA_RX_Pin,     GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_TX_GPIO_Port,     FPGA_TX_Pin,     GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_NSS_GPIO_Port,    FPGA_NSS_Pin,    GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_SCLK_GPIO_Port,   FPGA_SCLK_Pin,   GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   GPIO_MODE_ANALOG);
-        LL_GPIO_SetPinMode(FPGA_MISO_GPIO_Port,   FPGA_MISO_Pin,   GPIO_MODE_ANALOG);
-
-//        FPGA_RX_GPIO_Port->ODR &= ~FPGA_RX_Pin;
-//        FPGA_TX_GPIO_Port->ODR &= ~FPGA_TX_Pin;
-//        FPGA_NSS_GPIO_Port->ODR &= ~FPGA_NSS_Pin;
-//        FPGA_MOSI_GPIO_Port->ODR &= ~FPGA_MOSI_Pin;
-//        FPGA_MISO_GPIO_Port->ODR &= ~FPGA_MISO_Pin;
-//        FPGA_SCLK_GPIO_Port->ODR &= ~FPGA_SCLK_Pin;
-//        FPGA_INIT_B_GPIO_Port->ODR &= ~FPGA_INIT_B_Pin;
-//        FPGA_DONE_GPIO_Port->ODR &= ~FPGA_DONE_Pin;
-    }
-}
 
 typedef enum {
     NSS_ASSERT = 0,

@@ -36,7 +36,6 @@ enum {
     FPGA_SPI_ADDR_7 = 7
 };
 
-void fpga_enable_interface(int enable);
 HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
 HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
 

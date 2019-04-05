@@ -62,6 +62,7 @@ static void app_assert_handler( uint32_t line, const uint8_t *file )
  */
 void Error_Handler(void)
 {
+    led_show_error();
     while(1)
     {
         led_blink_error();
