@@ -111,6 +111,12 @@ PgoodState get_all_pgood(const Dev_powermon *pm)
     return (pm->pgood_1v0_core && pm->pgood_1v0_mgt && pm->pgood_2v5 && pm->pgood_3v3 && pm->pgood_3v3_fmc) ? PGOOD_OK : PGOOD_FAIL;
 }
 
+void update_system_powergood_pin(const Dev_powermon *pm)
+{
+    int state = get_critical_power_valid(pm);
+    HAL_GPIO_WritePin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, state);
+}
+
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 {
     pm->sw.switch_1v0_core = state;

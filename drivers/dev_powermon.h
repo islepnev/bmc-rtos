@@ -42,6 +42,7 @@ MonState runMon(Dev_powermon *pm);
 int get_input_power_valid(const Dev_powermon *pm);
 int get_critical_power_valid(const Dev_powermon *pm);
 PgoodState get_all_pgood(const Dev_powermon *pm);
+void update_system_powergood_pin(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

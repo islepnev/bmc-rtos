@@ -227,6 +227,7 @@ void task_powermon_run (void)
 
         }
     }
+    update_system_powergood_pin(pm);
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)
             ) {

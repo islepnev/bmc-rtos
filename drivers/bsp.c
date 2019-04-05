@@ -68,7 +68,6 @@ void fpga_enable_interface(int enable)
     HAL_GPIO_WritePin(FPGA_TX_GPIO_Port, FPGA_TX_Pin, high);
     HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port, I2C_RESET2_B_Pin, high);
     HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, high);
-    HAL_GPIO_WritePin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin,   high);
     HAL_GPIO_WritePin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, high);
     HAL_GPIO_WritePin(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   high);
     HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port,    FPGA_NSS_Pin,    high);
