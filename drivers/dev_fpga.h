@@ -28,6 +28,7 @@ struct Dev_fpga;
 struct Dev_thset;
 struct Dev_pll;
 
+void fpgaInit(void);
 DeviceStatus fpgaDetect(struct Dev_fpga *d);
 DeviceStatus fpgaWriteBmcVersion(struct Dev_fpga *d);
 DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset *thset);

@@ -28,6 +28,17 @@ typedef struct Dev_fpga {
     uint16_t id;
 } Dev_fpga;
 
-SensorStatus get_fpga_sensor_status(const Dev_fpga *d);
+SensorStatus get_fpga_sensor_status(const Dev_fpga *d)
+{
+   if (!d->present)
+      return SENSOR_UNKNOWN;
+   if (!d->initb)
+      return SENSOR_CRITICAL;
+   if (!d->done)
+      return SENSOR_CRITICAL;
+   if (d->id == 0 || d->id == 0xFFFFu)
+      return SENSOR_WARNING;
+   return SENSOR_NORMAL;
+}
 
 #endif // DEV_FPGA_TYPES_H

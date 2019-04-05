@@ -39,6 +39,11 @@ static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *
     return ret;
 }
 
+void fpgaInit(void)
+{
+    fpga_spi_hal_init();
+}
+
 DeviceStatus fpgaDetect(Dev_fpga *d)
 {
     uint16_t data[2] = {0,0};
@@ -58,11 +63,12 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
         d->present = DEVICE_FAIL;
 
     d->id = id;
-    if (0) {
+    if (0 && (DEVICE_NORMAL == d->present)) {
         uint16_t addr = 0x0010;
         uint16_t wdata = 0x5aa5;
         uint16_t rdata = 0;
-        fpga_test_reg(addr, wdata, &rdata);
+        if (HAL_OK != fpga_test_reg(addr, wdata, &rdata))
+            d->present = DEVICE_FAIL;
         if (rdata != wdata)
             log_printf(LOG_ERR, "FPGA register test failed: addr %04X, wdata %04X, rdata %04X", addr, wdata, rdata);
     }

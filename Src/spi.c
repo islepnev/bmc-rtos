@@ -26,6 +26,7 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_spi.h"
 #include "stm32f7xx_hal_rcc.h"
+#include "stm32f7xx_hal_cortex.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
@@ -131,6 +132,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI5;
     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
+    /* SPI5 interrupt Init */
+    HAL_NVIC_SetPriority(SPI5_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(SPI5_IRQn);
   /* USER CODE BEGIN SPI5_MspInit 1 */
 
   /* USER CODE END SPI5_MspInit 1 */
@@ -175,6 +179,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     */
     HAL_GPIO_DeInit(GPIOF, FPGA_SCLK_Pin|FPGA_MOSI_Pin|FPGA_MISO_Pin);
 
+    /* SPI5 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(SPI5_IRQn);
   /* USER CODE BEGIN SPI5_MspDeInit 1 */
 
   /* USER CODE END SPI5_MspDeInit 1 */
@@ -182,6 +188,26 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi == &hspi5) {
+        HAL_SPI5_RxCpltCallback();
+    }
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi == &hspi5) {
+        HAL_SPI5_TxRxCpltCallback();
+    }
+}
+
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi == &hspi5) {
+        HAL_SPI5_ErrorCallback();
+    }
+}
 
 /* USER CODE END 1 */
 

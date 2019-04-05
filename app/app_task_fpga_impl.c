@@ -23,6 +23,8 @@
 #include "dev_common_types.h"
 #include "dev_fpga_types.h"
 #include "dev_fpga.h"
+#include "bsp.h"
+#include "bsp_pin_defs.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
 
@@ -33,6 +35,7 @@ static const uint32_t POLL_DELAY_TICKS  = 100;
 
 typedef enum {
     FPGA_STATE_STANDBY,
+    FPGA_STATE_LOAD,
     FPGA_STATE_RUN,
     FPGA_STATE_PAUSE,
     FPGA_STATE_ERROR,
@@ -56,6 +59,7 @@ static void struct_fpga_init(Dev_fpga *d)
 void fpga_task_init(void)
 {
     struct_fpga_init(get_dev_fpga());
+    fpgaInit();
 }
 
 static int old_enable_power = 0;
@@ -67,14 +71,25 @@ void fpga_task_run(void)
         fpga_enable_interface(enable_power);
     }
     Dev_fpga *d = get_dev_fpga();
+    d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+    d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+    int fpga_enable = enable_power && d->initb;
+    int fpga_loading = enable_power && d->initb && !d->done;
+    int fpga_done = fpga_enable && d->done;
     switch (state) {
     case FPGA_STATE_STANDBY:
-        if (enable_power)
-            state = FPGA_STATE_RUN;
+        if (fpga_loading)
+            state = FPGA_STATE_LOAD;
         d->present = DEVICE_UNKNOWN;
         break;
+    case FPGA_STATE_LOAD:
+        if (!fpga_enable)
+            state = FPGA_STATE_STANDBY;
+        if (fpga_done)
+            state = FPGA_STATE_RUN;
+        break;
     case FPGA_STATE_RUN:
-        if (!enable_power)
+        if (!fpga_done)
             state = FPGA_STATE_STANDBY;
         if ((DEVICE_NORMAL != fpgaDetect(d)) ||
                 (DEVICE_NORMAL != fpgaWriteBmcVersion(d)) ||
@@ -84,7 +99,7 @@ void fpga_task_run(void)
         state = FPGA_STATE_PAUSE;
         break;
     case FPGA_STATE_PAUSE:
-        if (!enable_power)
+        if (!fpga_done)
             state = FPGA_STATE_STANDBY;
         if (stateTicks() > POLL_DELAY_TICKS) {
             state = FPGA_STATE_RUN;

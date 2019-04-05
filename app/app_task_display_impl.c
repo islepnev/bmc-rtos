@@ -393,7 +393,13 @@ static void print_main(const Devices *dev)
 static void print_fpga(const Dev_fpga *fpga)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
-    printf("FPGA ID:        %04X %s", fpga->id, deviceStatusResultStr(fpga->present));
+    printf("FPGA %s",
+           fpga->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
+    if (fpga->initb && !fpga->done)
+        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
+    if (fpga->done)
+        printf("%04X", fpga->id);
+    printf(sensorStatusStr(get_fpga_sensor_status(fpga)));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 

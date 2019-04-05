@@ -41,7 +41,9 @@ void MX_SPI2_Init(void);
 void MX_SPI5_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+extern void HAL_SPI5_RxCpltCallback(void);
+extern void HAL_SPI5_TxRxCpltCallback(void);
+extern void HAL_SPI5_ErrorCallback(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
