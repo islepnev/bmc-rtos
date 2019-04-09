@@ -1,17 +1,13 @@
 /**
   ******************************************************************************
-  * File Name          : ETH.h
-  * Description        : This file provides code for the configuration
-  *                      of the ETH instances.
+  * @file    LwIP/LwIP_HTTP_Server_Netconn_RTOS/Inc/app_ethernet.h
+  * @author  MCD Application Team
+  * @brief   Header for app_ethernet.c module
   ******************************************************************************
-  * This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * Copyright (c) 2019 STMicroelectronics International N.V.
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics International N.V.
+  * All rights reserved.</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted, provided that the following conditions are met:
@@ -46,46 +42,41 @@
   *
   ******************************************************************************
   */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __eth_H
-#define __eth_H
+#ifndef __APP_ETHERNET_H
+#define __APP_ETHERNET_H
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
-#include "main.h"
+#include "lwip/netif.h"
 
-/* USER CODE BEGIN Includes */
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
+/* DHCP process states */
+#define DHCP_OFF                   (uint8_t) 0
+#define DHCP_START                 (uint8_t) 1
+#define DHCP_WAIT_ADDRESS          (uint8_t) 2
+#define DHCP_ADDRESS_ASSIGNED      (uint8_t) 3
+#define DHCP_TIMEOUT               (uint8_t) 4
+#define DHCP_LINK_DOWN             (uint8_t) 5
 
-/* USER CODE END Includes */
-
-extern ETH_HandleTypeDef heth;
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
-
-extern void _Error_Handler(char *, int);
-
-void MX_ETH_Init(void);
-
-/* USER CODE BEGIN Prototypes */
-
-/* USER CODE END Prototypes */
+/* Exported macro ------------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
+void User_notification(struct netif *netif);
+#ifdef USE_DHCP
+void DHCP_thread(void const * argument);
+#endif
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ eth_H */
 
-/**
-  * @}
-  */
+#endif /* __APP_ETHERNET_H */
 
-/**
-  * @}
-  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+

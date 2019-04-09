@@ -24,6 +24,7 @@
 #include "app_task_pll.h"
 #include "app_task_fpga.h"
 #include "app_task_vxsiic.h"
+#include "app_task_eth.h"
 
 void create_tasks(void)
 {
@@ -35,4 +36,5 @@ void create_tasks(void)
     create_task_pll();
     create_task_fpga();
     create_task_vxsiic();
+    create_task_eth();
 }

@@ -32,6 +32,44 @@ file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
 SET(STM32HAL_SOURCES ${STM32HAL_SOURCES} ${HAL_LL_EXTRA_SOURCES})
 
 add_compile_definitions(USE_FULL_LL_DRIVER)
+
+### LwIP
+#SET(LWIP_DIR LwIP)
+SET(LWIP_DIR external/lwip)
+
+add_compile_definitions(WITH_LWIP)
+add_compile_definitions(LWIP_DEBUG)
+add_compile_definitions(USE_DHCP)
+add_compile_definitions(HTTPD_USE_CUSTOM_FSDATA=1)
+
+file(GLOB_RECURSE LWIP_SOURCES
+   ${LWIP_DIR}/src/api/*.c
+   ${LWIP_DIR}/src/core/*.c
+   ${LWIP_DIR}/src/core/ipv4/*.c
+   ${LWIP_DIR}/src/netif/*.c
+   ${LWIP_DIR}/src/netif/ethernet/*.c
+   ${LWIP_DIR}/src/apps/http/fs.c
+   ${LWIP_DIR}/src/apps/http/httpd.c
+   system/OS/sys_arch.c
+#   ${LWIP_DIR}/system/OS/*.c
+#   ${LWIP_DIR}/contrib/ports/freertos/sys_arch.c
+#   httpd/fs.c
+#   httpd/httpd.c
+)
+SET(LWIP_INCLUDE_DIRS
+   ${LWIP_DIR}/src/include
+#   ${LWIP_DIR}/system
+#   ${LWIP_DIR}/contrib/ports/freertos/include
+)
+#set (LWIP_DEFINITIONS LWIP_DEBUG=1)
+include(${LWIP_DIR}/src/Filelists.cmake)
+
+## lwIP libraries
+#add_library(lwipcore EXCLUDE_FROM_ALL ${lwipnoapps_SRCS})
+#target_compile_options(lwipcore PRIVATE ${LWIP_COMPILER_FLAGS})
+#target_compile_definitions(lwipcore PRIVATE ${LWIP_DEFINITIONS}  ${LWIP_MBEDTLS_DEFINITIONS})
+#target_include_directories(lwipcore PRIVATE ${LWIP_INCLUDE_DIRS} ${LWIP_MBEDTLS_INCLUDE_DIRS})
+
 INCLUDE_DIRECTORIES(
 #    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMSIS_INCLUDE_DIRS}
@@ -39,12 +77,16 @@ INCLUDE_DIRECTORIES(
    ${FREERTOS_DIR}/Source/CMSIS_RTOS
    ${FREERTOS_DIR}/Source/include
    ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1
+   ${LWIP_INCLUDE_DIRS}
    Inc
    Src
    drivers
    common
    app
    bsp
+   eth
+   httpd
+   system
 )
 
 file(GLOB_RECURSE USER_SOURCES
@@ -53,6 +95,7 @@ file(GLOB_RECURSE USER_SOURCES
    common/*.c
    drivers/*.c
    app/*.c
+   eth/*.c
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
@@ -79,6 +122,7 @@ file(GLOB_RECURSE FREERTOS_SOURCES
     ${FREERTOS_DIR}/Source/event_groups.c
 
 )
+
 set(DATA_FILE
    doc/Doxyfile.in
    README.md
@@ -92,6 +136,7 @@ ADD_EXECUTABLE(${ELF}
     ${CMSIS_SOURCES}
     ${STM32HAL_SOURCES}
     ${FREERTOS_SOURCES}
+    ${LWIP_SOURCES}
     ${PROJECT_SOURCES}
     ${DATA_FILE}
 )

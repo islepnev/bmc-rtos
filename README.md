@@ -6,6 +6,11 @@
 
  * To be tested with MCB-32F769 v1.0 and TTVXS v1.0
 
+### Build
+
+git submodule update
+make TOOLCHAIN_PREFIX=~/gcc-arm-none-eabi-8-2018-q4-major
+
 ### Docs
 
  * [TTVXS](https://afi-project.jinr.ru/projects/ttvxs/wiki) main board wiki
