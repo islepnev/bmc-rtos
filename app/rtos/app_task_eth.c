@@ -16,6 +16,7 @@
 */
 
 #include "app_task_eth.h"
+#include "lwipcfg.h"
 
 #ifdef WITH_APP_TASK_ETH
 

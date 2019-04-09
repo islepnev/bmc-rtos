@@ -55,6 +55,7 @@
 #include "app_ethernet.h"
 #include "httpserver-netconn.h"
 #include "lcd_log.h"
+#include "lwipcfg.h"
 #include "ipaddress.h"
 
 struct netif gnetif; /* network interface structure */

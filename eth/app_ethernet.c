@@ -51,6 +51,7 @@
 #include "ethernetif.h"
 #include "lcd_log.h"
 #include "ipaddress.h"
+#include "lwipcfg.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
