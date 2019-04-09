@@ -35,18 +35,25 @@ add_compile_definitions(USE_FULL_LL_DRIVER)
 
 ### lwIP
 SET(LWIP_DIR external/lwip)
+SET(LWIP_CONTRIB_DIR external/lwip/contrib)
 add_compile_definitions(LWIP_DEBUG)
 include(${LWIP_DIR}/src/Filelists.cmake)
+include(${LWIP_CONTRIB_DIR}/Filelists.cmake)
 SET(LWIP_SOURCES
    ${lwipcore_SRCS}
    ${lwipcore4_SRCS}
    ${lwipapi_SRCS}
    ${lwipnetif_SRCS}
    ${lwiphttp_SRCS}
+   ${lwipsntp_SRCS}
+   ${lwipsnmp_SRCS}
+   ${lwipiperf_SRCS}
+   ${lwipcontribexamples_SRCS}
    system/OS/sys_arch.c
 )
 SET(LWIP_INCLUDE_DIRS
    ${LWIP_DIR}/src/include
+   ${LWIP_CONTRIB_DIR}
 )
 
 INCLUDE_DIRECTORIES(

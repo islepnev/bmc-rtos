@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "logbuffer.h"
+//#include "debug_helpers.h"
 
 typedef int sys_prot_t;
 
@@ -80,10 +81,10 @@ typedef int sys_prot_t;
 
 #endif
 
-#define LWIP_PLATFORM_ASSERT(x) do {log_printf(LOG_CRIT, "Assertion \"%s\" failed at line %d in %s\n", \
+#define LWIP_PLATFORM_ASSERT(x) do {log_printf_debug("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); } while(0)
 
-#define LWIP_PLATFORM_DIAG(x) LWIP_PLATFORM_ASSERT(x)
+#define LWIP_PLATFORM_DIAG(x) do {log_printf_debug x; } while(0)
 
 /* Define random number generator function */
 #define LWIP_RAND() ((u32_t)rand())

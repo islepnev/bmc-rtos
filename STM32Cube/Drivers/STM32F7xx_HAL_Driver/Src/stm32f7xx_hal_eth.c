@@ -128,6 +128,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "logbuffer.h"
 
 /** @addtogroup STM32F7xx_HAL_Driver
   * @{
@@ -259,6 +260,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   /* Get tick */
   tickstart = HAL_GetTick();
 
+  log_printf(LOG_DEBUG, "ETH reset");
+
   /* Wait for software reset */
   while (((heth->Instance)->DMABMR & ETH_DMABMR_SR) != (uint32_t)RESET)
   {
@@ -272,10 +275,12 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 
       /* Note: The SWR is not performed if the ETH_RX_CLK or the ETH_TX_CLK are
          not available, please check your external PHY or the IO configuration */
+      log_printf(LOG_ERR, "ETH reset timeout");
 
       return HAL_TIMEOUT;
     }
   }
+  log_printf(LOG_DEBUG, "ETH reset completed");
 
   /*-------------------------------- MAC Initialization ----------------------*/
   /* Get the ETHERNET MACMIIAR value */
@@ -333,8 +338,10 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
     return HAL_ERROR;
   }
 
+  log_printf(LOG_DEBUG, "PHY reset");
   /* Delay to assure PHY reset */
   HAL_Delay(PHY_RESET_DELAY);
+  log_printf(LOG_DEBUG, "1");
 
   if((heth->Init).AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE)
   {
@@ -364,6 +371,7 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
       }
     } while (((phyreg & PHY_LINKED_STATUS) != PHY_LINKED_STATUS));
 
+    log_printf(LOG_DEBUG, "PHY linked");
 
     /* Enable Auto-Negotiation */
     if((HAL_ETH_WritePHYRegister(heth, PHY_BCR, PHY_AUTONEGOTIATION)) != HAL_OK)
@@ -407,6 +415,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
       }
 
     } while (((phyreg & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
+
+    log_printf(LOG_DEBUG, "3");
 
     /* Read the result of the auto-negotiation */
     if((HAL_ETH_ReadPHYRegister(heth, PHY_SR, &phyreg)) != HAL_OK)
@@ -479,6 +489,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 
   /* Set ETH HAL State to Ready */
   heth->State= HAL_ETH_STATE_READY;
+
+  log_printf(LOG_DEBUG, "ETH init completed");
 
   /* Return function status */
   return HAL_OK;

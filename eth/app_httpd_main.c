@@ -101,15 +101,22 @@ static void StartThread(void const * argument)
   /* Initialize the LwIP stack */
   Netif_Config();
 
+  log_printf(LOG_DEBUG, "starting apps...");
+
   /* Initialize webserver demo */
   http_server_netconn_init();
+  snmp_example_init();
+  lwiperf_example_init();
+  sntp_example_init();
 
   /* Notify user about the network interface config */
   User_notification(&gnetif);
 
+  log_printf(LOG_DEBUG, "starting dhcp");
+
 #ifdef USE_DHCP
   /* Start DHCPClient */
-  osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadDef(DHCP, DHCP_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 2);
   osThreadCreate (osThread(DHCP), &gnetif);
 #endif
 
@@ -192,9 +199,9 @@ void start_app_httpd(void)
 //    CPU_CACHE_Enable();
 
 #if defined(__GNUC__)
-  osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
+  osThreadDef(Start, StartThread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
 #else
-  osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadDef(Start, StartThread, osPriorityLow, 0, 1024+configMINIMAL_STACK_SIZE * 2);
 #endif
 
   osThreadCreate (osThread(Start), NULL);

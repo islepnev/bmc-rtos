@@ -304,10 +304,10 @@ void http_server_netconn_init()
   */
 void DynWebPage(struct netconn *conn)
 {
-  portCHAR PAGE_BODY[512];
+    portCHAR PAGE_BODY[1024] = {0};
   portCHAR pagehits[10] = {0};
 
-  memset(PAGE_BODY, 0,512);
+//  memset(PAGE_BODY, 0,512);
 
   /* Update the hit count */
   nPageHits++;

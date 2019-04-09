@@ -31,9 +31,14 @@ static LogEntry buf[LOG_BUF_SIZE];
 void log_put_long(LogPriority priority, uint32_t tick, const char *str)
 {
     unsigned int copy_len = strlen(str);
+    if (copy_len == 0)
+        return;
     if (copy_len > LOG_LINE_SIZE-1)
         copy_len = LOG_LINE_SIZE-1;
     strncpy(buf[log_wptr].str, str, copy_len);
+    if (buf[log_wptr].str[copy_len-1] == '\n')
+        buf[log_wptr].str[copy_len-1] = '\0';
+
     buf[log_wptr].str[copy_len] = '\0';
     buf[log_wptr].priority = priority;
     buf[log_wptr].tick = tick;
@@ -53,6 +58,20 @@ void log_printf(LogPriority priority, const char *format, ...)
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0)
         log_put_long(priority, osKernelSysTick(), buffer);
+}
+
+void log_printf_debug(const char *format, ...)
+{
+    enum {buf_size = 100};
+    static va_list args;
+    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+
+    va_start(args, format);
+    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    va_end(args);
+    size_t n_written = (n > buf_size) ? buf_size : n;
+    if (n_written > 0)
+        log_put_long(LOG_DEBUG, osKernelSysTick(), buffer);
 }
 
 void log_put(LogPriority priority, const char *str)

@@ -41,6 +41,7 @@ struct LogEntry;
 typedef struct LogEntry LogEntry;
 
 void log_printf(LogPriority priority, const char *format, ...);
+void log_printf_debug(const char *format, ...);
 void log_put(LogPriority priority, const char *str);
 void log_get(int index, LogEntry *dest);
 uint32_t log_get_wptr(void);

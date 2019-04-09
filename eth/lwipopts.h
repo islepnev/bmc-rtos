@@ -229,7 +229,14 @@ The STM32F7xx allows computing and verifying the IP, UDP, TCP and ICMP checksums
 #define DEFAULT_THREAD_STACKSIZE        500
 #define TCPIP_THREAD_PRIO               osPriorityHigh
 
+#define LWIP_SNTP 1
+#define LWIP_SNMP 1
+#define MIB2_STATS 1
+#define LWIP_DHCP_GET_NTP_SRV 1
 
+//#define DHCP_DEBUG LWIP_DBG_ON
+//#define SNTP_DEBUG LWIP_DBG_ON
+//#define SNMP_DEBUG LWIP_DBG_ON
 
 #endif /* __LWIPOPTS_H__ */
 
