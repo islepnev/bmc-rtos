@@ -112,6 +112,7 @@ file(GLOB_RECURSE FREERTOS_SOURCES
 
 set(DATA_FILE
    doc/Doxyfile.in
+   mib/afi-sysmon.mib
    README.md
    app/version.h.in
 )

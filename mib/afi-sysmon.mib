@@ -1,0 +1,109 @@
+AFI-SYSMON-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32
+         FROM SNMPv2-SMI
+    enterprises
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC;
+
+jinr MODULE-IDENTITY
+    LAST-UPDATED "201904100000Z"
+    ORGANIZATION "JINR"
+    CONTACT-INFO
+         "email:    islepnev@jinr.ru"
+    DESCRIPTION
+        "The MIB module for baseboard management controller system monitor support"
+    REVISION      "201904100000Z"
+    DESCRIPTION
+         "The initial version of this MIB module"
+-- contact IANA for actual number
+    ::= { enterprises 26381 }
+
+afi                 OBJECT IDENTIFIER ::= { jinr 120 }
+sysmon              OBJECT IDENTIFIER ::= { afi 1 }
+sensors             OBJECT IDENTIFIER ::= { sysmon 1 }
+
+sensorsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A table of power supply sensors."
+    ::= { sensors 1 }
+
+sensorsEntry OBJECT-TYPE
+    SYNTAX  SensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { sensorsIndex }
+    ::= { sensorsTable 1 }
+
+SensorsEntry ::=
+    SEQUENCE {
+        sensorsIndex          INTEGER,
+        sensorsName        DisplayString,
+        sensorsStatus      Integer32,
+        sensorsVoltage     Integer32,
+        sensorsCurrent     Integer32
+    }
+
+sensorsIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..1000)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances of
+            the columnar objects in the sensors table"
+    ::= { sensorsEntry 1 }
+
+sensorsName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the sensor"
+    ::= { sensorsEntry 2 }
+
+sensorsStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the sensor"
+    ::= { sensorsEntry 3 }
+
+sensorsVoltage OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The voltage reading of the sensor in mV"
+    ::= { sensorsEntry 4 }
+
+sensorsCurrent OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current reading of the sensor in mA"
+    ::= { sensorsEntry 5 }
+
+
+sensorsCount OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of sensors"
+    ::= { afi 2 }
+
+END

@@ -51,7 +51,7 @@ static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u1
    where level 0 is the table column (voltage/sensor name)
    and level 1 the table row (sensor index) */
 static const struct snmp_table_col_def sensor_table_columns[] = {
-{ 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
+//{ 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 3, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 4, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
@@ -145,10 +145,10 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
 
   switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
   {
-  case 1: {/* sensor index */
-      *(s32_t *)value = i+1;
-      return sizeof(s32_t);
-  }
+//  case 1: {/* sensor index */
+//      *(s32_t *)value = i+1;
+//      return sizeof(s32_t);
+//  }
   case 2: {/* sensor name */
       const char *name = (i < POWERMON_SENSORS) ? monLabel(i) : '\0';
       size_t len = strlen(name);
