@@ -35,13 +35,6 @@
 
 #define SENSOR_MAX      SENSOR_COUNT
 
-struct sensor_inf
-{
-  u8_t num;
-};
-
-//static struct sensor_inf sensors[SENSOR_MAX];
-
 static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
 static s16_t      sensor_table_get_value(struct snmp_node_instance* instance, void* value);
@@ -51,7 +44,6 @@ static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u1
    where level 0 is the table column (voltage/sensor name)
    and level 1 the table row (sensor index) */
 static const struct snmp_table_col_def sensor_table_columns[] = {
-//{ 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 3, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 4, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
@@ -88,17 +80,6 @@ sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t r
       cell_instance->reference.u32 = (u32_t)(sensor_num-1);
       return SNMP_ERR_NOERROR;
   }
-
-//  /* find sensor with index */
-//  for(i=0; i<LWIP_ARRAYSIZE(sensors); i++) {
-//    if(sensors[i].num != 0) {
-//      if(sensors[i].num == sensor_num) {
-//        /* store sensor index for subsequent operations (get/test/set) */
-//        cell_instance->reference.u32 = (u32_t)i;
-//        return SNMP_ERR_NOERROR;
-//      }
-//    }
-//  }
 
   /* not found */
   return SNMP_ERR_NOSUCHINSTANCE;
@@ -195,8 +176,6 @@ static snmp_err_t
 sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value)
 {
   u32_t i = instance->reference.u32;
-//  s32_t *temperature = (s32_t *)value;
-//  sensors[i].value = *temperature;
 
   LWIP_UNUSED_ARG(len);
   return SNMP_ERR_NOTWRITABLE;
