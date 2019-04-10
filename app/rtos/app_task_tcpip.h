@@ -15,17 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_ETH_H
-#define APP_TASK_ETH_H
+#ifndef APP_TASK_TCPIP_H
+#define APP_TASK_TCPIP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void create_task_eth(void);
+void create_task_tcpip(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_ETH_H
+#endif // APP_TASK_TCPIP_H

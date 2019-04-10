@@ -55,7 +55,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define WEBSERVER_THREAD_PRIO    osPriorityAboveNormal
+#define WEBSERVER_THREAD_PRIO    osPriorityLow
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

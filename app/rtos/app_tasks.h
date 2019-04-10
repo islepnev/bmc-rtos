@@ -40,6 +40,7 @@ extern osThreadId pllThreadId;
 extern osThreadId fpgaThreadId;
 extern osThreadId cliThreadId;
 extern osThreadId vxsiicThreadId;
+extern osThreadId tcpipThreadId;
 
 void create_tasks(void);
 

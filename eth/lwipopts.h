@@ -238,6 +238,12 @@ The STM32F7xx allows computing and verifying the IP, UDP, TCP and ICMP checksums
 //#define SNTP_DEBUG LWIP_DBG_ON
 //#define SNMP_DEBUG LWIP_DBG_ON
 
+#define SNTP_SET_SYSTEM_TIME_US(sec, usec)   sntp_client_set_system_time(sec, usec)
+//#define SNTP_SET_SYSTEM_TIME(sec)   sntp_set_system_time(sec)
+#define SNTP_STARTUP_DELAY_FUNC     (LWIP_RAND() % 100)
+#define SNTP_RETRY_TIMEOUT   1
+#define SNTP_RECV_TIMEOUT   1000 // FIXME: set to more than 15000
+
 #endif /* __LWIPOPTS_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,50 +1,5 @@
-/**
-  ******************************************************************************
-  * @file    LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c
-  * @author  MCD Application Team
-  * @brief   This sample code implements a http server application based on
-  *          Netconn API of LwIP stack and FreeRTOS. This application uses
-  *          STM32F7xx the ETH HAL API to transmit and receive data.
-  *          The communication is done with a web browser of a remote PC.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics International N.V.
-  * All rights reserved.</center></h2>
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice,
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other
-  *    contributors to this software may be used to endorse or promote products
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under
-  *    this license is void and will automatically terminate your rights under
-  *    this license.
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
+
+#include "app_task_tcpip_impl.h"
 
 #include "main.h"
 #include "cmsis_os.h"
@@ -57,6 +12,8 @@
 #include "lcd_log.h"
 #include "lwipcfg.h"
 #include "ipaddress.h"
+#include "sntp/sntp_client.h"
+#include "snmp/snmp_agent.h"
 
 struct netif gnetif; /* network interface structure */
 
@@ -93,9 +50,16 @@ static void Netif_Config(void)
   }
 }
 
-static void StartThread(void const * argument)
+void task_tcpip_init()
 {
-  /* Create tcp_ip stack thread */
+    log_printf(LOG_INFO, "LwIP %s", LWIP_VERSION_STRING);
+    //    /* Configure the MPU attributes as Device memory for ETH DMA descriptors */
+    //    MPU_Config();
+
+    //    /* Enable the CPU Cache */
+    //    CPU_CACHE_Enable();
+
+    /* Create tcp_ip stack thread */
   tcpip_init(NULL, NULL);
 
   /* Initialize the LwIP stack */
@@ -105,9 +69,10 @@ static void StartThread(void const * argument)
 
   /* Initialize webserver demo */
   http_server_netconn_init();
-  snmp_example_init();
-  lwiperf_example_init();
-  sntp_example_init();
+  snmp_agent_init();
+//  extern void lwiperf_example_init(void);
+//  lwiperf_example_init();
+  sntp_client_init();
 
   /* Notify user about the network interface config */
   User_notification(&gnetif);
@@ -188,21 +153,3 @@ static void CPU_CACHE_Enable(void)
   SCB_EnableDCache();
 }
 #endif
-
-void start_app_httpd(void)
-{
-    log_printf(LOG_INFO, "LwIP version %s", LWIP_VERSION_STRING);
-//    /* Configure the MPU attributes as Device memory for ETH DMA descriptors */
-//    MPU_Config();
-
-//    /* Enable the CPU Cache */
-//    CPU_CACHE_Enable();
-
-#if defined(__GNUC__)
-  osThreadDef(Start, StartThread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
-#else
-  osThreadDef(Start, StartThread, osPriorityLow, 0, 1024+configMINIMAL_STACK_SIZE * 2);
-#endif
-
-  osThreadCreate (osThread(Start), NULL);
-}

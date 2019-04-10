@@ -22,7 +22,7 @@ PROJECT(ttvxs_rtos VERSION 1.4 LANGUAGES C)
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
-FIND_PACKAGE(STM32HAL COMPONENTS adc can dma eth flash fmc gpio i2c qspi rcc sd sdram sdmmc smbus spi tim uart REQUIRED)
+FIND_PACKAGE(STM32HAL COMPONENTS adc can dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
 
 SET(HAL_LL_COMPONENTS ${HAL_LL_COMPONENTS} gpio usart)
 file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
@@ -48,7 +48,7 @@ SET(LWIP_SOURCES
    ${lwipsntp_SRCS}
    ${lwipsnmp_SRCS}
    ${lwipiperf_SRCS}
-   ${lwipcontribexamples_SRCS}
+#   ${lwipcontribexamples_SRCS}
    system/OS/sys_arch.c
 )
 SET(LWIP_INCLUDE_DIRS
@@ -80,7 +80,7 @@ file(GLOB_RECURSE USER_SOURCES
    drivers/*.c
    app/*.c
    eth/app_ethernet.c
-   eth/app_httpd_main.c
+#   eth/app_httpd_main.c
    eth/ethernetif.c
    eth/httpserver-netconn.c
 )

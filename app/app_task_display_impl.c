@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "app_task_display_impl.h"
 
@@ -45,6 +46,8 @@
 
 #include "app_shared_data.h"
 #include "cmsis_os.h"
+#include "stm32f7xx_hal_rtc.h"
+#include "rtc.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -306,6 +309,32 @@ static void print_uptime_str(void)
     printf("%2u:%02u:%02lu", hh, mm, ss);
 }
 
+static void get_rtc_tm(struct tm *tm)
+{
+    if (!tm) return;
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    HAL_StatusTypeDef ret1 = HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+    HAL_StatusTypeDef ret2 = HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // call HAL_RTC_GetDate() after HAL_RTC_GetTime
+    if (HAL_OK != ret1 || HAL_OK != ret2)
+        return;
+    tm->tm_hour = sTime.Hours;
+    tm->tm_min  = sTime.Minutes;
+    tm->tm_sec  = sTime.Seconds;
+    tm->tm_wday = sDate.WeekDay-1;
+    tm->tm_mon  = sDate.Month;
+    tm->tm_mday = sDate.Date;
+    tm->tm_year = 100 + sDate.Year;
+}
+
+static void print_rtc_str(void)
+{
+    struct tm tm;
+    get_rtc_tm(&tm);
+    char buf[32];
+    strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &tm);
+    printf("%s", buf);
+}
 static char statsBuffer[1000];
 
 static void print_header(void)
@@ -317,6 +346,8 @@ static void print_header(void)
     } else {
         printf("     Uptime: ");
         print_uptime_str();
+        printf("   ");
+        print_rtc_str();
         printf("     %s%s%s%s%s",
                ANSI_BOLD ANSI_BLINK,
                enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
@@ -510,15 +541,23 @@ static void display_pll_detail(const Devices * dev)
 static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
+static struct tm old_tm = {0};
 
 void display_task_run(void)
 {
     uint32_t tick = osKernelSysTick();
-    if (tick < old_tick + DISPLAY_REFRESH_TIME_MS) {
-        if (old_display_mode == display_mode)
-            return;
-    }
+    struct tm tm;
+    get_rtc_tm(&tm);
+    int time_updated = old_tm.tm_sec != tm.tm_sec;
+    int need_refresh = tick > old_tick + DISPLAY_REFRESH_TIME_MS;
+    if (old_display_mode != display_mode)
+        need_refresh = 1;
+    if (time_updated)
+        need_refresh = 1;
+    if (!need_refresh)
+        return;
     old_tick = tick;
+    old_tm = tm;
 
     const Devices * d = getDevices();
     int need_clear_screen =
