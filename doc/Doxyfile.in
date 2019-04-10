@@ -794,6 +794,7 @@ WARN_LOGFILE           =
 INPUT                  = \
     @CMAKE_CURRENT_SOURCE_DIR@/common/ \
     @CMAKE_CURRENT_SOURCE_DIR@/app/ \
+    @CMAKE_CURRENT_SOURCE_DIR@/eth/ \
     @CMAKE_CURRENT_SOURCE_DIR@/drivers/ \
     @CMAKE_CURRENT_SOURCE_DIR@/Inc/ \
     @CMAKE_CURRENT_SOURCE_DIR@/Src/
