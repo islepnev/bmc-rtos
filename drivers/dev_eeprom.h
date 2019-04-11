@@ -26,9 +26,9 @@ extern "C" {
 #endif
 
 HAL_StatusTypeDef dev_eepromVxsPb_Detect(void);
-HAL_StatusTypeDef dev_eepromConfig_Detect(void);
+HAL_StatusTypeDef at24c_detect(void);
 HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data);
-HAL_StatusTypeDef dev_eepromConfig_Read(uint16_t addr, uint8_t *data);
+HAL_StatusTypeDef at24c_read(uint16_t addr, uint8_t *data);
 
 #ifdef __cplusplus
 }

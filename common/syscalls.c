@@ -73,7 +73,7 @@ int _close(int file)
 
 void _exit(int status)
 {
-    vApplicationExitHook(status);
+    app_exit_handler(status);
     while (1) {
     }
 }

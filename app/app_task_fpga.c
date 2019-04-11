@@ -29,7 +29,7 @@ osThreadId fpgaThreadId = NULL;
 enum { fpgaThreadStackSize = threadStackSize };
 static const uint32_t fpgaTaskLoopDelay = 10;
 
-static const uint32_t ERROR_DELAY_TICKS = 3000;
+static const uint32_t ERROR_DELAY_TICKS = 1000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 typedef enum {
@@ -65,13 +65,15 @@ static void fpga_task_run(void)
     old_state = state;
     switch (state) {
     case FPGA_STATE_RESET:
-        if (DEVICE_NORMAL == fpgaDetect(d))
+        if (DEVICE_NORMAL == fpga_test(d)
+        && DEVICE_NORMAL == fpgaDetect(d))
             state = FPGA_STATE_RUN;
         else
             state = FPGA_STATE_ERROR;
         break;
     case FPGA_STATE_RUN:
-        if ((HAL_OK != fpgaWriteBmcVersion()) ||
+        if (DEVICE_NORMAL != fpgaDetect(d) ||
+                (HAL_OK != fpgaWriteBmcVersion()) ||
                 (HAL_OK != fpgaWriteBmcTemperature(&dev.thset)) ||
                 (HAL_OK != fpgaWritePllStatus(&dev.pll)))
             state = FPGA_STATE_ERROR;

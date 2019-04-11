@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-extern void vApplicationExitHook(int result);
+extern void app_exit_handler(int result);
 
 // FreeRTOS callbacks
 extern void vAssertCalled( unsigned long ulLine, const uint8_t * const pcFileName );

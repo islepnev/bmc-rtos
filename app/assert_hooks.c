@@ -27,7 +27,7 @@ static void dump_extra_debug(void)
     debug_printf("CPU cycles: %lu\n", DWT->CYCCNT);
 }
 
-void vApplicationExitHook(int result)
+void app_exit_handler(int result)
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();

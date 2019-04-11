@@ -77,7 +77,7 @@ static DeviceStatus dev_i2cmux_detect(Dev_pca9548 *d)
 
 static DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
-    if (HAL_OK == dev_eepromConfig_Detect())
+    if (HAL_OK == at24c_detect())
         d->present = DEVICE_NORMAL;
     else
         d->present = DEVICE_FAIL;

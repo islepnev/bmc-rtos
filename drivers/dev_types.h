@@ -49,8 +49,10 @@ typedef struct Dev_thset {
     Dev_adt7301 th[DEV_THERM_COUNT];
 } Dev_thset;
 
+enum {FPGA_REG_COUNT = 8};
 typedef struct Dev_fpga {
     DeviceStatus present;
+    uint16_t regs[FPGA_REG_COUNT];
     uint16_t id;
 } Dev_fpga;
 

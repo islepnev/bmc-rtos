@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 DeviceStatus fpgaDetect(Dev_fpga *d);
+DeviceStatus fpga_test(Dev_fpga *d);
 HAL_StatusTypeDef fpgaWriteBmcVersion(void);
 HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset);
 HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll);

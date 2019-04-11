@@ -367,7 +367,10 @@ static void print_main(const Devices *dev)
 static void print_fpga(const Dev_fpga *fpga)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
-    printf("FPGA ID: %04X %s", fpga->id, deviceStatusResultStr(fpga->present));
+    printf("FPGA ID: %04X %s   ", fpga->id, deviceStatusResultStr(fpga->present));
+    if (fpga->present == DEVICE_NORMAL)
+        for (int i=0; i<FPGA_REG_COUNT; i++)
+            printf(" %04X", fpga->regs[i]);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
