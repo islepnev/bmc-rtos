@@ -132,6 +132,8 @@ err:
     return ret;
 }
 
+static int old_present[VXSIIC_SLOTS] = {0};
+
 DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
@@ -143,16 +145,19 @@ DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
             d->present = DEVICE_FAIL;
             return d->present;
         }
-        ret = vxsiic_get_pp_i2c_status(pp);
-        if (HAL_OK != ret) {
-            continue;
+        vxsiic_slot_status_t *status = &d->status.slot[pp];
+        if ((HAL_OK == vxsiic_get_pp_i2c_status(pp))
+                && (HAL_OK == dev_vxsiic_read_pp_eeprom(d, pp))
+                && (HAL_OK == dev_vxsiic_read_pp_mcu(d, pp))) {
+            status->present = 1;
+            if (!old_present[pp])
+                log_printf(LOG_NOTICE, "VXS slot %s: board inserted", vxsiic_map_slot_to_label[pp]);
+        } else {
+            if (old_present[pp])
+                log_printf(LOG_NOTICE, "VXS slot %s: board removed", vxsiic_map_slot_to_label[pp]);
+            status->present = 0;
         }
-        if (HAL_OK != dev_vxsiic_read_pp_eeprom(d, pp)) {
-            continue;
-        }
-        if (HAL_OK != dev_vxsiic_read_pp_mcu(d, pp)) {
-            continue;
-        }
+        old_present[pp] = status->present;
     }
     return d->present;
 }
