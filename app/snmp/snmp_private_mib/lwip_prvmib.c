@@ -80,7 +80,7 @@ static const struct snmp_node* const example_nodes[] = {
 };
 static const struct snmp_tree_node example_node = SNMP_CREATE_TREE_NODE(1, example_nodes);
 
-static const u32_t prvmib_base_oid[] = { 1,3,6,1,4,1,26381,120,1,1 };
+static const u32_t prvmib_base_oid[] = { 1,3,6,1,4,1,53776,120,1,1 };
 const struct snmp_mib mib_private = SNMP_MIB_CREATE(prvmib_base_oid, &example_node.node);
 
 #if 0

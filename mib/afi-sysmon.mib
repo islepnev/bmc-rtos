@@ -18,8 +18,7 @@ jinr MODULE-IDENTITY
     REVISION      "201904100000Z"
     DESCRIPTION
          "The initial version of this MIB module"
--- contact IANA for actual number
-    ::= { enterprises 26381 }
+    ::= { enterprises 53776 }
 
 afi                 OBJECT IDENTIFIER ::= { jinr 120 }
 sysmon              OBJECT IDENTIFIER ::= { afi 1 }
