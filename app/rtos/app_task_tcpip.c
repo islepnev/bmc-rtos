@@ -19,7 +19,7 @@
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
-#include "app_task_tcpip_impl.h"
+#include "tcpip/app_task_tcpip_impl.h"
 #include "debug_helpers.h"
 
 osThreadId tcpipThreadId = NULL;

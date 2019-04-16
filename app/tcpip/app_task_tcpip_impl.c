@@ -7,7 +7,7 @@
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
 #include "lwip/init.h"
-#include "app_ethernet.h"
+#include "dhcp_thread.h"
 #include "httpserver-netconn.h"
 #include "lcd_log.h"
 #include "lwipcfg.h"
