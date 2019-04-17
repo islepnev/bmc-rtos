@@ -14,33 +14,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef RTC_UTIL_H
+#define RTC_UTIL_H
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
+struct tm;
 
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_pll_types.h"
-#include "dev_thset_types.h"
-#include "dev_sfpiic_types.h"
-#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
+void get_rtc_tm(struct tm *tm);
 
-typedef struct Dev_sdcard {
-    int detect_b;
-} Dev_sdcard;
-
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_sfpiic sfpiic;
-    Dev_vxsiic vxsiic;
-    Dev_at24c eeprom_config;
-    Dev_pll pll;
-    Dev_powermon pm;
-    Dev_sdcard sd;
-    int pen_b;
-} Devices;
-
-#endif // DEVICES_TYPES_H
+#endif // RTC_UTIL_H

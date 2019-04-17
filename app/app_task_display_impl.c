@@ -47,7 +47,7 @@
 #include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal_rtc.h"
-#include "rtc.h"
+#include "rtc_util.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -307,24 +307,6 @@ static void print_uptime_str(void)
     if (dd == 1)
         printf("%u day ", dd);
     printf("%2u:%02u:%02lu", hh, mm, ss);
-}
-
-static void get_rtc_tm(struct tm *tm)
-{
-    if (!tm) return;
-    RTC_TimeTypeDef sTime;
-    RTC_DateTypeDef sDate;
-    HAL_StatusTypeDef ret1 = HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-    HAL_StatusTypeDef ret2 = HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // call HAL_RTC_GetDate() after HAL_RTC_GetTime
-    if (HAL_OK != ret1 || HAL_OK != ret2)
-        return;
-    tm->tm_hour = sTime.Hours;
-    tm->tm_min  = sTime.Minutes;
-    tm->tm_sec  = sTime.Seconds;
-    tm->tm_wday = sDate.WeekDay-1;
-    tm->tm_mon  = sDate.Month;
-    tm->tm_mday = sDate.Date;
-    tm->tm_year = 100 + sDate.Year;
 }
 
 static void print_rtc_str(void)

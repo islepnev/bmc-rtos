@@ -15,32 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
+#include "rtc_util.h"
+#include <time.h>
+#include "stm32f7xx_hal.h"
+#include "rtc.h"
 
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_pll_types.h"
-#include "dev_thset_types.h"
-#include "dev_sfpiic_types.h"
-#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
-
-typedef struct Dev_sdcard {
-    int detect_b;
-} Dev_sdcard;
-
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_sfpiic sfpiic;
-    Dev_vxsiic vxsiic;
-    Dev_at24c eeprom_config;
-    Dev_pll pll;
-    Dev_powermon pm;
-    Dev_sdcard sd;
-    int pen_b;
-} Devices;
-
-#endif // DEVICES_TYPES_H
+void get_rtc_tm(struct tm *tm)
+{
+    if (!tm) return;
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    HAL_StatusTypeDef ret1 = HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+    HAL_StatusTypeDef ret2 = HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN); // call HAL_RTC_GetDate() after HAL_RTC_GetTime
+    if (HAL_OK != ret1 || HAL_OK != ret2)
+        return;
+    tm->tm_hour = sTime.Hours;
+    tm->tm_min  = sTime.Minutes;
+    tm->tm_sec  = sTime.Seconds;
+    tm->tm_wday = sDate.WeekDay-1;
+    tm->tm_mon  = sDate.Month;
+    tm->tm_mday = sDate.Date;
+    tm->tm_year = 100 + sDate.Year;
+}

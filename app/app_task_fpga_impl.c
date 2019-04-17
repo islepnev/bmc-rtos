@@ -54,6 +54,8 @@ static void struct_fpga_init(Dev_fpga *d)
 {
     d->present = DEVICE_UNKNOWN;
     d->id = 0;
+    d->fw_ver = 0;
+    d->fw_rev = 0;
 }
 
 void fpga_task_init(void)

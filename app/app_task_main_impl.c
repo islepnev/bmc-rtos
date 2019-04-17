@@ -28,7 +28,10 @@
 
 #include "app_shared_data.h"
 #include "led_gpio_hal.h"
+#include "bsp_pin_defs.h"
+#include "devices_types.h"
 #include "cmsis_os.h"
+#include "stm32f7xx_hal.h"
 
 static const uint32_t MAIN_DETECT_TIMEOUT_TICKS = 5000;
 
@@ -105,6 +108,11 @@ void task_main_run(void)
     if (old_state != state) {
         stateStartTick = osKernelSysTick();
     }
+
+    // read SD card status
+    getDevices()->sd.detect_b = HAL_GPIO_ReadPin(uSD_Detect_GPIO_Port, uSD_Detect_Pin);
+    // read other signals
+    getDevices()->pen_b = HAL_GPIO_ReadPin(PEN_B_GPIO_Port, PEN_B_Pin);
 
     const SensorStatus systemStatus = getSystemStatus(getDevicesConst());
     led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);

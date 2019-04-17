@@ -26,6 +26,8 @@ typedef struct Dev_fpga {
     uint8_t initb;
     uint8_t done;
     uint16_t id;
+    uint16_t fw_ver;
+    uint16_t fw_rev;
 } Dev_fpga;
 
 SensorStatus get_fpga_sensor_status(const Dev_fpga *d);
