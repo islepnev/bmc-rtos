@@ -21,16 +21,15 @@
 
 #define NET_LLDP_CHASSIS_ID_VALUE_LEN (6)
 
-struct net_lldp_chassis_tlv {
-    u16_t type_length;	/* 7 bits for type, 9 bits for length */
+struct lldp_chassis_tlv {
     u8_t subtype;	/* ID subtype. */
     u8_t value[NET_LLDP_CHASSIS_ID_VALUE_LEN];
 } __packed;
 
-typedef struct net_lldp_chassis_tlv net_lldp_chassis_tlv;
+typedef struct lldp_chassis_tlv lldp_chassis_tlv;
 
 typedef struct lldp_neighbor_t {
-   net_lldp_chassis_tlv chassis;
+   lldp_chassis_tlv chassis;
 } lldp_neighbor_t;
 
 extern lldp_neighbor_t lldp_neighbor;

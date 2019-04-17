@@ -16,6 +16,7 @@
 */
 
 #include "lldp_handler.h"
+#include <string.h>
 
 #include "lwip/opt.h"
 #include "lwip/pbuf.h"
@@ -41,12 +42,17 @@ enum {
     LLDP_TLV_ORG_SPECIFIC = 127
 };
 
-void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
+static void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
 {
     switch (lldp_type) {
     case LLDP_TLV_END_LLDPDU:
         break;
     case LLDP_TLV_CHASSIS_ID:
+        if (lldp_len != sizeof(lldp_chassis_tlv)) {
+            log_printf(LOG_DEBUG, "LLDP TLV size mismatch, type %d, len %d", lldp_type, lldp_len);
+            break;
+        }
+        memcpy(&lldp_neighbor.chassis, buf, sizeof(lldp_chassis_tlv));
         break;
     case LLDP_TLV_PORT_ID:
         break;
@@ -70,16 +76,14 @@ void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
     }
 }
 
-void lldp_input(struct pbuf *p, struct netif *netif)
+static void lldp_input(struct pbuf *p, struct netif *netif)
 {
     LWIP_ERROR("netif != NULL", (netif != NULL), return;);
-    log_printf(LOG_DEBUG, "LLDP PDU, len %d", p->len);
     u16_t i = 0;
     while (i < p->len - 1) {
         const u8_t *buf = (u8_t*)p->payload + i;
         u8_t lldp_type = buf[0] >> 1;
         u16_t lldp_len = ((buf[0] & 1)  << 8) + (buf[1]);
-//        log_printf(LOG_DEBUG, "LLDP TLV, type %d, len %d", lldp_type, lldp_len);
         i += 2;
         if (lldp_len == 0)
             continue;

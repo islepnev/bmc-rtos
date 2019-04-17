@@ -126,13 +126,12 @@ table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 5: { // lldpV2RemChassisIdSubtype
-        *(s32_t *)value = lldp_neighbor.chassis.subtype;;
+        *(s32_t *)value = lldp_neighbor.chassis.subtype;
         return sizeof(s32_t);
     }
     case 6: { // lldpV2RemChassisId
-        const char *name = "\x02\x00\x00\x00\x00\x00";
-        size_t len = 6;
-        MEMCPY(value, name, len);
+        size_t len = sizeof(lldp_neighbor.chassis.value);
+        MEMCPY(value, lldp_neighbor.chassis.value, len);
         return (s16_t)len;
     }
     default:
