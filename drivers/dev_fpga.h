@@ -26,11 +26,17 @@
 extern "C" {
 #endif
 
-DeviceStatus fpgaDetect(Dev_fpga *d);
-DeviceStatus fpga_test(Dev_fpga *d);
+struct Dev_fpga;
+struct Dev_thset;
+struct Dev_ad9545;
+struct Devices;
+
+DeviceStatus fpgaDetect(struct Dev_fpga *d);
+DeviceStatus fpga_test(struct Dev_fpga *d);
 HAL_StatusTypeDef fpgaWriteBmcVersion(void);
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset);
-HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll);
+HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);
+HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_ad9545 *pll);
+HAL_StatusTypeDef fpgaWriteSystemStatus(const struct Devices *d);
 
 #ifdef __cplusplus
 }

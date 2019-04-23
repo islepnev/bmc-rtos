@@ -33,7 +33,13 @@ enum {
     FPGA_SPI_ADDR_4 = 4,
     FPGA_SPI_ADDR_5 = 5,
     FPGA_SPI_ADDR_6 = 6,
-    FPGA_SPI_ADDR_7 = 7
+    FPGA_SPI_ADDR_7 = 7,
+    FPGA_SPI_ADDR_8 = 8,
+    FPGA_SPI_ADDR_9 = 9,
+    FPGA_SPI_ADDR_A = 0xA,
+    FPGA_SPI_ADDR_B = 0xB,
+    FPGA_SPI_ADDR_C = 0xC,
+    FPGA_SPI_ADDR_D = 0xD
 };
 
 HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);

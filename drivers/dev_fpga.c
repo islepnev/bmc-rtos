@@ -23,6 +23,8 @@
 #include "version.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"
+#include "system_status.h"
+#include "app_task_powermon.h"
 
 static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
@@ -38,8 +40,8 @@ static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *
 
 DeviceStatus fpga_test(Dev_fpga *d)
 {
-    uint16_t addr1 = 0x0001;
-    uint16_t addr2 = 0x0002;
+    uint16_t addr1 = 0x000E;
+    uint16_t addr2 = 0x000F;
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
@@ -90,10 +92,10 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
 HAL_StatusTypeDef fpgaWriteBmcVersion(void)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_0, VERSION_MAJOR_NUM);
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM);
     if (ret != HAL_OK)
         return ret;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_7, VERSION_MINOR_NUM);
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM);
     if (ret != HAL_OK)
         return ret;
     return ret;
@@ -121,5 +123,24 @@ HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll)
             data |= 0x1;
     }
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data);
+    return ret;
+}
+
+HAL_StatusTypeDef fpgaWriteSystemStatus(const Devices *d)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint16_t data = 0;
+    data = getSystemStatus(d);
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data);
+    if (HAL_OK != ret)
+        return ret;
+    data = getPowermonStatus(&d->pm);
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data);
+    if (HAL_OK != ret)
+        return ret;
+    data = getPllStatus(&d->pll);
+    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data);
+    if (HAL_OK != ret)
+        return ret;
     return ret;
 }
