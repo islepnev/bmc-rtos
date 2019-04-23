@@ -6,6 +6,12 @@
 
  * Tested on TDC72VHL v4.1
 
+### Build
+
+```
+make TOOLCHAIN_PREFIX=~/gcc-arm-none-eabi-8-2018-q4-major
+```
+
 ### Docs
 
  * [TDC72VHL V4 Board Management](https://afi-project.jinr.ru/projects/tdc72vhl/wiki/TDC72VHL_V4_Board_Management)
