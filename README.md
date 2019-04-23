@@ -11,7 +11,7 @@
 ```
 git submodule init
 git submodule update
-make TOOLCHAIN_PREFIX=~/gcc-arm-none-eabi-8-2018-q4-major
+rm -rf build && make TOOLCHAIN_PREFIX=~/gcc-arm-none-eabi-8-2018-q4-major
 ```
 
 ### Docs
