@@ -16,6 +16,7 @@
 */
 
 #include "app_task_vxsiic_impl.h"
+#include <string.h>
 #include "i2c.h"
 #include "led_gpio_hal.h"
 #include "stm32f7xx_ll_i2c.h"
@@ -24,6 +25,7 @@
 #include "app_shared_data.h"
 #include "version.h"
 #include "system_status.h"
+#include "ipmi_sensors.h"
 
 #define SLAVE_OWN_ADDRESS 0x33
 void Error_Callback(void);
@@ -89,6 +91,11 @@ static uint32_t mem_txdata = 0;
 void Slave_Ready_To_Transmit_Callback(void)
 {
     if (byte_count == 2) {
+        if (mem_addr >= IIC_SENSORS_MAP_START && mem_addr < IIC_SENSORS_MAP_START + IIC_SENSORS_MAP_SIZE_BYTES / 4) {
+            uint32_t offset = mem_addr - IIC_SENSORS_MAP_START;
+            uint32_t *ptr = (uint32_t *)&ipmi_sensors + offset;
+            memcpy(&mem_txdata, ptr, sizeof(mem_txdata));
+        } else
         switch (mem_addr) {
         case 0:
             mem_txdata = BMC_MAGIC;

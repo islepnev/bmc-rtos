@@ -256,6 +256,7 @@ void powermon_task (void)
     } else {
         struct_thset_init(&dev.thset);
     }
+    sync_ipmi_sensors();
 
     if (oldState != pmState) {
         stateStartTick = osKernelSysTick();
