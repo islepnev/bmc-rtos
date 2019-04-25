@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "dev_common_types.h"
+#include "sensor_types.h"
 
 enum {VXSIIC_SLOTS = 18};
 enum {MCU_MAP_SIZE = 8};
@@ -31,6 +32,8 @@ struct vxsiic_slot_status_t {
    uint32_t module_id;
    char module_id_str[MCU_ID_SIZE];
    uint32_t map[MCU_MAP_SIZE];
+   uint16_t sensor_count;
+   GenericSensor sensors[MAX_SENSOR_COUNT];
 };
 
 typedef struct vxsiic_slot_status_t vxsiic_slot_status_t;

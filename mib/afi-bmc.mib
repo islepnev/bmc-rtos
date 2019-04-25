@@ -382,4 +382,106 @@ sfpName OBJECT-TYPE
             "The name of the sensor"
     ::= { sfpEntry 2 }
 
+-- Payload boards
+
+boards                 OBJECT IDENTIFIER ::= { bmc 6 }
+
+boardsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF BoardEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A table of payload boards."
+    ::= { boards 1 }
+
+boardEntry OBJECT-TYPE
+    SYNTAX  BoardEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { ipmiBoardIndex }
+    ::= { boardsTable 1 }
+
+BoardEntry ::=
+    SEQUENCE {
+        ipmiBoardIndex      INTEGER,
+        boardPresent        TruthValue,
+        boardName           DisplayString
+    }
+
+ipmiBoardIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+            "A unique value for each board contained by the chassis."
+    ::= { boardEntry 1 }
+
+boardPresent OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "True if board has been discovered"
+    ::= { boardEntry 2 }
+
+boardName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the board"
+    ::= { boardEntry 3 }
+
+-- IPMI Sensor Table
+
+ipmiSensorTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpmiSensorEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table of sensors for payload
+        boards contained by chassis."
+    ::= { bmc 7 }
+
+ipmiSensorEntry OBJECT-TYPE
+    SYNTAX     IpmiSensorEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "A (conceptual) entry for one partition.  The
+        ipmiBoardIndex in the index represents the entry in the
+        ipmiBoardTable that corresponds to the
+        ipmiSensorEntry.
+
+        As an example of how objects in this table are named,
+        an instance of the ipmiSensorName object might be
+        named ipmiSensorName.3.1"
+    INDEX { ipmiBoardIndex, ipmiSensorIndex }
+    ::= { ipmiSensorTable 1 }
+
+IpmiSensorEntry ::=
+    SEQUENCE {
+        ipmiSensorIndex        INTEGER,
+        ipmiSensorName        DisplayString
+    }
+
+ipmiSensorIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances of
+            the columnar objects in the sensors table"
+    ::= { ipmiSensorEntry 1 }
+
+ipmiSensorName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the sensor"
+    ::= { ipmiSensorEntry 2 }
+
 END
