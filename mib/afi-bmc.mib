@@ -39,6 +39,25 @@ Thousandths ::= TEXTUAL-CONVENTION
      DESCRIPTION "Repsent integer 32-bit number as 1/1000th"
      SYNTAX     Integer32
 
+DeviceId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "x"
+    STATUS       current
+    DESCRIPTION
+            "Represents media- or physical-level addresses."
+    SYNTAX       Unsigned32
+
+DeviceStatus ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The current status of the BMC"
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+
+
 afi                 OBJECT IDENTIFIER ::= { jinr 120 }
 
 -- BMC
@@ -267,7 +286,7 @@ sensorsCurrentMax OBJECT-TYPE
         ::= { sensorsEntry 9 }
 
 -- FPGA
-DeviceId ::= TEXTUAL-CONVENTION
+DeviceIdStr ::= TEXTUAL-CONVENTION
     DISPLAY-HINT "1x:"
     STATUS       current
     DESCRIPTION
@@ -298,7 +317,7 @@ fpgaDeviceId OBJECT-TYPE
     ::= { fpga 2 }
 
 fpgaDeviceIdStr OBJECT-TYPE
-    SYNTAX      DeviceId
+    SYNTAX      DeviceIdStr
     MAX-ACCESS  read-only
     STATUS      current
     DESCRIPTION
@@ -406,7 +425,10 @@ boardEntry OBJECT-TYPE
 BoardEntry ::=
     SEQUENCE {
         ipmiBoardIndex      INTEGER,
+        ipmiBoardSlot       INTEGER,
         boardPresent        TruthValue,
+        ipmiBoardStatus     DeviceStatus,
+        ipmiBoardId         DeviceId,
         boardName           DisplayString
     }
 
@@ -418,13 +440,37 @@ ipmiBoardIndex OBJECT-TYPE
             "A unique value for each board contained by the chassis."
     ::= { boardEntry 1 }
 
+ipmiBoardSlot OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "A chassis slot occupied by the board."
+    ::= { boardEntry 2 }
+
 boardPresent OBJECT-TYPE
     SYNTAX  TruthValue
     MAX-ACCESS  read-only
     STATUS  current
     DESCRIPTION
             "True if board has been discovered"
-    ::= { boardEntry 2 }
+    ::= { boardEntry 3 }
+
+ipmiBoardStatus OBJECT-TYPE
+    SYNTAX         DeviceStatus
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "Current status of the board."
+    ::= { boardEntry 4 }
+
+ipmiBoardId OBJECT-TYPE
+    SYNTAX         DeviceId
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "Board's assigned device ID."
+    ::= { boardEntry 5 }
 
 boardName OBJECT-TYPE
     SYNTAX  DisplayString
@@ -432,7 +478,7 @@ boardName OBJECT-TYPE
     STATUS  current
     DESCRIPTION
             "The name of the board"
-    ::= { boardEntry 3 }
+    ::= { boardEntry 6 }
 
 -- IPMI Sensor Table
 
