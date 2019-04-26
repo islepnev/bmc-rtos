@@ -33,11 +33,6 @@ static const int map_slot_to_subdevice[VXSIIC_SLOTS] = {
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 1
 };
 
-const char * vxsiic_map_slot_to_label[VXSIIC_SLOTS] = {
-    "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "13", "14", "15", "16", "17", "18", "19", "20", "21"
-};
-
 DeviceStatus dev_vxsiic_detect(Dev_vxsiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
@@ -123,6 +118,8 @@ HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
             goto err;
         status->map[i] = data;
     }
+    status->module_id = status->map[1];
+    status->device_status = status->map[2];
     return ret;
 err:
     {

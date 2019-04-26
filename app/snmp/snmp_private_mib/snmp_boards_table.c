@@ -37,11 +37,15 @@ static s16_t      boards_table_get_value(struct snmp_node_instance* instance, vo
 static snmp_err_t boards_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
 
 static const struct snmp_table_col_def boards_table_columns[] = {
-{ 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  }
+{ 2, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 3, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 4, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 5, SNMP_ASN1_TYPE_UNSIGNED32, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 6, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  }
 };
 
 const struct snmp_table_node boards_table = SNMP_TABLE_CREATE(
-        6, boards_table_columns,
+        1, boards_table_columns,
         boards_table_get_cell_instance, boards_table_get_next_cell_instance,
         boards_table_get_value, snmp_set_test_ok, boards_table_set_value);
 
@@ -117,20 +121,36 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
     if (i >= VXSIIC_SLOTS)
         return 0;
     const Devices *dev = getDevicesConst();
-    switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
+    u32_t col = SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id);
+    u32_t *uint_ptr = (u32_t*)value;
+    switch (col)
     {
-    case 2: {/* present */
+    case 2: // boardSlot
+        *uint_ptr = (u32_t)vxsiic_map_slot_to_number[i];
+        return sizeof(*uint_ptr);
+        break;
+    case 3: {/* boardPresent */
         return snmp_encode_truthvalue(value, dev->vxsiic.status.slot[i].present);
     }
-    case 3: {/* item name */
-        const char *name = "board";
+    case 4: {/* boardStatus */
+        *uint_ptr = (u32_t)dev->vxsiic.status.slot[i].device_status;
+        return sizeof(*uint_ptr);
+        break;
+    }
+    case 5: // boardId
+        *uint_ptr = (u32_t)dev->vxsiic.status.slot[i].module_id;
+        return sizeof(*uint_ptr);
+        break;
+    case 6: {/* boardName */
+        const char *name = dev->vxsiic.status.slot[i].module_id_str;
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;
     }
     default:
-        return 0;
+        return SNMP_ERR_NOSUCHINSTANCE;
     }
+    return SNMP_ERR_NOSUCHINSTANCE;
 }
 
 static snmp_err_t

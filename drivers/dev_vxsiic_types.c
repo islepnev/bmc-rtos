@@ -19,6 +19,15 @@
 
 #include "dev_vxsiic_types.h"
 
+uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS] = {
+    2, 3, 4, 5, 6, 7, 8, 9, 10,
+    13, 14, 15, 16, 17, 18, 19, 20, 21
+};
+const char * vxsiic_map_slot_to_label[VXSIIC_SLOTS] = {
+    "2", "3", "4", "5", "6", "7", "8", "9", "10",
+    "13", "14", "15", "16", "17", "18", "19", "20", "21"
+};
+
 uint8_t get_vxsiic_board_count(const Dev_vxsiic *d)
 {
     uint8_t count = 0;

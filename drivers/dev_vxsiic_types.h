@@ -49,6 +49,7 @@ typedef struct Dev_vxsiic {
     vxsiic_status_t status;
 } Dev_vxsiic;
 
+extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
 extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
 uint8_t get_vxsiic_board_count(const Dev_vxsiic *d);
 
