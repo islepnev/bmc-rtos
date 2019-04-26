@@ -66,14 +66,15 @@ static void fpga_task_run(void)
     switch (state) {
     case FPGA_STATE_RESET:
         if (1
+                && DEVICE_NORMAL == fpgaDetect(d)
                 && DEVICE_NORMAL == fpga_test(d)
-                && DEVICE_NORMAL == fpgaDetect(d))
+                )
             state = FPGA_STATE_RUN;
         else
             state = FPGA_STATE_ERROR;
         break;
     case FPGA_STATE_RUN:
-        if (DEVICE_NORMAL != fpgaDetect(d) ||
+        if (DEVICE_NORMAL != fpga_check_live_magic(d) ||
                 (HAL_OK != fpgaWriteBmcVersion()) ||
                 (HAL_OK != fpgaWriteBmcTemperature(&dev.thset)) ||
                 (HAL_OK != fpgaWritePllStatus(&dev.pll)) ||

@@ -32,6 +32,7 @@ struct Dev_ad9545;
 struct Devices;
 
 DeviceStatus fpgaDetect(struct Dev_fpga *d);
+DeviceStatus fpga_check_live_magic(Dev_fpga *d);
 DeviceStatus fpga_test(struct Dev_fpga *d);
 HAL_StatusTypeDef fpgaWriteBmcVersion(void);
 HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);

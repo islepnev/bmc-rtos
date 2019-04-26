@@ -26,6 +26,8 @@
 #include "system_status.h"
 #include "app_task_powermon.h"
 
+static uint16_t live_magic = 0x55AA;
+
 static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
     HAL_StatusTypeDef ret = HAL_OK;
@@ -36,6 +38,34 @@ static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *
     if (ret != HAL_OK)
         return ret;
     return ret;
+}
+
+static void fpga_write_live_magic(Dev_fpga *d)
+{
+    uint16_t addr1 = 0x000E;
+    uint16_t addr2 = 0x000F;
+    live_magic++;
+    uint16_t wdata1 = live_magic;
+    uint16_t wdata2 = ~live_magic;
+    fpga_spi_hal_write_reg(addr1, wdata1);
+    fpga_spi_hal_write_reg(addr2, wdata2);
+}
+
+DeviceStatus fpga_check_live_magic(Dev_fpga *d)
+{
+    uint16_t addr1 = 0x000E;
+    uint16_t addr2 = 0x000F;
+    uint16_t rdata1 = 0, rdata2 = 0;
+    fpga_spi_hal_read_reg(addr1, &rdata1);
+    fpga_spi_hal_read_reg(addr2, &rdata2);
+    uint16_t test1 = live_magic;
+    uint16_t test2 = ~live_magic;
+    if ((rdata1 != test1) || (rdata2 != test2)) {
+        log_printf(LOG_ERR, "FPGA register contents unexpectedly changed");
+        d->present = DEVICE_FAIL;
+    }
+    fpga_write_live_magic(d);
+    return d->present;
 }
 
 DeviceStatus fpga_test(Dev_fpga *d)
@@ -53,6 +83,7 @@ DeviceStatus fpga_test(Dev_fpga *d)
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
         d->present = DEVICE_NORMAL;
+        fpga_write_live_magic(d);
     } else {
         log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
