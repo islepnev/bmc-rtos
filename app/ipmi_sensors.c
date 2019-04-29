@@ -68,14 +68,14 @@ void sync_ipmi_sensors(void)
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
         gs->hdr.b.state = thset->th[2].valid ? DEVICE_NORMAL : DEVICE_UNKNOWN;
-        gs->value = thset->th[1].rawTemp / 32.0;
+        gs->value = thset->th[2].rawTemp / 32.0;
         strncpy(gs->name, "Temp TDC-B", SENSOR_NAME_SIZE-1);
     }
     {
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
         gs->hdr.b.state = thset->th[3].valid ? DEVICE_NORMAL : DEVICE_UNKNOWN;
-        gs->value = thset->th[1].rawTemp / 32.0;
+        gs->value = thset->th[3].rawTemp / 32.0;
         strncpy(gs->name, "Temp TDC-C", SENSOR_NAME_SIZE-1);
     }
     // update sensor count

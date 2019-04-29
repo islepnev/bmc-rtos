@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SENSOR_TYPES_H
-#define SENSOR_TYPES_H
+#ifndef IPMI_SENSOR_TYPES_H
+#define IPMI_SENSOR_TYPES_H
 
 #include <stdint.h>
 
@@ -58,4 +58,4 @@ enum { IIC_SENSORS_MAP_START = 0x1000 };
 //enum { IIC_SENSORS_MAP_INCR  = 0x40 };
 enum { IIC_SENSORS_MAP_SIZE_BYTES = sizeof(GenericSensor) * MAX_SENSOR_COUNT };
 
-#endif // SENSOR_TYPES_H
+#endif // IPMI_SENSOR_TYPES_H
