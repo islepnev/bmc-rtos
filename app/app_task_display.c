@@ -146,7 +146,7 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
             printf("         ");
         }
 //        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
-        printf(" %s", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF);
+        printf(" %s", isOn ? sensorStatusStr(d->sensorStatus) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
     }

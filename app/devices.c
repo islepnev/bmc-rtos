@@ -30,14 +30,6 @@ static const int tempMaxCrit = 80.0;
 static const int tempMinWarn = 0.1;
 static const int tempMaxWarn = 60.0;
 
-void struct_thset_init(Dev_thset *d)
-{
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        d->th[i].valid = 0;
-        d->th[i].rawTemp = TEMP_RAW_ERROR;
-    }
-}
-
 void struct_pca9548_init(Dev_pca9548 *d)
 {
     d->present = DEVICE_UNKNOWN;
@@ -48,16 +40,15 @@ void struct_at24c_init(Dev_at24c *d)
     d->present = DEVICE_UNKNOWN;
 }
 
-void struct_ad9545_init(Dev_ad9545 *d)
-{
-    d->fsm_state = PLL_STATE_INIT;
-    d->present = DEVICE_UNKNOWN;
-}
+//void struct_ad9545_init(Dev_ad9545 *d)
+//{
+//    d->fsm_state = PLL_STATE_INIT;
+//    d->present = DEVICE_UNKNOWN;
+//}
 
 void struct_Devices_init(Devices *d)
 {
     struct_dev_leds_init(&d->leds);
-    struct_thset_init(&d->thset);
     struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);

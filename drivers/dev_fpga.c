@@ -62,10 +62,10 @@ DeviceStatus fpga_check_live_magic(Dev_fpga *d)
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
         log_printf(LOG_ERR, "FPGA register contents unexpectedly changed");
-        d->present = DEVICE_FAIL;
+        return DEVICE_FAIL;
     }
     fpga_write_live_magic(d);
-    return d->present;
+    return DEVICE_NORMAL;
 }
 
 DeviceStatus fpga_test(Dev_fpga *d)
@@ -82,14 +82,13 @@ DeviceStatus fpga_test(Dev_fpga *d)
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        d->present = DEVICE_NORMAL;
         fpga_write_live_magic(d);
+        return DEVICE_NORMAL;
     } else {
         log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        d->present = DEVICE_FAIL;
+        return DEVICE_FAIL;
     }
-    return d->present;
 }
 
 DeviceStatus fpgaDetect(Dev_fpga *d)
@@ -106,8 +105,8 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
         err++;
     if (err == 0)
         d->present = DEVICE_NORMAL;
-    else
-        d->present = DEVICE_FAIL;
+//    else
+//        d->present = DEVICE_FAIL;
 
     d->id = id;
 

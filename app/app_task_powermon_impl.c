@@ -138,6 +138,14 @@ SensorStatus getMonStatus(const Dev_powermon *pm)
     return monStatus;
 }
 
+static void struct_thset_init(Dev_thset *d)
+{
+    for (int i=0; i<DEV_THERM_COUNT; i++) {
+        d->th[i].valid = 0;
+        d->th[i].rawTemp = TEMP_RAW_ERROR;
+    }
+}
+
 static int pm_initialized = 0;
 
 void powermon_task (void)
