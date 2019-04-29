@@ -16,12 +16,13 @@
 //
 
 #include "dev_vxsiic.h"
-
+#include <string.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_vxsiic_types.h"
 #include "vxsiic_hal.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
+#include "ipmi_sensor_types.h"
 
 // valid slot range: 2..21
 // slot 2 = array[0]
@@ -120,6 +121,25 @@ HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
     }
     status->module_id = status->map[1];
     status->device_status = status->map[2];
+    // read ipmi sensors
+    ret = vxsiic_read_pp_mcu_4(pp, IIC_SENSORS_MAP_START, &data);
+    if (HAL_OK != ret)
+        goto err;
+    status->sensor_count = data;
+    for (uint32_t i=0; i<status->sensor_count; i++) {
+        uint32_t wordcount = sizeof(GenericSensor) / 4;
+        static GenericSensor buf;
+        for (uint32_t j=0; j<wordcount; j++) {
+            uint32_t *ptr = (uint32_t *)&buf + j;
+//            uint32_t *ptr = (uint32_t *)(&status->sensors[i]) + j;
+            uint16_t addr = 1+IIC_SENSORS_MAP_START + wordcount*i + j;
+            ret = vxsiic_read_pp_mcu_4(pp, addr, ptr);
+            if (HAL_OK != ret)
+                goto err;
+        }
+        buf.name[SENSOR_NAME_SIZE-1] = '\0';
+        memcpy(&status->sensors[i], &buf, sizeof(buf));
+    }
     return ret;
 err:
     {

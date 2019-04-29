@@ -20,7 +20,7 @@
 #include <stdint.h>
 
 #include "dev_common_types.h"
-#include "sensor_types.h"
+#include "ipmi_sensor_types.h"
 
 enum {VXSIIC_SLOTS = 18};
 enum {MCU_MAP_SIZE = 8};

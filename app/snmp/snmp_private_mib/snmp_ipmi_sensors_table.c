@@ -22,7 +22,7 @@
 #include "lwip/apps/snmp_scalar.h"
 #include "lwip/apps/snmp_table.h"
 #include "dev_common_types.h"
-#include "sensor_types.h"
+#include "ipmi_sensor_types.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_vxsiic_types.h"
 #include "devices_types.h"

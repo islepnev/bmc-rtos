@@ -73,6 +73,7 @@ static err_t http_serve_page_404(struct netconn *conn)
             "<tbody>\n"
             "<tr>\n"
             "<td><a href=\"/\">Home</a></td>\n"
+            "<td><a href=\"/sensors.html\">Sensors</a></td>\n"
             "<td><a href=\"/tasks.html\">Tasks</a></td>\n"
             "<td><a href=\"/log.html\">Log</a></td>\n"
             "</tr>\n"
@@ -93,6 +94,10 @@ static err_t http_serve_page_header(struct netconn *conn, const char *title)
     static const char buf2[] =
             "</title>\n"
             "<style>\n"
+            "#bgyellow { background-color: yellow; }\n"
+            "#bgred { background-color: red; }\n"
+            "#bggreen { background-color: green; }\n"
+            "#bggray { background-color: gray; }\n"
             ".yellow { color: yellow; }\n"
             ".red { color: red; }\n"
             ".purple { color: purple; }\n"
@@ -110,6 +115,7 @@ static err_t http_serve_page_header(struct netconn *conn, const char *title)
             "<tbody>\n"
             "<tr>\n"
             "<td><a href=\"/\">Home</a></td>\n"
+            "<td><a href=\"/sensors.html\">Sensors</a></td>\n"
             "<td><a href=\"/tasks.html\">Tasks</a></td>\n"
             "<td><a href=\"/log.html\">Log</a></td>\n"
             "</tr>\n"
@@ -273,6 +279,78 @@ static err_t http_serve_task_list(struct netconn *conn)
     return ERR_OK;
 }
 
+const char *sensorUnitsStr(IpmiSensorType t)
+{
+    switch (t) {
+    case IPMI_SENSOR_DISCRETE:
+        return "";
+    case IPMI_SENSOR_TEMPERATURE:
+        return "°C";
+    case IPMI_SENSOR_VOLTAGE:
+        return "V";
+    case IPMI_SENSOR_CURRENT:
+        return "A";
+    default:
+        return "";
+    }
+}
+
+const char *sensorStatusCssStyle(SensorStatus s)
+{
+    switch (s) {
+    case SENSOR_UNKNOWN:
+        return "bggray";
+    case SENSOR_NORMAL:
+        return "";
+    case SENSOR_WARNING:
+        return "bgyellow";
+    case SENSOR_CRITICAL:
+        return "bgred";
+    default:
+        return "";
+    }
+}
+
+static err_t http_serve_sensors(struct netconn *conn)
+{
+    netconn_write(conn, task_list_header, strlen(task_list_header), NETCONN_COPY);
+
+    static char buf[100];
+    strcpy(buf, "<table>\n");
+    netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+
+    const Dev_vxsiic *d = &getDevicesConst()->vxsiic;
+    for (uint32_t pp=0; pp<VXSIIC_SLOTS; pp++) {
+        const vxsiic_slot_status_t *status = &d->status.slot[pp];
+        if (!status->present)
+            continue;
+        uint16_t sensor_count = status->sensor_count;
+        {
+            static char str[100];
+            sprintf(str, "<tr>\n<td>Slot %s:</td>\n", vxsiic_map_slot_to_label[pp]);
+            netconn_write(conn, str, strlen(str), NETCONN_COPY);
+        }
+        for (uint16_t i=0; i<sensor_count; i++) {
+            static char str[200];
+            static char name[SENSOR_NAME_SIZE];
+            strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
+            name[SENSOR_NAME_SIZE-1] = '\0';
+            SensorStatus s = status->sensors[i].hdr.b.state;
+            sprintf(str, "<td id=\"%s\"><small>%s</small><br>%.3f %s</td>\n",
+                    sensorStatusCssStyle(s),
+                    name,
+                    status->sensors[i].value,
+                    sensorUnitsStr(status->sensors[i].hdr.b.type));
+            netconn_write(conn, str, strlen(str), NETCONN_COPY);
+        }
+        strcpy(buf, "</tr>\n");
+        netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+    }
+    strcpy(buf, "</table>\n");
+    netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+    return ERR_OK;
+}
+
 static void http_server_serve(struct netconn *conn)
 {
     struct netbuf *inbuf;
@@ -297,6 +375,13 @@ static void http_server_serve(struct netconn *conn)
                     http_serve_headers_200(conn);
                     http_serve_page_header(conn, "Tasks");
                     http_serve_task_list(conn);
+                    http_serve_page_footer(conn);
+                }
+                else if (strncmp(buf, "GET /sensors.html", 17) == 0)
+                {
+                    http_serve_headers_200(conn);
+                    http_serve_page_header(conn, "Sensors");
+                    http_serve_sensors(conn);
                     http_serve_page_footer(conn);
                 }
                 else if (strncmp(buf, "GET /log.html", 13) == 0)

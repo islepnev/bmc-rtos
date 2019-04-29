@@ -15,27 +15,47 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SENSOR_TYPES_H
-#define SENSOR_TYPES_H
+#ifndef IPMI_SENSOR_TYPES_H
+#define IPMI_SENSOR_TYPES_H
 
 #include <stdint.h>
 
 typedef enum {
-    SENSOR_DISCRETE  = 0,
-    SENSOR_TEMPERATURE = 1,
-    SENSOR_VOLTAGE = 2,
-    SENSOR_CURRENT = 3,
-} SensorType;
+    IPMI_SENSOR_DISCRETE  = 1,
+    IPMI_SENSOR_TEMPERATURE = 2,
+    IPMI_SENSOR_VOLTAGE = 3,
+    IPMI_SENSOR_CURRENT = 4,
+} IpmiSensorType;
 
 enum { SENSOR_NAME_SIZE = 16 };
 
+#pragma pack(push, 1)
+typedef union {
+  struct {
+      uint32_t type:8;
+      uint32_t state:8;
+      uint32_t optional:1;
+      uint32_t reserved:15;
+  } b;
+  uint8_t raw;
+} GenericSensorHeader;
+
 typedef struct GenericSensor {
-    uint8_t type;
-    uint8_t state;
+    GenericSensorHeader hdr;
     double value;
     char name[SENSOR_NAME_SIZE];
 } GenericSensor;
+#pragma pack(pop)
 
 enum { MAX_SENSOR_COUNT = 32 };
 
-#endif // SENSOR_TYPES_H
+typedef struct IpmiSensors {
+    uint32_t sensor_count;
+    GenericSensor sensors[MAX_SENSOR_COUNT];
+} IpmiSensors;
+
+enum { IIC_SENSORS_MAP_START = 0x1000 };
+//enum { IIC_SENSORS_MAP_INCR  = 0x40 };
+enum { IIC_SENSORS_MAP_SIZE_BYTES = sizeof(GenericSensor) * MAX_SENSOR_COUNT };
+
+#endif // IPMI_SENSOR_TYPES_H
