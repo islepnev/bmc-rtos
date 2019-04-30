@@ -36,6 +36,13 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
     return SENSOR_NORMAL;
 }
 
+int getPllLockState(const Dev_ad9545 *d)
+{
+    return d->status.sysclk.b.stable
+            && d->status.sysclk.b.pll0_locked
+            && d->status.sysclk.b.pll1_locked;
+}
+
 SensorStatus getPllStatus(const Dev_ad9545 *d)
 {
     if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
@@ -44,10 +51,7 @@ SensorStatus getPllStatus(const Dev_ad9545 *d)
         return SENSOR_CRITICAL;
     if (!d->status.sysclk.b.locked)
         return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.stable ||
-            !d->status.sysclk.b.pll0_locked ||
-            !d->status.sysclk.b.pll1_locked
-            )
+    if (!getPllLockState(d))
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }
