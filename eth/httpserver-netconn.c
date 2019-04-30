@@ -29,7 +29,7 @@
 #include "devices_types.h"
 //#include "rtc_util.h"
 
-#define WEBSERVER_THREAD_PRIO    osPriorityLow
+#define WEBSERVER_THREAD_PRIO    ((TCPIP_THREAD_PRIO) - 1)
 
 static const unsigned char SERVER_HEADERS_200[] =
         "HTTP/1.0 200 OK\n"
@@ -315,7 +315,7 @@ static err_t http_serve_sensors(struct netconn *conn)
 {
     netconn_write(conn, task_list_header, strlen(task_list_header), NETCONN_COPY);
 
-    static char buf[100];
+    static char buf[2000];
     strcpy(buf, "<table>\n");
     netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
 
@@ -325,10 +325,13 @@ static err_t http_serve_sensors(struct netconn *conn)
         if (!status->present)
             continue;
         uint16_t sensor_count = status->sensor_count;
+        if (sensor_count > MAX_SENSOR_COUNT)
+            sensor_count = MAX_SENSOR_COUNT;
+        buf[0] = '\0';
         {
             static char str[100];
             sprintf(str, "<tr>\n<td>Slot %s:</td>\n", vxsiic_map_slot_to_label[pp]);
-            netconn_write(conn, str, strlen(str), NETCONN_COPY);
+            strcat(buf, str);
         }
         for (uint16_t i=0; i<sensor_count; i++) {
             static char str[200];
@@ -336,14 +339,32 @@ static err_t http_serve_sensors(struct netconn *conn)
             strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
             name[SENSOR_NAME_SIZE-1] = '\0';
             SensorStatus s = status->sensors[i].hdr.b.state;
-            sprintf(str, "<td id=\"%s\"><small>%s</small><br>%.3f %s</td>\n",
-                    sensorStatusCssStyle(s),
-                    name,
-                    status->sensors[i].value,
-                    sensorUnitsStr(status->sensors[i].hdr.b.type));
-            netconn_write(conn, str, strlen(str), NETCONN_COPY);
+            sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
+            strcat(buf, str);
+            switch (status->sensors[i].hdr.b.type) {
+            case IPMI_SENSOR_DISCRETE:
+                sprintf(str, "%d", (int)status->sensors[i].value);
+                strcat(buf, str);
+                break;
+            case IPMI_SENSOR_CURRENT:
+            case IPMI_SENSOR_VOLTAGE:
+                sprintf(str, "%dm", (int)(status->sensors[i].value*1000));
+                strcat(buf, str);
+                break;
+            case IPMI_SENSOR_TEMPERATURE:
+                sprintf(str, "%d", (int)(status->sensors[i].value));
+                strcat(buf, str);
+                break;
+            default:
+                break;
+            }
+//            double f = status->sensors[i].value;
+//            sprintf(str, "%.3f", f); // FIXME: causes HardFault
+            strcat(buf, str);
+            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            strcat(buf, str);
         }
-        strcpy(buf, "</tr>\n");
+        strcat(buf, "</tr>\n");
         netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
     }
     strcpy(buf, "</table>\n");
@@ -434,5 +455,5 @@ static void http_server_netconn_thread(void *arg)
 
 void http_server_netconn_init()
 {
-    sys_thread_new("http", http_server_netconn_thread, NULL, DEFAULT_THREAD_STACKSIZE, WEBSERVER_THREAD_PRIO);
+    sys_thread_new("http", http_server_netconn_thread, NULL, 2*DEFAULT_THREAD_STACKSIZE, WEBSERVER_THREAD_PRIO);
 }

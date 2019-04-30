@@ -48,6 +48,7 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal_rtc.h"
 #include "rtc_util.h"
+#include "ethernetif.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -323,6 +324,9 @@ static void print_header(void)
 {
     // Title
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
+    uint8_t macaddress[6];
+    get_mac_address(macaddress);
+    printf("  MAC:%02X:%02X:%02X:%02X:%02X:%02X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
     if (display_mode == DISPLAY_NONE) {
         printf("     display refresh paused");
     } else {

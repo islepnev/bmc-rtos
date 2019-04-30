@@ -21,7 +21,7 @@
 #include "i2c.h"
 #include "bsp.h"
 
-static const int I2C_TIMEOUT_MS = 100;
+static const int I2C_TIMEOUT_MS = 500;
 
 HAL_StatusTypeDef ad9545_detect(void)
 {

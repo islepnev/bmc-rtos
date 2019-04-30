@@ -227,7 +227,7 @@ The STM32F7xx allows computing and verifying the IP, UDP, TCP and ICMP checksums
 #define DEFAULT_TCP_RECVMBOX_SIZE       6
 #define DEFAULT_ACCEPTMBOX_SIZE         6
 #define DEFAULT_THREAD_STACKSIZE        500
-#define TCPIP_THREAD_PRIO               osPriorityHigh
+#define TCPIP_THREAD_PRIO               osPriorityLow
 
 #define LWIP_SNTP 1
 #define LWIP_SNMP 1

@@ -21,6 +21,7 @@
 #include "app_tasks.h"
 #include "tcpip/app_task_tcpip_impl.h"
 #include "debug_helpers.h"
+#include "lwipopts.h"
 
 osThreadId tcpipThreadId = NULL;
 enum { tcpipThreadStackSize = 1024+configMINIMAL_STACK_SIZE * 2 };
@@ -39,7 +40,7 @@ static void start_thread_tcpip( void const *arg)
     }
 }
 
-osThreadDef(tcpip, start_thread_tcpip,    osPriorityLow, 1, tcpipThreadStackSize);
+osThreadDef(tcpip, start_thread_tcpip, TCPIP_THREAD_PRIO, 1, tcpipThreadStackSize);
 
 void create_task_tcpip(void)
 {

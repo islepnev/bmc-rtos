@@ -40,7 +40,7 @@ static void pllTask(void const *arg)
     }
 }
 
-osThreadDef(pll, pllTask, osPriorityIdle,      1, pllThreadStackSize);
+osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
 
 void create_task_pll(void)
 {

@@ -125,7 +125,7 @@ HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
     ret = vxsiic_read_pp_mcu_4(pp, IIC_SENSORS_MAP_START, &data);
     if (HAL_OK != ret)
         goto err;
-    status->sensor_count = data;
+    status->sensor_count = (data < MAX_SENSOR_COUNT) ? data : MAX_SENSOR_COUNT;
     for (uint32_t i=0; i<status->sensor_count; i++) {
         uint32_t wordcount = sizeof(GenericSensor) / 4;
         static GenericSensor buf;

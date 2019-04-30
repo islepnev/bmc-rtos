@@ -81,7 +81,7 @@ void task_tcpip_init()
 
 #ifdef USE_DHCP
   /* Start DHCPClient */
-  osThreadDef(DHCP, DHCP_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadDef(DHCP, DHCP_thread, TCPIP_THREAD_PRIO, 0, configMINIMAL_STACK_SIZE * 2);
   osThreadCreate (osThread(DHCP), &gnetif);
 #endif
 

@@ -41,7 +41,7 @@ static void start_fpga_thread(void const *arg)
     }
 }
 
-osThreadDef(fpga, start_fpga_thread, osPriorityLow,  1, fpgaThreadStackSize);
+osThreadDef(fpga, start_fpga_thread, osPriorityNormal,  1, fpgaThreadStackSize);
 
 void create_task_fpga(void)
 {
