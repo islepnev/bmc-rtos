@@ -360,7 +360,7 @@ static err_t http_serve_sensors(struct netconn *conn)
             }
 //            double f = status->sensors[i].value;
 //            sprintf(str, "%.3f", f); // FIXME: causes HardFault
-            strcat(buf, str);
+//            strcat(buf, str);
             sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
             strcat(buf, str);
         }
