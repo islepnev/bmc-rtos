@@ -30,7 +30,6 @@
 #include "stm32f7xx_hal_uart.h"
 /* USER CODE END Includes */
 
-extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN Private defines */

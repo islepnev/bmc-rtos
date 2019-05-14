@@ -24,6 +24,8 @@
 #include "cmsis_os.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "debug_helpers.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -128,6 +130,25 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+//    static char msg[80];
+//    debug_print("In Hard Fault Handler\n");
+//    sprintf(msg, "SCB->HFSR = 0x%08lx\n", SCB->HFSR);
+//    debug_print(msg);
+//    if ((SCB->HFSR & (1 << 30)) != 0) {
+//        debug_print("Forced Hard Fault\n");
+//        sprintf(msg, "SCB->CFSR = 0x%08lx\n", SCB->CFSR );
+//        debug_print(msg);
+//        if(SCB->BFAR != 0) {
+//            debug_printf("BFAR = 0x%08lx\n", SCB->BFAR);
+//        }
+//        if(SCB->MMFAR != 0) {
+//            debug_printf("MMFAR = 0x%08lx\n", SCB->MMFAR);
+//        }
+//        if((SCB->CFSR & 0xFFFF0000) != 0) {
+//            debug_print("usage error");
+//        }
+//    }
+
     __asm volatile
     (
         " tst lr, #4                                                \n"
@@ -225,6 +246,19 @@ void TIM1_UP_TIM10_IRQHandler(void)
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
 
   /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+    serial_console_interrupt_handler(USART1);
+  /* USER CODE END USART1_IRQn 0 */
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
 }
 
 /**
