@@ -31,7 +31,7 @@
 /* list of allowed value ranges for incoming OID */
 static const struct snmp_oid_range ipmiSensorTable_oid_ranges[] = {
 { 1, VXSIIC_SLOTS }, // boardIndex
-{ 1, POWERMON_SENSORS }, // sensorIndex
+{ 1, MAX_SENSOR_COUNT }, // sensorIndex
 };
 
 static u32_t encode_index(u32_t board_index, u32_t sensor_index)
