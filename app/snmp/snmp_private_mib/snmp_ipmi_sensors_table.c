@@ -28,58 +28,66 @@
 #include "devices_types.h"
 #include "app_shared_data.h"
 
-//static s16_t scalar_node_get_value(struct snmp_node_instance* instance, void* value)
-//{
-//    LWIP_UNUSED_ARG(instance);
-//    u32_t *uint_ptr = (u32_t*)value;
-//    *uint_ptr = (u32_t)12345;
-//    return sizeof(*uint_ptr);
-//}
-
-//void snmp_ipmi_sensors_table_init(void)
-//{
-//    struct snmp_tree_node value_node;
-//    value_node.node.node_type = SNMP_NODE_SCALAR;
-//    value_node.node.oid = 1;
-//    value_node.subnode_count = 0;
-//    value_node.subnodes = NULL;
-
-//    struct snmp_scalar_node scalar_node;
-//    scalar_node.node.node.node_type = SNMP_NODE_SCALAR;
-//    scalar_node.node.node.oid = 1;
-//    scalar_node.node.get_instance = snmp_scalar_get_instance;
-//    scalar_node.node.get_next_instance = snmp_scalar_get_next_instance;
-//    scalar_node.asn1_type = SNMP_NODE_SCALAR;
-//    scalar_node.access = SNMP_NODE_INSTANCE_READ_ONLY;
-//    scalar_node.get_value = scalar_node_get_value;
-//    scalar_node.set_test = NULL;
-//    scalar_node.set_value = NULL;
-
-////    struct snmp_tree_node tree_node = SNMP_CREATE_TREE_NODE(26381, lwip_nodes);
-
-//}
-
-/* --- ipNetToMediaTable --- */
-
 /* list of allowed value ranges for incoming OID */
 static const struct snmp_oid_range ipmiSensorTable_oid_ranges[] = {
-{ 1, 2 }, // IpmiSensorEntry size
 { 1, VXSIIC_SLOTS }, // boardIndex
 { 1, POWERMON_SENSORS }, // sensorIndex
 };
 
-static snmp_err_t
-ipmiSensorTable_get_cell_value_core(const struct GenericSensor *sensor_ptr, const u32_t *column, union snmp_variant_value *value, u32_t *value_len)
+static u32_t encode_index(u32_t board_index, u32_t sensor_index)
 {
+    return  (board_index << 8) | sensor_index;
+}
+
+static u8_t decode_board_index(u32_t index)
+{
+    return index >> 8;
+}
+
+static u8_t decode_sensor_index(u32_t index)
+{
+    return index & 0xFF;
+}
+
+static snmp_err_t
+ipmiSensorTable_get_cell_value_core(u32_t board_index, u32_t sensor_index, const u32_t *column, union snmp_variant_value *value, u32_t *value_len)
+{
+//    u8_t board_index = info->boardIndex;
+//    u8_t sensor_index = info->sensorIndex;
+
+    if (board_index == 0 || board_index > VXSIIC_SLOTS)
+        return SNMP_ERR_NOSUCHINSTANCE;
+    if (sensor_index == 0 || sensor_index > MAX_SENSOR_COUNT)
+        return SNMP_ERR_NOSUCHINSTANCE;
+
+    const Devices *dev = getDevicesConst();
+    const struct GenericSensor *sensor_ptr = &dev->vxsiic.status.slot[board_index-1].sensors[sensor_index-1];
+
     /* value */
     switch (*column) {
-//    case 1: // ipmiSensorIndex (not-accessible)
-//        value->u32 = 1;
-//        break;
+    case 1: // ipmiSensorIndex
+        value->u32 = encode_index(board_index, sensor_index);
+        *value_len = sizeof(u32_t);
+        break;
     case 2: { // ipmiSensorName
         size_t len = strlen(sensor_ptr->name);
-        MEMCPY(value, sensor_ptr->name, len);
+        MEMCPY(value->ptr, sensor_ptr->name, len);
         *value_len = len;
+        break;
+    }
+    case 3: { // ipmiSensorType
+        value->u32 = sensor_ptr->hdr.b.type;
+        *value_len = sizeof(u32_t);
+        break;
+    }
+    case 4: { // ipmiSensorStatus
+        value->u32 = sensor_ptr->hdr.b.state;
+        *value_len = sizeof(u32_t);
+        break;
+    }
+    case 5: { // ipmiSensorValue
+        value->u32 = sensor_ptr->value * 1000;
+        *value_len = sizeof(u32_t);
         break;
     }
     default:
@@ -97,18 +105,15 @@ ipmiSensorTable_get_cell_value(const u32_t *column, const u32_t *row_oid, u8_t r
   }
 
   /* get indices from incoming OID */
-  u8_t board_index = (u8_t)row_oid[0];
-  u8_t sensor_index = (u8_t)row_oid[1];
+  const u8_t board_index = (u8_t)row_oid[0];
+  const u8_t sensor_index = (u8_t)row_oid[1];
 
   if (board_index == 0 || board_index > VXSIIC_SLOTS)
       return SNMP_ERR_NOSUCHINSTANCE;
   if (sensor_index == 0 || sensor_index > MAX_SENSOR_COUNT)
       return SNMP_ERR_NOSUCHINSTANCE;
 
-  const Devices *dev = getDevicesConst();
-  const struct GenericSensor *sensor_ptr = &dev->vxsiic.status.slot[board_index-1].sensors[sensor_index-1];
-
-  return ipmiSensorTable_get_cell_value_core(sensor_ptr, column, value, value_len);
+  return ipmiSensorTable_get_cell_value_core(board_index, sensor_index, column, value, value_len);
 }
 
 static snmp_err_t
@@ -122,22 +127,29 @@ ipmiSensorTable_get_next_cell_instance_and_value(const u32_t *column, struct snm
 
   /* iterate over all possible OIDs to find the next one */
   Devices *dev = getDevices();
-  for (size_t i = 0; i < VXSIIC_SLOTS; i++)
+  for (size_t i = 0; i < VXSIIC_SLOTS; i++) {
+//      u32_t boardIndex = (u32_t)vxsiic_map_slot_to_number[i];
+      if (!dev->vxsiic.status.slot[i].present)
+          continue;
       for (size_t j = 0; j < MAX_SENSOR_COUNT; j++)
       {
           struct GenericSensor *sensor_ptr = &dev->vxsiic.status.slot[i].sensors[j];
+          if (sensor_ptr->hdr.b.state == SENSOR_UNKNOWN) continue;
           u32_t test_oid[LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges)];
-          test_oid[0] = i+1;
-          test_oid[1] = j+1;
+          const u8_t board_index = i+1;
+          const u8_t sensor_index = j+1;
+          test_oid[0] = board_index;
+          test_oid[1] = sensor_index;
           /* check generated OID: is it a candidate for the next one? */
-          snmp_next_oid_check(&state, test_oid, LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges), sensor_ptr);
+          snmp_next_oid_check(&state, test_oid, LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges), (void *)encode_index(board_index, sensor_index));
       }
+  }
 
   /* did we find a next one? */
   if (state.status == SNMP_NEXT_OID_STATUS_SUCCESS) {
     snmp_oid_assign(row_oid, state.next_oid, state.next_oid_len);
     /* fill in object properties */
-    return ipmiSensorTable_get_cell_value_core((const struct GenericSensor *)(state.reference), column, value, value_len);
+    return ipmiSensorTable_get_cell_value_core(decode_board_index((uint32_t)state.reference), decode_sensor_index((uint32_t)state.reference), column, value, value_len);
   }
 
   /* not found */
@@ -146,8 +158,11 @@ ipmiSensorTable_get_next_cell_instance_and_value(const u32_t *column, struct snm
 
 static const struct snmp_table_simple_col_def ipmiSensorTable_columns[] = {
   {  1, SNMP_ASN1_TYPE_INTEGER,      SNMP_VARIANT_VALUE_TYPE_U32 }, // sensorIndex
-  {  2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_VARIANT_VALUE_TYPE_CONST_PTR } // sensorName
+  {  2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_VARIANT_VALUE_TYPE_CONST_PTR }, // sensorName
+  {  3, SNMP_ASN1_TYPE_INTEGER,      SNMP_VARIANT_VALUE_TYPE_U32 }, // sensorType
+  {  4, SNMP_ASN1_TYPE_INTEGER,      SNMP_VARIANT_VALUE_TYPE_U32 }, // sensorStatus
+  {  5, SNMP_ASN1_TYPE_INTEGER,      SNMP_VARIANT_VALUE_TYPE_U32 }, // sensorValue
 };
 
 const struct snmp_table_simple_node ipmiSensorTable =
-        SNMP_TABLE_CREATE_SIMPLE(1, ipmiSensorTable_columns, ipmiSensorTable_get_cell_value, ipmiSensorTable_get_next_cell_instance_and_value);
+        SNMP_TABLE_CREATE_SIMPLE(2, ipmiSensorTable_columns, ipmiSensorTable_get_cell_value, ipmiSensorTable_get_next_cell_instance_and_value);

@@ -37,6 +37,7 @@ static s16_t      boards_table_get_value(struct snmp_node_instance* instance, vo
 static snmp_err_t boards_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
 
 static const struct snmp_table_col_def boards_table_columns[] = {
+{ 1, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 2, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 3, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 4, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
@@ -125,6 +126,10 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
     u32_t *uint_ptr = (u32_t*)value;
     switch (col)
     {
+    case 1: // boardIndex
+        *uint_ptr = (u32_t)(i+1);
+        return sizeof(*uint_ptr);
+        break;
     case 2: // boardSlot
         *uint_ptr = (u32_t)vxsiic_map_slot_to_number[i];
         return sizeof(*uint_ptr);

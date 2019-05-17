@@ -331,17 +331,12 @@ static const struct snmp_tree_node fpga_node = SNMP_CREATE_TREE_NODE(4, fpga_nod
 
 static const struct snmp_tree_node ttvxs_node = SNMP_CREATE_TREE_NODE(5, ttvxs_nodes);
 
-static const struct snmp_node* const boardsTable_nodes[] = {
-    &boards_table.node.node
-};
-
-static const struct snmp_tree_node boardsTable_node = SNMP_CREATE_TREE_NODE(6, boardsTable_nodes);
-
-static const struct snmp_node* const ipmiSensorTable_nodes[] = {
+static const struct snmp_node* const ipmiBoard_nodes[] = {
+    &boards_table.node.node,
     &ipmiSensorTable.node.node
 };
 
-static const struct snmp_tree_node ipmiSensorTable_node = SNMP_CREATE_TREE_NODE(7, ipmiSensorTable_nodes);
+static const struct snmp_tree_node ipmiBoard_node = SNMP_CREATE_TREE_NODE(6, ipmiBoard_nodes);
 
 static const struct snmp_node* const bmc_nodes[] = {
     &bmcStatus.node.node,
@@ -349,8 +344,7 @@ static const struct snmp_node* const bmc_nodes[] = {
     &sysmon_node.node,
     &fpga_node.node,
     &ttvxs_node.node,
-    &boardsTable_node.node,
-    &ipmiSensorTable_node.node
+    &ipmiBoard_node.node
 };
 static const struct snmp_tree_node bmc_node = SNMP_CREATE_TREE_NODE(1, bmc_nodes);
 

@@ -41,14 +41,16 @@ static s16_t      sensor_table_get_value(struct snmp_node_instance* instance, vo
 static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
 
 static const struct snmp_table_col_def sensor_table_columns[] = {
-{ 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 3, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 2, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 3, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 4, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 5, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 6, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 7, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
 { 8, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 9, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  }
+{ 9, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 10, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_ONLY  }
 };
 
 /* sensortable .1.3.6.1.4.1.26381.1.1 */
@@ -131,42 +133,46 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
     const pm_sensor *s = &dev->pm.sensors[i];
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
-    //  case 1: {/* sensor index */
-    //      *(s32_t *)value = i+1;
-    //      return sizeof(s32_t);
-    //  }
-    case 2: {/* sensor name */
+    case 1: {/* sensor index */
+        *(s32_t *)value = i+1;
+        return sizeof(s32_t);
+    }
+    case 2: {/* sensor I2C bus address */
+        *(s32_t *)value = s->busAddress;
+        return sizeof(s32_t);
+    }
+    case 3: {/* sensor name */
         const char *name = monLabel(i);
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;
     }
-    case 3: {/* sensor optional */
+    case 4: {/* sensor optional */
 //        *(s32_t *)value = s->isOptional ? 1 : 2;
 //        return sizeof(s32_t);
         return snmp_encode_truthvalue(value, s->isOptional);
 
     }
-    case 4: {/* sensor state */
+    case 5: {/* sensor state */
         *(s32_t *)value = pm_sensor_status(s);
         return sizeof(s32_t);
     }
-    case 5: {/* nominal voltage */
+    case 6: {/* nominal voltage */
         *(s32_t *)value = s->busNomVoltage * 1000;
         return sizeof(s32_t);
     }
-    case 6: {/* voltage sensor value */
+    case 7: {/* voltage sensor value */
         *(s32_t *)value = s->busVoltage * 1000;
         return sizeof(s32_t);
     }
-    case 7: {/* current sensor value */
+    case 8: {/* current sensor value */
         return snmp_encode_truthvalue(value, s->hasShunt);
     }
-    case 8: {/* current sensor value */
+    case 9: {/* current sensor value */
         *(s32_t *)value = s->current * 1000;
         return sizeof(s32_t);
     }
-    case 9: {/* peak current sensor value */
+    case 10: {/* peak current sensor value */
         *(s32_t *)value = s->currentMax * 1000;
         return sizeof(s32_t);
     }
