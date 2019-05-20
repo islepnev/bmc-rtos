@@ -35,7 +35,7 @@ typedef enum {
     LOG_DEBUG = 7    // debug-level messages
 } LogPriority;
 
-enum {LOG_BUF_SIZE = 30};
+enum {LOG_BUF_SIZE = 100};
 
 struct LogEntry;
 typedef struct LogEntry LogEntry;
