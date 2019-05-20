@@ -37,7 +37,7 @@
 static const int TEST_RESTART = 0; // debug only
 static const uint32_t SENSORS_SETTLE_TICKS = 200;
 static const uint32_t THERM_SETTLE_TICKS = 1000;
-static const uint32_t RAMP_TIMEOUT_TICKS = 3000;
+static const uint32_t RAMP_TIMEOUT_TICKS = 500;
 static const uint32_t POWERFAIL_DELAY_TICKS = 3000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 
@@ -47,7 +47,8 @@ uint32_t pmLoopCount = 0;
 
 //PmState pmState = PM_STATE_INIT;
 
-static const uint32_t sensorReadInterval = 100;
+static const uint32_t sensor_read_interval_run = 100;
+static const uint32_t sensor_read_interval_ramp = 10;
 static uint32_t sensorReadTick = 0;
 
 static const uint32_t thermReadInterval = 300;
@@ -214,17 +215,22 @@ void task_powermon_run (void)
     for (int i=0; i<POWERMON_SENSORS; i++)
         pm->sensors[i].rampState = (pm->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
+    int do_read_sensors = 0;
     if ((pm->pmState == PM_STATE_STANDBY)
             || (pm->pmState == PM_STATE_RAMP)) {
-        runMon(pm);
+        do_read_sensors = 1;
     } else {
         if (pm->pmState == PM_STATE_RUN) {
-            uint32_t ticks = osKernelSysTick() - sensorReadTick;
-            if (ticks > sensorReadInterval) {
-                sensorReadTick = osKernelSysTick();
-                runMon(pm);
-            }
+            do_read_sensors = 1;
 
+        }
+    }
+    if (do_read_sensors) {
+        uint32_t ticks = osKernelSysTick() - sensorReadTick;
+        uint32_t interval = (pm->pmState == PM_STATE_RAMP) ? sensor_read_interval_ramp : sensor_read_interval_run;
+        if (ticks > interval) {
+            sensorReadTick = osKernelSysTick();
+            runMon(pm);
         }
     }
     update_system_powergood_pin(pm);
