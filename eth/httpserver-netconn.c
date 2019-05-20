@@ -275,6 +275,26 @@ static err_t http_serve_task_list(struct netconn *conn)
     /* Send the dynamically generated page */
     netconn_write(conn, task_list_header, strlen(task_list_header), NETCONN_COPY);
     netconn_write(conn, PAGE_BODY, strlen(PAGE_BODY), NETCONN_COPY);
+
+    //
+    PAGE_BODY[0] = '\0';
+    char *buf = PAGE_BODY;
+    strcpy(buf, "<pre>\nTask");
+    buf += strlen(buf);
+    for(int i = strlen("Task"); i < ( configMAX_TASK_NAME_LEN - 3 ); i++) {
+        *buf = ' ';
+        buf++;
+        *buf = '\0';
+    }
+    const char *hdr = "  Abs Time      % Time\r\n****************************************\n";
+    strcpy(buf, hdr);
+    buf += strlen(hdr);
+    vTaskGetRunTimeStats(buf);
+    strcat(buf, "</pre>\n");
+    netconn_write(conn, PAGE_BODY, strlen(PAGE_BODY), NETCONN_COPY);
+
+    //
+
     netconn_write(conn, task_list_footer, strlen(task_list_footer), NETCONN_COPY);
     return ERR_OK;
 }
