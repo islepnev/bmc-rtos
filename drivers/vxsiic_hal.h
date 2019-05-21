@@ -24,17 +24,24 @@
 extern "C" {
 #endif
 
+struct __I2C_HandleTypeDef * const vxsiic_hi2c;
+
+void vxsiic_init(void);
 void vxsiic_reset_i2c_master(void);
 void vxsiic_reset_mux(void);
 HAL_StatusTypeDef vxsiic_detect_mux(void);
 HAL_StatusTypeDef vxsiic_mux_select(uint8_t subdevice, uint8_t channel);
 HAL_StatusTypeDef vxsiic_get_pp_i2c_status(uint8_t pp);
-HAL_StatusTypeDef vxsiic_detect_pp_eeprom(uint8_t pp);
+//HAL_StatusTypeDef vxsiic_detect_pp_eeprom(uint8_t pp);
 HAL_StatusTypeDef vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data);
-HAL_StatusTypeDef vxsiic_read_pp_mcu(uint8_t pp, uint16_t reg, uint8_t *data);
 HAL_StatusTypeDef vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data);
-HAL_StatusTypeDef vxsiic_write_pp_mcu(uint8_t pp, uint16_t reg, uint8_t data);
 HAL_StatusTypeDef vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data);
+void vxsiic_I2C_MasterTxCpltCallback(void);
+void vxsiic_I2C_MasterRxCpltCallback(void);
+void vxsiic_HAL_I2C_MemTxCpltCallback(void);
+void vxsiic_HAL_I2C_MemRxCpltCallback(void);
+void vxsiic_HAL_I2C_ErrorCallback(void);
+void vxsiic_HAL_I2C_AbortCpltCallback(void);
 
 #ifdef __cplusplus
 }

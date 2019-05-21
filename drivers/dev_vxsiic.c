@@ -17,12 +17,14 @@
 
 #include "dev_vxsiic.h"
 #include <string.h>
+#include <stdint.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_vxsiic_types.h"
 #include "vxsiic_hal.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
 #include "ipmi_sensor_types.h"
+#include "cmsis_os.h"
 
 // valid slot range: 2..21
 // slot 2 = array[0]
@@ -33,6 +35,11 @@ static const int map_slot_to_channel[VXSIIC_SLOTS] = {
 static const int map_slot_to_subdevice[VXSIIC_SLOTS] = {
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 1
 };
+
+void dev_vxsiic_init(void)
+{
+    vxsiic_init();
+}
 
 DeviceStatus dev_vxsiic_detect(Dev_vxsiic *d)
 {
@@ -153,6 +160,7 @@ static int old_present[VXSIIC_SLOTS] = {0};
 
 DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
 {
+//    uint32_t tick_begin = osKernelSysTick();
     HAL_StatusTypeDef ret = HAL_OK;
     for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
         vxsiic_reset_i2c_master();
@@ -176,5 +184,8 @@ DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
         }
         old_present[pp] = status->present;
     }
+//    uint32_t tick_end = osKernelSysTick();
+//    uint32_t ticks = tick_end - tick_begin;
+//    debug_printf("%s: %ld ticks\n", __func__, ticks);
     return d->present;
 }

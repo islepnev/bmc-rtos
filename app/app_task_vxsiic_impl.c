@@ -24,7 +24,7 @@
 #include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
-static const uint32_t POLL_DELAY_TICKS  = 1000;
+static const uint32_t POLL_DELAY_TICKS  = 100;
 
 typedef enum {
     VXSIIC_STATE_RESET,
@@ -53,7 +53,7 @@ static void struct_vxs_i2c_init(Dev_vxsiic *d)
 
 void task_vxsiic_init(void)
 {
-
+    dev_vxsiic_init();
 }
 
 void task_vxsiic_run(void)
