@@ -26,6 +26,13 @@ extern "C" {
 
 struct __I2C_HandleTypeDef * const vxsiic_hi2c;
 
+typedef struct vxsiic_i2c_stats_t {
+    uint32_t ops;
+    uint32_t errors;
+} vxsiic_i2c_stats_t;
+
+const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void);
+
 void vxsiic_init(void);
 void vxsiic_reset_i2c_master(void);
 void vxsiic_reset_mux(void);

@@ -36,9 +36,13 @@ static const int map_slot_to_subdevice[VXSIIC_SLOTS] = {
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 1
 };
 
-void dev_vxsiic_init(void)
+void dev_vxsiic_init(Dev_vxsiic *d)
 {
     vxsiic_init();
+    iic_stats_t zz = {0};
+    for (int i=0; i<VXSIIC_SLOTS; i++) {
+        d->status.slot[i].iic_stats = zz;
+    }
 }
 
 DeviceStatus dev_vxsiic_detect(Dev_vxsiic *d)
@@ -72,8 +76,12 @@ HAL_StatusTypeDef dev_vxsiic_read_pp_eeprom(Dev_vxsiic *d, int pp)
     uint16_t addr = 0;
     uint8_t eeprom_data = 0;
     ret = vxsiic_read_pp_eeprom(pp, addr, &eeprom_data);
-    if (HAL_OK != ret)
+    if (HAL_OK == ret) {
+//        d->status.slot[i].iic_stats.ops++;
+    } else {
+//        d->status.slot[i].iic_stats.errors++;
         return ret;
+    }
 //    debug_printf("EEPROM at slot %2s [%04X] = %02X\n", map_slot_to_label[pp], addr, eeprom_data);
     if (eeprom_data != 0xFF) {
         debug_printf("EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
@@ -119,8 +127,9 @@ HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
     if (HAL_OK != ret)
         goto err;
     status->present = 1;
-    for (int i=0; i<MCU_MAP_SIZE; i++) {
-        addr = 1+i;
+    status->map[0] = status->magic;
+    for (int i=1; i<MCU_MAP_SIZE; i++) {
+        addr = i;
         ret = vxsiic_read_pp_mcu_4(pp, addr, &data);
         if (HAL_OK != ret)
             goto err;
@@ -160,6 +169,7 @@ static int old_present[VXSIIC_SLOTS] = {0};
 
 DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
 {
+    const struct vxsiic_i2c_stats_t *vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
 //    uint32_t tick_begin = osKernelSysTick();
     HAL_StatusTypeDef ret = HAL_OK;
     for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
@@ -171,6 +181,7 @@ DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
             return d->present;
         }
         vxsiic_slot_status_t *status = &d->status.slot[pp];
+        const struct vxsiic_i2c_stats_t vxsiic_i2c_stats_before = *vxsiic_i2c_stats;
         if ((HAL_OK == vxsiic_get_pp_i2c_status(pp))
                 && (HAL_OK == dev_vxsiic_read_pp_eeprom(d, pp))
                 && (HAL_OK == dev_vxsiic_read_pp_mcu(d, pp))) {
@@ -183,6 +194,9 @@ DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
             status->present = 0;
         }
         old_present[pp] = status->present;
+        const struct vxsiic_i2c_stats_t vxsiic_i2c_stats_after = *vxsiic_i2c_stats;
+        status->iic_stats.ops += (vxsiic_i2c_stats_after.ops - vxsiic_i2c_stats_before.ops);
+        status->iic_stats.errors += (vxsiic_i2c_stats_after.errors - vxsiic_i2c_stats_before.errors);
     }
 //    uint32_t tick_end = osKernelSysTick();
 //    uint32_t ticks = tick_end - tick_begin;

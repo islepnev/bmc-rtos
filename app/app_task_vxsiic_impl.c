@@ -51,9 +51,10 @@ static void struct_vxs_i2c_init(Dev_vxsiic *d)
     }
 }
 
-void task_vxsiic_init(void)
+void task_vxsiic_init()
 {
-    dev_vxsiic_init();
+    Dev_vxsiic *d = get_dev_vxsiic();
+    dev_vxsiic_init(d);
 }
 
 void task_vxsiic_run(void)

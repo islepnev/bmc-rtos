@@ -23,8 +23,14 @@
 #include "ipmi_sensor_types.h"
 
 enum {VXSIIC_SLOTS = 18};
-enum {MCU_MAP_SIZE = 8};
+enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
+
+typedef struct iic_stats_t {
+    uint32_t ops;
+    uint32_t errors;
+} iic_stats_t;
+
 struct vxsiic_slot_status_t {
    int present;
    DeviceStatus device_status;
@@ -34,6 +40,7 @@ struct vxsiic_slot_status_t {
    uint32_t map[MCU_MAP_SIZE];
    uint16_t sensor_count;
    GenericSensor sensors[MAX_SENSOR_COUNT];
+   iic_stats_t iic_stats;
 };
 
 typedef struct vxsiic_slot_status_t vxsiic_slot_status_t;

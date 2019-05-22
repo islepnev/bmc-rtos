@@ -487,13 +487,16 @@ static void display_boards(const Devices * dev)
         const vxsiic_slot_status_t *status = &dev->vxsiic.status.slot[i];
         if (0 == status->present)
             continue;
-        printf("%2s  %08lX %08lX %08lX %08lX %08lX" ANSI_CLEAR_EOL "\n",
+        printf("%2s  %08lX %08lX %08lX %08lX   %08lX %08lX %08lX %08lX" ANSI_CLEAR_EOL "\n",
                vxsiic_map_slot_to_label[i],
-               status->magic,
                status->map[0],
                 status->map[1],
                 status->map[2],
-                status->map[3]
+                status->map[3],
+                status->map[4],
+                status->map[5],
+                status->map[6],
+                status->map[7]
                 );
     }
 }

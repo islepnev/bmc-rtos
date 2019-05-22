@@ -26,7 +26,7 @@ extern "C" {
 
 struct Dev_vxsiic;
 
-void dev_vxsiic_init(void);
+void dev_vxsiic_init(struct Dev_vxsiic *d);
 DeviceStatus dev_vxsiic_detect(struct Dev_vxsiic *d);
 DeviceStatus dev_vxsiic_read(struct Dev_vxsiic *d);
 
