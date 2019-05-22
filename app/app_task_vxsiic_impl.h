@@ -18,9 +18,18 @@
 #ifndef APP_TASK_VXSIIC_IMPL_H
 #define APP_TASK_VXSIIC_IMPL_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct vxsiic_i2c_stats_t {
+    uint32_t ops;
+    uint32_t errors;
+} vxsiic_i2c_stats_t;
+
+const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void);
 
 void task_vxsiic_init(void);
 void task_vxsiic_run(void);

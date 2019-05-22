@@ -17,6 +17,7 @@
 
 #include "system_status.h"
 #include "app_task_powermon.h"
+#include "app_task_vxsiic_impl.h"
 
 SensorStatus getMiscStatus(const Devices *d)
 {
@@ -56,6 +57,16 @@ SensorStatus getPllStatus(const Dev_ad9545 *d)
     return SENSOR_NORMAL;
 }
 
+SensorStatus pollVxsiicStatus(Devices *dev)
+{
+    static vxsiic_i2c_stats_t vxsiic_i2c_stats_save = {0};
+    const vxsiic_i2c_stats_t * vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
+    uint32_t vxsiic_errors = vxsiic_i2c_stats->errors - vxsiic_i2c_stats_save.errors;
+    const SensorStatus vxsiicStatus = vxsiic_errors ? SENSOR_CRITICAL : (vxsiic_i2c_stats->errors) ? SENSOR_WARNING : SENSOR_NORMAL;
+    vxsiic_i2c_stats_save = *vxsiic_i2c_stats;
+    return vxsiicStatus;
+}
+
 SensorStatus getSystemStatus(const Devices *dev)
 {
     const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
@@ -63,6 +74,7 @@ SensorStatus getSystemStatus(const Devices *dev)
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
     const SensorStatus pllStatus = getPllStatus(&dev->pll);
+//    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
         systemStatus = powermonStatus;
@@ -74,5 +86,7 @@ SensorStatus getSystemStatus(const Devices *dev)
         systemStatus = fpgaStatus;
     if (pllStatus > systemStatus)
         systemStatus = pllStatus;
+//    if (vxsiicStatus > systemStatus)
+//        systemStatus = vxsiicStatus;
     return systemStatus;
 }

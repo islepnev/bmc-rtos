@@ -26,11 +26,15 @@
 #include "version.h"
 #include "system_status.h"
 #include "ipmi_sensors.h"
+#include "logbuffer.h"
 
 #define SLAVE_OWN_ADDRESS 0x33
-void Error_Callback(void);
-void Slave_Complete_Callback(void);
-void Slave_Ready_To_Transmit_Callback(void);
+
+static vxsiic_i2c_stats_t vxsiic_i2c_stats = {0};
+const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void)
+{
+    return &vxsiic_i2c_stats;
+}
 
 static const uint32_t BMC_MAGIC = 0x424D4320;
 enum { MAX_MSG_SIZE = 40 };
@@ -39,22 +43,15 @@ static uint8_t rx_buf_len = 0;
 static uint16_t mem_write = 0;
 static uint16_t mem_addr = 0;
 static uint32_t mem_rxdata = 0;
+enum {MEM_START_ADDR = 8};
 enum {MEM_SIZE = 4};
 static uint32_t mem[MEM_SIZE] = {0};
 static uint16_t byte_count = 0;
-typedef struct iic_op {
-    uint16_t write;
-    uint16_t addr;
-    uint32_t data;
-//    uint8_t data[MAX_MSG_SIZE];
-} iic_op;
-osMailQDef(mailq_iic_rx, 1, iic_op);
-osMailQId (mailq_iic_rx);
 
 void task_vxsiic_init(void)
 {
-    led_all_set_state(LED_OFF);
-    mailq_iic_rx = osMailCreate(osMailQ(mailq_iic_rx), NULL);
+    vxsiic_i2c_stats_t zz = {0};
+    vxsiic_i2c_stats = zz;
 
     NVIC_DisableIRQ(I2C1_EV_IRQn);
     //    LL_I2C_Disable(I2C1);
@@ -70,83 +67,73 @@ void task_vxsiic_init(void)
 
 void task_vxsiic_run(void)
 {
-    if (!mailq_iic_rx)
-        return;
-    osEvent event = osMailGet(mailq_iic_rx, 1);
-    if (osOK == event.status || osEventTimeout == event.status) {
-        return;
-    }
-    if (osEventMail != event.status) {
-        for(;;) {
-            debug_print("error\n");
-        }
-    }
-    iic_op *op = event.value.p;
-//    debug_printf("%s %04X %08X\n", op->write ? "WRITE" : "READ ", op->addr, op->data);
-    osMailFree(mailq_iic_rx, op);
+    // do nothing
 }
 
 static uint32_t mem_txdata = 0;
 
-void Slave_Ready_To_Transmit_Callback(void)
+static void iic_write_callback(uint16_t addr, uint32_t data)
 {
-    if (byte_count == 2) {
-        if (mem_addr >= IIC_SENSORS_MAP_START && mem_addr < IIC_SENSORS_MAP_START + IIC_SENSORS_MAP_SIZE_BYTES / 4) {
-            uint32_t offset = mem_addr - IIC_SENSORS_MAP_START;
-            uint32_t *ptr = (uint32_t *)&ipmi_sensors + offset;
-            memcpy(&mem_txdata, ptr, sizeof(mem_txdata));
-        } else
-        switch (mem_addr) {
+    // writable scratch pad
+    if (addr >= MEM_START_ADDR && addr < MEM_START_ADDR + MEM_SIZE) {
+        mem[addr - MEM_START_ADDR] = data;
+    }
+}
+
+static void iic_read_callback(uint16_t addr, uint32_t *data)
+{
+    if (!data)
+        return;
+    if (addr >= IIC_SENSORS_MAP_START && addr < IIC_SENSORS_MAP_START + IIC_SENSORS_MAP_SIZE_BYTES / 4) {
+        uint32_t offset = addr - IIC_SENSORS_MAP_START;
+        uint32_t *ptr = (uint32_t *)&ipmi_sensors + offset;
+        memcpy(data, ptr, sizeof(uint32_t));
+    } else if (addr >= MEM_START_ADDR && addr < MEM_START_ADDR + MEM_SIZE) {
+        *data = mem[addr - MEM_START_ADDR];
+    } else {
+        switch (addr) {
         case 0:
-            mem_txdata = BMC_MAGIC;
+            *data = BMC_MAGIC;
             break;
         case 1:
-            mem_txdata = ((uint32_t)(VERSION_MAJOR_NUM) << 16) | (uint16_t)(VERSION_MINOR_NUM);
+            *data = ((uint32_t)(VERSION_MAJOR_NUM) << 16) | (uint16_t)(VERSION_MINOR_NUM);
             break;
         case 2:
-            mem_txdata = dev.fpga.id;
+            *data = dev.fpga.id;
             break;
         case 3: {
             const SensorStatus systemStatus = getSystemStatus(&dev);
-            mem_txdata = systemStatus;
+            *data = systemStatus;
             break;
         }
-        case 8:
-        case 9:
-//            mem_txdata = mem[mem_addr];
+        case 4:
+            *data = vxsiic_i2c_stats.ops;
+            break;
+        case 5:
+            *data = vxsiic_i2c_stats.errors;
             break;
         default:
-            mem_txdata = 0;
+            *data = 0;
             break;
         }
+    }
+}
+
+static void Slave_Ready_To_Transmit_Callback(void)
+{
+    if (byte_count == 2) {
+        iic_read_callback(mem_addr, &mem_txdata);
     }
 
     uint32_t tx_data = mem_txdata >> ((byte_count-2)*8);
     LL_I2C_TransmitData8(I2C1, tx_data);
 }
 
-void Error_Callback(void)
-{
-    led_toggle(LED_RED);
-}
-
-void Slave_Complete_Callback(void)
+static void Slave_Complete_Callback(void)
 {
 //    debug_printf("%s %d %04X %08X\n", mem_write ? "WRITE" : "READ ", byte_count, mem_addr, mem_write ? mem_rxdata : mem_txdata);
     if (mem_write) {
-        if (mem_addr < MEM_SIZE) {
-            mem[mem_addr] = mem_rxdata;
-        }
-    }
-
-//    uint32_t data = byte_count; //rx_data;
-    iic_op *op = osMailAlloc(mailq_iic_rx, osWaitForever);
-    op->addr = mem_addr;
-    op->write = mem_write;
-    op->data = mem_write ? mem_rxdata : mem_txdata;
-    osStatus status = osMailPut(mailq_iic_rx, op);
-    if (osOK != status) {
-        Error_Callback();
+        iic_write_callback(mem_addr, mem_rxdata);
     }
     mem_addr = 0;
     mem_rxdata = 0;
@@ -176,7 +163,8 @@ void i2c_event_interrupt_handler(void)
         else
         {
             LL_I2C_ClearFlag_ADDR(I2C1);
-            Error_Callback();
+            vxsiic_i2c_stats.errors++;
+            log_printf(LOG_ERR, "vxsiic: I2C event interrupt address error");
         }
     }
     else if (LL_I2C_IsActiveFlag_NACK(I2C1))
@@ -192,6 +180,7 @@ void i2c_event_interrupt_handler(void)
             LL_I2C_ClearFlag_TXE(I2C1);
         }
         Slave_Complete_Callback();
+        vxsiic_i2c_stats.ops++;
         byte_count = 0;
         rx_buf_len = 0;
     }
@@ -228,13 +217,53 @@ void i2c_event_interrupt_handler(void)
     }
     else
     {
-        /* Call Error function */
-        Error_Callback();
+        vxsiic_i2c_stats.errors++;
+        log_printf(LOG_ERR, "vxsiic: unexpected I2C event interrupt");
     }
 }
 
+typedef union {
+  struct {
+      uint32_t txe:1;
+      uint32_t txis:1;
+      uint32_t rxne:1;
+      uint32_t addr:1;
+      uint32_t nackf:1;
+      uint32_t stopf:1;
+      uint32_t tc:1;
+      uint32_t tcr:1;
+      uint32_t berr:1;
+      uint32_t arlo:1;
+      uint32_t ovr:1;
+      uint32_t pecerr:1;
+      uint32_t timeout:1;
+      uint32_t alert:1;
+      uint32_t busy:1;
+      uint32_t dir:1;
+      uint32_t addcode:15;
+  } b;
+  uint32_t raw;
+} stm32f7xx_i2c_isr_t;
+
 void i2c_error_interrupt_handler(void)
 {
-    debug_printf("%lu, I2C ERROR\n", DWT->CYCCNT);
-    Error_Callback();
+    stm32f7xx_i2c_isr_t isr;
+    isr.raw = I2C1->ISR;
+    log_printf(LOG_ERR, "vxsiic: I2C ERROR (addr 0x%02X): ISR=%08lX %s%s%s\n",
+                 LL_I2C_GetAddressMatchCode(I2C1) / 2,
+                 isr.raw,
+                 LL_I2C_IsActiveFlag_ARLO(I2C1) ? " ARLO" : "",
+                 LL_I2C_IsActiveFlag_BERR(I2C1) ? " BERR" : "",
+                 LL_I2C_IsActiveFlag_OVR(I2C1)  ? " OVR" : ""
+                                                  );
+    if (LL_I2C_IsActiveFlag_ARLO(I2C1)) {
+        LL_I2C_ClearFlag_ARLO(I2C1);
+    }
+    if (LL_I2C_IsActiveFlag_BERR(I2C1)) {
+        LL_I2C_ClearFlag_BERR(I2C1);
+    }
+    if (LL_I2C_IsActiveFlag_OVR(I2C1)) {
+        LL_I2C_ClearFlag_OVR(I2C1);
+    }
+    vxsiic_i2c_stats.errors++;
 }

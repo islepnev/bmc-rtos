@@ -111,9 +111,14 @@ static void task_main (void)
     }
 
     const SensorStatus systemStatus = getSystemStatus(&dev);
-    dev_led_set(&dev.leds, LED_RED, systemStatus >= SENSOR_CRITICAL);
-    dev_led_set(&dev.leds, LED_YELLOW, systemStatus >= SENSOR_WARNING);
-    dev_led_set(&dev.leds, LED_GREEN, systemStatus == SENSOR_NORMAL);
+    const SensorStatus vxsiicStatus = pollVxsiicStatus(&dev);
+    SensorStatus showStatus = systemStatus;
+    if (vxsiicStatus > showStatus)
+        showStatus = vxsiicStatus;
+
+    dev_led_set(&dev.leds, LED_RED,    showStatus >= SENSOR_CRITICAL);
+    dev_led_set(&dev.leds, LED_YELLOW, showStatus >= SENSOR_WARNING);
+    dev_led_set(&dev.leds, LED_GREEN,  showStatus == SENSOR_NORMAL);
 }
 
 static void prvAppMainTask( void const *arg)

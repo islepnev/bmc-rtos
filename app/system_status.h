@@ -24,6 +24,7 @@ SensorStatus getMiscStatus(const Devices *d);
 SensorStatus getFpgaStatus(const Dev_fpga *d);
 int getPllLockState(const Dev_ad9545 *d);
 SensorStatus getPllStatus(const Dev_ad9545 *d);
+SensorStatus pollVxsiicStatus(Devices *dev);
 SensorStatus getSystemStatus(const Devices *dev);
 
 #endif // SYSTEM_STATUS_H
