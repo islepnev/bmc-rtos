@@ -142,19 +142,19 @@ int sensorBusAddress(SensorIndex index)
 const char *monLabel(SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5:           return "  int 1.5V"; // U1, ? mOhm
-    case SENSOR_5V:            return "        5V"; // U3
-    case SENSOR_VME_5V:        return "    VME 5V"; // U5, 10 mOhm
-    case SENSOR_3V3:           return "      3.3V"; // U7
-    case SENSOR_VME_3V3:       return "  VME 3.3V"; // U9, 4 mOhm
-    case SENSOR_FPGA_CORE_1V0: return "  FPGA 1.0"; // U11, 2 mOhm
-    case SENSOR_FPGA_MGT_1V0:  return "   MGT 1.0"; // U13, 2 mOhm
-    case SENSOR_FPGA_MGT_1V2:  return "   MGT 1.2"; // U2, 2 mOhm
-    case SENSOR_FPGA_1V8:      return "  FPGA 1.8"; // U, 2 mOhm
-    case SENSOR_TDC_A:         return " TDC-A 2.5"; // U, 2 mOhm
-    case SENSOR_TDC_B:         return " TDC-B 2.5"; // U, 2 mOhm
-    case SENSOR_TDC_C:         return " TDC-C 2.5"; // U, 2 mOhm
-    case SENSOR_CLOCK_2V5:     return " Clock 2.5"; // U, 2 mOhm
+    case SENSOR_1V5:           return   "int 1.5V"; // U1, ? mOhm
+    case SENSOR_5V:            return         "5V"; // U3
+    case SENSOR_VME_5V:        return     "VME 5V"; // U5, 10 mOhm
+    case SENSOR_3V3:           return       "3.3V"; // U7
+    case SENSOR_VME_3V3:       return   "VME 3.3V"; // U9, 4 mOhm
+    case SENSOR_FPGA_CORE_1V0: return  "Core 1.0V"; // U11, 2 mOhm
+    case SENSOR_FPGA_MGT_1V0:  return   "MGT 1.0V"; // U13, 2 mOhm
+    case SENSOR_FPGA_MGT_1V2:  return   "MGT 1.2V"; // U2, 2 mOhm
+    case SENSOR_FPGA_1V8:      return   "FPGA 1.8"; // U, 2 mOhm
+    case SENSOR_TDC_A:         return  "TDC-A 2.5"; // U, 2 mOhm
+    case SENSOR_TDC_B:         return  "TDC-B 2.5"; // U, 2 mOhm
+    case SENSOR_TDC_C:         return  "TDC-C 2.5"; // U, 2 mOhm
+    case SENSOR_CLOCK_2V5:     return  "Clock 2.5"; // U, 2 mOhm
     }
     return "???";
 }
