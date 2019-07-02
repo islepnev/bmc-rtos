@@ -30,6 +30,7 @@ struct Dev_fpga;
 struct Dev_thset;
 struct Dev_ad9545;
 struct Devices;
+struct Dev_powermon;
 
 DeviceStatus fpgaDetect(struct Dev_fpga *d);
 DeviceStatus fpga_check_live_magic(Dev_fpga *d);
@@ -38,6 +39,7 @@ HAL_StatusTypeDef fpgaWriteBmcVersion(void);
 HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);
 HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_ad9545 *pll);
 HAL_StatusTypeDef fpgaWriteSystemStatus(const struct Devices *d);
+HAL_StatusTypeDef fpgaWriteSensors(const struct Dev_powermon *d);
 
 #ifdef __cplusplus
 }

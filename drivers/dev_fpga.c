@@ -174,3 +174,40 @@ HAL_StatusTypeDef fpgaWriteSystemStatus(const Devices *d)
         return ret;
     return ret;
 }
+
+HAL_StatusTypeDef fpgaWriteSensors(const struct Dev_powermon *d)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].busVoltage * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].current * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].busVoltage * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].current * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].busVoltage * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].current * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].busVoltage * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].current * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].busVoltage * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].current * 1000));
+    if (ret != HAL_OK)
+        return ret;
+    return ret;
+}

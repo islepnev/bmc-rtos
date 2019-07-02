@@ -92,7 +92,8 @@ static void fpga_task_run(void)
                 (HAL_OK != fpgaWriteBmcVersion()) ||
                 (HAL_OK != fpgaWriteBmcTemperature(&dev.thset)) ||
                 (HAL_OK != fpgaWritePllStatus(&dev.pll)) ||
-                (HAL_OK != fpgaWriteSystemStatus(&dev))
+                (HAL_OK != fpgaWriteSystemStatus(&dev)) ||
+                (HAL_OK != fpgaWriteSensors(&dev.pm))
                 ) {
             state = FPGA_STATE_ERROR;
             break;
