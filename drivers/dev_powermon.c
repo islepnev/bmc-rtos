@@ -23,6 +23,7 @@
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_pm_sensors.h"
+#include "dev_pot.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "cmsis_os.h"
@@ -73,6 +74,7 @@ void struct_powermon_init(Dev_powermon *d)
     d->sw.switch_3v3 = 1;
     d->sw.switch_1v5 = 1;
     d->sw.switch_1v0 = 1;
+    struct_pots_init(&d->pots);
 }
 
 static int readPowerGoodFpga(void)
@@ -224,6 +226,7 @@ MonState runMon(Dev_powermon *pm)
         break;
     case MON_STATE_DETECT: {
         pm_sensor_reset_i2c_master();
+        pot_detect(&pm->pots);
         int num_detected = monDetect(pm);
         if (num_detected == 0) {
             pm->monState = MON_STATE_INIT;

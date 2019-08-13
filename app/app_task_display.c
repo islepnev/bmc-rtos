@@ -116,6 +116,16 @@ static void print_pm_switches(const pm_switches *sw)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
+static void print_pm_pots(const Dev_pots *d)
+{
+    if ((d->pot[0].deviceStatus == DEVICE_NORMAL) && (d->pot[1].deviceStatus == DEVICE_NORMAL) && (d->pot[2].deviceStatus == DEVICE_NORMAL)) {
+        printf("POTS: %s", STR_RESULT_NORMAL);
+    } else {
+        printf("POTS: %s", STR_RESULT_UNKNOWN);
+    }
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
 static void pm_pgood_print(const Dev_powermon *pm)
 {
 //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
@@ -318,6 +328,7 @@ static void print_powermon(const Dev_powermon *pm)
     } else {
         print_pm_switches(&pm->sw);
         pm_pgood_print(pm);
+        print_pm_pots(&pm->pots);
         printf("%s\n", ANSI_CLEAR_EOL);
     }
 }

@@ -22,6 +22,7 @@
 #include "stm32f7xx_hal_def.h"
 #include "dev_types.h"
 #include "dev_pm_sensors.h"
+#include "dev_pot.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,6 +58,7 @@ typedef struct Dev_powermon {
    int fpga_core_pgood;
    int ltm_pgood;
    pm_switches sw;
+   Dev_pots pots;
 } Dev_powermon;
 
 void struct_powermon_sensors_init(Dev_powermon *d);
