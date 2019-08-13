@@ -25,7 +25,7 @@ double sysclkVcoFreq(void)
 {
     return SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
 }
-static const double sysclk_rel_offset = -2.5e-6;
+static const double sysclk_rel_offset = 0; // -2.5e-6;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
 {
@@ -47,14 +47,14 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d)
     d->REFA_Receiver_Settings = 0x01;
     d->REFA_R_Divider = ref_r_divide;
     d->REFA_Input_Period = 24 * 1000000000ULL; // attoseconds (1e-18 s) units
-    d->REFA_Offset_Limit = 10*1000; // ppb units
+    d->REFA_Offset_Limit = 100*1000; // ppb units
     d->REFA_Validation_Timer = 10; // milliseconds
     d->REFA_Jitter_Tolerance = 5; // nanoseconds
     // RefB
     d->REFB_Receiver_Settings = 0x01;
     d->REFB_R_Divider = ref_r_divide;
     d->REFB_Input_Period = 24 * 1000000000ULL;
-    d->REFB_Offset_Limit = 10*1000; // ppb units
+    d->REFB_Offset_Limit = 100*1000; // ppb units
     d->REFB_Validation_Timer = 10; // milliseconds
     d->REFB_Jitter_Tolerance = 5; // nanoseconds
 }
