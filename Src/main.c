@@ -25,8 +25,10 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "bsp_pin_defs.h"
 #include "assert_hooks.h"
 #include "app_tasks.h"
 #include "app_task_init.h"
@@ -98,7 +100,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-//  MX_I2C3_SMBUS_Init();
+  MX_I2C3_SMBUS_Init();
   MX_I2C4_Init();
   MX_SPI1_Init();
   MX_SPI4_Init();

@@ -17,13 +17,15 @@
 
 #include "led_gpio_hal.h"
 #include "stm32f7xx_hal_gpio.h"
-#include "main.h"
+#include "bsp_pin_defs.h"
 
 void led_all_set_state(LedState state)
 {
     led_set_state(LED_RED,       state);
     led_set_state(LED_YELLOW,    state);
     led_set_state(LED_GREEN,     state);
+    led_set_state(LED_INT_RED,   state);
+    led_set_state(LED_INT_GREEN, state);
 }
 
 void led_set_state(DeviceLeds led, LedState state)
@@ -37,6 +39,12 @@ void led_set_state(DeviceLeds led, LedState state)
         break;
     case LED_GREEN :
         HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        break;
+    case LED_INT_RED :
+        HAL_GPIO_WritePin(LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        break;
+    case LED_INT_GREEN :
+        HAL_GPIO_WritePin(LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
     }
 }
@@ -52,6 +60,12 @@ void led_toggle(DeviceLeds led)
         break;
     case LED_GREEN :
         HAL_GPIO_TogglePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin);
+        break;
+    case LED_INT_RED :
+        HAL_GPIO_TogglePin(LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin);
+        break;
+    case LED_INT_GREEN :
+        HAL_GPIO_TogglePin(LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin);
         break;
     }
 }

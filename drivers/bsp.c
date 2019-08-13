@@ -18,6 +18,7 @@
 // TDC72VHL v4 board specific functions
 
 #include "bsp.h"
+#include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "i2c.h"
 #include "spi.h"

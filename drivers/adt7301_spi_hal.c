@@ -16,9 +16,9 @@
 //
 
 #include "adt7301_spi_hal.h"
-#include "main.h"
 #include "spi.h"
 #include "bsp.h"
+#include "bsp_pin_defs.h"
 
 static const int SPI_TIMEOUT_MS = 10;
 

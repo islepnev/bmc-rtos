@@ -18,22 +18,11 @@
 #ifndef LED_GPIO_HAL_H
 #define LED_GPIO_HAL_H
 
-#include "stm32f7xx_hal_def.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    LED_RED = 1,
-    LED_YELLOW = 2,
-    LED_GREEN = 3
-} DeviceLeds;
-
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
+#include "dev_leds_types.h"
 
 void led_all_set_state(LedState state);
 void led_set_state(DeviceLeds led, LedState state);

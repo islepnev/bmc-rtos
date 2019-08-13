@@ -14,27 +14,20 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef DEV_LEDS_TYPES_H
+#define DEV_LEDS_TYPES_H
 
-// TDC72VHL v4 board specific definitions
+typedef enum {
+    LED_RED = 1,
+    LED_YELLOW = 2,
+    LED_GREEN = 3,
+    LED_INT_RED = 4,
+    LED_INT_GREEN = 5
+} DeviceLeds;
 
-#ifndef BSP_H
-#define BSP_H
+typedef enum {
+    LED_OFF = 0,
+    LED_ON = 1
+} LedState;
 
-#include <stdint.h>
-
-#define TTY_USART USART3
-#define LED_HEARTBEAT LED_INT_GREEN
-
-extern struct __I2C_HandleTypeDef * const hPll;
-extern const uint8_t pllDeviceAddr;
-
-extern struct __I2C_HandleTypeDef * const hi2c_sensors;
-
-extern struct __SPI_HandleTypeDef * const fpga_spi;
-extern struct __SPI_HandleTypeDef * const therm_spi;
-
-void pllSetStaticPins(void);
-void pllReset(void);
-void pm_sensor_reset_i2c_master(void);
-
-#endif // BSP_H
+#endif // DEV_LEDS_TYPES_H

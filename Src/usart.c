@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "stm32f7xx_ll_usart.h"
+#include "bsp_pin_defs.h"
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;

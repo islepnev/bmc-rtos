@@ -16,6 +16,7 @@
 */
 
 #include "devices.h"
+#include "bsp_pin_defs.h"
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "dev_pll.h"

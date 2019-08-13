@@ -16,12 +16,15 @@
 //
 
 #include "dev_powermon.h"
-#include "main.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_i2c.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_pm_sensors.h"
 #include "bsp.h"
+#include "bsp_pin_defs.h"
 #include "cmsis_os.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;

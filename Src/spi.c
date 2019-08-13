@@ -21,7 +21,11 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "bsp_pin_defs.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_spi.h"
+#include "stm32f7xx_hal_rcc.h"
+#include "stm32f7xx_hal_cortex.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -38,7 +42,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
