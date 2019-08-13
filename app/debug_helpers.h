@@ -22,8 +22,6 @@
 extern "C" {
 #endif
 
-void led_show_error(void);
-void led_blink_error(void);
 void debug_print(const char *str);
 void debug_printf(const char *format, ...);
 

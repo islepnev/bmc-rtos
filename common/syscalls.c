@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 #include "debug_helpers.h"
-#include "assert_hooks.h"
 
 #define FreeRTOS
 #define MAX_STACK_SIZE 0x2000
