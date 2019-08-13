@@ -23,6 +23,7 @@ int monIsOptional(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0;
+    case SENSOR_5VPC:          return 1; // FIXME
     case SENSOR_5V:            return 0;
     case SENSOR_VME_5V:        return 0;
     case SENSOR_3V3:           return 0;
@@ -30,6 +31,7 @@ int monIsOptional(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0;
     case SENSOR_FPGA_MGT_1V0:  return 0;
     case SENSOR_FPGA_MGT_1V2:  return 0;
+    case SENSOR_VMCU:          return 1; // FIXME
     case SENSOR_FPGA_1V8:      return 0;
     case SENSOR_TDC_A:         return 1;
     case SENSOR_TDC_B:         return 1;
@@ -43,6 +45,7 @@ double monShuntVal(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.002;
+    case SENSOR_5VPC:          return 0.002;
     case SENSOR_5V:            return 0;
     case SENSOR_VME_5V:        return 0.010;
     case SENSOR_3V3:           return 0;
@@ -50,6 +53,7 @@ double monShuntVal(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.002;
     case SENSOR_FPGA_MGT_1V0:  return 0.002;
     case SENSOR_FPGA_MGT_1V2:  return 0.002;
+    case SENSOR_VMCU:          return 0.002;
     case SENSOR_FPGA_1V8:      return 0.002;
     case SENSOR_TDC_A:         return 0.002;
     case SENSOR_TDC_B:         return 0.002;
@@ -63,6 +67,7 @@ double monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.03;
+    case SENSOR_5VPC:          return 0.1;
     case SENSOR_5V:            return 0.1;
     case SENSOR_VME_5V:        return 0.1;
     case SENSOR_3V3:           return 0.1;
@@ -70,6 +75,7 @@ double monVoltageMarginWarn(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.03;
     case SENSOR_FPGA_MGT_1V0:  return 0.03;
     case SENSOR_FPGA_MGT_1V2:  return 0.03;
+    case SENSOR_VMCU:          return 0.1;
     case SENSOR_FPGA_1V8:      return 0.05;
     case SENSOR_TDC_A:         return 0.1;
     case SENSOR_TDC_B:         return 0.1;
@@ -83,6 +89,7 @@ double monVoltageMarginCrit(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 0.1;
+    case SENSOR_5VPC:          return 0.15;
     case SENSOR_5V:            return 0.15;
     case SENSOR_VME_5V:        return 0.15;
     case SENSOR_3V3:           return 0.15;
@@ -90,6 +97,7 @@ double monVoltageMarginCrit(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.08; // set to 8 %
     case SENSOR_FPGA_MGT_1V0:  return 0.05;
     case SENSOR_FPGA_MGT_1V2:  return 0.05;
+    case SENSOR_VMCU:          return 0.15;
     case SENSOR_FPGA_1V8:      return 0.05;
     case SENSOR_TDC_A:         return 0.15;
     case SENSOR_TDC_B:         return 0.15;
@@ -103,6 +111,7 @@ double monVoltageNom(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return 1.5;
+    case SENSOR_5VPC:          return 5.0;
     case SENSOR_5V:            return 5.0;
     case SENSOR_VME_5V:        return 5.0;
     case SENSOR_3V3:           return 3.3;
@@ -110,6 +119,7 @@ double monVoltageNom(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 1.0;
     case SENSOR_FPGA_MGT_1V0:  return 1.0;
     case SENSOR_FPGA_MGT_1V2:  return 1.2;
+    case SENSOR_VMCU:          return 4.6;
     case SENSOR_FPGA_1V8:      return 1.8;
     case SENSOR_TDC_A:         return 2.5;
     case SENSOR_TDC_B:         return 2.5;
@@ -123,6 +133,7 @@ int sensorBusAddress(SensorIndex index)
 {
     switch (index) {
     case SENSOR_1V5:           return 0x40;
+    case SENSOR_5VPC:          return 0x41;
     case SENSOR_5V:            return 0x42;
     case SENSOR_VME_5V:        return 0x43;
     case SENSOR_3V3:           return 0x44;
@@ -130,6 +141,7 @@ int sensorBusAddress(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0x46;
     case SENSOR_FPGA_MGT_1V0:  return 0x47;
     case SENSOR_FPGA_MGT_1V2:  return 0x48;
+    case SENSOR_VMCU:          return 0x49;
     case SENSOR_FPGA_1V8:      return 0x4A;
     case SENSOR_TDC_A:         return 0x4B;
     case SENSOR_TDC_B:         return 0x4C;
@@ -143,6 +155,7 @@ const char *monLabel(SensorIndex index)
 {
     switch(index) {
     case SENSOR_1V5:           return   "int 1.5V"; // U1, ? mOhm
+    case SENSOR_5VPC:          return       "5VPC";
     case SENSOR_5V:            return         "5V"; // U3
     case SENSOR_VME_5V:        return     "VME 5V"; // U5, 10 mOhm
     case SENSOR_3V3:           return       "3.3V"; // U7
@@ -150,6 +163,7 @@ const char *monLabel(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return  "Core 1.0V"; // U11, 2 mOhm
     case SENSOR_FPGA_MGT_1V0:  return   "MGT 1.0V"; // U13, 2 mOhm
     case SENSOR_FPGA_MGT_1V2:  return   "MGT 1.2V"; // U2, 2 mOhm
+    case SENSOR_VMCU:          return   "MCU 4.5V";
     case SENSOR_FPGA_1V8:      return   "FPGA 1.8"; // U, 2 mOhm
     case SENSOR_TDC_A:         return  "TDC-A 2.5"; // U, 2 mOhm
     case SENSOR_TDC_B:         return  "TDC-B 2.5"; // U, 2 mOhm

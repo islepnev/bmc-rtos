@@ -34,9 +34,11 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     switch(index) {
     case SENSOR_1V5: return sw->switch_1v5;
     case SENSOR_5V: return sw->switch_5v;
+    case SENSOR_5VPC: return 1;
     case SENSOR_VME_5V: return 1;
     case SENSOR_3V3: return sw->switch_3v3;
     case SENSOR_VME_3V3: return 1;
+    case SENSOR_VMCU: return 1;
     case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0;
     case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0;
     case SENSOR_FPGA_MGT_1V2: return sw->switch_1v0;

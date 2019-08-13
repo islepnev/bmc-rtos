@@ -24,15 +24,17 @@
 extern "C" {
 #endif
 
-enum {POWERMON_SENSORS = 13};
+enum {POWERMON_SENSORS = 15};
 #define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
     SENSOR_1V5,
+    SENSOR_5VPC,
     SENSOR_5V,
     SENSOR_VME_5V,
     SENSOR_3V3,
     SENSOR_VME_3V3,
+    SENSOR_VMCU,
     SENSOR_FPGA_CORE_1V0,
     SENSOR_FPGA_MGT_1V0,
     SENSOR_FPGA_MGT_1V2,
