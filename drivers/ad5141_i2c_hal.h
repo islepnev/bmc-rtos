@@ -14,25 +14,16 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_POT_H
-#define DEV_POT_H
+#ifndef AD5141_I2C_HAL_H
+#define AD5141_I2C_HAL_H
 
 #include <stdint.h>
-#include "dev_types.h"
+#include "stm32f7xx_hal_def.h"
 
-enum {DEV_POT_COUNT = 3};
+HAL_StatusTypeDef dev_ad5141_nop(uint8_t deviceAddress);
+HAL_StatusTypeDef dev_ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);
+HAL_StatusTypeDef dev_ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress);
+HAL_StatusTypeDef dev_ad5141_write_rdac(uint8_t deviceAddress, uint8_t data);
+HAL_StatusTypeDef dev_ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data);
 
-typedef struct Dev_ad5141 {
-    uint8_t busAddress;
-    DeviceStatus deviceStatus;
-    uint8_t value;
-} Dev_ad5141;
-
-typedef struct Dev_pots {
-    Dev_ad5141 pot[DEV_POT_COUNT];
-} Dev_pots;
-
-void struct_pots_init(Dev_pots *d);
-int pot_detect(Dev_pots *d);
-
-#endif // DEV_POT_H
+#endif // AD5141_I2C_HAL_H

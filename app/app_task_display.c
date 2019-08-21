@@ -118,10 +118,17 @@ static void print_pm_switches(const pm_switches *sw)
 
 static void print_pm_pots(const Dev_pots *d)
 {
+    printf("POTS: ");
+    for (int i=0; i<DEV_POT_COUNT; i++) {
+        if (d->pot[i].deviceStatus == DEVICE_NORMAL)
+            printf("%3u ", d->pot[i].value);
+        else
+            printf("?   ");
+    }
     if ((d->pot[0].deviceStatus == DEVICE_NORMAL) && (d->pot[1].deviceStatus == DEVICE_NORMAL) && (d->pot[2].deviceStatus == DEVICE_NORMAL)) {
-        printf("POTS: %s", STR_RESULT_NORMAL);
+        printf(STR_RESULT_NORMAL);
     } else {
-        printf("POTS: %s", STR_RESULT_UNKNOWN);
+        printf(STR_RESULT_UNKNOWN);
     }
     printf("%s\n", ANSI_CLEAR_EOL);
 }

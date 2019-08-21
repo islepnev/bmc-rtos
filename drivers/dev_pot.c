@@ -15,9 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "dev_pot.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_i2c.h"
+#include "ad5141_i2c_hal.h"
 #include "bsp.h"
 #include "logbuffer.h"
 
@@ -46,21 +44,33 @@ void struct_pots_init(Dev_pots *d)
     }
 }
 
-static const int I2C_TIMEOUT_MS = 100;
+typedef enum {POT_TEST_OK = 0, POT_TEST_FAIL = -1} pot_test_t;
 
-static HAL_StatusTypeDef pot_i2c_Test(uint16_t deviceAddr)
+static pot_test_t pot_i2c_Test(Dev_ad5141 *d)
 {
-    HAL_StatusTypeDef ret;
-    enum {Size = 2};
-    uint8_t pData[Size] = {0};
-    ret = HAL_I2C_Master_Transmit(hi2c_sensors, deviceAddr << 1, pData, Size, I2C_TIMEOUT_MS);
-    return ret;
+    uint8_t test_wr = 0x77;
+
+    if (HAL_OK != dev_ad5141_nop(d->busAddress))
+        return POT_TEST_FAIL;
+
+    if (HAL_OK != dev_ad5141_write_rdac(d->busAddress, test_wr))
+        return POT_TEST_FAIL;
+
+    //    ad5141_copy_rdac_to_eeprom(d);
+    //    ad5141_copy_eeprom_to_rdac(d);
+    uint8_t test_rd = 0;
+    if (HAL_OK != dev_ad5141_read_rdac(d->busAddress, &test_rd))
+        return POT_TEST_FAIL;
+    d->value = test_rd;
+
+//    if (test_wr != test_rd)
+//        return POT_TEST_FAIL;
+    return POT_TEST_OK;
 }
 
-static DeviceStatus pm_pot_detect(Dev_ad5141 *d)
+static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    uint16_t deviceAddr = d->busAddress;
-    int detected = (HAL_OK == pot_i2c_Test(deviceAddr));
+    int detected = (POT_TEST_OK == pot_i2c_Test(d));
     if (detected)
         d->deviceStatus = DEVICE_NORMAL;
     else
@@ -70,19 +80,16 @@ static DeviceStatus pm_pot_detect(Dev_ad5141 *d)
 
 int pot_detect(Dev_pots *d)
 {
-    if (HAL_I2C_STATE_READY != hi2c_sensors->State) {
-        log_printf(LOG_ERR, "%s: I2C not ready, state %d", __func__, hi2c_sensors->State);
-        return 0;
-    }
     int count = 0;
     for (int i=0; i<DEV_POT_COUNT; i++) {
         pm_sensor_reset_i2c_master();
-        DeviceStatus s = pm_pot_detect(&d->pot[i]);
+        DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
             pm_sensor_reset_i2c_master();
         }
     }
+    log_printf(LOG_INFO, "%d pots present", count);
     return count;
 }
