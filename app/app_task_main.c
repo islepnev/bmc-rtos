@@ -83,7 +83,7 @@ static void task_main (void)
         if (getDeviceStatus(&dev) == DEVICE_NORMAL)
             mainState = MAIN_STATE_RUN;
         if (stateTicks() > MAIN_DETECT_TIMEOUT_TICKS) {
-            log_printf(LOG_ERR, "DETECT timeout");
+            log_put(LOG_ERR, "DETECT timeout");
             mainState = MAIN_STATE_ERROR;
         }
         break;
@@ -123,7 +123,7 @@ static void task_main (void)
 
 static void prvAppMainTask( void const *arg)
 {
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while (1)
     {
         task_main();
