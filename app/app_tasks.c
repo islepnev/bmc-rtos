@@ -27,7 +27,6 @@
 
 void create_tasks(void)
 {
-    create_task_heartbeat();
     create_task_display();
     create_task_cli();
     create_task_powermon();
@@ -35,4 +34,5 @@ void create_tasks(void)
     create_task_pll();
     create_task_fpga();
     create_task_vxsiic();
+    create_task_heartbeat();
 }
