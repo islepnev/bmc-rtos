@@ -37,6 +37,8 @@
 #include "logbuffer.h"
 #include "app_shared_data.h"
 #include "bsp.h"
+#include "ipmi_sensors.h"
+#include "powermon_i2c_driver.h"
 
 static const int TEST_RESTART = 0; // debug only
 static const uint32_t SENSORS_SETTLE_TICKS = 200;
