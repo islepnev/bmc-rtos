@@ -212,12 +212,12 @@ int monDetect(Dev_powermon *d)
 //    }
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        pm_sensor_reset_i2c_master();
+        powermon_i2c_reset_master();
         DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
-            pm_sensor_reset_i2c_master();
+            powermon_i2c_reset_master();
         }
     }
     return count;
@@ -257,9 +257,9 @@ MonState runMon(Dev_powermon *pm)
         pm->monState = MON_STATE_DETECT;
         break;
     case MON_STATE_DETECT: {
-        pm_sensor_reset_i2c_master();
+        powermon_i2c_reset_master();
         int pots_detected = pot_detect(&pm->pots);
-        pm_sensor_reset_i2c_master();
+        powermon_i2c_reset_master();
         int num_detected = monDetect(pm);
         update_board_version(num_detected, pots_detected);
         if (board_version == PCB_4_2) {

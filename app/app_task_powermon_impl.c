@@ -149,11 +149,17 @@ static void struct_thset_init(Dev_thset *d)
 
 static int pm_initialized = 0;
 
+void powermon_task_init(void)
+{
+    clearOldSensorStatus();
+    powermon_i2c_init();
+}
+
 void powermon_task (void)
 {
     Dev_powermon *pm = &dev.pm;
     if (!pm_initialized) {
-        clearOldSensorStatus();
+        powermon_task_init();
         pm_initialized = 1;
     }
     pmLoopCount++;

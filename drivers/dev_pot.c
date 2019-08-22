@@ -82,12 +82,12 @@ int pot_detect(Dev_pots *d)
 {
     int count = 0;
     for (int i=0; i<DEV_POT_COUNT; i++) {
-        pm_sensor_reset_i2c_master();
+        powermon_i2c_reset_master();
         DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
-            pm_sensor_reset_i2c_master();
+            powermon_i2c_reset_master();
         }
     }
     return count;
