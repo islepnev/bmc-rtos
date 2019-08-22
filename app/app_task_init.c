@@ -26,12 +26,13 @@
 #include "debug_helpers.h"
 #include "led_gpio_hal.h"
 #include "cmsis_os.h"
+#include "logbuffer.h"
 
-static void setStaticPins(void)
-{
-    pllSetStaticPins();
-    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
-}
+//static void setStaticPins(void)
+//{
+////    pllSetStaticPins();
+//    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
+//}
 
 static int test_cpu_tick(void)
 {
@@ -84,11 +85,13 @@ void app_task_init(void)
 {
     led_all_set_state(LED_ON);
     initialize_serial_console_hardware();
-    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
+    log_put(LOG_NOTICE, "Initializing"); // BUG: first message not shown
+    log_put(LOG_NOTICE, "Initializing");
+//    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
-    setStaticPins();
-    test_timers();
+//    setStaticPins();
+//    test_timers();
     // required for console I/O
-    debug_print("Waiting for threads to start\n");
+//    debug_print("Waiting for threads to start\n");
     led_all_set_state(LED_OFF);
 }

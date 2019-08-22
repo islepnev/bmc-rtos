@@ -963,8 +963,17 @@ void pllRun(Dev_ad9545 *d)
     const PllState oldState = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:
-        if (enable_pll_run && enable_power)
-            d->fsm_state = PLL_STATE_RESET;
+        if (enable_pll_run && enable_power) {
+            pllSetStaticPins(PLL_ENABLE);
+            if (pll_gpio_test()) {
+                d->fsm_state = PLL_STATE_RESET;
+            } else {
+                log_put(LOG_ERR, "PLL GPIO test fail");
+                d->fsm_state = PLL_STATE_ERROR;
+            }
+        } else {
+            pllSetStaticPins(PLL_DISABLE);
+        }
         break;
     case PLL_STATE_RESET:
         reset_I2C_Pll();

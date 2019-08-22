@@ -108,11 +108,15 @@ static const char *pllStateStr(PllState state)
 
 static void print_pm_switches(const pm_switches *sw)
 {
-    printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s",
+    printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s   TDC-A %s   TDC-B %s   TDC-C %s",
            sw->switch_5v  ? STR_ON : STR_OFF,
            sw->switch_3v3 ? STR_ON : STR_OFF,
            sw->switch_1v5 ? STR_ON : STR_OFF,
-           sw->switch_1v0 ? STR_ON : STR_OFF);
+           sw->switch_1v0 ? STR_ON : STR_OFF,
+           sw->switch_tdc_a ? STR_ON : STR_OFF,
+           sw->switch_tdc_b ? STR_ON : STR_OFF,
+           sw->switch_tdc_c ? STR_ON : STR_OFF
+           );
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -158,7 +162,7 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
         }
         printf("%s % 6.3f%s", color, d->busVoltage, ANSI_CLEAR);
         if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            printf(" % 6.3f % 6.3f", d->current, d->currentMax);
+            printf(" % 6.3f % 6.3f % 5.1f", d->current, d->currentMax, d->power);
         } else {
             printf("         ");
         }
@@ -187,7 +191,7 @@ void monPrintValues(const Dev_powermon *d)
 //    if (d->monErrors)
 //        printf("     %d errors", d->monErrors);
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("%10s %6s %6s %6s", "sensor ", "  V  ", "  A  ", " A max ");
+    printf("%10s %6s %6s %6s %5s", "sensor ", "  V  ", "  A  ", " A max ", "  W  ");
     printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
@@ -333,7 +337,7 @@ static void print_powermon(const Dev_powermon *pm)
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
     } else {
-        print_pm_switches(&pm->sw);
+        print_pm_switches(&pm->sw_state);
         pm_pgood_print(pm);
         print_pm_pots(&pm->pots);
         printf("%s\n", ANSI_CLEAR_EOL);
@@ -348,7 +352,10 @@ static void print_sensors(const Dev_powermon *pm)
     } else {
         print_goto(DISPLAY_SENSORS_Y, 1);
         SensorStatus sensorStatus = pm_sensors_getStatus(pm);
-        printf("System power supplies: %s\n", sensorStatusStr(sensorStatus));
+        printf("Power supplies: %4.1f W, %4.1f W max %s\n",
+               pm_get_power_w(pm),
+               pm_get_power_max_w(pm),
+               sensorStatusStr(sensorStatus));
         monPrintValues(pm);
     }
 }

@@ -53,7 +53,11 @@ enum {FPGA_REG_COUNT = 8};
 typedef struct Dev_fpga {
     DeviceStatus present;
     uint16_t regs[FPGA_REG_COUNT];
+    uint8_t initb;
+    uint8_t done;
     uint16_t id;
+    uint16_t fw_ver;
+    uint16_t fw_rev;
 } Dev_fpga;
 
 typedef struct Dev_pca9548 {

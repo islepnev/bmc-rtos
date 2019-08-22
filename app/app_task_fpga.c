@@ -25,17 +25,21 @@
 #include "dev_fpga.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
+#include "bsp.h"
+#include "bsp_pin_defs.h"
 
 osThreadId fpgaThreadId = NULL;
 enum { fpgaThreadStackSize = threadStackSize };
 static const uint32_t fpgaTaskLoopDelay = 10;
 
-static const uint32_t DETECT_DELAY_TICKS = 5000;
+static const uint32_t LOAD_DELAY_TICKS = 5000;
+static const uint32_t DETECT_DELAY_TICKS = 1000;
 static const uint32_t ERROR_DELAY_TICKS = 1000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 typedef enum {
     FPGA_STATE_STANDBY,
+    FPGA_STATE_LOAD,
     FPGA_STATE_RESET,
     FPGA_STATE_RUN,
     FPGA_STATE_PAUSE,
@@ -45,16 +49,18 @@ typedef enum {
 static fpga_state_t state = FPGA_STATE_STANDBY;
 static fpga_state_t old_state = FPGA_STATE_STANDBY;
 
+static uint32_t fpga_load_start_tick = 0;
+
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 static void struct_fpga_init(Dev_fpga *d)
 {
-    d->present = DEVICE_UNKNOWN;
-    d->id = 0;
+    Dev_fpga zz = {0};
+    *d = zz;
 }
 
 static void fpga_task_init(void)
@@ -66,14 +72,44 @@ static void fpga_task_run(void)
 {
     Dev_fpga *d = &dev.fpga;
     old_state = state;
+    if (board_version >= PCB_4_2) {
+        d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+        d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+    } else {
+        d->initb = 1;
+        d->done = 1;
+    }
+   int fpga_core_power_present = get_fpga_core_power_present(&dev.pm);
+    int fpga_power_present = enable_power && fpga_core_power_present;
+    int fpga_enable = fpga_power_present && d->initb;
+//    int fpga_loading = fpga_power_present && d->initb && !d->done;
+    int fpga_done = fpga_power_present && d->done;
     switch (state) {
     case FPGA_STATE_STANDBY:
-        if (enable_power)
-            state = FPGA_STATE_RESET;
+        if (fpga_enable) {
+            state = FPGA_STATE_LOAD;
+            fpga_load_start_tick = osKernelSysTick();
+        }
         d->present = DEVICE_UNKNOWN;
         break;
+    case FPGA_STATE_LOAD:
+        if (!fpga_enable)
+            state = FPGA_STATE_STANDBY;
+        if (fpga_done) {
+            if (board_version >= PCB_4_2) {
+                const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
+                const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
+                log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
+            }
+            state = FPGA_STATE_RESET;
+        }
+        if (stateTicks() > LOAD_DELAY_TICKS) {
+            log_put(LOG_ERR, "FPGA load timeout");
+            state = FPGA_STATE_ERROR;
+        }
+        break;
     case FPGA_STATE_RESET:
-        if (!enable_power)
+        if (!fpga_power_present)
             state = FPGA_STATE_STANDBY;
         if (1
                 && DEVICE_NORMAL == fpgaDetect(d)
@@ -81,12 +117,12 @@ static void fpga_task_run(void)
                 )
             state = FPGA_STATE_RUN;
         if (stateTicks() > DETECT_DELAY_TICKS) {
-            log_printf(LOG_ERR, "FPGA detect timeout");
+            log_put(LOG_ERR, "FPGA detect timeout");
             state = FPGA_STATE_ERROR;
         }
         break;
     case FPGA_STATE_RUN:
-        if (!enable_power)
+        if (!fpga_power_present)
             state = FPGA_STATE_STANDBY;
         if ((DEVICE_NORMAL != fpga_check_live_magic(d)) ||
                 (HAL_OK != fpgaWriteBmcVersion()) ||
@@ -101,7 +137,7 @@ static void fpga_task_run(void)
         state = FPGA_STATE_PAUSE;
         break;
     case FPGA_STATE_PAUSE:
-        if (!enable_power)
+        if (!fpga_done)
             state = FPGA_STATE_STANDBY;
         if (stateTicks() > POLL_DELAY_TICKS) {
             state = FPGA_STATE_RUN;
@@ -125,7 +161,7 @@ static void start_fpga_thread(void const *arg)
 {
     (void) arg;
 
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
 
     fpga_task_init();
     for( ;; )

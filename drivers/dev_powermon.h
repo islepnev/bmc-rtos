@@ -38,6 +38,9 @@ typedef struct pm_switches {
     SwitchOnOff switch_3v3;
     SwitchOnOff switch_1v5;
     SwitchOnOff switch_1v0;
+    SwitchOnOff switch_tdc_a;
+    SwitchOnOff switch_tdc_b;
+    SwitchOnOff switch_tdc_c;
 } pm_switches;
 
 typedef enum MonState {
@@ -58,6 +61,7 @@ typedef struct Dev_powermon {
    int fpga_core_pgood;
    int ltm_pgood;
    pm_switches sw;
+   pm_switches sw_state;
    Dev_pots pots;
 } Dev_powermon;
 
@@ -67,8 +71,10 @@ void struct_powermon_init(Dev_powermon *d);
 //int readPowerGood1v5();
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
+void update_power_switch_state(Dev_powermon *pm);
 void update_power_switches(Dev_powermon *pm, SwitchOnOff state);
 int monIsOn(const pm_switches *sw, SensorIndex index);
+void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
@@ -78,7 +84,10 @@ uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 int get_input_power_valid(const Dev_powermon *pm);
 int get_critical_power_valid(const Dev_powermon *pm);
+int get_fpga_core_power_present(const Dev_powermon *pm);
 PgoodState get_all_pgood(const Dev_powermon *pm);
+double pm_get_power_w(const Dev_powermon *pm);
+double pm_get_power_max_w(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

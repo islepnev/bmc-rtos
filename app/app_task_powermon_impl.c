@@ -36,6 +36,7 @@
 #include "dev_leds.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
+#include "bsp.h"
 
 static const int TEST_RESTART = 0; // debug only
 static const uint32_t SENSORS_SETTLE_TICKS = 200;
@@ -59,7 +60,7 @@ static uint32_t thermReadTick = 0;
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
-    return HAL_GetTick() - stateStartTick;
+    return osKernelSysTick() - stateStartTick;
 }
 
 static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
@@ -159,6 +160,7 @@ void powermon_task (void)
     int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
     const PmState oldState = pmState;
     pm_read_pgood(pm);
+    update_power_switch_state(pm);
     int power_input_ok = get_input_power_valid(pm);
     int power_critical_ok = get_critical_power_valid(pm);
     switch (pmState) {
@@ -234,6 +236,8 @@ void powermon_task (void)
     for (int i=0; i<POWERMON_SENSORS; i++)
         pm->sensors[i].rampState = (pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
+    if (!enable_power)
+        monClearMinMax(pm);
     if ((pmState == PM_STATE_STANDBY)
             || (pmState == PM_STATE_RAMP)) {
         runMon(pm);
@@ -254,7 +258,8 @@ void powermon_task (void)
     } else {
         clearOldSensorStatus();
     }
-    if ((pmState == PM_STATE_RUN)
+    int therm_powered = (board_version >= PCB_4_2) ? 1 : (pmState == PM_STATE_RUN);
+    if (therm_powered
             && (getMonStateTicks(pm) > THERM_SETTLE_TICKS)) {
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {

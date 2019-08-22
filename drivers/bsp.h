@@ -33,8 +33,22 @@ extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 extern struct __SPI_HandleTypeDef * const fpga_spi;
 extern struct __SPI_HandleTypeDef * const therm_spi;
 
-void pllSetStaticPins(void);
+typedef enum {PLL_ENABLE = 0, PLL_DISABLE = 1} pll_enable_t;
+void pllSetStaticPins(pll_enable_t enable);
 void pllReset(void);
 void pm_sensor_reset_i2c_master(void);
+
+typedef enum {PLL_GPIO_TEST_FAIL = 0, PLL_GPIO_TEST_OK = 1} pll_gpio_test_t;
+pll_gpio_test_t pll_gpio_test(void);
+
+typedef enum {
+    PCB_4_1 = 0,
+    PCB_4_2 = 1
+} board_version_t;
+
+// run-time detected board version (see i2c supply sensors)
+extern board_version_t board_version;
+
+void update_board_version(int powermon_count, int pots_count);
 
 #endif // BSP_H
