@@ -16,7 +16,7 @@
 */
 #include "dev_pot.h"
 #include "ad5141_i2c_hal.h"
-#include "bsp.h"
+#include "powermon_i2c_driver.h"
 #include "logbuffer.h"
 
 typedef enum {

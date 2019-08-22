@@ -15,21 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "ad5141_i2c_hal.h"
-#include "stm32f7xx_hal_gpio.h"
+
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "bsp.h"
-
-static const int I2C_TIMEOUT_MS = 100;
+#include "powermon_i2c_driver.h"
 
 static HAL_StatusTypeDef ad5141_write(uint8_t deviceAddress, uint8_t ctrl_addr, uint8_t data)
 {
-    return HAL_I2C_Mem_Write(hi2c_sensors,  deviceAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1, I2C_TIMEOUT_MS);
+    return powermon_i2c_mem_write(deviceAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1);
 }
 
 static HAL_StatusTypeDef ad5141_read(uint8_t deviceAddress, uint16_t command, uint8_t *data)
 {
-    return HAL_I2C_Mem_Read(hi2c_sensors,  deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1, I2C_TIMEOUT_MS);
+    return powermon_i2c_mem_read(deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1);
 }
 
 HAL_StatusTypeDef dev_ad5141_nop(uint8_t deviceAddress)

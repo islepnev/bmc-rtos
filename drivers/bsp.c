@@ -42,8 +42,6 @@ void update_board_version(int powermon_count, int pots_count)
 struct __I2C_HandleTypeDef * const hPll = &hi2c2;
 const uint8_t pllDeviceAddr = 0x4A;
 
-struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c4;
-
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi1;
 struct __SPI_HandleTypeDef * const therm_spi = &hspi4;
 
@@ -136,10 +134,4 @@ pll_gpio_test_t pll_gpio_test(void)
         log_printf(LOG_NOTICE, "PLL GPIO: resetb=%u, m3=%u, m4=%u, m5=%u, m6=%u", pin_resetb, pin_m3, pin_m4, pin_m5, pin_m6);
         return PLL_GPIO_TEST_FAIL;
     }
-}
-
-void pm_sensor_reset_i2c_master(void)
-{
-    __HAL_I2C_DISABLE(hi2c_sensors);
-    __HAL_I2C_ENABLE(hi2c_sensors);
 }
