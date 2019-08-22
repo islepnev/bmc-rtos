@@ -110,6 +110,20 @@ HAL_StatusTypeDef powermon_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress
 HAL_StatusTypeDef powermon_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
     HAL_StatusTypeDef ret;
-    ret = HAL_I2C_Mem_Write(hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    ret = HAL_I2C_Mem_Write_IT(hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size);
+    if (ret != HAL_OK) {
+        if (hi2c_sensors->ErrorCode & HAL_I2C_ERROR_AF) {
+            // no acknowledge, empty slot
+            return HAL_TIMEOUT;
+        } else {
+            debug_printf("%s (%02X, 0x%04X): HAL code %d, I2C code %d\n", __func__, DevAddress, MemAddress, ret, hi2c_sensors->ErrorCode);
+            return ret;
+        }
+    }
+    osStatus status = osSemaphoreWait(powermon_i2c_sem, I2C_TIMEOUT_MS);
+    if (status != osOK) {
+        debug_printf("%s (%02X, 0x%04X) timeout\n", __func__, DevAddress, MemAddress);
+        return HAL_TIMEOUT;
+    }
     return ret;
 }
