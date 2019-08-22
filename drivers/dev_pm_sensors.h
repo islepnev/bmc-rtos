@@ -45,16 +45,20 @@ typedef struct {
     int hasShunt;
     double shuntVal;
     double busNomVoltage;
+    double current_lsb;
+    uint16_t cal;
     const char *label;
     // measurements
     double busVoltage;
 //    double shuntVoltage;
     double current;
+    double power;
     // calculated
     double busVoltageMin;
     double busVoltageMax;
     double currentMin;
     double currentMax;
+    double powerMax;
 } pm_sensor;
 
 void struct_pm_sensor_clear_minmax(pm_sensor *d);
