@@ -61,7 +61,7 @@ DeviceStatus fpga_check_live_magic(Dev_fpga *d)
     uint16_t test1 = live_magic;
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
-        log_printf(LOG_ERR, "FPGA register contents unexpectedly changed");
+        log_put(LOG_ERR, "FPGA register contents unexpectedly changed");
         return DEVICE_FAIL;
     }
     fpga_write_live_magic(d);

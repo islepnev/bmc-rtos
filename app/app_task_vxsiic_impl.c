@@ -164,7 +164,7 @@ void i2c_event_interrupt_handler(void)
         {
             LL_I2C_ClearFlag_ADDR(I2C1);
             vxsiic_i2c_stats.errors++;
-            log_printf(LOG_ERR, "vxsiic: I2C event interrupt address error");
+            log_put(LOG_ERR, "vxsiic: I2C event interrupt address error");
         }
     }
     else if (LL_I2C_IsActiveFlag_NACK(I2C1))
@@ -218,7 +218,7 @@ void i2c_event_interrupt_handler(void)
     else
     {
         vxsiic_i2c_stats.errors++;
-        log_printf(LOG_ERR, "vxsiic: unexpected I2C event interrupt");
+        log_put(LOG_ERR, "vxsiic: unexpected I2C event interrupt");
     }
 }
 

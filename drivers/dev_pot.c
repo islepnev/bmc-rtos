@@ -90,6 +90,5 @@ int pot_detect(Dev_pots *d)
             pm_sensor_reset_i2c_master();
         }
     }
-    log_printf(LOG_INFO, "%d pots present", count);
     return count;
 }

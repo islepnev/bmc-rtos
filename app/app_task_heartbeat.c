@@ -41,7 +41,7 @@ static void prvQueueSendTask(void const *arg)
     (void) arg;
     const uint32_t ulValueToSend = 100UL;
 
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
 
     for( ;; )
     {
@@ -64,7 +64,7 @@ static void prvQueueReceiveTask(void const *arg)
     uint32_t ulReceivedValue;
     const uint32_t ulExpectedValue = 100UL;
 
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
 
     for( ;; )
     {
