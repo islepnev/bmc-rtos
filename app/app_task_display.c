@@ -48,6 +48,8 @@
 #include "app_task_main.h"
 #include "app_tasks.h"
 
+#include "freertos_stats.h"
+
 osThreadId displayThreadId = NULL;
 
 enum { displayThreadStackSize = 1000 };
@@ -153,16 +155,18 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
     printf("%10s", d->label);
     if (d->deviceStatus == DEVICE_NORMAL) {
         SensorStatus sensorStatus = pm_sensor_status(d);
+        int offvoltage = !isOn && (d->busVoltage > 0.1);
         const char *color = "";
         switch (sensorStatus) {
-        case SENSOR_UNKNOWN:  color = ANSI_YELLOW; break;
+        case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
         case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
         case SENSOR_WARNING:  color = ANSI_YELLOW; break;
-        case SENSOR_CRITICAL: color = ANSI_RED;    break;
+        case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
         }
-        printf("%s % 6.3f%s", color, d->busVoltage, ANSI_CLEAR);
+        printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
         if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            printf(" % 6.3f % 6.3f % 5.1f", d->current, d->currentMax, d->power);
+            int backfeed = (d->current < -0.010);
+            printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
         } else {
             printf("         ");
         }
@@ -195,7 +199,7 @@ void monPrintValues(const Dev_powermon *d)
     printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw_state, i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }
@@ -307,6 +311,8 @@ static void print_header(void)
 {
     // Title
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
+    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
+    printf(" %lu%%", freertos_get_cpu_load_percent());
     if (display_mode == DISPLAY_NONE) {
         printf("     display refresh paused");
     } else {
