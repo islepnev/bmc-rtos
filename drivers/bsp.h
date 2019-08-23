@@ -25,9 +25,6 @@
 #define TTY_USART USART3
 #define LED_HEARTBEAT LED_INT_GREEN
 
-extern struct __I2C_HandleTypeDef * const hPll;
-extern const uint8_t pllDeviceAddr;
-
 extern struct __SPI_HandleTypeDef * const fpga_spi;
 extern struct __SPI_HandleTypeDef * const therm_spi;
 

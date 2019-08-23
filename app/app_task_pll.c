@@ -25,6 +25,7 @@
 #include "app_shared_data.h"
 #include "dev_pll.h"
 #include "debug_helpers.h"
+#include "pll_i2c_driver.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
@@ -34,6 +35,7 @@ static void pllTask(void const *arg)
 {
     (void) arg;
 //    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    pll_i2c_init();
     while(1) {
         pllRun(&dev.pll);
         osDelay(pllTaskLoopDelay);

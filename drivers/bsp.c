@@ -39,9 +39,6 @@ void update_board_version(int powermon_count, int pots_count)
         board_version = PCB_4_2;
 }
 
-struct __I2C_HandleTypeDef * const hPll = &hi2c2;
-const uint8_t pllDeviceAddr = 0x4A;
-
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi1;
 struct __SPI_HandleTypeDef * const therm_spi = &hspi4;
 

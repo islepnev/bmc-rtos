@@ -30,6 +30,7 @@
 #include "logbuffer.h"
 #include "cmsis_os.h"
 #include "app_shared_data.h"
+#include "pll_i2c_driver.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
