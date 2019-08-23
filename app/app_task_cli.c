@@ -42,6 +42,29 @@ int execute (int argc, const char * const * argv)
     return 0;
 }
 
+void cycle_display_mode(void)
+{
+    switch (display_mode) {
+    case DISPLAY_SUMMARY:
+        display_mode = DISPLAY_LOG;
+        break;
+    case DISPLAY_LOG:
+        display_mode = DISPLAY_PLL_DETAIL;
+        break;
+    case DISPLAY_PLL_DETAIL:
+        display_mode = DISPLAY_TASKS;
+        break;
+    case DISPLAY_TASKS:
+        display_mode = DISPLAY_SUMMARY;
+        break;
+    case DISPLAY_NONE:
+        display_mode = DISPLAY_SUMMARY;
+        break;
+    default:
+        break;
+    }
+}
+
 static void cliTask(void const *arg)
 {
     (void) arg;
@@ -56,19 +79,9 @@ static void cliTask(void const *arg)
         char ch = getchar();
         switch(ch) {
         case ' ':
-            switch (display_mode) {
-            case DISPLAY_SUMMARY:
-                display_mode = DISPLAY_PLL_DETAIL;
-                break;
-            case DISPLAY_PLL_DETAIL:
-                display_mode = DISPLAY_NONE;
-                break;
-            case DISPLAY_NONE:
-                display_mode = DISPLAY_SUMMARY;
-                break;
-            default:
-                break;
-            }
+        case '\r':
+        case '\n':
+            cycle_display_mode();
             break;
         case 'p':
         case 'P':
@@ -79,14 +92,13 @@ static void cliTask(void const *arg)
                 log_put(LOG_INFO, "Received command power OFF");
             break;
         default:
-            enable_stats_display = !enable_stats_display;
             break;
         }
 //        microrl_insert_char (prl, ch);
     }
 }
 
-osThreadDef(cli, cliTask,    osPriorityLow, 1, cliThreadStackSize);
+osThreadDef(cli, cliTask,    osPriorityNormal, 1, cliThreadStackSize);
 
 void create_task_cli(void)
 {

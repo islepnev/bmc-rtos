@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
@@ -54,6 +55,7 @@ osThreadId displayThreadId = NULL;
 
 enum { displayThreadStackSize = 1000 };
 
+const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
 static const uint32_t displayTaskLoopDelay = 500;
 static int force_refresh = 0;
@@ -258,9 +260,6 @@ static void print_log_entry(uint32_t index)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-//static uint32_t log_rptr = 0;
-//static uint32_t log_n = 0;
-
 #define DISPLAY_POWERMON_Y 2
 #define DISPLAY_POWERMON_H 4
 #define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
@@ -272,11 +271,15 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_PLL_H 5
 #define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
-#define DISPLAY_LOG_H (LOG_BUF_SIZE)
+#define DISPLAY_LOG_H 5
 #define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
-#define DISPLAY_PLL_DETAIL_Y DISPLAY_POWERMON_Y
-#define DISPLAY_PLL_DETAIL_H (DISPLAY_LOG_Y - DISPLAY_PLL_DETAIL_Y)
+#define DISPLAY_TASKS_Y 2
+
+#define DISPLAY_PLL_DETAIL_Y 2
+#define DISPLAY_PLL_DETAIL_H 25
+
+#define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
 
 static void print_goto(int line, int col)
 {
@@ -411,23 +414,40 @@ static void print_pll(const Dev_ad9545 *pll)
     pllPrint(pll);
 }
 
-static void print_log_messages(void)
+static void print_log_lines(int count)
 {
-//    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
-    print_goto(DISPLAY_LOG_Y, 1);
-    const uint32_t log_count = log_get_count();
-    const uint32_t log_wptr = log_get_wptr();
-    if (log_count < LOG_BUF_SIZE) {
-        for (uint32_t i=0; i<log_wptr; i++)
+    uint32_t max_count = count;
+    if (max_count > LOG_BUF_SIZE)
+        max_count = LOG_BUF_SIZE;
+    volatile const uint32_t log_count = log_get_count();
+    volatile const uint32_t log_wptr = log_get_wptr();
+    volatile const uint32_t log_start = (log_count > max_count) ? (log_wptr + LOG_BUF_SIZE - max_count) % LOG_BUF_SIZE : 0;
+    if (log_start <= log_wptr) {
+        for (uint32_t i=log_start; i<log_wptr; i++)
             print_log_entry(i);
-        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
-            printf("%s\n", ANSI_CLEAR_EOL);
     } else {
-        for (uint32_t i=log_wptr; i<LOG_BUF_SIZE; i++)
+        for (uint32_t i=log_start; i<LOG_BUF_SIZE; i++)
             print_log_entry(i);
         for (uint32_t i=0; i<log_wptr; i++)
             print_log_entry(i);
     }
+    for (uint32_t i=log_count; i<max_count; i++)
+        printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void print_log_messages(void)
+{
+    //    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
+        print_goto(DISPLAY_LOG_Y, 1);
+        print_log_lines(DISPLAY_LOG_H);
+}
+
+static void display_log(void)
+{
+    print_goto(2, 1);
+    printf("Log messages\n" ANSI_CLEAR_EOL);
+    print_goto(3, 1);
+    print_log_lines(DISPLAY_HEIGHT - 3);
 }
 
 static int old_enable_stats_display = 0;
@@ -442,6 +462,27 @@ static void display_summary(const Devices * dev)
     print_main(dev);
     print_fpga(&dev->fpga);
     print_pll(&dev->pll);
+    print_log_messages();
+}
+
+static void display_tasks(void)
+{
+    print_clearbox(DISPLAY_TASKS_Y, uxTaskGetNumberOfTasks());
+    print_goto(DISPLAY_TASKS_Y, 1);
+    char *buf = statsBuffer;
+    strcpy(buf, "Task");
+    buf += strlen(buf);
+    for(int i = strlen("Task"); i < ( configMAX_TASK_NAME_LEN - 3 ); i++) {
+        *buf = ' ';
+        buf++;
+        *buf = '\0';
+    }
+    const char *hdr = "  Abs Time      % Time\r\n****************************************" ANSI_CLEAR_EOL "\n";
+    strcpy(buf, hdr);
+    buf += strlen(hdr);
+    vTaskGetRunTimeStats(buf);
+    printf("%s", statsBuffer);
+    printf(ANSI_CLEAR_EOL);
 }
 
 static void display_pll_detail(const Devices * dev)
@@ -453,14 +494,30 @@ static void display_pll_detail(const Devices * dev)
 
 static display_mode_t old_display_mode = DISPLAY_NONE;
 
+uint32_t old_tick = 0;
+
 static void update_display(const Devices * dev)
 {
-    if (display_mode == DISPLAY_NONE) {
+    uint32_t tick = osKernelSysTick();
+    int need_refresh = tick > old_tick + DISPLAY_REFRESH_TIME_MS;
+    if (old_display_mode != display_mode)
+        need_refresh = 1;
+    if (!need_refresh)
+        return;
+    old_tick = tick;
+
+    const Devices * d = getDevices();
+    int need_clear_screen =
+            display_mode == DISPLAY_NONE
+            || display_mode == DISPLAY_LOG
+            || display_mode == DISPLAY_TASKS;
+
+    if (need_clear_screen) {
         if (old_display_mode != display_mode) {
             printf(ANSI_CLEARTERM);
             printf(ANSI_GOHOME ANSI_CLEAR);
             print_header();
-            printf(ANSI_SHOW_CURSOR); // show cursor
+            printf(ANSI_SHOW_CURSOR);
         }
     }
     old_display_mode = display_mode;
@@ -475,31 +532,28 @@ static void update_display(const Devices * dev)
         force_refresh = 0;
     }
     printf(ANSI_GOHOME ANSI_CLEAR);
-    printf(ANSI_HIDE_CURSOR); // hide cursor
+    printf(ANSI_HIDE_CURSOR);
     print_header();
     switch (display_mode) {
     case DISPLAY_SUMMARY:
-        display_summary(dev);
+        display_summary(d);
+        break;
+    case DISPLAY_LOG:
+        display_log();
         break;
     case DISPLAY_PLL_DETAIL:
-        display_pll_detail(dev);
+        display_pll_detail(d);
+        break;
+    case DISPLAY_TASKS:
+        display_tasks();
         break;
     case DISPLAY_NONE:
         break;
     default:
         break;
     }
-    print_log_messages();
-
-    print_clearbox(DISPLAY_STATS_Y, uxTaskGetNumberOfTasks());
-    print_goto(DISPLAY_STATS_Y, 1);
-    vTaskGetRunTimeStats((char *)&statsBuffer);
-    printf("%s", statsBuffer);
-    printf(ANSI_CLEAR_EOL);
-
     printf(ANSI_SHOW_CURSOR); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
-//    fflush(stdout);
     displayUpdateCount++;
 }
 
@@ -516,7 +570,7 @@ static void displayTask(void const *arg)
     }
 }
 
-osThreadDef(display, displayTask, osPriorityIdle,      1, displayThreadStackSize);
+osThreadDef(display, displayTask, osPriorityLow,      1, displayThreadStackSize);
 
 void create_task_display(void)
 {
