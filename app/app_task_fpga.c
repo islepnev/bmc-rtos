@@ -33,7 +33,7 @@ enum { fpgaThreadStackSize = threadStackSize };
 static const uint32_t fpgaTaskLoopDelay = 10;
 
 static const uint32_t LOAD_DELAY_TICKS = 5000;
-static const uint32_t DETECT_DELAY_TICKS = 1000;
+static const uint32_t DETECT_DELAY_TICKS = 100;
 static const uint32_t ERROR_DELAY_TICKS = 1000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
@@ -114,9 +114,19 @@ static void fpga_task_run(void)
         if (1
                 && DEVICE_NORMAL == fpgaDetect(d)
                 && DEVICE_NORMAL == fpga_test(d)
-                )
+                ) {
             state = FPGA_STATE_RUN;
-        if (stateTicks() > DETECT_DELAY_TICKS) {
+            if (board_version < PCB_4_2) {
+                const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
+                const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
+                log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
+            }
+        }
+
+        uint32_t detect_timeout = DETECT_DELAY_TICKS;
+        if (board_version < PCB_4_2)
+            detect_timeout += LOAD_DELAY_TICKS;
+        if (stateTicks() > detect_timeout) {
             log_put(LOG_ERR, "FPGA detect timeout");
             state = FPGA_STATE_ERROR;
         }
