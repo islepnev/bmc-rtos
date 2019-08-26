@@ -27,6 +27,7 @@ extern "C" {
 typedef enum {
     DISPLAY_SUMMARY,
     DISPLAY_LOG,
+    DISPLAY_POT,
     DISPLAY_PLL_DETAIL,
     DISPLAY_TASKS,
     DISPLAY_NONE,
@@ -39,6 +40,9 @@ extern int enable_power;
 extern int enable_stats_display;
 
 const Devices* getDevices(void);
+
+void schedule_display_refresh(void);
+int read_display_refresh(void);
 
 #ifdef __cplusplus
 }

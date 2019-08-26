@@ -25,6 +25,7 @@
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
+#include "commands_pot.h"
 
 osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };
@@ -49,6 +50,9 @@ void cycle_display_mode(void)
         display_mode = DISPLAY_LOG;
         break;
     case DISPLAY_LOG:
+        display_mode = DISPLAY_POT;
+        break;
+    case DISPLAY_POT:
         display_mode = DISPLAY_PLL_DETAIL;
         break;
     case DISPLAY_PLL_DETAIL:
@@ -59,6 +63,17 @@ void cycle_display_mode(void)
         break;
     case DISPLAY_NONE:
         display_mode = DISPLAY_SUMMARY;
+        break;
+    default:
+        break;
+    }
+}
+
+static void screen_handle_key(char ch)
+{
+    switch (display_mode) {
+    case DISPLAY_POT:
+        pot_screen_handle_key(ch);
         break;
     default:
         break;
@@ -92,6 +107,7 @@ static void cliTask(void const *arg)
                 log_put(LOG_INFO, "Received command power OFF");
             break;
         default:
+            screen_handle_key(ch);
             break;
         }
 //        microrl_insert_char (prl, ch);

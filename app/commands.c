@@ -14,19 +14,13 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD5141_I2C_HAL_H
-#define AD5141_I2C_HAL_H
+#include "commands.h"
 
-#include <stdint.h>
-#include "stm32f7xx_hal_def.h"
+osMailQDef(mq_cmd_pots, 10, CommandPots); // Declare a mail queue, size 10
 
-HAL_StatusTypeDef ad5141_nop(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_reset(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_write_rdac(uint8_t deviceAddress, uint8_t data);
-HAL_StatusTypeDef ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data);
-HAL_StatusTypeDef ad5141_inc_rdac(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_dec_rdac(uint8_t deviceAddress);
-
-#endif // AD5141_I2C_HAL_H
+void commands_init(void)
+{
+    mq_cmd_pots_id = osMailCreate(osMailQ(mq_cmd_pots), NULL);
+    if (!mq_cmd_pots_id)
+        Error_Handler();
+}

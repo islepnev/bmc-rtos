@@ -19,10 +19,18 @@
 
 #include <stdint.h>
 #include "dev_types.h"
+#include "dev_pm_sensors_config.h"
 
 enum {DEV_POT_COUNT = 3};
+typedef enum {
+    POT_TDC_A,
+    POT_TDC_B,
+    POT_TDC_C
+} PotIndex;
 
 typedef struct Dev_ad5141 {
+    PotIndex index;
+    SensorIndex sensorIndex;
     uint8_t busAddress;
     DeviceStatus deviceStatus;
     uint8_t value;
@@ -32,7 +40,15 @@ typedef struct Dev_pots {
     Dev_ad5141 pot[DEV_POT_COUNT];
 } Dev_pots;
 
+extern int pot_screen_selected;
+
 void struct_pots_init(Dev_pots *d);
 int pot_detect(Dev_pots *d);
+void pot_read_rdac_all(Dev_pots *d);
+const char *potLabel(PotIndex index);
+void dev_ad5141_reset(Dev_ad5141 *d);
+void dev_ad5141_inc(Dev_ad5141 *d);
+void dev_ad5141_dec(Dev_ad5141 *d);
+void dev_ad5141_write(Dev_ad5141 *d);
 
 #endif // DEV_POT_H

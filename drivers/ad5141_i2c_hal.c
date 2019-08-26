@@ -31,38 +31,56 @@ static HAL_StatusTypeDef ad5141_read(uint8_t deviceAddress, uint16_t command, ui
     return powermon_i2c_mem_read(deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1);
 }
 
-HAL_StatusTypeDef dev_ad5141_nop(uint8_t deviceAddress)
+HAL_StatusTypeDef ad5141_nop(uint8_t deviceAddress)
 {
     uint8_t ctrl_addr = 0x00;
     return ad5141_write(deviceAddress, ctrl_addr, 0);
 }
 
-HAL_StatusTypeDef dev_ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress)
+HAL_StatusTypeDef ad5141_reset(uint8_t deviceAddress)
+{
+    uint8_t ctrl_addr = 0xB0;
+    return ad5141_write(deviceAddress, ctrl_addr, 0);
+}
+
+HAL_StatusTypeDef ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress)
 {
     uint8_t ctrl_addr = 0x70;
     uint8_t data = 0x01;
     HAL_StatusTypeDef ret = ad5141_write(deviceAddress, ctrl_addr, data);
     // wait 18 ms
     for (int i=0; i<360; i++)
-        dev_ad5141_nop(deviceAddress);
+        ad5141_nop(deviceAddress);
     return ret;
 }
 
-HAL_StatusTypeDef dev_ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress)
+HAL_StatusTypeDef ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress)
 {
     uint8_t ctrl_addr = 0x70;
     uint8_t data = 0x00;
     return ad5141_write(deviceAddress, ctrl_addr, data);
 }
 
-HAL_StatusTypeDef dev_ad5141_write_rdac(uint8_t deviceAddress, uint8_t data)
+HAL_StatusTypeDef ad5141_write_rdac(uint8_t deviceAddress, uint8_t data)
 {
     uint8_t ctrl_addr = 0x10;
     return ad5141_write(deviceAddress, ctrl_addr, data);
 }
 
-HAL_StatusTypeDef dev_ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data)
+HAL_StatusTypeDef ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data)
 {
     uint16_t command = 0x3003;
     return ad5141_read(deviceAddress, command, data);
+}
+
+HAL_StatusTypeDef ad5141_inc_rdac(uint8_t deviceAddress)
+{
+    uint8_t ctrl_addr = 0x40;
+    return ad5141_write(deviceAddress, ctrl_addr, 1);
+}
+
+HAL_StatusTypeDef ad5141_dec_rdac(uint8_t deviceAddress)
+{
+    uint8_t ctrl_addr = 0x40;
+    return ad5141_write(deviceAddress, ctrl_addr, 0);
 }

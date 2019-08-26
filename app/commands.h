@@ -14,19 +14,25 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD5141_I2C_HAL_H
-#define AD5141_I2C_HAL_H
+#ifndef COMMANDS_H
+#define COMMANDS_H
 
-#include <stdint.h>
-#include "stm32f7xx_hal_def.h"
+#include "cmsis_os.h"
 
-HAL_StatusTypeDef ad5141_nop(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_reset(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_write_rdac(uint8_t deviceAddress, uint8_t data);
-HAL_StatusTypeDef ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data);
-HAL_StatusTypeDef ad5141_inc_rdac(uint8_t deviceAddress);
-HAL_StatusTypeDef ad5141_dec_rdac(uint8_t deviceAddress);
+typedef enum {
+    COMMAND_POTS_RESET = 1,
+    COMMAND_POTS_INC,
+    COMMAND_POTS_DEC,
+    COMMAND_POTS_WRITE
+} command_id_t;
 
-#endif // AD5141_I2C_HAL_H
+typedef struct {
+    command_id_t command_id;
+    uint8_t arg;
+} CommandPots;
+
+osMailQId mq_cmd_pots_id;
+
+void commands_init(void);
+
+#endif // COMMANDS_H

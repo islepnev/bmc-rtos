@@ -27,3 +27,18 @@ const Devices* getDevices(void)
 {
     return &dev;
 }
+
+static int display_refresh_flag = 0;
+
+void schedule_display_refresh(void)
+{
+    display_refresh_flag = 1;
+}
+
+int read_display_refresh(void)
+{
+    // FIXME: make atomic
+    int value = display_refresh_flag;
+    display_refresh_flag = 0;
+    return value;
+}

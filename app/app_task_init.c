@@ -27,6 +27,7 @@
 #include "led_gpio_hal.h"
 #include "cmsis_os.h"
 #include "logbuffer.h"
+#include "commands.h"
 
 //static void setStaticPins(void)
 //{
@@ -93,5 +94,6 @@ void app_task_init(void)
 //    test_timers();
     // required for console I/O
 //    debug_print("Waiting for threads to start\n");
+    commands_init();
     led_all_set_state(LED_OFF);
 }

@@ -1,4 +1,6 @@
 /*
+**    Digital Potentiometers
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,15 +17,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "dev_pot.h"
+
+#include <stdio.h>
+
 #include "ad5141_i2c_hal.h"
 #include "powermon_i2c_driver.h"
-#include "logbuffer.h"
 
-typedef enum {
-    POT_TDC_A,
-    POT_TDC_B,
-    POT_TDC_C,
-} PotIndex;
+const char *potLabel(PotIndex index)
+{
+    switch (index) {
+    case POT_TDC_A: return "TDC_A";
+    case POT_TDC_B: return "TDC_B";
+    case POT_TDC_C: return "TDC_C";
+    }
+    return 0;
+}
 
 static int potBusAddress(PotIndex index)
 {
@@ -35,42 +43,55 @@ static int potBusAddress(PotIndex index)
     return 0;
 }
 
+static int potSensorIndex(PotIndex index)
+{
+    switch (index) {
+    case POT_TDC_A: return SENSOR_TDC_A;
+    case POT_TDC_B: return SENSOR_TDC_B;
+    case POT_TDC_C: return SENSOR_TDC_C;
+    }
+    return 0;
+}
+
 void struct_pots_init(Dev_pots *d)
 {
     for (int i=0; i<DEV_POT_COUNT; i++) {
         Dev_ad5141 zz = {0};
         d->pot[i] = zz;
+        d->pot[i].index = i;
+        d->pot[i].deviceStatus = DEVICE_UNKNOWN;
+        d->pot[i].sensorIndex = potSensorIndex(i);
         d->pot[i].busAddress = potBusAddress(i);
     }
 }
 
-typedef enum {POT_TEST_OK = 0, POT_TEST_FAIL = -1} pot_test_t;
-
-static pot_test_t pot_i2c_Test(Dev_ad5141 *d)
+void dev_ad5141_reset(Dev_ad5141 *d)
 {
-    uint8_t test_wr = 0x77;
+    if (d->deviceStatus == DEVICE_NORMAL)
+        ad5141_reset(d->busAddress);
+}
 
-    if (HAL_OK != dev_ad5141_nop(d->busAddress))
-        return POT_TEST_FAIL;
+void dev_ad5141_inc(Dev_ad5141 *d)
+{
+    if (d->deviceStatus == DEVICE_NORMAL)
+        ad5141_inc_rdac(d->busAddress);
+}
 
-    if (HAL_OK != dev_ad5141_write_rdac(d->busAddress, test_wr))
-        return POT_TEST_FAIL;
+void dev_ad5141_dec(Dev_ad5141 *d)
+{
+    if (d->deviceStatus == DEVICE_NORMAL)
+        ad5141_dec_rdac(d->busAddress);
+}
 
-    //    ad5141_copy_rdac_to_eeprom(d);
-    //    ad5141_copy_eeprom_to_rdac(d);
-    uint8_t test_rd = 0;
-    if (HAL_OK != dev_ad5141_read_rdac(d->busAddress, &test_rd))
-        return POT_TEST_FAIL;
-    d->value = test_rd;
-
-//    if (test_wr != test_rd)
-//        return POT_TEST_FAIL;
-    return POT_TEST_OK;
+void dev_ad5141_write(Dev_ad5141 *d)
+{
+    if (d->deviceStatus == DEVICE_NORMAL)
+        ad5141_copy_rdac_to_eeprom(d->busAddress);
 }
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    int detected = (POT_TEST_OK == pot_i2c_Test(d));
+    int detected = (HAL_OK == ad5141_nop(d->busAddress));
     if (detected)
         d->deviceStatus = DEVICE_NORMAL;
     else
@@ -85,10 +106,24 @@ int pot_detect(Dev_pots *d)
         powermon_i2c_reset_master();
         DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
+            dev_ad5141_reset(&d->pot[i]);
             count++;
         } else {
             powermon_i2c_reset_master();
         }
     }
     return count;
+}
+
+void pot_read_rdac_all(Dev_pots *d)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    for (int i=0; i<DEV_POT_COUNT; i++) {
+        Dev_ad5141 *p = &d->pot[i];
+        if (p->deviceStatus != DEVICE_NORMAL)
+            continue;
+        ret = ad5141_read_rdac(p->busAddress, &p->value);
+        if (HAL_OK != ret)
+            break;
+    }
 }

@@ -38,6 +38,7 @@
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_mcu.h"
+#include "dev_pot.h"
 #include "dev_leds.h"
 #include "devices.h"
 #include "version.h"
@@ -57,7 +58,7 @@ enum { displayThreadStackSize = 1000 };
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayTaskLoopDelay = 500;
+static const uint32_t displayTaskLoopDelay = 100;
 static int force_refresh = 0;
 
 static const char *pmStateStr(PmState state)
@@ -152,27 +153,38 @@ static void pm_pgood_print(const Dev_powermon *pm)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
+static void pm_sensor_print_header(void)
+{
+    printf("%10s %6s %6s %6s %5s", "sensor ", "  V  ", "  A  ", " A max ", "  W  ");
+    printf(ANSI_CLEAR_EOL "\n");
+}
+
+static void pm_sensor_print_values(const pm_sensor *d, int isOn)
+{
+    SensorStatus sensorStatus = pm_sensor_status(d);
+    int offvoltage = !isOn && (d->busVoltage > 0.1);
+    const char *color = "";
+    switch (sensorStatus) {
+    case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
+    case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
+    case SENSOR_WARNING:  color = ANSI_YELLOW; break;
+    case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
+    }
+    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
+    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+        int backfeed = (d->current < -0.010);
+        printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
+    } else {
+        printf("         ");
+    }
+    //        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
+}
+
 static void pm_sensor_print(const pm_sensor *d, int isOn)
 {
     printf("%10s", d->label);
     if (d->deviceStatus == DEVICE_NORMAL) {
-        SensorStatus sensorStatus = pm_sensor_status(d);
-        int offvoltage = !isOn && (d->busVoltage > 0.1);
-        const char *color = "";
-        switch (sensorStatus) {
-        case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
-        case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
-        case SENSOR_WARNING:  color = ANSI_YELLOW; break;
-        case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
-        }
-        printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
-        if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            int backfeed = (d->current < -0.010);
-            printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
-        } else {
-            printf("         ");
-        }
-//        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
+        pm_sensor_print_values(d, isOn);
         printf(" %s", isOn ? sensorStatusStr(d->sensorStatus) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
@@ -197,8 +209,7 @@ void monPrintValues(const Dev_powermon *d)
 //    if (d->monErrors)
 //        printf("     %d errors", d->monErrors);
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("%10s %6s %6s %6s %5s", "sensor ", "  V  ", "  A  ", " A max ", "  W  ");
-    printf(ANSI_CLEAR_EOL "\n");
+    pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
             pm_sensor_print(&d->sensors[i], monIsOn(&d->sw_state, i));
@@ -450,6 +461,31 @@ static void display_log(void)
     print_log_lines(DISPLAY_HEIGHT - 3);
 }
 
+static void display_pot(const Dev_powermon *d)
+{
+    print_goto(2, 1);
+    printf("Voltage adjustments\n" ANSI_CLEAR_EOL);
+    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom\n" ANSI_CLEAR_EOL);
+    print_goto(4, 1);
+    printf("\n");
+    printf("   adjustment ");
+    pm_sensor_print_header();
+    for (int i=0; i<DEV_POT_COUNT; i++) {
+        const Dev_ad5141 *p = &d->pots.pot[i];
+        const pm_sensor *sensor = &d->sensors[p->sensorIndex];
+        const int isOn = monIsOn(&d->sw_state, p->sensorIndex);
+        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel(i));
+        if (p->deviceStatus == DEVICE_NORMAL)
+            printf("%3u ", p->value);
+        else
+            printf("?   ");
+        printf("%10s", sensor->label);
+        pm_sensor_print_values(sensor, isOn);
+        printf("%s\n", ANSI_CLEAR_EOL);
+    }
+//    pot_debug();
+}
+
 static int old_enable_stats_display = 0;
 
 static void display_summary(const Devices * dev)
@@ -499,9 +535,11 @@ uint32_t old_tick = 0;
 static void update_display(const Devices * dev)
 {
     uint32_t tick = osKernelSysTick();
-    int need_refresh = tick > old_tick + DISPLAY_REFRESH_TIME_MS;
+    if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
+        schedule_display_refresh();
     if (old_display_mode != display_mode)
-        need_refresh = 1;
+        schedule_display_refresh();
+    int need_refresh = read_display_refresh();
     if (!need_refresh)
         return;
     old_tick = tick;
@@ -510,6 +548,7 @@ static void update_display(const Devices * dev)
     int need_clear_screen =
             display_mode == DISPLAY_NONE
             || display_mode == DISPLAY_LOG
+            || display_mode == DISPLAY_POT
             || display_mode == DISPLAY_TASKS;
 
     if (need_clear_screen) {
@@ -540,6 +579,9 @@ static void update_display(const Devices * dev)
         break;
     case DISPLAY_LOG:
         display_log();
+        break;
+    case DISPLAY_POT:
+        display_pot(&d->pm);
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail(d);
