@@ -29,12 +29,6 @@
 #include "logbuffer.h"
 #include "commands.h"
 
-//static void setStaticPins(void)
-//{
-////    pllSetStaticPins();
-//    update_power_switches(&dev.pm, SWITCH_ON); // FIXME
-//}
-
 static int test_cpu_tick(void)
 {
     uint32_t start_ticks = DWT->CYCCNT;
@@ -90,7 +84,6 @@ void app_task_init(void)
     log_put(LOG_NOTICE, "Initializing");
 //    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
-//    setStaticPins();
 //    test_timers();
     // required for console I/O
 //    debug_print("Waiting for threads to start\n");
