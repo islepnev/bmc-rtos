@@ -23,16 +23,6 @@
 static const int SPI_TIMEOUT_MS = 10;
 
 /**
-  * @brief  Converts raw temperature value
-  * @param  raw: 14-bit raw value from ADT7301 temperature sensor
-  * @retval temperature in degrees Celsius multiplied by 32
-  */
-int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw)
-{
-    return (int16_t)(raw << 2) >> 2;
-}
-
-/**
   * @brief Read the temperature data from the specified sensor
   * @param source: sensor index [0..3]
   */
@@ -73,10 +63,8 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
     HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
     if (data) {
         if (ret == HAL_OK) {
-            uint16_t result = SPI_receive_buffer;
-            *data = result;
-        } else {
-            *data = TEMP_RAW_ERROR;
+            int16_t result = SPI_receive_buffer;
+            *data = (result << 2) >> 2;
         }
     }
     return ret;

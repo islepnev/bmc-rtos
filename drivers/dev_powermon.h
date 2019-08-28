@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_types.h"
+#include "dev_powermon_types.h"
 #include "dev_pm_sensors.h"
 #include "dev_pot.h"
 
@@ -28,29 +29,8 @@
 extern "C" {
 #endif
 
-typedef enum SwitchOnOff {
-    SWITCH_OFF = 0,
-    SWITCH_ON = 1,
-} SwitchOnOff;
-
-typedef struct pm_switches {
-    SwitchOnOff switch_5v;
-    SwitchOnOff switch_3v3;
-    SwitchOnOff switch_1v5;
-    SwitchOnOff switch_1v0;
-    SwitchOnOff switch_tdc_a;
-    SwitchOnOff switch_tdc_b;
-    SwitchOnOff switch_tdc_c;
-} pm_switches;
-
-typedef enum MonState {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-} MonState;
-
 typedef struct Dev_powermon {
+    PmState pmState;
     MonState monState;
     uint32_t stateStartTick;
     int monErrors;
@@ -65,14 +45,20 @@ typedef struct Dev_powermon {
    Dev_pots pots;
 } Dev_powermon;
 
+typedef enum {
+    SWITCH_FAIL,
+    SWITCH_OK
+} switch_test_t;
+
 void struct_powermon_sensors_init(Dev_powermon *d);
 void struct_powermon_init(Dev_powermon *d);
 //int readPowerGoodFpga();
 //int readPowerGood1v5();
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
-void update_power_switch_state(Dev_powermon *pm);
-void update_power_switches(Dev_powermon *pm, SwitchOnOff state);
+void read_power_switches_state(Dev_powermon *pm);
+switch_test_t check_power_switches(const Dev_powermon *pm);
+void update_power_switches(Dev_powermon *pm);
 int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);

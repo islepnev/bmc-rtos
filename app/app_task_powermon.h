@@ -24,17 +24,8 @@
 extern "C" {
 #endif
 
-typedef enum {
-    PM_STATE_INIT,
-    PM_STATE_STANDBY,
-    PM_STATE_RAMP,
-    PM_STATE_RUN,
-    PM_STATE_PWRFAIL,
-    PM_STATE_ERROR
-} PmState;
-
-PmState getPmState(void);
-Dev_powermon getPmData(void);
+//PmState getPmState(void);
+//Dev_powermon getPmData(void);
 SensorStatus getPowermonStatus(const Dev_powermon *pm);
 void create_task_powermon(void);
 

@@ -19,35 +19,7 @@
 
 #include <stdint.h>
 #include "ad9545_status.h"
-
-typedef enum {
-    PGOOD_FAIL = 0,
-    PGOOD_OK = 1 }
-PgoodState;
-
-typedef enum {
-    SENSOR_UNKNOWN  = 0,
-    SENSOR_NORMAL   = 1, // numeric value used
-    SENSOR_WARNING  = 2,
-    SENSOR_CRITICAL = 3
-} SensorStatus;
-
-typedef enum {
-    DEVICE_UNKNOWN = 0,
-    DEVICE_NORMAL = 1,
-    DEVICE_FAIL = 2
-} DeviceStatus;
-
-enum {DEV_THERM_COUNT = 4};
-
-typedef struct Dev_adt7301 {
-    int valid;
-    int16_t rawTemp;
-} Dev_adt7301;
-
-typedef struct Dev_thset {
-    Dev_adt7301 th[DEV_THERM_COUNT];
-} Dev_thset;
+#include "dev_common_types.h"
 
 enum {FPGA_REG_COUNT = 8};
 typedef struct Dev_fpga {

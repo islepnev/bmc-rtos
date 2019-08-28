@@ -25,12 +25,6 @@
 #include "i2c.h"
 #include "display.h"
 
-// Temperature limits
-static const int tempMinCrit = -40;
-static const int tempMaxCrit = 80.0;
-static const int tempMinWarn = 0.1;
-static const int tempMaxWarn = 60.0;
-
 void struct_pca9548_init(Dev_pca9548 *d)
 {
     d->present = DEVICE_UNKNOWN;
@@ -126,34 +120,4 @@ PgoodState dev_readPgood(Dev_powermon *pm)
 {
     pm_read_pgood(pm);
     return get_all_pgood(pm);
-}
-
-void dev_thset_read(Dev_thset *d)
-{
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        int16_t rawTemp;
-        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
-        d->th[i].valid = (ret == HAL_OK);
-        d->th[i].rawTemp = rawTemp;
-    }
-}
-
-SensorStatus dev_thset_thermStatus(const Dev_thset *d)
-{
-    SensorStatus maxStatus = SENSOR_NORMAL;
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        if (!d->th[i].valid)
-            continue;
-        int16_t temp = adt7301_convert_temp_adt7301_scale32(d->th[i].rawTemp);
-        temp /= 32;
-        if (temp < tempMinCrit || temp > tempMaxCrit) {
-            if (SENSOR_CRITICAL > maxStatus)
-                maxStatus = SENSOR_CRITICAL;
-        }
-        if (temp < tempMinWarn || temp > tempMaxWarn) {
-            if (SENSOR_WARNING > maxStatus)
-                maxStatus = SENSOR_WARNING;
-        }
-    }
-    return maxStatus;
 }

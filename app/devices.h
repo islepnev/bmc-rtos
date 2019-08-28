@@ -26,6 +26,7 @@ extern "C" {
 #include "stm32f7xx_hal.h"
 #include "dev_types.h"
 #include "dev_powermon.h"
+#include "dev_thset.h"
 #include "dev_leds.h"
 
 enum { FPGA_DEVICE_ID = 0x2FD0};
@@ -50,12 +51,6 @@ DeviceStatus getDeviceStatus(const Devices *d);
 DeviceStatus devDetect(Devices *d);
 DeviceStatus devRun(Devices *d);
 PgoodState dev_readPgood(Dev_powermon *pm);
-void dev_thset_read(Dev_thset *d);
-//void dev_print_thermometers(const Devices *dev);
-
-//void dev_thset_read(Dev_thset *d);
-//void dev_thset_print(const Dev_thset d);
-SensorStatus dev_thset_thermStatus(const Dev_thset *d);
 
 #ifdef __cplusplus
 }

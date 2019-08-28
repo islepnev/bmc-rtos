@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 extern uint32_t pmLoopCount;
-extern PmState pmState;
+//extern PmState pmState;
 
 SensorStatus getMonStatus(const Dev_powermon *pm);
 

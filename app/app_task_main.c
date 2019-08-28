@@ -66,7 +66,7 @@ static void task_main (void)
 {
     mainloopCount++;
     const MainState oldState = mainState;
-    const PmState pmState = getPmState();
+    const PmState pmState = dev.pm.pmState;
 //    led_toggle(LED_YELLOW);
 
     switch (mainState) {

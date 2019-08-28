@@ -38,14 +38,6 @@ static uint32_t stateTicks(void)
     return HAL_GetTick() - stateStartTick;
 }
 
-typedef enum {
-    DEV_OK       = HAL_OK,
-    IIC_ERROR    = HAL_ERROR,
-    IIC_BUSY     = HAL_BUSY,
-    IIC_TIMEOUT  = HAL_TIMEOUT,
-    DEV_ERROR    = 0x20U,
-} OpStatusTypeDef;
-
 static char *OpStatusErrorStr(OpStatusTypeDef status)
 {
     switch(status) {

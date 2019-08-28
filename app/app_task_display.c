@@ -39,6 +39,7 @@
 #include "display.h"
 #include "dev_mcu.h"
 #include "dev_pot.h"
+#include "dev_thset.h"
 #include "dev_leds.h"
 #include "devices.h"
 #include "version.h"
@@ -68,8 +69,9 @@ static const char *pmStateStr(PmState state)
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
+    case PM_STATE_OFF:     return ANSI_GRAY   "OFF"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
-    case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case PM_STATE_OVERHEAT: return ANSI_RED    "OVERHEAT" ANSI_CLEAR;
     default: return "?";
     }
 }
@@ -77,7 +79,7 @@ static const char *pmStateStr(PmState state)
 static const char *sensorStatusStr(SensorStatus state)
 {
     switch(state) {
-    case SENSOR_UNKNOWN:  return STR_RESULT_WARNING;
+    case SENSOR_UNKNOWN:  return STR_RESULT_UNKNOWN;
     case SENSOR_NORMAL:   return STR_RESULT_NORMAL;
     case SENSOR_WARNING:  return STR_RESULT_WARNING;
     case SENSOR_CRITICAL: return STR_RESULT_CRIT;
@@ -147,8 +149,8 @@ static void pm_pgood_print(const Dev_powermon *pm)
 //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
 //    printf("%s\n", ANSI_CLEAR_EOL);
     printf("Power good: 1.5V: %3s, 1.0V core %3s",
-           pm->ltm_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v5 ? STR_RESULT_CRIT : STR_RESULT_OFF,
-           pm->fpga_core_pgood ? STR_RESULT_NORMAL : pm->sw.switch_1v0 ? STR_RESULT_CRIT : STR_RESULT_OFF
+           pm->ltm_pgood ? STR_ON : STR_OFF,
+           pm->fpga_core_pgood ? STR_ON : STR_OFF
     );
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -349,7 +351,7 @@ static void print_header(void)
 
 static void print_powermon(const Dev_powermon *pm)
 {
-    const PmState pmState = getPmState();
+    const PmState pmState = pm->pmState;
 //    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
     print_goto(DISPLAY_POWERMON_Y, 1);
     printf("Powermon state: %s", pmStateStr(pmState));
@@ -366,7 +368,7 @@ static void print_powermon(const Dev_powermon *pm)
 
 static void print_sensors(const Dev_powermon *pm)
 {
-    const PmState pmState = getPmState();
+    const PmState pmState = pm->pmState;
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
     } else {

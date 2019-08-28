@@ -102,8 +102,7 @@ static void iic_read_callback(uint16_t addr, uint32_t *data)
             *data = dev.fpga.id;
             break;
         case 3: {
-            const SensorStatus systemStatus = getSystemStatus(&dev);
-            *data = systemStatus;
+            *data = encode_system_status(&dev).w;
             break;
         }
         case 4:
@@ -111,6 +110,9 @@ static void iic_read_callback(uint16_t addr, uint32_t *data)
             break;
         case 5:
             *data = vxsiic_i2c_stats.errors;
+            break;
+        case 6:
+            *data = osKernelSysTick() / osKernelSysTickFrequency;
             break;
         default:
             *data = 0;

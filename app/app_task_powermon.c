@@ -29,22 +29,22 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
-PmState getPmState(void)
-{
-    return pmState;
-}
+//PmState getPmState(void)
+//{
+//    return pmState;
+//}
 
-Dev_powermon getPmData(void)
-{
-    return dev.pm;
-}
+//Dev_powermon getPmData(void)
+//{
+//    return dev.pm;
+//}
 
 SensorStatus getPowermonStatus(const Dev_powermon *pm)
 {
     const SensorStatus monStatus = getMonStatus(pm);
-    const PmState pmState = getPmState();
-    SensorStatus pmStatus = (pmState == PM_STATE_RUN) ? SENSOR_NORMAL : SENSOR_WARNING;
-    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_ERROR)
+    const PmState pmState = pm->pmState;
+    SensorStatus pmStatus = (pmState == PM_STATE_RUN || pmState == PM_STATE_OFF) ? SENSOR_NORMAL : SENSOR_WARNING;
+    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_OVERHEAT)
         pmStatus = SENSOR_CRITICAL;
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (pmStatus > systemStatus)
