@@ -574,4 +574,147 @@ void RMII_Thread( void const * argument )
     }
 }
 
+/**
+  * @brief  This function sets the netif link status.
+  * @param  netif: the network interface
+  * @retval None
+  */
+void ethernetif_set_link(void const *argument)
+{
+  uint32_t regvalue = 0;
+  struct link_str *link_arg = (struct link_str *)argument;
+
+  for(;;)
+  {
+    /* Read PHY_BSR*/
+    HAL_ETH_ReadPHYRegister(&EthHandle, PHY_BSR, &regvalue);
+
+    regvalue &= PHY_LINKED_STATUS;
+
+    /* Check whether the netif link down and the PHY link is up */
+    if(!netif_is_link_up(link_arg->netif) && (regvalue))
+    {
+      /* network cable is connected */
+      netif_set_link_up(link_arg->netif);
+    }
+    else if(netif_is_link_up(link_arg->netif) && (!regvalue))
+    {
+      /* network cable is dis-connected */
+      netif_set_link_down(link_arg->netif);
+    }
+
+    /* Suspend thread for 200 ms */
+    osDelay(200);
+  }
+}
+
+#if LWIP_NETIF_LINK_CALLBACK
+/**
+  * @brief  Link callback function, this function is called on change of link status
+  *         to update low level driver configuration.
+* @param  netif: The network interface
+  * @retval None
+  */
+void ethernetif_update_config(struct netif *netif)
+{
+  __IO uint32_t tickstart = 0;
+  uint32_t regvalue = 0;
+
+  if(netif_is_link_up(netif))
+  {
+    /* Restart the auto-negotiation */
+    if(EthHandle.Init.AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE)
+    {
+      /* Enable Auto-Negotiation */
+      HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, PHY_AUTONEGOTIATION);
+
+      /* Get tick */
+      tickstart = HAL_GetTick();
+
+      /* Wait until the auto-negotiation will be completed */
+      do
+      {
+        HAL_ETH_ReadPHYRegister(&EthHandle, PHY_BSR, &regvalue);
+
+        /* Check for the Timeout ( 1s ) */
+        if((HAL_GetTick() - tickstart ) > 1000)
+        {
+          /* In case of timeout */
+          goto error;
+        }
+      } while (((regvalue & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
+
+      /* Read the result of the auto-negotiation */
+      HAL_ETH_ReadPHYRegister(&EthHandle, PHY_SR, &regvalue);
+
+      /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
+      if((regvalue & PHY_DUPLEX_STATUS) != (uint32_t)RESET)
+      {
+        /* Set Ethernet duplex mode to Full-duplex following the auto-negotiation */
+        EthHandle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
+      }
+      else
+      {
+        /* Set Ethernet duplex mode to Half-duplex following the auto-negotiation */
+        EthHandle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
+      }
+      /* Configure the MAC with the speed fixed by the auto-negotiation process */
+      if(regvalue & PHY_SPEED_STATUS)
+      {
+        /* Set Ethernet speed to 10M following the auto-negotiation */
+        EthHandle.Init.Speed = ETH_SPEED_10M;
+      }
+      else
+      {
+        /* Set Ethernet speed to 100M following the auto-negotiation */
+        EthHandle.Init.Speed = ETH_SPEED_100M;
+      }
+    }
+    else /* AutoNegotiation Disable */
+    {
+    error :
+      /* Check parameters */
+      assert_param(IS_ETH_SPEED(EthHandle.Init.Speed));
+      assert_param(IS_ETH_DUPLEX_MODE(EthHandle.Init.DuplexMode));
+
+      /* Set MAC Speed and Duplex Mode to PHY */
+      HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, ((uint16_t)(EthHandle.Init.DuplexMode >> 3) |
+                                                     (uint16_t)(EthHandle.Init.Speed >> 1)));
+    }
+
+    /* ETHERNET MAC Re-Configuration */
+    HAL_ETH_ConfigMAC(&EthHandle, (ETH_MACInitTypeDef *) NULL);
+
+    /* Restart MAC interface */
+    HAL_ETH_Start(&EthHandle);
+  }
+  else
+  {
+    /* Stop MAC interface */
+    HAL_ETH_Stop(&EthHandle);
+  }
+
+  ethernetif_notify_conn_changed(netif);
+}
+
+/* USER CODE BEGIN 8 */
+/**
+  * @brief  This function notify user about link status changement.
+  * @param  netif: the network interface
+  * @retval None
+  */
+__weak void ethernetif_notify_conn_changed(struct netif *netif)
+{
+  /* NOTE : This is function could be implemented in user file
+            when the callback is needed,
+  */
+
+}
+/* USER CODE END 8 */
+#endif /* LWIP_NETIF_LINK_CALLBACK */
+
+/* USER CODE BEGIN 9 */
+
+/* USER CODE END 9 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+

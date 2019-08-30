@@ -15,6 +15,11 @@
 #include "sntp/sntp_client.h"
 #include "snmp/snmp_agent.h"
 
+/* Semaphore to signal Ethernet Link state update */
+osSemaphoreId Netif_LinkSemaphore = NULL;
+/* Ethernet link thread Argument */
+struct link_str link_arg;
+
 struct netif gnetif; /* network interface structure */
 
 static void Netif_Config(void)
@@ -48,6 +53,22 @@ static void Netif_Config(void)
     /* When the netif link is down this function must be called */
     netif_set_down(&gnetif);
   }
+
+  /* Set the link callback function, this function is called on change of link status*/
+  netif_set_link_callback(&gnetif, ethernetif_update_config);
+
+  /* create a binary semaphore used for informing ethernetif of frame reception */
+  osSemaphoreDef(Netif_SEM);
+  Netif_LinkSemaphore = osSemaphoreCreate(osSemaphore(Netif_SEM) , 1 );
+
+  link_arg.netif = &gnetif;
+  link_arg.semaphore = Netif_LinkSemaphore;
+  /* Create the Ethernet link handler thread */
+  osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadCreate (osThread(LinkThr), &link_arg);
+
+  /* Start DHCP negotiation for a network interface (IPv4) */
+//  dhcp_start(&gnetif);
 }
 
 void task_tcpip_init()
@@ -73,11 +94,6 @@ void task_tcpip_init()
 //  extern void lwiperf_example_init(void);
 //  lwiperf_example_init();
   sntp_client_init();
-
-  /* Notify user about the network interface config */
-  User_notification(&gnetif);
-
-  log_printf(LOG_DEBUG, "starting dhcp");
 
 #ifdef USE_DHCP
   /* Start DHCPClient */
@@ -153,3 +169,8 @@ static void CPU_CACHE_Enable(void)
   SCB_EnableDCache();
 }
 #endif
+
+void ethernetif_notify_conn_changed(struct netif *netif)
+{
+    log_printf(LOG_INFO, "Ethernet link %s", netif_is_link_up(netif) ? "up" : "down");
+}
