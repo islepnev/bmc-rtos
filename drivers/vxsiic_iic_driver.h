@@ -14,29 +14,18 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef VXSIIC_IIC_DRIVER_H
+#define VXSIIC_IIC_DRIVER_H
 
-#include <stdint.h>
+#include "stm32f7xx_hal_def.h"
 
-#include "dev_vxsiic_types.h"
+struct __I2C_HandleTypeDef * const vxsiic_hi2c;
 
-const uint32_t BMC_MAGIC = 0x424D4320;
+void vxsiic_reset_i2c_master(void);
+void vxsiic_init(void);
+HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
 
-uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS] = {
-    2, 3, 4, 5, 6, 7, 8, 9, 10,
-    13, 14, 15, 16, 17, 18, 19, 20, 21
-};
-const char * vxsiic_map_slot_to_label[VXSIIC_SLOTS] = {
-    "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "13", "14", "15", "16", "17", "18", "19", "20", "21"
-};
-
-uint8_t get_vxsiic_board_count(const Dev_vxsiic *d)
-{
-    uint8_t count = 0;
-    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &d->status.slot[i];
-        if (status->present)
-            count++;
-    }
-    return count;
-}
+#endif // VXSIIC_IIC_DRIVER_H

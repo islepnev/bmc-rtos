@@ -14,29 +14,17 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef DEV_VXSIIC_PP_H
+#define DEV_VXSIIC_PP_H
 
 #include <stdint.h>
-
+#include "stm32f7xx_hal_def.h"
 #include "dev_vxsiic_types.h"
 
-const uint32_t BMC_MAGIC = 0x424D4320;
+HAL_StatusTypeDef dev_vxsiic_read_pp(Dev_vxsiic *d, int pp);
+//HAL_StatusTypeDef dev_vxsiic_read_pp_eeprom(Dev_vxsiic *d, int pp);
+//HAL_StatusTypeDef dev_vxsiic_read_pp_ioexp(Dev_vxsiic *d, int pp);
+//HAL_StatusTypeDef dev_vxsiic_read_pp_mcu_4(Dev_vxsiic *d, int pp, uint16_t reg, uint32_t *data);
+//HAL_StatusTypeDef dev_vxsiic_write_pp_mcu_4(Dev_vxsiic *d, int pp, uint16_t reg, uint32_t data);
 
-uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS] = {
-    2, 3, 4, 5, 6, 7, 8, 9, 10,
-    13, 14, 15, 16, 17, 18, 19, 20, 21
-};
-const char * vxsiic_map_slot_to_label[VXSIIC_SLOTS] = {
-    "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "13", "14", "15", "16", "17", "18", "19", "20", "21"
-};
-
-uint8_t get_vxsiic_board_count(const Dev_vxsiic *d)
-{
-    uint8_t count = 0;
-    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &d->status.slot[i];
-        if (status->present)
-            count++;
-    }
-    return count;
-}
+#endif // DEV_VXSIIC_PP_H

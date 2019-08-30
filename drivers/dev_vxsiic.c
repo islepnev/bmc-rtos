@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
 #include "dev_vxsiic_types.h"
+#include "dev_vxsiic_pp.h"
 #include "vxsiic_hal.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
@@ -35,6 +36,21 @@ static const int map_slot_to_channel[VXSIIC_SLOTS] = {
 static const int map_slot_to_subdevice[VXSIIC_SLOTS] = {
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 1
 };
+
+static DeviceStatus vxsiic_select_pp(Dev_vxsiic *d, uint8_t pp)
+{
+    HAL_StatusTypeDef ret = HAL_ERROR;
+    if (pp >= VXSIIC_SLOTS)
+        return ret;
+
+    vxsiic_reset_i2c_master();
+    vxsiic_reset_mux();
+
+    uint8_t channel = map_slot_to_channel[pp];
+    uint8_t subdevice = map_slot_to_subdevice[pp];
+    ret = vxsiic_mux_select(subdevice, channel);
+    return ret;
+}
 
 void dev_vxsiic_init(Dev_vxsiic *d)
 {
@@ -54,40 +70,10 @@ DeviceStatus dev_vxsiic_detect(Dev_vxsiic *d)
     return d->present;
 }
 
+#ifdef MCU_TEST
 uint32_t make_test_data(uint32_t i)
 {
     return ((i*4+3)<< 24) | ((i*4+2)<< 16) | ((i*4+1)<< 8) | (i*4+0);
-}
-
-DeviceStatus vxsiic_select_pp(Dev_vxsiic *d, uint8_t pp)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    if (pp >= VXSIIC_SLOTS)
-        return ret;
-    uint8_t channel = map_slot_to_channel[pp];
-    uint8_t subdevice = map_slot_to_subdevice[pp];
-    ret = vxsiic_mux_select(subdevice, channel);
-    return ret;
-}
-
-HAL_StatusTypeDef dev_vxsiic_read_pp_eeprom(Dev_vxsiic *d, int pp)
-{
-    HAL_StatusTypeDef ret = HAL_OK;
-    uint16_t addr = 0;
-    uint8_t eeprom_data = 0;
-    ret = vxsiic_read_pp_eeprom(pp, addr, &eeprom_data);
-    if (HAL_OK == ret) {
-//        d->status.slot[i].iic_stats.ops++;
-    } else {
-//        d->status.slot[i].iic_stats.errors++;
-        return ret;
-    }
-//    debug_printf("EEPROM at slot %2s [%04X] = %02X\n", map_slot_to_label[pp], addr, eeprom_data);
-    if (eeprom_data != 0xFF) {
-        debug_printf("EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
-        return HAL_ERROR;
-    }
-    return ret;
 }
 
 HAL_StatusTypeDef dev_vxsiic_test_pp_mcu_regs(Dev_vxsiic *d, int pp)
@@ -99,13 +85,13 @@ HAL_StatusTypeDef dev_vxsiic_test_pp_mcu_regs(Dev_vxsiic *d, int pp)
     for (int i=0; i<count; i++) {
         addr = 1+i;
         data = make_test_data(i);
-        ret = vxsiic_write_pp_mcu_4(pp, addr, data);
+        ret = dev_vxsiic_write_pp_mcu_4(d, pp, addr, data);
         if (HAL_OK != ret)
             goto err;
     }
     for (int i=0; i<count; i++) {
         addr = 1+i;
-        ret = vxsiic_read_pp_mcu_4(pp, addr, &data);
+        ret = dev_vxsiic_read_pp_mcu_4(d, pp, addr, &data);
         if (HAL_OK != ret)
             goto err;
         const uint32_t test_data = make_test_data(i);
@@ -116,75 +102,22 @@ HAL_StatusTypeDef dev_vxsiic_test_pp_mcu_regs(Dev_vxsiic *d, int pp)
 err:
     return ret;
 }
-
-HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
-{
-    HAL_StatusTypeDef ret = HAL_OK;
-    vxsiic_slot_status_t *status = &d->status.slot[pp];
-    uint32_t addr = 0;
-    uint32_t data = 0;
-    ret = vxsiic_read_pp_mcu_4(pp, addr, &status->magic);
-    if (HAL_OK != ret)
-        goto err;
-    status->present = 1;
-    status->map[0] = status->magic;
-    for (int i=1; i<MCU_MAP_SIZE; i++) {
-        addr = i;
-        ret = vxsiic_read_pp_mcu_4(pp, addr, &data);
-        if (HAL_OK != ret)
-            goto err;
-        status->map[i] = data;
-    }
-    status->module_id = status->map[1];
-    status->device_status = status->map[2];
-    // read ipmi sensors
-    ret = vxsiic_read_pp_mcu_4(pp, IIC_SENSORS_MAP_START, &data);
-    if (HAL_OK != ret)
-        goto err;
-    status->sensor_count = (data < MAX_SENSOR_COUNT) ? data : MAX_SENSOR_COUNT;
-    for (uint32_t i=0; i<status->sensor_count; i++) {
-        uint32_t wordcount = sizeof(GenericSensor) / 4;
-        static GenericSensor buf;
-        for (uint32_t j=0; j<wordcount; j++) {
-            uint32_t *ptr = (uint32_t *)&buf + j;
-//            uint32_t *ptr = (uint32_t *)(&status->sensors[i]) + j;
-            uint16_t addr = 1+IIC_SENSORS_MAP_START + wordcount*i + j;
-            ret = vxsiic_read_pp_mcu_4(pp, addr, ptr);
-            if (HAL_OK != ret)
-                goto err;
-        }
-        buf.name[SENSOR_NAME_SIZE-1] = '\0';
-        memcpy(&status->sensors[i], &buf, sizeof(buf));
-    }
-    return ret;
-err:
-    {
-        vxsiic_slot_status_t zz = {0};
-        *status = zz;
-    }
-    return ret;
-}
+#endif
 
 static int old_present[VXSIIC_SLOTS] = {0};
 
 DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
 {
-    const struct vxsiic_i2c_stats_t *vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
 //    uint32_t tick_begin = osKernelSysTick();
     HAL_StatusTypeDef ret = HAL_OK;
     for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
-        vxsiic_reset_i2c_master();
-        vxsiic_reset_mux();
         ret = vxsiic_select_pp(d, pp);
         if (HAL_OK != ret) {
             d->present = DEVICE_FAIL;
             return d->present;
         }
         vxsiic_slot_status_t *status = &d->status.slot[pp];
-        const struct vxsiic_i2c_stats_t vxsiic_i2c_stats_before = *vxsiic_i2c_stats;
-        if ((HAL_OK == vxsiic_get_pp_i2c_status(pp))
-                && (HAL_OK == dev_vxsiic_read_pp_eeprom(d, pp))
-                && (HAL_OK == dev_vxsiic_read_pp_mcu(d, pp))) {
+        if (HAL_OK == dev_vxsiic_read_pp(d, pp)) {
             status->present = 1;
             if (!old_present[pp])
                 log_printf(LOG_NOTICE, "VXS slot %s: board inserted", vxsiic_map_slot_to_label[pp]);
@@ -194,9 +127,6 @@ DeviceStatus dev_vxsiic_read(Dev_vxsiic *d)
             status->present = 0;
         }
         old_present[pp] = status->present;
-        const struct vxsiic_i2c_stats_t vxsiic_i2c_stats_after = *vxsiic_i2c_stats;
-        status->iic_stats.ops += (vxsiic_i2c_stats_after.ops - vxsiic_i2c_stats_before.ops);
-        status->iic_stats.errors += (vxsiic_i2c_stats_after.errors - vxsiic_i2c_stats_before.errors);
     }
 //    uint32_t tick_end = osKernelSysTick();
 //    uint32_t ticks = tick_end - tick_begin;

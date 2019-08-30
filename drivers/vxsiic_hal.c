@@ -22,78 +22,16 @@
 #include "i2c.h"
 #include "bsp_pin_defs.h"
 #include "debug_helpers.h"
-#include "cmsis_os.h"
-
-static const int I2C_TIMEOUT_MS = 25;
-
-struct __I2C_HandleTypeDef * const vxsiic_hi2c = &hi2c1;
-
-static vxsiic_i2c_stats_t vxsiic_i2c_stats = {0};
-
-const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void)
-{
-    return &vxsiic_i2c_stats;
-}
-
-osSemaphoreId vxsiic_semaphore;                         // Semaphore ID
-osSemaphoreDef(vxsiic_semaphore);                       // Semaphore definition
-
-void vxsiic_I2C_MasterTxCpltCallback(void)
-{
-    osSemaphoreRelease(vxsiic_semaphore);
-}
-
-void vxsiic_I2C_MasterRxCpltCallback(void)
-{
-    osSemaphoreRelease(vxsiic_semaphore);
-}
-
-void vxsiic_HAL_I2C_MemTxCpltCallback(void)
-{
-    osSemaphoreRelease(vxsiic_semaphore);
-}
-
-void vxsiic_HAL_I2C_MemRxCpltCallback(void)
-{
-    osSemaphoreRelease(vxsiic_semaphore);
-}
-
-void vxsiic_HAL_I2C_ErrorCallback(void)
-{
-    debug_printf("%s I2C error, code %d\n", __func__, vxsiic_hi2c->ErrorCode);
-    // reinitialize I2C
-    vxsiic_reset_i2c_master();
-    osSemaphoreRelease(vxsiic_semaphore);
-}
-
-void vxsiic_HAL_I2C_AbortCpltCallback(void)
-{
-    debug_printf("%s\n", __func__);
-    osSemaphoreRelease(vxsiic_semaphore);
-}
+#include "vxsiic_hal.h"
+#include "vxsiic_iic_driver.h"
 
 enum { PCA9548_BASE_I2C_ADDRESS = 0x71 };
 enum {
     PAYLOAD_BOARD_MCU_I2C_ADDRESS = 0x33,
+    PAYLOAD_BOARD_IOEXP_I2C_ADDRESS = 0x41,
     PAYLOAD_BOARD_EEPROM_I2C_ADDRESS = 0x51
 };
 
-void vxsiic_init(void)
-{
-    // Create and take the semaphore
-    vxsiic_semaphore = osSemaphoreCreate(osSemaphore(vxsiic_semaphore), 1);
-    osSemaphoreWait(vxsiic_semaphore, osWaitForever);
-}
-
-void vxsiic_reset_i2c_master(void)
-{
-    __HAL_I2C_DISABLE(vxsiic_hi2c);
-    vxsiic_hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
-    vxsiic_hi2c->State = HAL_I2C_STATE_READY;
-    vxsiic_hi2c->PreviousState = HAL_I2C_MODE_NONE;
-    vxsiic_hi2c->Mode = HAL_I2C_MODE_NONE;
-    __HAL_I2C_ENABLE(vxsiic_hi2c);
-}
 
 void vxsiic_reset_mux(void)
 {
@@ -114,15 +52,13 @@ void vxsiic_reset_mux(void)
 HAL_StatusTypeDef vxsiic_detect_mux(void)
 {
     HAL_StatusTypeDef ret;
-    uint32_t Trials = 2;
     for (int i=0; i<3; i++) {
         vxsiic_reset_i2c_master();
         vxsiic_reset_mux();
         uint8_t i2c_address= PCA9548_BASE_I2C_ADDRESS + i;
-        ret = HAL_I2C_IsDeviceReady(vxsiic_hi2c, i2c_address << 1, Trials, I2C_TIMEOUT_MS);
+        uint8_t data;
+        ret = vxsiic_read(i2c_address << 1, &data, 1);
         if (ret != HAL_OK) {
-            if (vxsiic_hi2c->ErrorCode != HAL_I2C_ERROR_TIMEOUT)
-                debug_printf("%s(%d): i2c error %d, %d\n", __func__, i, ret, vxsiic_hi2c->ErrorCode);
             return ret;
         }
     }
@@ -137,15 +73,7 @@ HAL_StatusTypeDef vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
     uint8_t data;
     data = 1 << channel; // enable channel
     uint8_t i2c_address = PCA9548_BASE_I2C_ADDRESS + subdevice;
-    ret = HAL_I2C_Master_Transmit_IT(vxsiic_hi2c, i2c_address << 1, &data, 1);
-    if (ret != HAL_OK) {
-        debug_printf("%s(%d, %d): i2c error %d, %d\n", __func__, subdevice, channel, i2c_address, ret, vxsiic_hi2c->ErrorCode);
-    }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
-    if (status != osOK) {
-        debug_printf("%s(%d, %d): i2c timeout\n", __func__, subdevice, channel);
-        return HAL_TIMEOUT;
-    }
+    ret = vxsiic_write(i2c_address << 1, &data, 1);
     return ret;
 }
 
@@ -199,103 +127,28 @@ void sprint_i2c_error(char *buf, size_t size, uint32_t code)
 
 HAL_StatusTypeDef vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    enum {Size = 1};
-    uint8_t pData[Size];
     uint8_t dev_address = (PAYLOAD_BOARD_EEPROM_I2C_ADDRESS << 1) | 1;
-    ret = HAL_I2C_Mem_Read_IT(vxsiic_hi2c, dev_address, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret != HAL_OK) {
-        vxsiic_i2c_stats.errors++;
-        if (vxsiic_hi2c->ErrorCode & HAL_I2C_ERROR_AF) {
-            // no acknowledge, empty slot
-            return HAL_TIMEOUT;
-        } else {
-            debug_printf("%s (port %d, addr 0x%04X): HAL code %d, I2C code %d\n", __func__, pp, reg, ret, vxsiic_hi2c->ErrorCode);
-            return ret;
-        }
-    }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
-    if (status != osOK) {
-        vxsiic_i2c_stats.errors++;
-        debug_printf("%s (port %2d, read %04X) timeout\n", __func__, pp, reg);
-        return HAL_TIMEOUT;
-    }
-    //    if (ret != HAL_OK) {
-    //        if (vxsiic_hi2c->ErrorCode & HAL_I2C_ERROR_AF)
-    //            return ret;
-    //        enum {size = 100};
-    //        char buf[size];
-    //        sprint_i2c_error(buf, size, vxsiic_hi2c->ErrorCode);
-    //        debug_printf("%s (port %2d) failed: %s\n", __func__, pp, buf);
-    //    }
-    //    if (ret == HAL_OK) {
-    vxsiic_i2c_stats.ops++;
-    if (data) {
-        *data = pData[0];
-    }
-    //    }
-    //    return ret;
-    return HAL_OK;
+    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
+}
+
+HAL_StatusTypeDef vxsiic_read_pp_ioexp(uint8_t pp, uint8_t reg, uint8_t *data)
+{
+    uint8_t dev_address = (PAYLOAD_BOARD_IOEXP_I2C_ADDRESS << 1) | 1;
+    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
 }
 
 HAL_StatusTypeDef vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     enum {Size = 4};
-    uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read_IT(vxsiic_hi2c, (PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1) | 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret != HAL_OK) {
-        vxsiic_i2c_stats.errors++;
-        if (vxsiic_hi2c->ErrorCode & HAL_I2C_ERROR_AF) {
-            // no acknowledge, MCU not loaded
-            return HAL_TIMEOUT;
-        } else {
-            debug_printf("%s (port %d, addr 0x%04X): HAL code %d, I2C code %d\n", __func__, pp, reg, ret, vxsiic_hi2c->ErrorCode);
-            return ret;
-        }
-    }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
-    if (status != osOK) {
-        vxsiic_i2c_stats.errors++;
-        debug_printf("%s (port %2d, addr 0x%04X) timeout\n", __func__, pp, reg);
-        return HAL_TIMEOUT;
-    }
-    vxsiic_i2c_stats.ops++;
-    if (data) {
-        *data = ((uint32_t)pData[3] << 24)
-                | ((uint32_t)pData[2] << 16)
-                | ((uint32_t)pData[1] << 8)
-                | pData[0];
-    }
-    return HAL_OK;
+    uint8_t dev_address = (PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1) | 1;
+    HAL_StatusTypeDef ret = vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return ret;
 }
 
 HAL_StatusTypeDef vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     enum {Size = 4};
-    uint8_t pData[Size];
-    pData[3] = (data >> 24) & 0xFF;
-    pData[2] = (data >> 16) & 0xFF;
-    pData[1] = (data >> 8) & 0xFF;
-    pData[0] = data & 0xFF;
-    ret = HAL_I2C_Mem_Write_IT(vxsiic_hi2c, PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret != HAL_OK) {
-        vxsiic_i2c_stats.errors++;
-        if (vxsiic_hi2c->ErrorCode & HAL_I2C_ERROR_AF) {
-            // no acknowledge, MCU not loaded
-            return HAL_TIMEOUT;
-        } else {
-            debug_printf("%s (port %d, addr 0x%04X): HAL code %d, I2C code %d\n", __func__, pp, reg, ret, vxsiic_hi2c->ErrorCode);
-            return ret;
-        }
-    }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
-    if (status != osOK) {
-        vxsiic_i2c_stats.errors++;
-        debug_printf("%s (port %2d, addr 0x%04X) timeout\n", __func__, pp, reg);
-        return HAL_TIMEOUT;
-    }
-    vxsiic_i2c_stats.ops++;
-    return HAL_OK;
+    ret = vxsiic_mem_write(PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return ret;
 }

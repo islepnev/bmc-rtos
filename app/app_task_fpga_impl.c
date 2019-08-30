@@ -76,11 +76,11 @@ void fpga_task_run(void)
     d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
     d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
     int fpga_enable = enable_power && d->initb;
-    int fpga_loading = enable_power && d->initb && !d->done;
+//    int fpga_loading = enable_power && d->initb && !d->done;
     int fpga_done = fpga_enable && d->done;
     switch (state) {
     case FPGA_STATE_STANDBY:
-        if (fpga_loading)
+        if (fpga_enable)
             state = FPGA_STATE_LOAD;
         d->present = DEVICE_UNKNOWN;
         break;

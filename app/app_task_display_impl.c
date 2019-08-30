@@ -54,6 +54,22 @@ const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
+static const char *sensor_status_str(SensorStatus status)
+{
+    switch (status) {
+    case SENSOR_UNKNOWN:
+        return ANSI_GRAY   "none" ANSI_CLEAR;
+    case SENSOR_NORMAL:
+        return ANSI_GREEN  "NORM" ANSI_CLEAR;
+    case SENSOR_WARNING:
+        return ANSI_YELLOW "WARN" ANSI_CLEAR;
+    case SENSOR_CRITICAL:
+        return ANSI_RED    "CRIT" ANSI_CLEAR;
+    default:
+        return "????";
+    }
+}
+
 static char *deviceStatusResultStr(DeviceStatus status)
 {
     switch (status) {
@@ -481,25 +497,36 @@ static void display_boards(const Devices * dev)
 {
     print_goto(2, 1);
     printf("Boards\n" ANSI_CLEAR_EOL);
-    print_clearbox(3, VXSIIC_SLOTS);
-    print_goto(3, 1);
+    printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
+    int line = 0;
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
         const vxsiic_slot_status_t *status = &dev->vxsiic.status.slot[i];
+        const char *label = vxsiic_map_slot_to_label[i];
         if (0 == status->present)
-            continue;
-        printf("%2s  %08lX %08lX %08lX %08lX   %08lX %08lX %08lX %08lX" ANSI_CLEAR_EOL "\n",
-               vxsiic_map_slot_to_label[i],
-               status->map[0],
-                status->map[1],
-                status->map[2],
-                status->map[3],
-                status->map[4],
-                status->map[5],
-                status->map[6],
-                status->map[7]
-                );
+            printf("%2s" ANSI_CLEAR_EOL "\n", label);
+        else
+            printf("%2s  %s%s %4lu %4lu %2u.%-2u  %02lX %7lu  %s  %s  %s  %s  %s  %s" ANSI_CLEAR_EOL "\n",
+                   label,
+                   (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
+                   (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
+                   status->iic_master_stats.errors,
+                   status->iic_stats.errors,
+                   (uint16_t)(status->bmc_ver >> 16),
+                   (uint16_t)status->bmc_ver,
+                   status->module_id & 0xFF,
+                   status->uptime,
+                   sensor_status_str(status->enc_status.b.system),
+                   sensor_status_str(status->enc_status.b.pm),
+                   sensor_status_str(status->enc_status.b.therm),
+                   sensor_status_str(status->enc_status.b.misc),
+                   sensor_status_str(status->enc_status.b.fpga),
+                   sensor_status_str(status->enc_status.b.pll)
+                   );
+        line++;
     }
+    print_clearbox(4+line, VXSIIC_SLOTS-line);
 }
+
 static void display_tasks(void)
 {
     print_clearbox(DISPLAY_TASKS_Y, uxTaskGetNumberOfTasks());
