@@ -73,9 +73,6 @@ static err_t http_serve_page_404(struct netconn *conn)
             "<tbody>\n"
             "<tr>\n"
             "<td><a href=\"/\">Home</a></td>\n"
-            "<td><a href=\"/sensors.html\">Sensors</a></td>\n"
-            "<td><a href=\"/tasks.html\">Tasks</a></td>\n"
-            "<td><a href=\"/log.html\">Log</a></td>\n"
             "</tr>\n"
             "</tbody>\n"
             "</table>\n"
@@ -115,9 +112,10 @@ static err_t http_serve_page_header(struct netconn *conn, const char *title)
             "<tbody>\n"
             "<tr>\n"
             "<td><a href=\"/\">Home</a></td>\n"
-            "<td><a href=\"/sensors.html\">Sensors</a></td>\n"
-            "<td><a href=\"/tasks.html\">Tasks</a></td>\n"
-            "<td><a href=\"/log.html\">Log</a></td>\n"
+            "<td><a href=\"/boards\">Boards</a></td>\n"
+            "<td><a href=\"/sensors\">Sensors</a></td>\n"
+            "<td><a href=\"/tasks\">Tasks</a></td>\n"
+            "<td><a href=\"/log\">Log</a></td>\n"
             "</tr>\n"
             "</tbody>\n"
             "</table>\n"
@@ -299,7 +297,7 @@ static err_t http_serve_task_list(struct netconn *conn)
     return ERR_OK;
 }
 
-const char *sensorUnitsStr(IpmiSensorType t)
+static const char *sensorUnitsStr(IpmiSensorType t)
 {
     switch (t) {
     case IPMI_SENSOR_DISCRETE:
@@ -315,7 +313,7 @@ const char *sensorUnitsStr(IpmiSensorType t)
     }
 }
 
-const char *sensorStatusCssStyle(SensorStatus s)
+static const char *sensorStatusCssStyle(SensorStatus s)
 {
     switch (s) {
     case SENSOR_UNKNOWN:
@@ -392,6 +390,157 @@ static err_t http_serve_sensors(struct netconn *conn)
     return ERR_OK;
 }
 
+static err_t http_serve_boards(struct netconn *conn)
+{
+    netconn_write(conn, task_list_header, strlen(task_list_header), NETCONN_COPY);
+
+    static char buf[2000];
+    strcpy(buf, "<table>\n");
+    netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+
+    const Dev_vxsiic *d = &getDevicesConst()->vxsiic;
+    for (uint32_t pp=0; pp<VXSIIC_SLOTS; pp++) {
+        const vxsiic_slot_status_t *status = &d->status.slot[pp];
+        if (!status->present)
+            continue;
+        uint16_t sensor_count = status->sensor_count;
+        if (sensor_count > MAX_SENSOR_COUNT)
+            sensor_count = MAX_SENSOR_COUNT;
+        buf[0] = '\0';
+        {
+            static char str[100];
+            sprintf(str, "<tr>\n<td>Slot %s:</td>\n", vxsiic_map_slot_to_label[pp]);
+            strcat(buf, str);
+        }
+        for (uint16_t i=0; i<sensor_count; i++) {
+            static char str[200];
+            static char name[SENSOR_NAME_SIZE];
+            strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
+            name[SENSOR_NAME_SIZE-1] = '\0';
+            SensorStatus s = status->sensors[i].hdr.b.state;
+            sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
+            strcat(buf, str);
+            switch (status->sensors[i].hdr.b.type) {
+            case IPMI_SENSOR_DISCRETE:
+                sprintf(str, "%d", (int)status->sensors[i].value);
+                strcat(buf, str);
+                break;
+            case IPMI_SENSOR_CURRENT:
+            case IPMI_SENSOR_VOLTAGE:
+                sprintf(str, "%dm", (int)(status->sensors[i].value*1000));
+                strcat(buf, str);
+                break;
+            case IPMI_SENSOR_TEMPERATURE:
+                sprintf(str, "%d", (int)(status->sensors[i].value));
+                strcat(buf, str);
+                break;
+            default:
+                break;
+            }
+//            double f = status->sensors[i].value;
+//            sprintf(str, "%.3f", f); // FIXME: causes HardFault
+//            strcat(buf, str);
+            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            strcat(buf, str);
+        }
+        strcat(buf, "</tr>\n");
+        netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+    }
+    strcpy(buf, "</table>\n");
+    netconn_write(conn, buf, strlen(buf), NETCONN_COPY);
+    return ERR_OK;
+}
+
+typedef enum {
+    URI_PATH_INDEX,
+    URI_PATH_BOARDS,
+    URI_PATH_SENSORS,
+    URI_PATH_LOG,
+    URI_PATH_TASKS,
+    URI_PATH_ERROR,
+} uri_path_t;
+
+static const char *page_title(uri_path_t p)
+{
+    switch (p) {
+    case URI_PATH_INDEX:
+        return "Index";
+    case URI_PATH_BOARDS:
+        return "Boards";
+    case URI_PATH_SENSORS:
+        return "Sensors";
+    case URI_PATH_LOG:
+        return "Message Log";
+    case URI_PATH_TASKS:
+        return "TTVXS tasks";
+    case URI_PATH_ERROR:
+        return "Error";
+    default:
+        return "";
+    }
+}
+
+// match against string + trailing space
+int match_request(const char *str, const char *match)
+{
+    const size_t str_len = strlen(str);
+    const size_t match_len = strlen(match);
+    if (str_len < match_len + 1)
+        return -1;
+    if (str[match_len] != ' ')
+        return -1;
+    return strncmp(str, match, match_len);
+}
+
+static uri_path_t match_uri_path(const char *str)
+{
+    if (match_request(str, "tasks") == 0)
+        return URI_PATH_TASKS;
+    if (match_request(str, "boards") == 0)
+        return URI_PATH_BOARDS;
+    if (match_request(str, "sensors") == 0)
+        return URI_PATH_SENSORS;
+    if (match_request(str, "log") == 0)
+        return URI_PATH_LOG;
+    if (match_request(str, "") == 0)
+        return URI_PATH_INDEX;
+    return URI_PATH_ERROR;
+}
+
+static void http_server_serve_page(struct netconn *conn, uri_path_t p)
+{
+    if (p == URI_PATH_ERROR) {
+        http_serve_headers_404(conn);
+        http_serve_page_404(conn);
+        http_serve_page_footer(conn);
+        return;
+    }
+    http_serve_headers_200(conn);
+    http_serve_page_header(conn, page_title(p));
+    switch (p) {
+    case URI_PATH_INDEX:
+        http_serve_index(conn);
+        break;
+    case URI_PATH_BOARDS:
+        http_serve_boards(conn);
+        break;
+    case URI_PATH_SENSORS:
+        http_serve_sensors(conn);
+        break;
+    case URI_PATH_LOG:
+        http_serve_log(conn);
+        break;
+    case URI_PATH_TASKS:
+        http_serve_task_list(conn);
+        break;
+    case URI_PATH_ERROR:
+        break;
+    default:
+        break;
+    }
+    http_serve_page_footer(conn);
+}
+
 static void http_server_serve(struct netconn *conn)
 {
     struct netbuf *inbuf;
@@ -411,39 +560,9 @@ static void http_server_serve(struct netconn *conn)
 
             if ((buflen >= 5) && (strncmp(buf, "GET /", 5) == 0))
             {
-                if (strncmp(buf, "GET /tasks.html", 15) == 0)
-                {
-                    http_serve_headers_200(conn);
-                    http_serve_page_header(conn, "Tasks");
-                    http_serve_task_list(conn);
-                    http_serve_page_footer(conn);
-                }
-                else if (strncmp(buf, "GET /sensors.html", 17) == 0)
-                {
-                    http_serve_headers_200(conn);
-                    http_serve_page_header(conn, "Sensors");
-                    http_serve_sensors(conn);
-                    http_serve_page_footer(conn);
-                }
-                else if (strncmp(buf, "GET /log.html", 13) == 0)
-                {
-                    http_serve_headers_200(conn);
-                    http_serve_page_header(conn, "Log");
-                    http_serve_log(conn);
-                    http_serve_page_footer(conn);
-                }
-                else if (strncmp(buf, "GET / ", 6) == 0)
-                {
-                    http_serve_headers_200(conn);
-                    http_serve_page_header(conn, APP_NAME_STR);
-                    http_serve_index(conn);
-                    http_serve_page_footer(conn);
-                }
-                else
-                {
-                    http_serve_headers_404(conn);
-                    http_serve_page_404(conn);
-                }
+                const char *path = &buf[5];
+                uri_path_t p = match_uri_path(path);
+                http_server_serve_page(conn, p);
             }
         }
     }
