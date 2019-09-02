@@ -259,8 +259,8 @@ static void low_level_init(struct netif *netif)
     s_xSemaphore = osSemaphoreCreate(osSemaphore(SEM) , 1 );
 
     /* create the task that handles the ETH_MAC */
-    osThreadDef(EthIf, ethernetif_input, TCPIP_THREAD_PRIO, 0, INTERFACE_THREAD_STACK_SIZE);
-    osThreadCreate (osThread(EthIf), netif);
+    osThreadDef(eth_recv, ethernetif_input, TCPIP_THREAD_PRIO, 0, INTERFACE_THREAD_STACK_SIZE);
+    osThreadCreate (osThread(eth_recv), netif);
 
     /* Enable MAC and DMA transmission and reception */
     HAL_ETH_Start(&EthHandle);
