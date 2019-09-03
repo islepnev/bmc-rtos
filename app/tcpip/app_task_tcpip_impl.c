@@ -8,7 +8,7 @@
 #include "lwip/tcpip.h"
 #include "lwip/init.h"
 #include "dhcp_thread.h"
-#include "httpserver-netconn.h"
+#include "http/http_server_impl.h"
 #include "lcd_log.h"
 #include "lwipcfg.h"
 #include "ipaddress.h"
@@ -89,7 +89,7 @@ void task_tcpip_init()
   log_printf(LOG_DEBUG, "starting apps...");
 
   /* Initialize webserver demo */
-  http_server_netconn_init();
+  http_server_init();
   snmp_agent_init();
 //  extern void lwiperf_example_init(void);
 //  lwiperf_example_init();
