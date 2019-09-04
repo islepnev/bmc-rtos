@@ -88,5 +88,5 @@ static int http_serve_log_lines(struct http_server_t *server, uint32_t count)
 
 int http_serve_log(struct http_server_t *server)
 {
-    return http_serve_log_lines(server, LOG_BUF_SIZE);
+    return http_serve_log_lines(server, LOG_BUF_SIZE-1);
 }
