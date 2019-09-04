@@ -17,7 +17,7 @@ SET(STM32_MIN_STACK_SIZE 0x200)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
 
-PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C)
+PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C CXX)
 
 ENABLE_LANGUAGE(ASM)
 
@@ -79,6 +79,7 @@ file(GLOB_RECURSE USER_SOURCES
    common/*.c
    drivers/*.c
    app/*.c
+   app/*.cpp
    eth/app_ethernet.c
 #   eth/app_httpd_main.c
    eth/ethernetif.c
