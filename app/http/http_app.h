@@ -17,6 +17,10 @@
 #ifndef HTTP_APP_H
 #define HTTP_APP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     URI_PATH_INDEX,
     URI_PATH_SLOT,
@@ -32,5 +36,9 @@ struct http_request_t;
 
 void http_app_handle_request(struct http_server_t *server, const struct http_request_t *r);
 const char *page_title(uri_path_t p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_APP_H

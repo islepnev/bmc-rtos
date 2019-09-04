@@ -17,6 +17,10 @@
 #ifndef HTTP_SERVER_H
 #define HTTP_SERVER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct http_server_t;
 struct http_request_t;
 
@@ -27,5 +31,9 @@ const char *http_server_get_client_data(const struct http_server_t *server);
 const struct http_request_t *http_server_get_http_request(const struct http_server_t *server);
 int http_server_handle_client_data(struct http_server_t *server);
 int http_server_write(struct http_server_t *server, const char *str);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_SERVER_H

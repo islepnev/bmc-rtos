@@ -18,6 +18,10 @@
 #ifndef HTTP_REQUEST_H
 #define HTTP_REQUEST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {MAX_HTTP_REQ_LEN = 100};
 
 typedef struct http_request_t {
@@ -30,5 +34,9 @@ typedef struct http_request_t {
 
 void tokenize_http_request_alloc(struct http_request_t *r, const char *str);
 void tokenize_http_request_free(struct http_request_t *r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_REQUEST_H

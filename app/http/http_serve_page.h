@@ -17,6 +17,10 @@
 #ifndef HTTP_SERVE_PAGE_H
 #define HTTP_SERVE_PAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct http_server_t;
 struct http_request_t;
 
@@ -25,5 +29,9 @@ int http_serve_slot(struct http_server_t *server, const struct http_request_t *r
 int http_serve_boards(struct http_server_t *server);
 int http_serve_sensors(struct http_server_t *server);
 int http_serve_task_list(struct http_server_t *server);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_SERVE_PAGE_H

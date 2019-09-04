@@ -17,7 +17,15 @@
 #ifndef HTTP_APP_LOG_H
 #define HTTP_APP_LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct http_server_t;
 int http_serve_log(struct http_server_t *server);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_APP_LOG_H

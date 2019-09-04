@@ -17,6 +17,10 @@
 #ifndef HTTP_APP_COMMON_H
 #define HTTP_APP_COMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct http_server_t;
 
 int http_serve_headers_200(struct http_server_t *server);
@@ -26,5 +30,9 @@ int http_serve_page_404(struct http_server_t *server);
 int http_serve_page_405(struct http_server_t *server);
 int http_serve_page_header(struct http_server_t *server, const char *title);
 int http_serve_page_footer(struct http_server_t *server);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HTTP_APP_COMMON_H
