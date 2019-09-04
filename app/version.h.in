@@ -30,7 +30,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define VERSION_STR xstr(VERSION_MAJOR_NUM)"."xstr(VERSION_MINOR_NUM)" ("xstr(GIT_BRANCH)" "xstr(GIT_COMMIT_HASH)")"
+#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) " (" xstr(GIT_BRANCH) " " xstr(GIT_COMMIT_HASH) ")"
 
 #ifdef __cplusplus
 }
