@@ -71,6 +71,7 @@ typedef struct pm_switches {
     SwitchOnOff switch_2v5;
     SwitchOnOff switch_1v0_core;
     SwitchOnOff switch_1v0_mgt;
+    SwitchOnOff switch_1v2_mgt; // added in TTVXS v1.1
 } pm_switches;
 
 typedef enum MonState {
@@ -93,6 +94,7 @@ typedef struct Dev_powermon {
    int pgood_2v5;
    int pgood_1v0_core;
    int pgood_1v0_mgt;
+   int pgood_1v2_mgt;
    int pgood_3v3_fmc;
    pm_switches sw;
 } Dev_powermon;

@@ -22,6 +22,7 @@
 int monIsOptional(SensorIndex index)
 {
     switch(index) {
+    case SENSOR_5VPC:          return 1;
     case SENSOR_VPC_3V3:       return 0;
     case SENSOR_5V:            return 0;
     case SENSOR_VXS_5V:        return 0;
@@ -30,11 +31,13 @@ int monIsOptional(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0;
     case SENSOR_FPGA_MGT_1V0:  return 0;
     case SENSOR_FPGA_MGT_1V2:  return 0;
+    case SENSOR_MCB_4V5:       return 1;
     case SENSOR_FPGA_1V8:      return 0;
     case SENSOR_VADJ:          return 1;
     case SENSOR_FMC_5V:        return 1;
     case SENSOR_FMC_12V:       return 1;
     case SENSOR_CLOCK_2V5:     return 0;
+    case SENSOR_MCB_3V3:       return 1;
     }
     return 0;
 }
@@ -42,6 +45,7 @@ int monIsOptional(SensorIndex index)
 double monShuntVal(SensorIndex index)
 {
     switch(index) {
+    case SENSOR_5VPC:          return 0.002;
     case SENSOR_VPC_3V3:       return 0; // no shunt
     case SENSOR_5V:            return 0; // no shunt
     case SENSOR_VXS_5V:        return 0.004;
@@ -50,11 +54,13 @@ double monShuntVal(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.002;
     case SENSOR_FPGA_MGT_1V0:  return 0.002;
     case SENSOR_FPGA_MGT_1V2:  return 0.002;
+    case SENSOR_MCB_4V5:       return 0.002;
     case SENSOR_FPGA_1V8:      return 0.002;
     case SENSOR_VADJ:          return 0.002;
     case SENSOR_FMC_5V:        return 0.01;
     case SENSOR_FMC_12V:       return 0.002;
     case SENSOR_CLOCK_2V5:     return 0.002;
+    case SENSOR_MCB_3V3:       return 0.002;
     }
     return 0;
 }
@@ -62,6 +68,7 @@ double monShuntVal(SensorIndex index)
 double monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
+    case SENSOR_5VPC:          return 0.1;
     case SENSOR_VPC_3V3:       return 0.03;
     case SENSOR_5V:            return 0.1;
     case SENSOR_VXS_5V:        return 0.1;
@@ -70,11 +77,13 @@ double monVoltageMarginWarn(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.03;
     case SENSOR_FPGA_MGT_1V0:  return 0.03;
     case SENSOR_FPGA_MGT_1V2:  return 0.03;
+    case SENSOR_MCB_4V5:       return 0.1;
     case SENSOR_FPGA_1V8:      return 0.05;
     case SENSOR_VADJ:          return 0.1;
     case SENSOR_FMC_5V:        return 0.1;
     case SENSOR_FMC_12V:       return 0.1;
     case SENSOR_CLOCK_2V5:     return 0.03;
+    case SENSOR_MCB_3V3:       return 0.1;
     }
     return 0;
 }
@@ -82,6 +91,7 @@ double monVoltageMarginWarn(SensorIndex index)
 double monVoltageMarginCrit(SensorIndex index)
 {
     switch(index) {
+    case SENSOR_5VPC:          return 0.15;
     case SENSOR_VPC_3V3:       return 0.15;
     case SENSOR_5V:            return 0.15;
     case SENSOR_VXS_5V:        return 0.15;
@@ -90,11 +100,13 @@ double monVoltageMarginCrit(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0.08; // set to 8 %
     case SENSOR_FPGA_MGT_1V0:  return 0.05;
     case SENSOR_FPGA_MGT_1V2:  return 0.05;
+    case SENSOR_MCB_4V5:       return 0.15;
     case SENSOR_FPGA_1V8:      return 0.05;
     case SENSOR_VADJ:          return 0.15;
     case SENSOR_FMC_5V:        return 0.15;
     case SENSOR_FMC_12V:       return 0.15;
     case SENSOR_CLOCK_2V5:     return 0.05;
+    case SENSOR_MCB_3V3:       return 0.15;
     }
     return 0;
 }
@@ -102,6 +114,7 @@ double monVoltageMarginCrit(SensorIndex index)
 double monVoltageNom(SensorIndex index)
 {
     switch(index) {
+    case SENSOR_5VPC:          return 5.0;
     case SENSOR_VPC_3V3:       return 3.3;
     case SENSOR_5V:            return 5.0;
     case SENSOR_VXS_5V:        return 5.0;
@@ -110,11 +123,13 @@ double monVoltageNom(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 1.0;
     case SENSOR_FPGA_MGT_1V0:  return 1.0;
     case SENSOR_FPGA_MGT_1V2:  return 1.2;
+    case SENSOR_MCB_4V5:       return 4.6;
     case SENSOR_FPGA_1V8:      return 1.8;
     case SENSOR_VADJ:          return 2.5;
     case SENSOR_FMC_5V:        return 5.0;
     case SENSOR_FMC_12V:       return 12.0;
     case SENSOR_CLOCK_2V5:     return 2.5;
+    case SENSOR_MCB_3V3:       return 3.3;
     }
     return 0;
 }
@@ -123,6 +138,7 @@ int sensorBusAddress(SensorIndex index)
 {
     switch (index) {
     case SENSOR_VPC_3V3:       return 0x40;
+    case SENSOR_5VPC:          return 0x41;
     case SENSOR_5V:            return 0x42;
     case SENSOR_VXS_5V:        return 0x43;
     case SENSOR_2V5:           return 0x44;
@@ -130,11 +146,13 @@ int sensorBusAddress(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return 0x46;
     case SENSOR_FPGA_MGT_1V0:  return 0x47;
     case SENSOR_FPGA_MGT_1V2:  return 0x48;
+    case SENSOR_MCB_4V5:       return 0x49;
     case SENSOR_FPGA_1V8:      return 0x4A;
     case SENSOR_VADJ:          return 0x4B;
     case SENSOR_FMC_5V:        return 0x4C;
     case SENSOR_FMC_12V:       return 0x4D;
     case SENSOR_CLOCK_2V5:     return 0x4E;
+    case SENSOR_MCB_3V3:       return 0x4F;
     }
     return 0;
 }
@@ -143,6 +161,7 @@ const char *monLabel(SensorIndex index)
 {
     switch(index) {
     case SENSOR_VPC_3V3:       return "VPC 3.3V";
+    case SENSOR_5VPC:          return "VPC 5V";
     case SENSOR_5V:            return "5V";
     case SENSOR_VXS_5V:        return "VXS 5V";
     case SENSOR_2V5:           return "2.5V";
@@ -150,11 +169,13 @@ const char *monLabel(SensorIndex index)
     case SENSOR_FPGA_CORE_1V0: return "FPGA 1.0";
     case SENSOR_FPGA_MGT_1V0:  return "MGT 1.0";
     case SENSOR_FPGA_MGT_1V2:  return "MGT 1.2";
+    case SENSOR_MCB_4V5:       return "MCB 4.5V";
     case SENSOR_FPGA_1V8:      return "FPGA 1.8";
     case SENSOR_VADJ:          return "*    VADJ";
     case SENSOR_FMC_5V:        return "*  FMC 5V";
     case SENSOR_FMC_12V:       return "* FMC 12V";
     case SENSOR_CLOCK_2V5:     return "Clock 2.5";
+    case SENSOR_MCB_3V3:       return "MCB 3.3V";
     }
     return "???";
 }

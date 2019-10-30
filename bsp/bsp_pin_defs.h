@@ -152,6 +152,8 @@
 #define ON_1V0_CORE_Pin GPIO_PIN_8
 #define ON_1V0_MGT_GPIO_Port GPIOE
 #define ON_1V0_MGT_Pin GPIO_PIN_4
+#define ON_1V2_MGT_GPIO_Port GPIOI
+#define ON_1V2_MGT_Pin GPIO_PIN_14
 #define ON_2V5_GPIO_Port GPIOI
 #define ON_2V5_Pin GPIO_PIN_7
 #define ON_3V3_GPIO_Port GPIOI
@@ -168,6 +170,8 @@
 #define PGOOD_1V0_CORE_Pin GPIO_PIN_7
 #define PGOOD_1V0_MGT_GPIO_Port GPIOE
 #define PGOOD_1V0_MGT_Pin GPIO_PIN_5
+#define PGOOD_1V2_MGT_GPIO_Port GPIOH
+#define PGOOD_1V2_MGT_Pin GPIO_PIN_2
 #define PGOOD_2V5_GPIO_Port GPIOI
 #define PGOOD_2V5_Pin GPIO_PIN_9
 #define PGOOD_3V3_GPIO_Port GPIOI

@@ -48,6 +48,7 @@ void struct_powermon_init(Dev_powermon *d)
     d->vmePresent = 0;
     d->pgood_1v0_core = 0;
     d->pgood_1v0_mgt = 0;
+    d->pgood_1v2_mgt = 0;
     d->pgood_2v5 = 0;
     d->pgood_3v3 = 0;
     d->pgood_3v3_fmc = 0;
@@ -56,6 +57,7 @@ void struct_powermon_init(Dev_powermon *d)
     d->sw.switch_2v5 = 1;
     d->sw.switch_1v0_core = 1;
     d->sw.switch_1v0_mgt = 1;
+    d->sw.switch_1v2_mgt = 1;
     d->sw.switch_5v_fmc = 1;
 }
 
@@ -67,6 +69,11 @@ static int read_pgood_1v0_core(void)
 static int read_pgood_1v0_mgt(void)
 {
     return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin));
+}
+
+static int read_pgood_1v2_mgt(void)
+{
+    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(PGOOD_1V2_MGT_GPIO_Port, PGOOD_1V2_MGT_Pin));
 }
 
 static int read_pgood_2v5(void)
@@ -101,6 +108,7 @@ void pm_read_pgood(Dev_powermon *pm)
 {
     pm->pgood_1v0_core = read_pgood_1v0_core();
     pm->pgood_1v0_mgt  = read_pgood_1v0_mgt();
+    pm->pgood_1v2_mgt  = read_pgood_1v2_mgt();
     pm->pgood_2v5      = read_pgood_2v5();
     pm->pgood_3v3      = read_pgood_3v3();
     pm->pgood_3v3_fmc  = read_pgood_3v3_fmc();
@@ -108,7 +116,12 @@ void pm_read_pgood(Dev_powermon *pm)
 
 PgoodState get_all_pgood(const Dev_powermon *pm)
 {
-    return (pm->pgood_1v0_core && pm->pgood_1v0_mgt && pm->pgood_2v5 && pm->pgood_3v3 && pm->pgood_3v3_fmc) ? PGOOD_OK : PGOOD_FAIL;
+    return (pm->pgood_1v0_core
+            && pm->pgood_1v0_mgt
+            && pm->pgood_1v2_mgt
+            && pm->pgood_2v5
+            && pm->pgood_3v3
+            && pm->pgood_3v3_fmc) ? PGOOD_OK : PGOOD_FAIL;
 }
 
 void update_system_powergood_pin(const Dev_powermon *pm)
@@ -121,12 +134,14 @@ void update_power_switches(Dev_powermon *pm, SwitchOnOff state)
 {
     pm->sw.switch_1v0_core = state;
     pm->sw.switch_1v0_mgt = state;
+    pm->sw.switch_1v2_mgt = state;
     pm->sw.switch_2v5 = state;
     pm->sw.switch_3v3 = state;
     pm->sw.switch_5v_fmc = state;
     pm->sw.switch_5v = 1;
     HAL_GPIO_WritePin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, pm->sw.switch_1v0_core ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  pm->sw.switch_1v0_mgt  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  pm->sw.switch_1v2_mgt  ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      pm->sw.switch_2v5      ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      pm->sw.switch_3v3      ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   pm->sw.switch_5v_fmc   ? GPIO_PIN_SET : GPIO_PIN_RESET);
