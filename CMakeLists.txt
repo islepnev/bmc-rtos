@@ -19,10 +19,13 @@ cmake_policy(SET CMP0048 NEW)
 
 PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C CXX)
 
+# uncomment to build for old TTVXS v1.0
+#add_compile_definitions(TTVXS_1_0)
+
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
-FIND_PACKAGE(STM32HAL COMPONENTS adc can dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
+FIND_PACKAGE(STM32HAL COMPONENTS adc dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
 
 SET(HAL_LL_COMPONENTS ${HAL_LL_COMPONENTS} gpio usart)
 file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
