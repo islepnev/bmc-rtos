@@ -42,7 +42,7 @@ static int8_t http_serve_log_entry(struct http_server_t *server, uint32_t index)
     case LOG_DEBUG: break;
     default: css_class = "purple"; break;
     }
-    enum {size=30};
+    enum {size=100};
     static char buf[size+1];
     snprintf(buf, size, "<span class=\"%s\">%lu.%03lu ", css_class,
            ent.tick/1000, ent.tick%1000);
