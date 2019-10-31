@@ -32,7 +32,11 @@ const uint8_t pllDeviceAddr = 0x4A;
 struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c2;
 
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi5;
+#ifdef TTVXS_1_0
 struct __SPI_HandleTypeDef * const therm_spi = &hspi2;
+#else
+struct __SPI_HandleTypeDef * const ad9516_spi = &hspi2;
+#endif
 
 void pllSetStaticPins(int enable)
 {

@@ -15,37 +15,35 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_pll.h"
+#include "dev_auxpll.h"
 
 #include "stm32f7xx_hal.h"
 #include "gpio.h"
-#include "i2c.h"
+#include "spi.h"
 #include "bsp.h"
-#include "ad9545_i2c_hal.h"
-#include "ad9545_setup.h"
-#include "ad9545_status.h"
-#include "dev_pll_print.h"
-#include "dev_pll_types.h"
+#include "ad9516_spi_hal.h"
+#include "ad9516_setup.h"
+#include "ad9516_status.h"
+//#include "dev_auxpll_print.h"
+#include "dev_auxpll_types.h"
 #include "ansi_escape_codes.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
+#include "cmsis_os.h"
 
-static char *OpStatusErrorStr(OpStatusTypeDef status)
-{
-    switch(status) {
-    case DEV_OK: return "Success";
-    case IIC_ERROR: return "I2C error";
-    case IIC_BUSY: return "I2C busy";
-    case IIC_TIMEOUT: return "I2C timeout";
-    case DEV_ERROR: return "Device error";
-    default:return "";
-    }
-}
+//static char *OpStatusErrorStr(OpStatusTypeDef status)
+//{
+//    switch(status) {
+//    case DEV_OK: return "Success";
+//    case DEV_ERROR: return "Device error";
+//    default:return "";
+//    }
+//}
 
 static void DEBUG_PRINT_RET(const char *func, int ret)
 {
-    log_printf(LOG_ERR, "%s failed: %s, I2C error 0x%08lX",
-           func, OpStatusErrorStr(ret), hPll->ErrorCode);
+    log_printf(LOG_ERR, "%s failed: %d, SPI error 0x%08lX",
+           func, ret, ad9516_spi->ErrorCode);
 }
 
 typedef union
@@ -71,9 +69,9 @@ typedef union
 } Sync_Control_REG_Type;
 
 enum {
-    AD9545_REG1_CONFIG_0  = 0x0000,
-    AD9545_REG1_CONFIG_1  = 0x0001,
-    AD9545_REG_VENDOR_ID = 0x000C,
+    AD9516_REG1_CONFIG_0  = 0x0000,
+    AD9516_REG1_PART_ID = 0x0003,
+    /*
     AD9545_REG1_Sysclk_FB_DIV_Ratio = 0x0200,
     AD9545_REG1_Sysclk_Input = 0x0201,
     AD9545_REG5_Sysclk_Ref_Frequency = 0x0202,
@@ -178,14 +176,15 @@ enum {
     AD9545_REG2_320B = 0x320B,
     AD9545_REG1_320D = 0x320D,
     AD9545_REG1_320E = 0x320E,
+*/
 };
 
 enum {
-    AD9545_VENDOR_ID = 0x0456
+    AD9516_PART_ID = 0xC3
 };
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
-
+/*
 static OpStatusTypeDef pllIoUpdate(Dev_pll *d)
 {
     uint8_t data = 1;
@@ -222,43 +221,44 @@ err:
     DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
-
-DeviceStatus pllDetect(Dev_pll *d)
+*/
+DeviceStatus auxpllDetect(Dev_auxpll *d)
 {
     int devicePresent = 0;
     int deviceError = 0;
-    HAL_StatusTypeDef ret = ad9545_detect();
-    devicePresent = (HAL_OK == ret);
-    if (devicePresent) {
-        uint32_t data = 0;
-        ad9545_read3(AD9545_REG_VENDOR_ID, &data);
-        devicePresent = (data == AD9545_VENDOR_ID);
+    HAL_StatusTypeDef ret;
+    uint8_t data = 0;
+    ad9516_write1(AD9516_REG1_CONFIG_0, 0x99);
+    while (1) {
+        ad9516_read1(AD9516_REG1_PART_ID, &data);
+        osDelay(100);
     }
-    if (devicePresent) {
-        uint32_t test = 0xFF0055AA;
-        for (int i=0; i<100; i++) {
-            // scratchpad test
-            test = ~test;
-            ad9545_write4(0x0020, test);
-            uint32_t data = 0;
-            ad9545_read4(0x0020, &data);
-            if (data != test) {
-                deviceError = 1;
-                break;
-            }
-        }
-    }
+    devicePresent = (data == AD9516_PART_ID);
+    //    if (devicePresent) {
+//        uint32_t test = 0xFF0055AA;
+//        for (int i=0; i<100; i++) {
+//            // scratchpad test
+//            test = ~test;
+//            ad9545_write4(0x0020, test);
+//            uint32_t data = 0;
+//            ad9545_read4(0x0020, &data);
+//            if (data != test) {
+//                deviceError = 1;
+//                break;
+//            }
+//        }
+//    }
     if (devicePresent) {
         if (deviceError) {
-            log_put(LOG_ERR, "PLL I2C data error");
+            log_put(LOG_ERR, "AUXPLL SPI data error");
         } else {
-            log_put(LOG_INFO, "PLL AD9545 present");
+            log_put(LOG_INFO, "AUXPLL AD9516 present");
         }
     }
     d->present = (devicePresent && !deviceError) ? DEVICE_NORMAL : DEVICE_FAIL;
     return d->present;
 }
-
+/*
 OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
@@ -959,3 +959,4 @@ OpStatusTypeDef pllSetup(Dev_pll *d)
     ret = pllSyncAllDistDividers(d);
     return ret;
 }
+*/

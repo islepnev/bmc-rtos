@@ -15,38 +15,29 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASKS_H
-#define APP_TASKS_H
+#ifndef DEV_AUXPLL_H
+#define DEV_AUXPLL_H
 
-#include "cmsis_os.h"
+#include "dev_common_types.h"
+#include "dev_auxpll_types.h"
+#include "ad9516_setup.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// for use with GCC flags -fstack-usage -Wstack-usage=N
-// Note: debug_printf stack overhead is 100 bytes
-enum { threadStackSize = 400 };
+DeviceStatus auxpllDetect(Dev_auxpll *d);
+//OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
 
-enum {
-    SIGNAL_REFRESH_DISPLAY = 1000,
-    SIGNAL_POWER_ON = 1001,
-    SIGNAL_POWER_OFF = 1002,
-};
-extern osThreadId powermonThreadId;
-extern osThreadId displayThreadId;
-extern osThreadId keyboardThreadId;
-extern osThreadId pllThreadId;
-extern osThreadId auxpllThreadId;
-extern osThreadId fpgaThreadId;
-extern osThreadId cliThreadId;
-extern osThreadId vxsiicThreadId;
-extern osThreadId tcpipThreadId;
-
-void create_tasks(void);
+//void reset_SPI_auxpll(void);
+//OpStatusTypeDef pllSoftwareReset(Dev_auxpll *d);
+//OpStatusTypeDef pllSetupSysclk(Dev_auxpll *d);
+//OpStatusTypeDef pllCalibrateSysclk(Dev_auxpll *d);
+//OpStatusTypeDef pllReadStatus(Dev_auxpll *d);
+//OpStatusTypeDef pllReadSysclkStatus(Dev_auxpll *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASKS_H
+#endif // DEV_AUXPLL_H

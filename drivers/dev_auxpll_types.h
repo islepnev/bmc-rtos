@@ -14,34 +14,31 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-// TTVXS board specific definitions
-
-#ifndef BSP_H
-#define BSP_H
+#ifndef DEV_AUXPLL_TYPES_H
+#define DEV_AUXPLL_TYPES_H
 
 #include <stdint.h>
+#include "dev_common_types.h"
+#include "ad9516_status.h"
 
-#define TTY_USART USART1 // Front panel RJ45
-// #define TTY_USART USART2 // USB-RS232
-#define LED_HEARTBEAT LED_INT_GREEN
+typedef enum {
+    AUXPLL_STATE_INIT,
+    AUXPLL_STATE_RESET,
+    AUXPLL_STATE_SETUP_SYSCLK,
+    AUXPLL_STATE_SYSCLK_WAITLOCK,
+    AUXPLL_STATE_SETUP,
+    AUXPLL_STATE_RUN,
+    AUXPLL_STATE_ERROR,
+    AUXPLL_STATE_FATAL
+} AuxPllState;
 
-extern struct __I2C_HandleTypeDef * const hPll;
-extern const uint8_t pllDeviceAddr;
+typedef struct Dev_auxpll {
+    DeviceStatus present;
+    AD9516_Status status;
+    AuxPllState fsm_state;
+    uint32_t recoveryCount;
+} Dev_auxpll;
 
-extern struct __I2C_HandleTypeDef * const hi2c_sensors;
+SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll);
 
-extern struct __SPI_HandleTypeDef * const fpga_spi;
-#ifdef TTVXS_1_0
-extern struct __SPI_HandleTypeDef * const therm_spi;
-#else
-extern struct __SPI_HandleTypeDef * const ad9516_spi;
-#endif
-
-void pll_enable_interface(int enable);
-void pllSetStaticPins(int enable);
-void pllReset(void);
-void pm_sensor_reset_i2c_master(void);
-void fpga_enable_interface(int enable);
-
-#endif // BSP_H
+#endif // DEV_AUXPLL_TYPES_H
