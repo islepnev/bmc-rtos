@@ -18,6 +18,7 @@
 #define DEV_POWERMON_TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 
@@ -52,16 +53,19 @@ typedef struct {
 
 typedef enum {
     PM_STATE_INIT,
+    PM_STATE_WAITINPUT,
     PM_STATE_STANDBY,
     PM_STATE_RAMP,
     PM_STATE_RUN,
     PM_STATE_PWRFAIL,
+    PM_STATE_FAILWAIT,
+    PM_STATE_SWITCHOFF,
     PM_STATE_ERROR
 } PmState;
 
 typedef enum SwitchOnOff {
-    SWITCH_OFF = 0,
-    SWITCH_ON = 1,
+    SWITCH_OFF = false,
+    SWITCH_ON = true,
 } SwitchOnOff;
 
 typedef struct pm_switches {
@@ -99,7 +103,7 @@ typedef struct Dev_powermon {
    pm_switches sw;
 } Dev_powermon;
 
-int monIsOn(const pm_switches *sw, SensorIndex index);
+//int monIsOn(const pm_switches *sw, SensorIndex index);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 SensorStatus getMonStatus(const Dev_powermon *pm);
 SensorStatus getPowermonStatus(const Dev_powermon *d);

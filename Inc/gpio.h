@@ -27,6 +27,8 @@
 /* Includes ------------------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include "stm32f7xx_hal_gpio.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +39,8 @@
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state);
+bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin);
 
 /* USER CODE END Prototypes */
 

@@ -31,7 +31,6 @@
 static void setStaticPins(int enable)
 {
     pllSetStaticPins(enable);
-    update_power_switches(get_dev_powermon(), enable ? SWITCH_ON : SWITCH_OFF);
 }
 
 static int test_cpu_tick(void)

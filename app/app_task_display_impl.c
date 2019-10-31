@@ -100,11 +100,14 @@ static const char *pmStateStr(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
+    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
+    case PM_STATE_FAILWAIT: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
     case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
     default: return "?";
     }
 }

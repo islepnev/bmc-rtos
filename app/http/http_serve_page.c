@@ -52,11 +52,14 @@ static const char *pmStateStr(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
+    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return "<span class=\"yellow\">RAMP</span>";
     case PM_STATE_RUN:     return "<span class=\"green\">RUN</span>";
     case PM_STATE_PWRFAIL: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
+    case PM_STATE_FAILWAIT: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
     case PM_STATE_ERROR:   return "<span class=\"red\">ERROR</span>";
+    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
     default: return "?";
     }
 }

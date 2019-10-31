@@ -19,11 +19,13 @@
 
 #include "dev_pm_sensors_config.h"
 
+const SensorIndex input_power_sensor = SENSOR_VXS_5V;
+
 int monIsOptional(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 1;
-    case SENSOR_VPC_3V3:       return 0;
+    case SENSOR_VPC_3V3:       return 1; // VME drivers pre-charge only
     case SENSOR_5V:            return 0;
     case SENSOR_VXS_5V:        return 0;
     case SENSOR_2V5:           return 0;
