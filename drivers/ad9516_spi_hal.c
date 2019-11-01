@@ -23,6 +23,7 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
+#include "logbuffer.h"
 
 static const int SPI_TIMEOUT_MS = 500;
 
@@ -35,37 +36,7 @@ void set_csb(int state)
         Error_Handler();
     }
 }
-/*
-static HAL_StatusTypeDef pllSendByte(uint8_t data)
-{
-    HAL_StatusTypeDef ret;
-    enum {Size = 3};
-    uint8_t tx[Size];
-    pData[0] = (data >> 8) & 0xFF;
-    pData[1] = data & 0xFF;
-    uint16_t tx = {0};
-    uint16_t rx = {0};
-    set_csb(0);
-    ret = HAL_SPI_Transmit(ad9516_spi, (uint8_t *)&tx, Size, SPI_TIMEOUT_MS);
-    set_csb(1);
-    return ret;
-}
 
-static HAL_StatusTypeDef pllReceiveByte(uint32_t *data)
-{
-    HAL_StatusTypeDef ret;
-    enum {Size = 3};
-    uint16_t tx = {0};
-    uint16_t rx = {0};
-    ret = HAL_SPI_TransmitReceive(ad9516_spi, (uint8_t *)&tx, (uint8_t *)&rx, Size, SPI_TIMEOUT_MS);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
-        }
-    }
-    return ret;
-}
-*/
 HAL_StatusTypeDef ad9516_read1(uint16_t reg, uint8_t *data)
 {
     HAL_StatusTypeDef ret;
@@ -86,6 +57,8 @@ HAL_StatusTypeDef ad9516_read1(uint16_t reg, uint8_t *data)
         if (*data != 0xC3) {
             *data = 0;
         }
+    } else {
+        Error_Handler();
     }
     return ret;
 }
@@ -95,7 +68,6 @@ HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data)
     HAL_StatusTypeDef ret;
     enum {Size = 3};
     uint8_t tx[Size];
-    uint8_t rx[Size];
     reg &= 0x1FFF;
     tx[0] = (reg >> 8) & 0x1F;  // MSB first
     tx[1] = reg & 0xFF;
@@ -103,6 +75,12 @@ HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data)
     set_csb(0);
     ret = HAL_SPI_Transmit(ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
+    uint8_t readback = 0;
+    ad9516_read1(reg, &readback);
+    if (readback != data) {
+        log_printf(LOG_ERR, "Error writing %04X: wrote %02X, read %02X", reg, data, readback);
+        return HAL_ERROR;
+    }
     return ret;
 }
 /*

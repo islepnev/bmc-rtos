@@ -121,43 +121,32 @@ typedef union
   } b;
   uint8_t raw;
 } DPLL_Operation_REG_Type;
-
+*/
 typedef union
 {
   struct
   {
-      uint8_t hist_available:1;
-      uint8_t freq_clamp:1;
-      uint8_t phase_slew_limit:1;
-      uint8_t reserved1:1;
-      uint8_t facq_active:1;
-      uint8_t facq_done:1;
-      uint8_t reserved:2;
+      uint8_t dlock:1;
+      uint8_t ref1_over_thr:1;
+      uint8_t ref2_over_thr:1;
+      uint8_t vco_over_thr:1;
+      uint8_t ref2_selected:1;
+      uint8_t holdover:1;
+      uint8_t vco_cal_finished:1;
+      uint8_t reserved:1;
   } b;
   uint8_t raw;
-} DPLL_State_REG_Type;
+} AUXPLL_Readback_REG_Type;
 
-typedef struct {
-    DPLL_Active_Profile_REG_Type act_profile;
-    DPLL_Lock_Status_REG_Type lock_status;
-    DPLL_Operation_REG_Type operation;
-    DPLL_State_REG_Type state;
-    uint64_t ftw_history;
-    uint16_t pld_tub;
-    uint16_t fld_tub;
-    uint8_t phase_slew;
-    uint8_t phase_control_error;
-} DPLL_Status;
-*/
 enum { AUXREF_INPUT_COUNT = 2};
 
 typedef struct {
-//    Eeprom_Status_REG_Type eeprom;
-//    Sysclk_Status_REG_Type sysclk;
-//    Misc_Status_REG_Type misc;
-//    int16_t internal_temp;
-//    Ref_Status_REG_Type ref[REF_INPUT_COUNT];
-//    DPLL_Status dpll[DPLL_COUNT];
+    //    Eeprom_Status_REG_Type eeprom;
+    //    Sysclk_Status_REG_Type sysclk;
+    //    Misc_Status_REG_Type misc;
+    //    int16_t internal_temp;
+    //    Ref_Status_REG_Type ref[REF_INPUT_COUNT];
+    AUXPLL_Readback_REG_Type pll_readback;
 } AD9516_Status;
 
 #endif // AD9516_STATUS_H

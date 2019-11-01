@@ -27,14 +27,14 @@ extern "C" {
 #endif
 
 DeviceStatus auxpllDetect(Dev_auxpll *d);
-//OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
+OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
 
 //void reset_SPI_auxpll(void);
-//OpStatusTypeDef pllSoftwareReset(Dev_auxpll *d);
-//OpStatusTypeDef pllSetupSysclk(Dev_auxpll *d);
-//OpStatusTypeDef pllCalibrateSysclk(Dev_auxpll *d);
-//OpStatusTypeDef pllReadStatus(Dev_auxpll *d);
-//OpStatusTypeDef pllReadSysclkStatus(Dev_auxpll *d);
+//OpStatusTypeDef auxpllSoftwareReset(Dev_auxpll *d);
+//OpStatusTypeDef auxpllSetupSysclk(Dev_auxpll *d);
+//OpStatusTypeDef auxpllCalibrateSysclk(Dev_auxpll *d);
+OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d);
+//OpStatusTypeDef auxpllReadSysclkStatus(Dev_auxpll *d);
 
 #ifdef __cplusplus
 }

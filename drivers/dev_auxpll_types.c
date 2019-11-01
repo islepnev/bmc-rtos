@@ -28,7 +28,7 @@ SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll)
 //        return SENSOR_CRITICAL;
 //    if (!pll->status.dpll[0].lock_status.b.all_lock)
 //        return SENSOR_WARNING;
-//    if (!pll->status.dpll[1].lock_status.b.all_lock)
+    if (!pll->status.pll_readback.b.dlock)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }

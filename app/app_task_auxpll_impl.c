@@ -75,8 +75,8 @@ void auxpll_task_run(void)
         d->fsm_state = AUXPLL_STATE_SYSCLK_WAITLOCK;
         break;
     case AUXPLL_STATE_SYSCLK_WAITLOCK:
-//        if (d->status.sysclk.b.locked && d->status.sysclk.b.stable) {
-//            d->fsm_state = AUXPLL_STATE_SETUP;
+//        if (d->status.pll_readback.b.vco_cal_finished) {
+            d->fsm_state = AUXPLL_STATE_SETUP;
 //        }
         if (stateTicks() > 2000) {
             log_put(LOG_ERR, "AUXPLL sysclock lock timeout");
@@ -84,10 +84,10 @@ void auxpll_task_run(void)
         }
         break;
     case AUXPLL_STATE_SETUP:
-//        if (DEV_OK != auxpllSetup(d)) {
-//            d->fsm_state = AUXPLL_STATE_ERROR;
-//            break;
-//        }
+        if (DEV_OK != auxpllSetup(d)) {
+            d->fsm_state = AUXPLL_STATE_ERROR;
+            break;
+        }
         d->fsm_state = AUXPLL_STATE_RUN;
         break;
     case AUXPLL_STATE_RUN:
@@ -130,9 +130,9 @@ void auxpll_task_run(void)
 //        }
     }
     if (d->fsm_state == AUXPLL_STATE_RUN) {
-//        if (DEV_OK != auxpllReadStatus(d)) {
-//            d->fsm_state = AUXPLL_STATE_ERROR;
-//        }
+        if (DEV_OK != auxpllReadStatus(d)) {
+            d->fsm_state = AUXPLL_STATE_ERROR;
+        }
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {

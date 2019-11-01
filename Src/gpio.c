@@ -341,7 +341,7 @@ void MX_GPIO_Init(void)
 #ifdef TTVXS_1_0
 #else
   GPIO_InitStruct.Pin = AD9516_CS_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL; // 4.7k pullup on PCB
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(AD9516_CS_B_GPIO_Port, &GPIO_InitStruct);

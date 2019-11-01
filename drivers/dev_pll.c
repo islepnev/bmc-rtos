@@ -57,7 +57,7 @@ typedef union
     uint32_t softreset7:1;
   } b;
   uint8_t raw;
-} REG_CONFIG_Type;
+} AD9516_Config_REG_Type;
 
 typedef union
 {

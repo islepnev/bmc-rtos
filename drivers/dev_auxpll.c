@@ -46,137 +46,153 @@ static void DEBUG_PRINT_RET(const char *func, int ret)
            func, ret, ad9516_spi->ErrorCode);
 }
 
-typedef union
-{
-  struct
-  {
-    uint32_t softreset0:1;
-    uint32_t spi_config:6; // SPI only
-    uint32_t softreset7:1;
+typedef union {
+  struct {
+      uint32_t sdo_active:1;
+      uint32_t lsb_first:1;
+      uint32_t softreset:1;
+      uint32_t long_instr:1;
+      uint32_t long_instr_2:1; // mirrored bits
+      uint32_t softreset_2:1;
+      uint32_t lsb_first_2:1;
+      uint32_t sdo_active_2:1;
   } b;
   uint8_t raw;
-} REG_CONFIG_Type;
+} AD9516_Serial_Config_REG_Type;
 
-typedef union
-{
-  struct
-  {
-    uint32_t autosync_mode:2;
-    uint32_t enable_ref_sync:1;
-    uint32_t reserved:5;
-  } b;
-  uint8_t raw;
-} Sync_Control_REG_Type;
+typedef union {
+    struct {
+        uint32_t pll_powerdown: 2;
+        uint32_t chargepump_mode: 2;
+        uint32_t chargepump_current: 3;
+        uint32_t pfd_polarity: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PFD_CP_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t divider:3;
+        uint8_t reserved:5;
+    } b;
+    uint8_t raw;
+} AD9516_VCO_Divider_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t bypass_vco_div:1;
+        uint8_t select_vco:1;
+        uint8_t powerdown_vco_clk:1;
+        uint8_t powerdown_vco_interface:1;
+        uint8_t powerdown_clock_inp:1;
+        uint8_t reserved:3;
+    } b;
+    uint8_t raw;
+} AD9516_Input_Clocks_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t prescaler_p: 3;
+        uint8_t bcounter_bypass: 1;
+        uint8_t reset_all_counters: 1;
+        uint8_t reset_a_b_counters: 1;
+        uint8_t reset_r_counter: 1;
+        uint8_t set_cp_pin: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_1_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t antibacklash_pulse_width: 2;
+        uint8_t status_pin_control: 6;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_2_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t vco_cal_now: 1;
+        uint8_t vco_cal_divider: 2;
+        uint8_t disable_dld: 1;
+        uint8_t dld_window: 1;
+        uint8_t ld_counter: 2;
+        uint8_t reserved: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_3_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t n_path_delay: 3;
+        uint8_t r_path_delay: 3;
+        uint8_t rab_sync_pin_reset: 2;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_4_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t ld_pin_control: 6;
+        uint8_t ref_freq_mon_threshold: 1;
+        uint8_t reserved: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_5_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t refmon_pin_control: 5;
+        uint8_t ref1_freq_mon: 1;
+        uint8_t ref2_freq_mon: 1;
+        uint8_t vco_freq_mon: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_6_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t diff_ref: 1;
+        uint8_t ref1_poweron: 1;
+        uint8_t ref2_poweron: 1;
+        uint8_t reserved: 2;
+        uint8_t use_ref_sel_pin: 1;
+        uint8_t select_ref2: 1;
+        uint8_t disable_switchover_deglitch: 1;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_7_REG_Type;
+
+typedef union {
+    struct {
+        uint8_t holdover_enable: 1;
+        uint8_t external_holdover_control: 1;
+        uint8_t holdover_enable_2: 1;
+        uint8_t ld_pin_comp_enable: 2;
+        uint8_t pll_status_reg_disable: 1;
+        uint8_t reserved: 3;
+    } b;
+    uint8_t raw;
+} AD9516_PLL_Control_8_REG_Type;
+
+typedef struct {
+    AD9516_PLL_Control_1_REG_Type pll_control_1;
+    AD9516_PLL_Control_2_REG_Type pll_control_2;
+    AD9516_PLL_Control_3_REG_Type pll_control_3;
+    AD9516_PLL_Control_4_REG_Type pll_control_4;
+    AD9516_PLL_Control_5_REG_Type pll_control_5;
+    AD9516_PLL_Control_6_REG_Type pll_control_6;
+    AD9516_PLL_Control_7_REG_Type pll_control_7;
+    AD9516_PLL_Control_8_REG_Type pll_control_8;
+} AD9516_Pll_Control;
 
 enum {
     AD9516_REG1_CONFIG_0  = 0x0000,
     AD9516_REG1_PART_ID = 0x0003,
-    /*
-    AD9545_REG1_Sysclk_FB_DIV_Ratio = 0x0200,
-    AD9545_REG1_Sysclk_Input = 0x0201,
-    AD9545_REG5_Sysclk_Ref_Frequency = 0x0202,
-    AD9545_REG3_Sysclk_Stability_Timer = 0x0207,
-    AD9545_REG1_0280 = 0x0280,
-    AD9545_REG1_0282 = 0x0282,
-    AD9545_REG2_0285 = 0x0285,
-    AD9545_REG5_0289 = 0x0289,
-
-    AD9545_REG1_0300 = 0x0300,
-    AD9545_REG1_0304 = 0x0304,
-
-    AD9545_REG4_0400 = 0x0400,
-    AD9545_REG8_0404 = 0x0404,
-    AD9545_REG3_040C = 0x040C,
-    AD9545_REG3_0410 = 0x0410,
-    AD9545_REG2_0413 = 0x0413,
-
-    AD9545_REG4_0440 = 0x0440,
-    AD9545_REG8_0444 = 0x0444,
-    AD9545_REG3_044C = 0x044C,
-    AD9545_REG2_0450 = 0x0450,
-    AD9545_REG2_0453 = 0x0453,
-
-    AD9545_REG1_10D7 = 0x10D7,
-    AD9545_REG1_10D8 = 0x10D8,
-    AD9545_REG1_10D9 = 0x10D9,
-    AD9545_REG1_10DA = 0x10DA,
-    AD9545_REG1_10DB = 0x10DB,
-    AD9545_REG1_10DC = 0x10DC,
-    AD9545_REG1_1100 = 0x1100,
-    AD9545_REG1_1112 = 0x1112,
-    AD9545_REG1_1124 = 0x1124,
-    AD9545_REG1_1200 = 0x1200,
-    AD9545_REG1_1201 = 0x1201,
-    AD9545_REG1_1202 = 0x1202,
-    AD9545_REG1_1203 = 0x1203,
-    AD9545_REG4_1204 = 0x1204,
-    AD9545_REG4_1208 = 0x1208,
-    AD9545_REG4_120C = 0x120C,
-    AD9545_REG3_1210 = 0x1210,
-    AD9545_REG3_1213 = 0x1213,
-    AD9545_REG3_1217 = 0x1217,
-    AD9545_REG1_14D7 = 0x14D7,
-    AD9545_REG1_14D8 = 0x14D8,
-    AD9545_REG1_14D9 = 0x14D9,
-    AD9545_REG1_14DA = 0x14DA,
-    AD9545_REG1_14DB = 0x14DB,
-    AD9545_REG1_14DC = 0x14DC,
-    AD9545_REG1_1500 = 0x1500,
-    AD9545_REG1_1512 = 0x1512,
-    AD9545_REG1_1600 = 0x1600,
-    AD9545_REG1_1601 = 0x1601,
-    AD9545_REG1_1602 = 0x1602,
-    AD9545_REG1_1603 = 0x1603,
-    AD9545_REG4_1604 = 0x1604,
-    AD9545_REG4_1608 = 0x1608,
-    AD9545_REG4_160C = 0x160C,
-    AD9545_REG3_1610 = 0x1610,
-    AD9545_REG3_1613 = 0x1613,
-    AD9545_REG3_1617 = 0x1617,
-    AD9545_REG1_2000 = 0x2000,
-    AD9545_REG1_2001 = 0x2001,
-    AD9545_REG1_200C = 0x200C,
-    AD9545_REG1_2100 = 0x2100,
-    AD9545_REG1_2102 = 0x2102,
-    AD9545_REG1_2103 = 0x2103,
-    AD9545_REG1_2104 = 0x2104,
-    AD9545_REG1_2105 = 0x2105,
-    AD9545_REG1_2106 = 0x2106,
-    AD9545_REG1_2107 = 0x2107,
-    AD9545_REG1_2200 = 0x2200,
-    AD9545_REG1_2202 = 0x2202,
-    AD9545_REG1_2203 = 0x2203,
-    AD9545_REG1_2205 = 0x2205,
-    AD9545_REG1_2207 = 0x2207,
-    AD9545_LIVE_REG1_3000 = 0x3000,
-    AD9545_LIVE_REG1_3001 = 0x3001,
-    AD9545_REG1_3002 = 0x3002,
-    AD9545_REG2_INT_THERM = 0x3003,
-    AD9545_REG1_3005 = 0x3005,
-    AD9545_REG1_3006 = 0x3006,
-    AD9545_REG1_3007 = 0x3007,
-    AD9545_REG1_3008 = 0x3008,
-    AD9545_REG1_3009 = 0x3009,
-    AD9545_REG1_300A = 0x300A,
-
-    AD9545_REG1_3100 = 0x3100,
-    AD9545_REG1_3101 = 0x3101,
-    AD9545_REG1_3102 = 0x3102,
-    AD9545_REG6_3103 = 0x3103,
-    AD9545_REG2_3109 = 0x3109,
-    AD9545_REG2_310B = 0x310B,
-    AD9545_REG1_310D = 0x310D,
-    AD9545_REG1_310E = 0x310E,
-
-    AD9545_REG1_3200 = 0x3200,
-    AD9545_REG1_3201 = 0x3201,
-    AD9545_REG1_3202 = 0x3202,
-    AD9545_REG6_3203 = 0x3203,
-    AD9545_REG2_3209 = 0x3209,
-    AD9545_REG2_320B = 0x320B,
-    AD9545_REG1_320D = 0x320D,
-    AD9545_REG1_320E = 0x320E,
-*/
+    AD9516_REG1_PFD_CP = 0x0010,
+    AD9516_REG1_PLL_READBACK = 0x001F,
+    AD9516_REG1_VCO_DIVIDER = 0x01E0,
+    AD9516_REG1_CLOCKS = 0x01E1,
 };
 
 enum {
@@ -184,11 +200,11 @@ enum {
 };
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
-/*
-static OpStatusTypeDef pllIoUpdate(Dev_pll *d)
+
+static HAL_StatusTypeDef pllIoUpdate(Dev_auxpll *d)
 {
     uint8_t data = 1;
-    HAL_StatusTypeDef ret = ad9545_write1(0x000F, data);
+    HAL_StatusTypeDef ret = ad9516_write1(0x232, data);
     if (ret != HAL_OK)
         goto err;
 //    osDelay(1);
@@ -198,64 +214,19 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_pll *d, uint16_t address, uint8_t bitmask)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    uint8_t data = 0;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_read1(address, &data)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(address, data | bitmask)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(address, data & ~bitmask)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-*/
 DeviceStatus auxpllDetect(Dev_auxpll *d)
 {
     int devicePresent = 0;
-    int deviceError = 0;
     HAL_StatusTypeDef ret;
     uint8_t data = 0;
-    ad9516_write1(AD9516_REG1_CONFIG_0, 0x99);
-    while (1) {
-        ad9516_read1(AD9516_REG1_PART_ID, &data);
-        osDelay(100);
-    }
+    volatile AD9516_Serial_Config_REG_Type serial_config_reg;
+    serial_config_reg.raw = 0x99;
+    ad9516_write1(AD9516_REG1_CONFIG_0, serial_config_reg.raw);
+    ad9516_read1(AD9516_REG1_PART_ID, &data);
     devicePresent = (data == AD9516_PART_ID);
-    //    if (devicePresent) {
-//        uint32_t test = 0xFF0055AA;
-//        for (int i=0; i<100; i++) {
-//            // scratchpad test
-//            test = ~test;
-//            ad9545_write4(0x0020, test);
-//            uint32_t data = 0;
-//            ad9545_read4(0x0020, &data);
-//            if (data != test) {
-//                deviceError = 1;
-//                break;
-//            }
-//        }
-//    }
-    if (devicePresent) {
-        if (deviceError) {
-            log_put(LOG_ERR, "AUXPLL SPI data error");
-        } else {
-            log_put(LOG_INFO, "AUXPLL AD9516 present");
-        }
-    }
-    d->present = (devicePresent && !deviceError) ? DEVICE_NORMAL : DEVICE_FAIL;
+    if (devicePresent)
+        log_put(LOG_INFO, "AUXPLL AD9516 present");
+    d->present = devicePresent ? DEVICE_NORMAL : DEVICE_FAIL;
     return d->present;
 }
 /*
@@ -267,406 +238,6 @@ OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
         goto err;
     ret = ad9545_write1(0x0000, 0);
     if (ret != HAL_OK)
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-OpStatusTypeDef pllSetupSysclk(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    PllSysclkSetup_TypeDef sysclkSetup = {0};
-    init_PllSysclkSetup(&sysclkSetup);
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup.Sysclk_FB_DIV_Ratio)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_Sysclk_Input, sysclkSetup.Sysclk_Input)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_Sysclk_Ref_Frequency, sysclkSetup.sysclk_Ref_Frequency_milliHz)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_Sysclk_Stability_Timer, sysclkSetup.Sysclk_Stability_Timer)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0280, sysclkSetup.TDC_Compensation_Source)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0282, sysclkSetup.DPLL_Compensation_Source)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0285, sysclkSetup.AuxDPLL_Bandwidth)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write5(AD9545_REG5_0289, sysclkSetup.CompensationValue)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(0x2903, sysclkSetup.Temperature_Low_Threshold)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(0x2905, sysclkSetup.Temperature_Hihg_Threshold)))
-        goto err;
-
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    // calibrate APLL 0 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel0 = 0x02; // calibrate
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    OpControlChannel0 = 0; // clear calibrate bit
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    // calibrate APLL 1 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel1 = 0x02; // calibrate
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    OpControlChannel1 = 0; // clear calibrate bit
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllResetOutputDividers_unused(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2102, 0x1)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2103, 0x1)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2104, 0x1)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2202, 0x1)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2203, 0x1)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2102, 0x0)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2103, 0x0)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2104, 0x0)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2202, 0x0)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2203, 0x0)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupOutputDrivers(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    Pll_OutputDrivers_Setup_TypeDef setup = {0};
-    init_Pll_OutputDrivers_Setup(&setup);
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D7, setup.Driver_Config.raw)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D8, setup.Driver_Config.raw)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10D9, setup.Driver_Config.raw)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D7, setup.Driver_Config.raw)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D8, setup.Driver_Config.raw)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllClearAutomute_unused(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2107, 0x10)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2207, 0x10)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2107, 0x00)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2207, 0x00)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    Pll_OutputDividers_Setup_TypeDef setup = {0};
-    init_Pll_OutputDividers_Setup(&setup);
-    // channel 0
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DA, setup.Secondary_Clock_Path_0)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DC, setup.Automute_Control_0)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1100, setup.Distribution_Divider_0_A)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1112, setup.Distribution_Divider_0_B)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1124, setup.Distribution_Divider_0_C)))
-        goto err;
-
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    //    uint8_t Sync_Control_0 = 0x5; // 0x05;
-//    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DB, Sync_Control_0)))
-//        goto err;
-
-    // When using reference synchronization in conjunction with
-    // autosync mode (that is, autosync mode = 1, 2, or 3), be sure to
-    // program enable DPLLx reference sync = 1 and assert the I/O_
-    // UPDATE bit prior to programming autosync mode = 1, 2, or 3.
-    Sync_Control_REG_Type Sync_Control_0;
-    Sync_Control_0.raw = 0;
-    Sync_Control_0.b.enable_ref_sync = setup.enable_ref_sync_0;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    Sync_Control_0.b.autosync_mode = setup.autosync_mode_0;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    // channel 1
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DA, setup.Secondary_Clock_Path_1)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DC, setup.Automute_Control_1)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1500, setup.Distribution_Divider_1_A)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_1512, setup.Distribution_Divider_1_B)))
-        goto err;
-
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    // When using reference synchronization in conjunction with
-    // autosync mode (that is, autosync mode = 1, 2, or 3), be sure to
-    // program enable DPLLx reference sync = 1 and assert the I/O_
-    // UPDATE bit prior to programming autosync mode = 1, 2, or 3.
-    Sync_Control_REG_Type Sync_Control_1;
-    Sync_Control_1.raw = 0;
-    Sync_Control_1.b.enable_ref_sync = setup.enable_ref_sync_1;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    Sync_Control_1.b.autosync_mode = setup.autosync_mode_1;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupRef(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    PllRefSetup_TypeDef refSetup = {0};
-    init_PllRefSetup(&refSetup);
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, refSetup.REFA_Receiver_Settings)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0304, refSetup.REFB_Receiver_Settings)))
-        goto err;
-
-    // REFERENCE INPUT A (REFA) REGISTERS—REGISTER 0x0400 TO REGISTER 0x0414
-
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0400, refSetup.REFA_R_Divider)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0404, refSetup.REFA_Input_Period)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_040C, refSetup.REFA_Offset_Limit)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_0410, refSetup.REFA_Validation_Timer)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0413, refSetup.REFA_Jitter_Tolerance)))
-        goto err;
-
-    // REFERENCE INPUT B (REFB) REGISTERS—REGISTER 0x0440 TO REGISTER 0x0454
-
-    if (HAL_OK != (ret = ad9545_write4(AD9545_REG4_0440, refSetup.REFB_R_Divider)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write8(AD9545_REG8_0444, refSetup.REFB_Input_Period)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write3(AD9545_REG3_044C, refSetup.REFB_Offset_Limit)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0450, refSetup.REFB_Validation_Timer)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0453, refSetup.REFB_Jitter_Tolerance)))
-        goto err;
-
-    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllWriteProfile(Dev_pll *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    uint16_t reg_offset = AD9545_REG1_1200;
-    switch(channel) {
-    case DPLL0:
-        reg_offset += 0;
-        break;
-    case DPLL1:
-        reg_offset += 0x400;
-        break;
-    }
-    reg_offset += profileIndex * 0x20;
-
-    // DPLL TRANSLATION PROFILE REGISTERS
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x0, profile.Priority_and_Enable)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x1, profile.Profile_Ref_Source)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x2, profile.ZD_Feedback_Path)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x3, profile.Feedback_Mode.raw)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0x4, profile.Loop_BW)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0x8, profile.Hitless_FB_Divider)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write4(reg_offset + 0xC, profile.Buildout_FB_Divider)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x10, profile.Buildout_FB_Fraction)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x13, profile.Buildout_FB_Modulus)))
-        goto err;
-
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x17, profile.FastLock)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupDPLLChannel(Dev_pll *d, PllChannel_TypeDef channel)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    Pll_DPLL_Setup_TypeDef dpll = {0};
-    init_DPLL_Setup(&dpll, channel);
-    uint16_t reg_offset = 0x0;
-    switch(channel) {
-    case DPLL0:
-        break;
-    case DPLL1:
-        reg_offset = 0x400;
-        break;
-    }
-
-    // DPLL CHANNEL REGISTERS
-    if (HAL_OK != (ret = ad9545_write6(reg_offset + 0x1000, dpll.Freerun_Tuning_Word)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write3(reg_offset + 0x1006, dpll.FTW_Offset_Clamp)))
-        goto err;
-
-    // APLL CHANNEL REGISTERS
-    if (HAL_OK != (ret = ad9545_write1(reg_offset + 0x1081, dpll.APLL_M_Divider)))
-        goto err;
-
-    for (int i=0; i<2; i++)
-        if (HAL_OK != (ret = pllWriteProfile(d, channel, i, dpll.profile[i])))
-            goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupDPLL(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL0)))
-        goto err;
-    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL1)))
-        goto err;
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSetupDPLLMode(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    Pll_DPLLMode_Setup_TypeDef dpll_mode = {0};
-    init_Pll_DPLLMode_Setup(&dpll_mode);
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2105, dpll_mode.dpll0_mode.raw)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2205, dpll_mode.dpll1_mode.raw)))
         goto err;
 
     return ret;
@@ -693,234 +264,55 @@ err:
     DEBUG_PRINT_RET(__func__, ret);
     return ret;
 }
-
-static OpStatusTypeDef pllCalibrateAll(Dev_pll *d)
+*/
+OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x02)))
+    uint8_t data = 0;
+    ad9516_read1(AD9516_REG1_PART_ID, &data);
+    if (data != AD9516_PART_ID)
         goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x02)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllSyncAllDistDividers(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x08)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x08)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllReadRefStatus(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = DEV_ERROR;
-    uint8_t refa;
-    ret = ad9545_read1(AD9545_REG1_3005, &refa);
-    if (ret != HAL_OK)
-        goto err;
-    d->status.ref[0].raw = refa;
-
-    uint8_t refb;
-    ret = ad9545_read1(AD9545_REG1_3005, &refb);
-    if (ret != HAL_OK)
-        goto err;
-    d->status.ref[2].raw = refb;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_pll *d, PllChannel_TypeDef channel)
-{
-    HAL_StatusTypeDef ret = DEV_ERROR;
-
-    uint16_t reg_offset = 0x0;
-    switch(channel) {
-    case DPLL0:
-        break;
-    case DPLL1:
-        reg_offset = 0x100;
-        break;
-    }
-    DPLL_Status *dpll_status = &d->status.dpll[channel];
-
-    ret = ad9545_read1(AD9545_REG1_3009 + 1 * channel, &dpll_status->act_profile.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_3100 + reg_offset, &dpll_status->lock_status.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_3101 + reg_offset, &dpll_status->operation.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_3102 + reg_offset, &dpll_status->state.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read2(AD9545_REG2_3109 + reg_offset, &dpll_status->pld_tub);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read2(AD9545_REG2_310B + reg_offset, &dpll_status->fld_tub);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read6(AD9545_REG6_3103 + reg_offset, &dpll_status->ftw_history);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_310D + reg_offset, &dpll_status->phase_slew);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_310E + reg_offset, &dpll_status->phase_control_error);
-    if (ret != HAL_OK)
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-OpStatusTypeDef pllReadStatus(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = DEV_ERROR;
 
     ret = pllIoUpdate(d);
     if (ret != HAL_OK)
         goto err;
-    ret = ad9545_read1(AD9545_LIVE_REG1_3000, &d->status.eeprom.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read1(AD9545_REG1_3002, &d->status.misc.raw);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_read2(AD9545_REG2_INT_THERM, (uint16_t *)&d->status.internal_temp);
+    ret = ad9516_read1(AD9516_REG1_PLL_READBACK, &d->status.pll_readback.raw);
     if (ret != HAL_OK)
         goto err;
 
-    ret = pllReadRefStatus(d);
-    if (ret != HAL_OK)
-        goto err;
-
-    ret = pllReadDPLLChannelStatus(d, DPLL0);
-    if (ret != HAL_OK)
-        goto err;
-
-    ret = pllReadDPLLChannelStatus(d, DPLL1);
-    if (ret != HAL_OK)
-        goto err;
-
-//    // read
-//    for (int i=0x3000; i<=0x300A; i++) {
-//        uint8_t data;
-//        ret = ad9545_read1(i, &data);
-//        if (ret != HAL_OK)
-//            goto err;
-//        printf("[%04X] = %02X\n", i, data);
-//    }
-
-    //    osDelay(1000);
     return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
-OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d)
+static HAL_StatusTypeDef auxpllReadAllRegisters_unused(Dev_auxpll *d)
 {
-    // read sysclk status
-    HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
-    if (ret != HAL_OK)
-        goto err;
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-
-static OpStatusTypeDef pllReadAllRegisters_unused(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
+    HAL_StatusTypeDef ret = HAL_OK;
     typedef struct {
         uint16_t first;
         uint16_t last;
     } region_t;
-    enum {size = 41};
+    enum {size = 7};
     region_t regs[size] = {
-        {0x0000,0x0010},
-        {0x0020,0x0023},
-        {0x0100,0x011A},
-        {0x0200,0x0209},
-        {0x0280,0x029C},
-        {0x0300,0x0307},
-        {0x0400,0x0414}, // RefA
-        {0x0420,0x0434}, // RefAA
-        {0x0440,0x0454}, // RefB
-        {0x0460,0x0474}, // RefBB
-        {0x0800,0x0811},
-        {0x0820,0x0831},
-        {0x0840,0x0851},
-        {0x0860,0x0871},
-        {0x0880,0x0891},
-        {0x08A0,0x08B1},
-        {0x08C0,0x08D1},
-        {0x08E0,0x08F1},
-        {0x0C00,0x0C17},
-        {0x1000,0x102B},
-        {0x1080,0x1083},
-        {0x10C0,0x10DC},
-        {0x1100,0x1135},
-        {0x1200,0x12B7},
-        {0x1400,0x142B},
-        {0x1480,0x1483},
-        {0x14C0,0x14DC},
-        {0x1500,0x1523},
-        {0x1600,0x16B7},
-        {0x2000,0x2014},
-        {0x2100,0x2107},
-        {0x2200,0x2207},
-        {0x2800,0x281E},
-        {0x2840,0x285E},
-        {0x2900,0x2906},
-        {0x2A00,0x2A17},
-        {0x2E00,0x2E1E},
-        {0x3000,0x3019},
-        {0x3100,0x310E},
-        {0x3200,0x320E},
-        {0x3A00,0x3A3B},
+        {0x0000,0x0004},
+        {0x0010,0x001F},
+        {0x00A0,0x00AB},
+        {0x00F0,0x00F5},
+        {0x0140,0x0143},
+        {0x0190,0x01A2},
+        {0x01E0,0x01E1},
     };
     for (int n=0; n<size; n++) {
         uint16_t first = regs[n].first;
         uint16_t last = regs[n].last;
         for (int i=first; i<=last; i++) {
             uint8_t data = 0;
-            ret = ad9545_read1(i, &data);
+            ret = ad9516_read1(i, &data);
             if (ret != HAL_OK)
                 goto err;
-//            printf("0x%04X,0x%02X\n", i, data);
+            // log_printf(LOG_DEBUG, "0x%04X,0x%02X", i, data);
         }
     }
     return ret;
@@ -929,14 +321,9 @@ err:
     return ret;
 }
 
-void reset_I2C_Pll(void)
+OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
 {
-    __HAL_I2C_DISABLE(hPll);
-    __HAL_I2C_ENABLE(hPll);
-}
-
-OpStatusTypeDef pllSetup(Dev_pll *d)
-{
+    /*
     OpStatusTypeDef ret;
     ret = pllSetupOutputDrivers(d);
     if (DEV_OK != ret)
@@ -957,6 +344,80 @@ OpStatusTypeDef pllSetup(Dev_pll *d)
     if (DEV_OK != ret)
         return ret;
     ret = pllSyncAllDistDividers(d);
-    return ret;
-}
 */
+
+    // PLL normal operation (PLL on)
+    AD9516_PFD_CP_REG_Type reg_pfd_cp;
+    reg_pfd_cp.raw = 0x0;
+    reg_pfd_cp.b.chargepump_current = 7; // 7: 4.8 mA
+    reg_pfd_cp.b.chargepump_mode = 3; // 3: normal operation
+    reg_pfd_cp.b.pll_powerdown = 0;
+    ad9516_write1(AD9516_REG1_PFD_CP, reg_pfd_cp.raw);
+
+    // PLL settings
+    // Select and enable a reference input
+    // set R, N (P, A, B), PFD polarity, and I CP
+    // according to the intended loop configuration
+    uint16_t rdiv = 2;
+    ad9516_write1(0x011, rdiv & 0xFF);
+    ad9516_write1(0x012, (rdiv >> 8) & 0x3F);
+
+    uint16_t acounter = 0;
+    ad9516_write1(0x013, acounter & 0x3F);
+
+    uint16_t bcounter = 25;
+    ad9516_write1(0x014, bcounter & 0xFF);
+    ad9516_write1(0x015, (bcounter >> 8) & 0x3F);
+
+    AD9516_Pll_Control pll_control;
+    pll_control.pll_control_1.raw = 0x06;
+    pll_control.pll_control_2.raw = 0x0;
+    pll_control.pll_control_3.raw = 0x06;
+    pll_control.pll_control_4.raw = 0x0;
+    pll_control.pll_control_5.raw = 0x0;
+    pll_control.pll_control_6.raw = 0x0;
+    pll_control.pll_control_7.raw = 0x0;
+    pll_control.pll_control_8.raw = 0x0;
+
+    pll_control.pll_control_1.b.prescaler_p = 1;
+    pll_control.pll_control_7.b.ref1_poweron = 1;
+
+    ad9516_write1(0x016, pll_control.pll_control_1.raw);
+    ad9516_write1(0x017, pll_control.pll_control_2.raw);
+    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+    ad9516_write1(0x019, pll_control.pll_control_4.raw);
+    ad9516_write1(0x01A, pll_control.pll_control_5.raw);
+    ad9516_write1(0x01B, pll_control.pll_control_6.raw);
+    ad9516_write1(0x01C, pll_control.pll_control_7.raw);
+    ad9516_write1(0x01D, pll_control.pll_control_8.raw);
+
+    // reset VCO calibration
+    pll_control.pll_control_3.b.vco_cal_now = 0;
+    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+    pllIoUpdate(d);
+
+    // Use the VCO divider as source for the distribution section
+    AD9516_VCO_Divider_REG_Type reg_vco_div;
+    reg_vco_div.raw = 0;
+    reg_vco_div.b.divider = 2; // 2: divide by 4
+    ad9516_write1(AD9516_REG1_VCO_DIVIDER, reg_vco_div.raw);
+
+    // Select VCO as the source
+    AD9516_Input_Clocks_REG_Type reg_clocks;
+    reg_clocks.raw = 0;
+    reg_clocks.b.bypass_vco_div = 0;
+    reg_clocks.b.select_vco = 1;
+    reg_clocks.b.powerdown_vco_clk = 0;
+    reg_clocks.b.powerdown_vco_interface = 0;
+    reg_clocks.b.powerdown_clock_inp = 0;
+    ad9516_write1(AD9516_REG1_CLOCKS, reg_clocks.raw);
+
+    // initiate VCO calibration
+    pll_control.pll_control_3.b.vco_cal_now = 1;
+    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+    pllIoUpdate(d);
+
+    //auxpllReadAllRegisters_unused(d);
+    return DEV_OK;
+}
+

@@ -14,39 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_AUXPLL_TYPES_H
-#define DEV_AUXPLL_TYPES_H
+#ifndef DEV_AUXPLL_PRINT_H
+#define DEV_AUXPLL_PRINT_H
 
-#include <stdint.h>
-#include "dev_common_types.h"
-#include "ad9516_status.h"
+#include "dev_auxpll_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    AUXPLL_STATE_INIT,
-    AUXPLL_STATE_RESET,
-    AUXPLL_STATE_SETUP_SYSCLK,
-    AUXPLL_STATE_SYSCLK_WAITLOCK,
-    AUXPLL_STATE_SETUP,
-    AUXPLL_STATE_RUN,
-    AUXPLL_STATE_ERROR,
-    AUXPLL_STATE_FATAL
-} AuxPllState;
-
-typedef struct Dev_auxpll {
-    DeviceStatus present;
-    AD9516_Status status;
-    AuxPllState fsm_state;
-    uint32_t recoveryCount;
-} Dev_auxpll;
-
-SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll);
+void auxpllPrintStatus(const Dev_auxpll *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_AUXPLL_TYPES_H
+#endif // DEV_AUXPLL_PRINT_H
