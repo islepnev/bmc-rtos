@@ -82,7 +82,7 @@ static void test_timers(void)
 
 void app_task_init(void)
 {
-    led_all_set_state(LED_ON);
+    led_all_set_state(true);
     initialize_serial_console_hardware();
     debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
@@ -90,5 +90,5 @@ void app_task_init(void)
     test_timers();
     // required for console I/O
     debug_print("Waiting for threads to start\n");
-    led_all_set_state(LED_OFF);
+    led_all_set_state(false);
 }

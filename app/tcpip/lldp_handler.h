@@ -20,8 +20,8 @@
 struct pbuf;
 struct netif;
 
-//extern err_t lwip_hook_unknown_eth_protocol(struct pbuf *pbuf, struct netif *netif);
+extern int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif);
 
-#define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif) lwip_hook_unknown_eth_protocol((pbuf), (netif))
+//#define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif) lwip_hook_unknown_eth_protocol((pbuf), (netif))
 
 #endif // LLDP_HANDLER_H

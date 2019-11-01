@@ -35,7 +35,7 @@ static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], i);
+        struct_pm_sensor_init(&d->sensors[i], (SensorIndex)i);
     }
 }
 
@@ -96,7 +96,7 @@ static int read_pgood_3v3_fmc(void)
 static int readLiveInsertPin(void)
 {
     GPIO_PinState state;
-    state = 1; // TODO: HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    state = GPIO_PIN_SET; // TODO: HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
     return (GPIO_PIN_RESET == state);
 }
 
@@ -116,14 +116,14 @@ void pm_read_pgood(Dev_powermon *pm)
     pm->pgood_3v3_fmc  = read_pgood_3v3_fmc();
 }
 
-PgoodState get_all_pgood(const Dev_powermon *pm)
+bool get_all_pgood(const Dev_powermon *pm)
 {
-    return (pm->pgood_1v0_core
+    return pm->pgood_1v0_core
             && pm->pgood_1v0_mgt
             && pm->pgood_1v2_mgt
             && pm->pgood_2v5
             && pm->pgood_3v3
-            && pm->pgood_3v3_fmc) ? PGOOD_OK : PGOOD_FAIL;
+            && pm->pgood_3v3_fmc;
 }
 
 bool get_input_power_valid(const Dev_powermon *pm)
@@ -169,7 +169,7 @@ void update_system_powergood_pin(const Dev_powermon *pm)
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, state);
 }
 
-bool update_power_switches(Dev_powermon *pm, SwitchOnOff state)
+bool update_power_switches(Dev_powermon *pm, bool state)
 {
     if (state)
         log_put(LOG_NOTICE, "Switching ON");

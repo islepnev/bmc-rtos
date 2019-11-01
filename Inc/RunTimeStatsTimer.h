@@ -14,21 +14,23 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
 
-#include "dev_pll_types.h"
+#ifndef RUNTIMESTATSTIMER_H
+#define RUNTIMESTATSTIMER_H
 
-#ifdef __cplusplus
+#include <stdint.h>
+#include "stm32f7xx_hal.h"
+#include "core_cm7.h"
+
+#ifdef  __cplusplus
 extern "C" {
 #endif
 
-//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
-void pllPrintStatus(const Dev_pll *d);
+void configureTimerForRunTimeStats( void );
+uint32_t getRunTimeCounterValue( void );
 
-#ifdef __cplusplus
+#ifdef  __cplusplus
 }
 #endif
 
-#endif // DEV_PLL_PRINT_H
+#endif /* RUNTIMESTATSTIMER_H */

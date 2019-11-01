@@ -22,6 +22,10 @@
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     RAMP_NONE = 0,
     RAMP_UP   = 1,
@@ -35,8 +39,8 @@ typedef struct {
     RampState rampState;
     uint32_t lastStatusUpdatedTick;
     uint16_t busAddress;
-    int isOptional;
-    int hasShunt;
+    bool isOptional;
+    bool hasShunt;
     double shuntVal;
     double busNomVoltage;
     const char *label;
@@ -63,19 +67,14 @@ typedef enum {
     PM_STATE_ERROR
 } PmState;
 
-typedef enum SwitchOnOff {
-    SWITCH_OFF = false,
-    SWITCH_ON = true,
-} SwitchOnOff;
-
 typedef struct pm_switches {
-    SwitchOnOff switch_5v;
-    SwitchOnOff switch_5v_fmc;
-    SwitchOnOff switch_3v3;
-    SwitchOnOff switch_2v5;
-    SwitchOnOff switch_1v0_core;
-    SwitchOnOff switch_1v0_mgt;
-    SwitchOnOff switch_1v2_mgt; // added in TTVXS v1.1
+    bool switch_5v;
+    bool switch_5v_fmc;
+    bool switch_3v3;
+    bool switch_2v5;
+    bool switch_1v0_core;
+    bool switch_1v0_mgt;
+    bool switch_1v2_mgt; // added in TTVXS v1.1
 } pm_switches;
 
 typedef enum MonState {
@@ -93,19 +92,23 @@ typedef struct Dev_powermon {
     int monCycle;
 //    DeviceStatus present;
    pm_sensor sensors[POWERMON_SENSORS];
-   int vmePresent;
-   int pgood_3v3;
-   int pgood_2v5;
-   int pgood_1v0_core;
-   int pgood_1v0_mgt;
-   int pgood_1v2_mgt;
-   int pgood_3v3_fmc;
+   bool vmePresent;
+   bool pgood_3v3;
+   bool pgood_2v5;
+   bool pgood_1v0_core;
+   bool pgood_1v0_mgt;
+   bool pgood_1v2_mgt;
+   bool pgood_3v3_fmc;
    pm_switches sw;
 } Dev_powermon;
 
-//int monIsOn(const pm_switches *sw, SensorIndex index);
+int monIsOn(const pm_switches *sw, SensorIndex index);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 SensorStatus getMonStatus(const Dev_powermon *pm);
 SensorStatus getPowermonStatus(const Dev_powermon *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_POWERMON_TYPES_H

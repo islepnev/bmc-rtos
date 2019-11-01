@@ -115,20 +115,23 @@ typedef union {
 } configreg_t;
 
 // default value 0x4127
-configreg_t default_configreg = {
-    .bit.mode = 7,     // 7: Shunt and Bus, Continuous
-    .bit.vshct = 4,    // 4: 1 ms
-    .bit.vbusct = 4,   // 4: 1 ms
-    .bit.avg = 1,      // 1: 4 averages
-    .bit.reserved = 4, // should be 4
-    .bit.rst = 0       // 0: no reset
-};
+static configreg_t default_configreg()
+{
+    configreg_t r;
+    r.bit.mode = 7;     // 7: Shunt and Bus, Continuous
+    r.bit.vshct = 4;    // 4: 1 ms
+    r.bit.vbusct = 4;   // 4: 1 ms
+    r.bit.avg = 1;      // 1: 4 averages
+    r.bit.reserved = 4; // should be 4
+    r.bit.rst = 0 ;      // 0: no reset
+    return r;
+}
 
 static HAL_StatusTypeDef pm_sensor_write_conf(pm_sensor *d)
 {
     uint16_t deviceAddr = d->busAddress;
     uint16_t data;
-    data = default_configreg.raw;
+    data = default_configreg().raw;
     HAL_StatusTypeDef ret = ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data);
     return ret;
 }
@@ -162,7 +165,7 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
         if ((HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage))
                 && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawCurrent))
                 && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw))
-                && (configreg.raw == default_configreg.raw)) {
+                && (configreg.raw == default_configreg().raw)) {
             break;
         }
         err++;

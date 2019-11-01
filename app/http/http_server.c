@@ -29,7 +29,7 @@ typedef struct http_server_t {
 
 struct http_server_t *http_server_alloc(void *priv, const char *client_data)
 {
-    http_server_t *server = malloc(sizeof(struct http_server_t));
+    http_server_t *server = (http_server_t *)malloc(sizeof(struct http_server_t));
     if (server) {
         server->_priv = priv;
         server->_client_data = client_data;

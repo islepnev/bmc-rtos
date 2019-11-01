@@ -21,6 +21,7 @@
 #include "stm32f7xx_hal_def.h"
 #include "dev_vxsiic_types.h"
 #include "dev_vxsiic_pp.h"
+#include "vxsiic_iic_driver.h"
 #include "vxsiic_hal.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
@@ -37,7 +38,7 @@ static const int map_slot_to_subdevice[VXSIIC_SLOTS] = {
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 1
 };
 
-static DeviceStatus vxsiic_select_pp(Dev_vxsiic *d, uint8_t pp)
+static HAL_StatusTypeDef vxsiic_select_pp(Dev_vxsiic *d, uint8_t pp)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     if (pp >= VXSIIC_SLOTS)

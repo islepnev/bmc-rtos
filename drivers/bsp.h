@@ -26,6 +26,10 @@
 // #define TTY_USART USART2 // USB-RS232
 #define LED_HEARTBEAT LED_INT_GREEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct __I2C_HandleTypeDef * const hPll;
 extern const uint8_t pllDeviceAddr;
 
@@ -43,5 +47,9 @@ void pllSetStaticPins(int enable);
 void pllReset(void);
 void pm_sensor_reset_i2c_master(void);
 void fpga_enable_interface(int enable);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // BSP_H

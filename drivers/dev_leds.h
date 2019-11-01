@@ -18,13 +18,15 @@
 #ifndef DEV_LEDS_H
 #define DEV_LEDS_H
 
+#include <stdbool.h>
+
 #include "dev_leds_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void dev_led_set(DeviceLeds led, LedState state);
+void dev_led_set(DeviceLeds led, bool state);
 void dev_leds_toggle(DeviceLeds led);
 
 #ifdef __cplusplus

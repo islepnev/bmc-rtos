@@ -32,7 +32,7 @@ void struct_powermon_init(Dev_powermon *d);
 //int readPowerGood1v5();
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
-bool update_power_switches(Dev_powermon *pm, SwitchOnOff state);
+bool update_power_switches(Dev_powermon *pm, bool state);
 //int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
@@ -45,7 +45,7 @@ bool get_input_power_normal(const Dev_powermon *pm);
 bool get_input_power_failed(const Dev_powermon *pm);
 bool get_critical_power_valid(const Dev_powermon *pm);
 bool get_critical_power_failure(const Dev_powermon *pm);
-PgoodState get_all_pgood(const Dev_powermon *pm);
+bool get_all_pgood(const Dev_powermon *pm);
 void update_system_powergood_pin(const Dev_powermon *pm);
 
 #ifdef __cplusplus

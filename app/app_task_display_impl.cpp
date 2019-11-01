@@ -225,7 +225,7 @@ void monPrintValues(const Dev_powermon *d)
     printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, (SensorIndex)i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }

@@ -114,7 +114,7 @@ static HAL_StatusTypeDef dev_vxsiic_read_pp_mcu(Dev_vxsiic *d, int pp)
     status->bmc_ver = map[1];
     status->module_id = map[2];
     status->enc_status.w = map[3];
-    status->device_status = status->enc_status.b.system;
+    status->system_status = status->enc_status.b.system;
     status->iic_stats.ops = map[4];
     status->iic_stats.errors = map[5];
     status->uptime = map[6];

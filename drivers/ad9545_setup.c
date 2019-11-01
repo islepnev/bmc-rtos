@@ -112,7 +112,7 @@ static uint64_t get_dpll1_default_ftw(void)
     return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
 }
 
-uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel)
+uint64_t get_dpll_default_ftw(int channel)
 {
     switch (channel) {
     case DPLL0:
@@ -187,7 +187,7 @@ static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
 //    d->profile[1].Feedback_Mode.b.enable_ext_zd = 0;
 }
 
-void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel)
+void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, int channel)
 {
     switch(channel) {
     case DPLL0:

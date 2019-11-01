@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include "dev_common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Dev_fpga {
     DeviceStatus present;
     uint8_t initb;
@@ -31,5 +35,9 @@ typedef struct Dev_fpga {
 } Dev_fpga;
 
 SensorStatus get_fpga_sensor_status(const Dev_fpga *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_FPGA_TYPES_H

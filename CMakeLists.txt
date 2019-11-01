@@ -18,6 +18,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
 
 PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C CXX)
+set (CMAKE_CXX_STANDARD 11)
+#SET(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
 
 # uncomment to build for old TTVXS v1.0
 #add_compile_definitions(TTVXS_1_0)
@@ -81,6 +83,7 @@ file(GLOB_RECURSE USER_SOURCES
    Src/*.cpp
    common/*.c
    drivers/*.c
+   drivers/*.cpp
    app/*.c
    app/*.cpp
    eth/app_ethernet.c

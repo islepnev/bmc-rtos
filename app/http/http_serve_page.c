@@ -222,7 +222,7 @@ int http_serve_sensors(struct http_server_t *server)
             static char name[SENSOR_NAME_SIZE];
             strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
             name[SENSOR_NAME_SIZE-1] = '\0';
-            SensorStatus s = status->sensors[i].hdr.b.state;
+            SensorStatus s = (SensorStatus)status->sensors[i].hdr.b.state;
             sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
             strcat(buf, str);
             switch (status->sensors[i].hdr.b.type) {
@@ -245,7 +245,7 @@ int http_serve_sensors(struct http_server_t *server)
 //            double f = status->sensors[i].value;
 //            sprintf(str, "%.3f", f); // FIXME: causes HardFault
 //            strcat(buf, str);
-            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            sprintf(str, "%s</td>\n", sensorUnitsStr((IpmiSensorType)status->sensors[i].hdr.b.type));
             strcat(buf, str);
         }
         strcat(buf, "</tr>\n");
@@ -286,7 +286,7 @@ int http_serve_boards(struct http_server_t *server)
             static char name[SENSOR_NAME_SIZE];
             strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
             name[SENSOR_NAME_SIZE-1] = '\0';
-            SensorStatus s = status->sensors[i].hdr.b.state;
+            SensorStatus s = (SensorStatus)status->sensors[i].hdr.b.state;
             sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
             strcat(buf, str);
             switch (status->sensors[i].hdr.b.type) {
@@ -309,7 +309,7 @@ int http_serve_boards(struct http_server_t *server)
 //            double f = status->sensors[i].value;
 //            sprintf(str, "%.3f", f); // FIXME: causes HardFault
 //            strcat(buf, str);
-            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            sprintf(str, "%s</td>\n", sensorUnitsStr((IpmiSensorType)status->sensors[i].hdr.b.type));
             strcat(buf, str);
         }
         strcat(buf, "</tr>\n");

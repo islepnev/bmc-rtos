@@ -15,6 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "RunTimeStatsTimer.h"
 #include <stdint.h>
 #include "stm32f7xx_hal.h"
 #include "core_cm7.h"

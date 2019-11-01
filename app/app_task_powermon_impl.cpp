@@ -62,7 +62,7 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
+static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
 static void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
@@ -189,7 +189,7 @@ void task_powermon_run (void)
         break;
     case PM_STATE_STANDBY:
         if (enable_power && input_power_normal) {
-                if (update_power_switches(pm, SWITCH_ON)) {
+                if (update_power_switches(pm, true)) {
                     change_state(PM_STATE_RAMP);
                 } else {
                     change_state(PM_STATE_PWRFAIL);
@@ -239,9 +239,9 @@ void task_powermon_run (void)
         }
         break;
     case PM_STATE_PWRFAIL:
-        update_power_switches(pm, SWITCH_OFF);
+        update_power_switches(pm, false);
         change_state(PM_STATE_FAILWAIT);
-        // dev_switchPower(&dev.pm, SWITCH_OFF);
+        // dev_switchPower(&dev.pm, false);
         break;
     case PM_STATE_FAILWAIT:
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
@@ -249,13 +249,13 @@ void task_powermon_run (void)
         }
         break;
     case PM_STATE_ERROR:
-//        dev_switchPower(&dev.pm, SWITCH_OFF);
+//        dev_switchPower(&dev.pm, false);
         if (stateTicks() > ERROR_DELAY_TICKS) {
             change_state(PM_STATE_SWITCHOFF);
         }
         break;
     case PM_STATE_SWITCHOFF:
-        update_power_switches(pm, SWITCH_OFF);
+        update_power_switches(pm, false);
         change_state(PM_STATE_STANDBY);
         break;
     }

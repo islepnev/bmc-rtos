@@ -142,7 +142,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 3: {/* sensor name */
-        const char *name = monLabel(i);
+        const char *name = monLabel((SensorIndex)i);
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;
@@ -150,7 +150,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
     case 4: {/* sensor optional */
 //        *(s32_t *)value = s->isOptional ? 1 : 2;
 //        return sizeof(s32_t);
-        return snmp_encode_truthvalue(value, s->isOptional);
+        return snmp_encode_truthvalue((s32_t *)value, s->isOptional);
 
     }
     case 5: {/* sensor state */
@@ -166,7 +166,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 8: {/* current sensor value */
-        return snmp_encode_truthvalue(value, s->hasShunt);
+        return snmp_encode_truthvalue((s32_t *)value, s->hasShunt);
     }
     case 9: {/* current sensor value */
         *(s32_t *)value = s->current * 1000;

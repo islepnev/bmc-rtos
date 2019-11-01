@@ -22,11 +22,15 @@
 #include "dev_common_types.h"
 #include "ipmi_sensor_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {VXSIIC_SLOTS = 18};
 //enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
 
-const uint32_t BMC_MAGIC;
+extern const uint32_t BMC_MAGIC;
 
 typedef struct iic_stats_t {
     uint32_t ops;
@@ -63,7 +67,7 @@ typedef enum {
 struct vxsiic_slot_status_t {
    int present;
    encoded_system_status_t enc_status;
-   DeviceStatus device_status;
+   SensorStatus system_status;
    uint32_t ioexp;
    uint32_t magic;
    uint32_t bmc_ver;
@@ -103,5 +107,9 @@ typedef struct Dev_vxsiic {
 extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
 extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
 uint8_t get_vxsiic_board_count(const Dev_vxsiic *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_VXSIIC_TYPES_H
