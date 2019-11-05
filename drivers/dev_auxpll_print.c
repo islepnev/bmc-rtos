@@ -126,8 +126,8 @@ static char *auxpllStateStr(AuxPllState auxpllState)
 
 void auxpllPrintStatus(const Dev_auxpll *d)
 {
-    printf("AUXPLL FSM state %s\n", auxpllStateStr(d->fsm_state));
-    printf("PLL readback %02X %s%s%s%s\n",
+    // printf("AUXPLL FSM state %s\n", auxpllStateStr(d->fsm_state));
+    printf("PLL readback %02X %s%s%s%s%s%s\n",
            d->status.pll_readback.raw,
            d->status.pll_readback.b.dlock ? " DLOCK" : "",
            d->status.pll_readback.b.ref1_over_thr ? " REF1_over" : "",

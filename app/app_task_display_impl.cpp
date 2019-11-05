@@ -282,7 +282,8 @@ void auxpllPrint(const Dev_auxpll *d)
 {
     printf("AUXPLL state:   %s %s", auxpllStateStr(d->fsm_state), sensorStatusStr(get_auxpll_sensor_status(d)));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("PLL readback: %02X", d->status.pll_readback.raw);
+    auxpllPrintStatus(d);
+//    printf("PLL readback: %02X", d->status.pll_readback.raw);
 //    if (d->fsm_state == AUXPLL_STATE_RUN) {
 //        printf("Ref A:");
 //        pllPrintRefStatusBits(d->status.ref[REFA]);

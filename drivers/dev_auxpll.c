@@ -220,13 +220,23 @@ DeviceStatus auxpllDetect(Dev_auxpll *d)
     HAL_StatusTypeDef ret;
     uint8_t data = 0;
     volatile AD9516_Serial_Config_REG_Type serial_config_reg;
-    serial_config_reg.raw = 0x99;
+    serial_config_reg.raw = 0;
+    serial_config_reg.b.long_instr = 1;
+    serial_config_reg.b.long_instr_2 = 1;
+    serial_config_reg.b.sdo_active = 1;
+    serial_config_reg.b.sdo_active_2 = 1;
+    serial_config_reg.b.softreset = 1;
+    serial_config_reg.b.softreset_2 = 1;
+    ad9516_write1(AD9516_REG1_CONFIG_0, serial_config_reg.raw);
+    serial_config_reg.b.softreset = 0;
+    serial_config_reg.b.softreset_2 = 0;
     ad9516_write1(AD9516_REG1_CONFIG_0, serial_config_reg.raw);
     ad9516_read1(AD9516_REG1_PART_ID, &data);
     devicePresent = (data == AD9516_PART_ID);
     if (devicePresent)
         log_put(LOG_INFO, "AUXPLL AD9516 present");
     d->present = devicePresent ? DEVICE_NORMAL : DEVICE_FAIL;
+    // ad9516_test_loop(); // FIXME
     return d->present;
 }
 /*
