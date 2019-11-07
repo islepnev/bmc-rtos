@@ -50,6 +50,11 @@ Dev_fpga* get_dev_fpga(void)
     return &dev.fpga;
 }
 
+Dev_clkmux* get_dev_clkmux(void)
+{
+    return &dev.clkmux;
+}
+
 Dev_pll* get_dev_pll(void)
 {
     return &dev.pll;

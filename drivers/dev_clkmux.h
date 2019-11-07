@@ -15,36 +15,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
+#ifndef DEV_CLKMUX_H
+#define DEV_CLKMUX_H
 
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_clkmux_types.h"
-#include "dev_pll_types.h"
-#include "dev_auxpll_types.h"
-#include "dev_thset_types.h"
-#include "dev_sfpiic_types.h"
-#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
+#include "dev_common_types.h"
 
-typedef struct Dev_sdcard {
-    int detect_b;
-} Dev_sdcard;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_clkmux clkmux;
-    Dev_sfpiic sfpiic;
-    Dev_vxsiic vxsiic;
-    Dev_at24c eeprom_config;
-    Dev_pll pll;
-    Dev_auxpll auxpll;
-    Dev_powermon pm;
-    Dev_sdcard sd;
-    int pen_b;
-} Devices;
+struct Dev_clkmux;
 
-#endif // DEVICES_TYPES_H
+void dev_clkmux_init(struct Dev_clkmux *d);
+DeviceStatus dev_clkmux_detect(struct Dev_clkmux *d);
+DeviceStatus dev_clkmux_set(struct Dev_clkmux *d);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_CLKMUX_H

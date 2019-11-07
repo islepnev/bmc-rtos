@@ -15,36 +15,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
-
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
 #include "dev_clkmux_types.h"
-#include "dev_pll_types.h"
-#include "dev_auxpll_types.h"
-#include "dev_thset_types.h"
-#include "dev_sfpiic_types.h"
-#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
 
-typedef struct Dev_sdcard {
-    int detect_b;
-} Dev_sdcard;
-
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_clkmux clkmux;
-    Dev_sfpiic sfpiic;
-    Dev_vxsiic vxsiic;
-    Dev_at24c eeprom_config;
-    Dev_pll pll;
-    Dev_auxpll auxpll;
-    Dev_powermon pm;
-    Dev_sdcard sd;
-    int pen_b;
-} Devices;
-
-#endif // DEVICES_TYPES_H
+SensorStatus get_clkmux_sensor_status(const Dev_clkmux *d)
+{
+   if (!d->present)
+      return SENSOR_UNKNOWN;
+   return SENSOR_NORMAL;
+}

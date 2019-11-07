@@ -339,7 +339,9 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_SENSORS_H (POWERMON_SENSORS + 3)
 #define DISPLAY_MAIN_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
 #define DISPLAY_MAIN_H 4
-#define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_CLKMUX_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_CLKMUX_H 1
+#define DISPLAY_FPGA_Y (0 + DISPLAY_CLKMUX_Y + DISPLAY_CLKMUX_H)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_PLL_H 5
@@ -481,6 +483,14 @@ static void print_main(const Devices *dev)
 //    }
 }
 
+static void print_clkmux(const Dev_clkmux *clkmux)
+{
+    print_goto(DISPLAY_CLKMUX_Y, 1);
+    printf("CLKMUX");
+    printf(sensorStatusStr(get_clkmux_sensor_status(clkmux)));
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
 static void print_fpga(const Dev_fpga *fpga)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
@@ -552,6 +562,7 @@ static void display_summary(const Devices * dev)
     }
     print_thset(&dev->thset);
     print_main(dev);
+    print_clkmux(&dev->clkmux);
     print_fpga(&dev->fpga);
     print_pll(&dev->pll);
     print_auxpll(&dev->auxpll);
