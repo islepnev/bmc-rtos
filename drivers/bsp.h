@@ -42,6 +42,7 @@ extern struct __SPI_HandleTypeDef * const therm_spi;
 extern struct __SPI_HandleTypeDef * const ad9516_spi;
 #endif
 
+uint32_t detect_pcb_version(void);
 void pll_enable_interface(int enable);
 void pllSetStaticPins(int enable);
 void pllReset(void);

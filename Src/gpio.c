@@ -71,6 +71,15 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, PLL_M6_Pin|ON_5V_VXS_Pin, GPIO_PIN_RESET);
 
+  // PCB VER
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+  GPIO_InitStruct.Pin = PCB_VER_A0_Pin;
+  HAL_GPIO_Init(PCB_VER_A0_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pin = PCB_VER_A1_Pin;
+  HAL_GPIO_Init(PCB_VER_A1_GPIO_Port, &GPIO_InitStruct);
 
   // ON_* (open drain, default = 1)
   HAL_GPIO_WritePin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, GPIO_PIN_SET);

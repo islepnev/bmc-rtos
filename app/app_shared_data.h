@@ -48,6 +48,7 @@ struct Dev_vxsiic;
 struct Dev_sfpiic;
 struct Dev_at24c;
 
+int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 

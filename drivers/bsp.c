@@ -18,6 +18,9 @@
 // TTVXS board specific functions
 
 #include "bsp.h"
+
+#include <stdbool.h>
+
 #include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_ll_gpio.h"
@@ -37,6 +40,13 @@ struct __SPI_HandleTypeDef * const therm_spi = &hspi2;
 #else
 struct __SPI_HandleTypeDef * const ad9516_spi = &hspi2;
 #endif
+
+uint32_t detect_pcb_version(void)
+{
+    bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
+    bool a1 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin));
+    return a1 * 2 + a0;
+}
 
 void pllSetStaticPins(int enable)
 {

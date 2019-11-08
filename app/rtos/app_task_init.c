@@ -20,6 +20,7 @@
 #include "stm32f7xx_hal.h"
 #include "FreeRTOSConfig.h"
 #include "app_shared_data.h"
+#include "devices_types.h"
 #include "ad9545_i2c_hal.h"
 #include "dev_powermon.h"
 #include "os_serial_tty.h"
@@ -82,6 +83,8 @@ static void test_timers(void)
 
 void app_task_init(void)
 {
+    Devices *dev = getDevices();
+    dev->pcb_ver = detect_pcb_version();
     led_all_set_state(true);
     initialize_serial_console_hardware();
     debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");

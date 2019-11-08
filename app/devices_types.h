@@ -33,6 +33,11 @@ typedef struct Dev_sdcard {
     int detect_b;
 } Dev_sdcard;
 
+enum {
+    PCB_VER_A_MCB_1_0 = 3,
+    PCB_VER_A_MCB_1_1 = 1,
+};
+
 typedef struct Devices {
     Dev_thset thset;
     Dev_fpga fpga;
@@ -45,6 +50,7 @@ typedef struct Devices {
     Dev_powermon pm;
     Dev_sdcard sd;
     int pen_b;
+    uint32_t pcb_ver;
 } Devices;
 
 #endif // DEVICES_TYPES_H

@@ -171,6 +171,10 @@
 #define OSC_25M_Pin GPIO_PIN_0
 #define PEN_B_GPIO_Port GPIOI
 #define PEN_B_Pin GPIO_PIN_15
+#define PCB_VER_A0_Pin GPIO_PIN_3
+#define PCB_VER_A0_GPIO_Port GPIOJ
+#define PCB_VER_A1_Pin GPIO_PIN_4
+#define PCB_VER_A1_GPIO_Port GPIOJ
 #define PGOOD_1V0_CORE_GPIO_Port GPIOK
 #define PGOOD_1V0_CORE_Pin GPIO_PIN_7
 #define PGOOD_1V0_MGT_GPIO_Port GPIOE
