@@ -17,6 +17,8 @@
 
 #include "dev_auxpll.h"
 
+#include <assert.h>
+
 #include "stm32f7xx_hal.h"
 #include "gpio.h"
 #include "spi.h"
@@ -191,6 +193,9 @@ enum {
     AD9516_REG1_PART_ID = 0x0003,
     AD9516_REG1_PFD_CP = 0x0010,
     AD9516_REG1_PLL_READBACK = 0x001F,
+    AD9516_REG1_LVDS_CHANNEL1_DIV = 0x0199,
+    AD9516_REG1_LVDS_CHANNELS_PHASE = 0x019A,
+    AD9516_REG1_LVDS_CHANNEL2_DIV = 0x019B,
     AD9516_REG1_VCO_DIVIDER = 0x01E0,
     AD9516_REG1_CLOCKS = 0x01E1,
 };
@@ -331,6 +336,17 @@ err:
     return ret;
 }
 
+//const int auxpll_vco_div_map[8] = {2, 3, 4, 5, 6, 0, 0, 0};
+//const double auxpll_prescalerdiv_map[8] = {1, 2, 2./3., 4./5., 8./9., 16./17., 32./33., 3};
+//const double AUXPLL_REF_FREQ = 20e6;
+const int AUXPLL_REF_DIV = 1; // 1..16383
+const int AUXPLL_VCO_DIV_INDEX = 4; // 4: divide by 6
+const int AUXPLL_ACOUNTER = 3; //
+const int AUXPLL_BCOUNTER = 9;
+const int AUXPLL_PRESCALER_INDEX = 4;
+const int AUXPLL_DIST_DIV = 2;
+// r 1, p 8, a 3, b 9, vco_div 6, out_div 2, pfd 2e+07
+
 OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
 {
     /*
@@ -356,6 +372,22 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     ret = pllSyncAllDistDividers(d);
 */
 
+//    volatile const int AUXPLL_PRESCALER_DIV = auxpll_prescalerdiv_map[AUXPLL_PRESCALER];
+//    volatile const double AUXPLL_VCO_FREQ =
+//        AUXPLL_REF_FREQ / AUXPLL_REF_DIV
+//        * (AUXPLL_PRESCALER_DIV * AUXPLL_BCOUNTER + AUXPLL_ACOUNTER);
+
+//    assert(AUXPLL_VCO_FREQ > 1450e6 && AUXPLL_VCO_FREQ < 1800e6); // datasheet
+//    assert(AUXPLL_VCO_FREQ > 1499e6 && AUXPLL_VCO_FREQ < 1501e6); // 1500 MHz
+
+//    assert(AUXPLL_PRESCALER >= 4 && AUXPLL_PRESCALER <= 6); // prescaler input > 1000 MHz
+//    volatile const double AUXPLL_PRESC_OUT_FREQ = AUXPLL_VCO_FREQ / AUXPLL_PRESCALER_DIV;
+//    assert(AUXPLL_PRESC_OUT_FREQ < 300e6); // datasheet
+
+//    volatile const int AUXPLL_VCO_DIV = auxpll_vco_div_map[AUXPLL_VCO_DIV_INDEX];
+//    volatile const double AUXPLL_DIST_FREQ = AUXPLL_VCO_FREQ / AUXPLL_VCO_DIV;
+//    assert(AUXPLL_DIST_FREQ > 249.9e6 && AUXPLL_DIST_FREQ < 250.1e6); // 250 MHz
+
     // PLL normal operation (PLL on)
     AD9516_PFD_CP_REG_Type reg_pfd_cp;
     reg_pfd_cp.raw = 0x0;
@@ -368,14 +400,14 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     // Select and enable a reference input
     // set R, N (P, A, B), PFD polarity, and I CP
     // according to the intended loop configuration
-    uint16_t rdiv = 2;
+    uint16_t rdiv = AUXPLL_REF_DIV;
     ad9516_write1(0x011, rdiv & 0xFF);
     ad9516_write1(0x012, (rdiv >> 8) & 0x3F);
 
-    uint16_t acounter = 0;
+    uint16_t acounter = AUXPLL_ACOUNTER;
     ad9516_write1(0x013, acounter & 0x3F);
 
-    uint16_t bcounter = 25;
+    uint16_t bcounter = AUXPLL_BCOUNTER;
     ad9516_write1(0x014, bcounter & 0xFF);
     ad9516_write1(0x015, (bcounter >> 8) & 0x3F);
 
@@ -389,7 +421,7 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     pll_control.pll_control_7.raw = 0x0;
     pll_control.pll_control_8.raw = 0x0;
 
-    pll_control.pll_control_1.b.prescaler_p = 1;
+    pll_control.pll_control_1.b.prescaler_p = AUXPLL_PRESCALER_INDEX;
     pll_control.pll_control_7.b.ref1_poweron = 1;
 
     ad9516_write1(0x016, pll_control.pll_control_1.raw);
@@ -409,7 +441,7 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     // Use the VCO divider as source for the distribution section
     AD9516_VCO_Divider_REG_Type reg_vco_div;
     reg_vco_div.raw = 0;
-    reg_vco_div.b.divider = 2; // 2: divide by 4
+    reg_vco_div.b.divider = AUXPLL_VCO_DIV_INDEX;
     ad9516_write1(AD9516_REG1_VCO_DIVIDER, reg_vco_div.raw);
 
     // Select VCO as the source
@@ -422,10 +454,30 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     reg_clocks.b.powerdown_clock_inp = 0;
     ad9516_write1(AD9516_REG1_CLOCKS, reg_clocks.raw);
 
+    // output drivers
+    ad9516_write1(0x140, 0x42);
+
+    // output dividers
+    ad9516_write1(0x199, 0);
+    ad9516_write1(0x19A, 0);
+    ad9516_write1(0x19B, 0);
+    ad9516_write1(0x19C, 0x20); // bypass 3.2
+    ad9516_write1(0x19A, 0);
+    ad9516_write1(0x19E, 0);
+    ad9516_write1(0x19F, 0);
+    ad9516_write1(0x1A0, 0);
+    ad9516_write1(0x1A1, 0x20); // bypass 4.2
+
     // initiate VCO calibration
     pll_control.pll_control_3.b.vco_cal_now = 1;
     ad9516_write1(0x018, pll_control.pll_control_3.raw);
     pllIoUpdate(d);
+
+//    osDelay(100);
+//    // reset VCO calibration
+//    pll_control.pll_control_3.b.vco_cal_now = 0;
+//    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+//    pllIoUpdate(d);
 
     //auxpllReadAllRegisters_unused(d);
     return DEV_OK;
