@@ -189,7 +189,8 @@ void task_powermon_run (void)
         break;
     case PM_STATE_STANDBY:
         if (enable_power && input_power_normal) {
-                if (update_power_switches(pm, true)) {
+            bool ok = update_power_switches(pm, true);
+                if (true) {
                     change_state(PM_STATE_RAMP);
                 } else {
                     change_state(PM_STATE_PWRFAIL);
