@@ -48,7 +48,7 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
 
 void log_printf(LogPriority priority, const char *format, ...)
 {
-    enum {buf_size = 100};
+    enum {buf_size = LOG_LINE_SIZE};
     static va_list args;
     static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
@@ -62,7 +62,7 @@ void log_printf(LogPriority priority, const char *format, ...)
 
 void log_printf_debug(const char *format, ...)
 {
-    enum {buf_size = 100};
+    enum {buf_size = LOG_LINE_SIZE};
     static va_list args;
     static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
