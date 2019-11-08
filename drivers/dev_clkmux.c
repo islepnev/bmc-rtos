@@ -86,13 +86,27 @@ void dev_clkmux_set_pll_source(Dev_clkmux *d)
     mcp23017_write(MCP23017_GPIOB, data.all);
 }
 
+enum {
+    CRSW1_IN_PLL0A = 0,
+    CRSW1_IN_PLL0B = 1,
+    CRSW1_IN_FMC = 2,
+    CRSW1_IN_AD9516_DIV3 = 3,
+};
+
+enum {
+    CRSW2_IN_PLL0C = 0,
+    CRSW2_IN_PLL1B = 1,
+    CRSW2_IN_FMC_GBT = 2,
+    CRSW2_IN_AD9516 = 3,
+};
+
 void dev_clkmux_set_crsw1(Dev_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
     data.bit.pll_source_sel = d->pll_source & 0x3;
     mcp23017_write(MCP23017_GPIOB, data.all);
-    data.bit.crsw_sin = 3;
+    data.bit.crsw_sin = CRSW1_IN_AD9516_DIV3;
     for (int i=0; i<4; i++) {
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOB, data.all);
@@ -111,7 +125,7 @@ void dev_clkmux_set_crsw2(Dev_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
-    data.bit.crsw_sin = 3;
+    data.bit.crsw_sin = CRSW2_IN_PLL0C;
     for (int i=0; i<4; i++) {
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOA, data.all);
