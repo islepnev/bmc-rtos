@@ -68,6 +68,8 @@ typedef enum {
 } PmState;
 
 typedef struct pm_switches {
+//    bool operator==(const pm_switches &r) = default;
+
     bool switch_5v;
     bool switch_5v_fmc;
     bool switch_3v3;
@@ -100,6 +102,7 @@ typedef struct Dev_powermon {
    bool pgood_1v2_mgt;
    bool pgood_3v3_fmc;
    pm_switches sw;
+   pm_switches sw_state;
 } Dev_powermon;
 
 int monIsOn(const pm_switches *sw, SensorIndex index);

@@ -21,6 +21,7 @@
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "ansi_escape_codes.h"
+#include "app_shared_data.h"
 #include "display.h"
 #include "logbuffer.h"
 #include "dev_pm_sensors.h"
@@ -28,6 +29,7 @@
 #include "bsp.h"
 #include "gpio.h"
 #include "bsp_pin_defs.h"
+#include "devices_types.h"
 #include "cmsis_os.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
@@ -169,8 +171,20 @@ void update_system_powergood_pin(const Dev_powermon *pm)
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, state);
 }
 
+bool pm_switches_isEqual(const pm_switches &l, const pm_switches &r)
+{
+    return l.switch_5v == r.switch_5v
+           && l.switch_5v_fmc == r.switch_5v_fmc
+           && l.switch_3v3 == r.switch_3v3
+           && l.switch_2v5 == r.switch_2v5
+           && l.switch_1v0_core == r.switch_1v0_core
+           && l.switch_1v0_mgt == r.switch_1v0_mgt
+           && l.switch_1v2_mgt == r.switch_1v2_mgt;
+}
+
 bool update_power_switches(Dev_powermon *pm, bool state)
 {
+    // int pcb_ver = get_mcb_pcb_ver();
     if (state)
         log_put(LOG_NOTICE, "Switching ON");
     else
@@ -181,7 +195,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     pm->sw.switch_2v5 = state;
     pm->sw.switch_3v3 = state;
     pm->sw.switch_5v_fmc = state;
-    pm->sw.switch_5v = 1;
+    pm->sw.switch_5v = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
     write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, pm->sw.switch_1v0_core);
     write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  pm->sw.switch_1v0_mgt);
     write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  pm->sw.switch_1v2_mgt);
@@ -191,19 +205,28 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   pm->sw.switch_5v);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
-    bool r1 = pm->sw.switch_1v0_core == read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
-    bool r2 = pm->sw.switch_1v0_mgt == read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
-    bool r3 = pm->sw.switch_1v2_mgt == read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
-    bool r4 = pm->sw.switch_2v5 == read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
-    bool r5 = pm->sw.switch_3v3 == read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
-    bool r6 = pm->sw.switch_5v_fmc == read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    bool r7 = pm->sw.switch_5v == read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
-    bool ok = r1 && r2 && r3 && r4 && r5 && r6 && r7;
+//    pm->sw_state
+    pm->sw_state.switch_1v0_core = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
+    pm->sw_state.switch_1v0_mgt = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
+    pm->sw_state.switch_1v2_mgt = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
+    pm->sw_state.switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
+    pm->sw_state.switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
+    pm->sw_state.switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
+    pm->sw_state.switch_5v = read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     if (!ok) {
-        if (state)
-            log_put(LOG_ERR, "GPIO failure (power enable)");
-        else
-            log_put(LOG_ERR, "GPIO failure (power disable)");
+        const char *label_on = "ON";
+        const char *label_off = "OFF";
+        log_printf(LOG_ERR, "GPIO failure (power %s): VXS 5V %s   3.3V %s   2.5V %s   1.0V core %s   1.0V mgt %s   1.2V mgt %s   5V FMC %s",
+                   state ? "enable" : "disable",
+                   pm->sw_state.switch_5v ? label_on : label_off,
+                   pm->sw_state.switch_3v3 ? label_on : label_off,
+                   pm->sw_state.switch_2v5 ? label_on : label_off,
+                   pm->sw_state.switch_1v0_core ? label_on : label_off,
+                   pm->sw_state.switch_1v0_mgt ? label_on : label_off,
+                   pm->sw_state.switch_1v2_mgt ? label_on : label_off,
+                   pm->sw_state.switch_5v_fmc ? label_on : label_off
+                   );
     }
     return ok;
 }
