@@ -183,9 +183,24 @@ execute_process(
   OUTPUT_VARIABLE GIT_COMMIT_HASH
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+# Get the latest commit description
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} describe --always --tags --long --dirty
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_DESCR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 configure_file(
   ${CMAKE_SOURCE_DIR}/app/version.h.in
   ${CMAKE_SOURCE_DIR}/app/version.h
 )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/build_id.in
+  ${CMAKE_SOURCE_DIR}/build_id
+)
 list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/app/version.h)
+
+add_custom_command(TARGET ${ELF} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ELF}> ${CMAKE_PROJECT_NAME}-${GIT_DESCR}.elf
+)

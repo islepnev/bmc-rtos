@@ -27,10 +27,11 @@
 #define VERSION_MINOR_NUM @PROJECT_VERSION_MINOR@
 #define GIT_BRANCH @GIT_BRANCH@
 #define GIT_COMMIT_HASH @GIT_COMMIT_HASH@
+#define GIT_DESCR @GIT_DESCR@
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) " (" xstr(GIT_BRANCH) " " xstr(GIT_COMMIT_HASH) ")"
+#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) " (" xstr(GIT_DESCR) ")"
 
 #ifdef __cplusplus
 }
