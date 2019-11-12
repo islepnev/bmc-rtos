@@ -97,7 +97,7 @@ static void lldp_input(struct pbuf *p, struct netif *netif)
     pbuf_free(p);
 }
 
-err_t lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif)
+int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif)
 {
 
     u16_t next_hdr_offset = SIZEOF_ETH_HDR;

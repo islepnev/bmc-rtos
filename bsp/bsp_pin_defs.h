@@ -1,3 +1,4 @@
+#ifdef TTVXS_1_0
 #define ADT_CS_B_GPIO_Port GPIOI
 #define ADT_CS_B_Pin GPIO_PIN_0
 #define ADT_DIN_GPIO_Port GPIOI
@@ -10,6 +11,10 @@
 #define CAN_RXD_Pin GPIO_PIN_12
 #define CAN_TXD_GPIO_Port GPIOB
 #define CAN_TXD_Pin GPIO_PIN_13
+#else
+#define AD9516_CS_B_GPIO_Port GPIOI
+#define AD9516_CS_B_Pin GPIO_PIN_0
+#endif
 #define CONFIG_IIC_SCL_GPIO_Port GPIOH
 #define CONFIG_IIC_SCL_Pin GPIO_PIN_7
 #define CONFIG_IIC_SDA_GPIO_Port GPIOH
@@ -152,6 +157,8 @@
 #define ON_1V0_CORE_Pin GPIO_PIN_8
 #define ON_1V0_MGT_GPIO_Port GPIOE
 #define ON_1V0_MGT_Pin GPIO_PIN_4
+#define ON_1V2_MGT_GPIO_Port GPIOI
+#define ON_1V2_MGT_Pin GPIO_PIN_14
 #define ON_2V5_GPIO_Port GPIOI
 #define ON_2V5_Pin GPIO_PIN_7
 #define ON_3V3_GPIO_Port GPIOI
@@ -164,10 +171,16 @@
 #define OSC_25M_Pin GPIO_PIN_0
 #define PEN_B_GPIO_Port GPIOI
 #define PEN_B_Pin GPIO_PIN_15
+#define PCB_VER_A0_Pin GPIO_PIN_3
+#define PCB_VER_A0_GPIO_Port GPIOJ
+#define PCB_VER_A1_Pin GPIO_PIN_4
+#define PCB_VER_A1_GPIO_Port GPIOJ
 #define PGOOD_1V0_CORE_GPIO_Port GPIOK
 #define PGOOD_1V0_CORE_Pin GPIO_PIN_7
 #define PGOOD_1V0_MGT_GPIO_Port GPIOE
 #define PGOOD_1V0_MGT_Pin GPIO_PIN_5
+#define PGOOD_1V2_MGT_GPIO_Port GPIOH
+#define PGOOD_1V2_MGT_Pin GPIO_PIN_2
 #define PGOOD_2V5_GPIO_Port GPIOI
 #define PGOOD_2V5_Pin GPIO_PIN_9
 #define PGOOD_3V3_GPIO_Port GPIOI
@@ -210,8 +223,8 @@
 #define RFU6_Pin GPIO_PIN_12
 #define RFU7_GPIO_Port GPIOD
 #define RFU7_Pin GPIO_PIN_7
-#define RFU8_GPIO_Port GPIOI
-#define RFU8_Pin GPIO_PIN_14
+//#define RFU8_GPIO_Port GPIOI
+//#define RFU8_Pin GPIO_PIN_14
 #define RFU9_GPIO_Port GPIOH
 #define RFU9_Pin GPIO_PIN_2
 #define RFU10_GPIO_Port GPIOF

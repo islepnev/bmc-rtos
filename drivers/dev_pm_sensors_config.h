@@ -24,12 +24,21 @@
 extern "C" {
 #endif
 
-enum {POWERMON_SENSORS = 13};
+enum {POWERMON_SENSORS_PCB_1_0 = 13};
+enum {POWERMON_SENSORS_PCB_1_1 = 16};
+#ifdef TTVXS_1_0
+enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_1_0};
+#else
+enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_1_1};
+#endif
 #define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
+    SENSOR_5VPC, // new in TTVXS v1.1
     SENSOR_VPC_3V3,
     SENSOR_VXS_5V,
+    SENSOR_MCB_4V5, // new in TTVXS v1.1
+    SENSOR_MCB_3V3, // new in TTVXS v1.1
     SENSOR_5V,
     SENSOR_2V5,
     SENSOR_3V3,
@@ -42,6 +51,8 @@ typedef enum {
     SENSOR_FMC_5V,
     SENSOR_FMC_12V
 } SensorIndex;
+
+extern const SensorIndex input_power_sensor;
 
 int monIsOptional(SensorIndex index);
 double monShuntVal(SensorIndex index);

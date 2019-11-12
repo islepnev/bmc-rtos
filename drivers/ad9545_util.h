@@ -27,9 +27,9 @@
 extern "C" {
 #endif
 
-int64_t pll_ftw_rel_ppb(const Dev_pll *d, PllChannel_TypeDef channel);
+int64_t pll_ftw_rel_ppb(const Dev_pll *d, int channel);
 void pllPrintRefStatusBits(Ref_Status_REG_Type r);
-ProfileRefSource_TypeDef pll_get_current_ref(const Dev_pll *d, PllChannel_TypeDef channel);
+ProfileRefSource_TypeDef pll_get_current_ref(const Dev_pll *d, int channel);
 const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r);
 
 #ifdef __cplusplus

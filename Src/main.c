@@ -22,7 +22,6 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
-#include "can.h"
 #include "i2c.h"
 //#include "lwip.h"
 #include "quadspi.h"
@@ -104,7 +103,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-//  MX_CAN2_Init();
 //  MX_FMC_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();

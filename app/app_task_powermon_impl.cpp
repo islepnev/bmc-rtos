@@ -24,6 +24,7 @@
 //#include "i2c.h"
 
 #include "dev_pm_sensors_types.h"
+#include "dev_pm_sensors_config.h"
 #include "dev_powermon.h"
 //#include "ansi_escape_codes.h"
 //#include "display.h"
@@ -37,6 +38,7 @@
 static const int TEST_RESTART = 0; // debug only
 static const uint32_t SENSORS_SETTLE_TICKS = 200;
 static const uint32_t THERM_SETTLE_TICKS = 1000;
+static const uint32_t INIT_TIMEOUT_TICKS = 500;
 static const uint32_t RAMP_TIMEOUT_TICKS = 500;
 static const uint32_t POWERFAIL_DELAY_TICKS = 3000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
@@ -60,7 +62,7 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
+static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
 static void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
@@ -127,6 +129,17 @@ static void log_sensor_status_change(const Dev_powermon *pm)
 }
 
 static int pm_initialized = 0;
+static bool old_inut_power_normal = false;
+static bool old_inut_power_critical = false;
+
+void change_state(PmState state)
+{
+    Dev_powermon *pm = get_dev_powermon();
+    if (pm->pmState == state)
+        return;
+    pm->pmState = state;
+    stateStartTick = osKernelSysTick();
+}
 
 void task_powermon_run (void)
 {
@@ -136,88 +149,127 @@ void task_powermon_run (void)
         pm_initialized = 1;
     }
     pmLoopCount++;
-    int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
-    const PmState oldState = pm->pmState; // pmState;
+    // int vmePresent = pm_read_liveInsert(&dev.pm);
     pm_read_pgood(pm);
-    int power_input_ok = get_input_power_valid(pm);
-    int power_critical_ok = get_critical_power_valid(pm);
+    const int input_power_normal = get_input_power_normal(pm);
+    if (input_power_normal != old_inut_power_normal) {
+        if (input_power_normal)
+            log_put(LOG_NOTICE, "Input power normal");
+        old_inut_power_normal = input_power_normal;
+    }
+    const int input_power_critical = get_input_power_failed(pm);
+    if (input_power_critical != old_inut_power_critical) {
+        if (input_power_critical)
+            log_put(LOG_WARNING, "Input power critical");
+        old_inut_power_critical = input_power_critical;
+    }
+    const int power_critical_ok = get_critical_power_valid(pm);
+    const int power_critical_failure = get_critical_power_failure(pm);
     switch (pm->pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
-        pm->pmState = PM_STATE_STANDBY;
+        if (enable_power)
+            change_state(PM_STATE_WAITINPUT);
+        else
+            change_state(PM_STATE_SWITCHOFF);
+        break;
+    case PM_STATE_WAITINPUT:
+        if (!enable_power) {
+            change_state(PM_STATE_SWITCHOFF);
+            break;
+        }
+        if (input_power_normal || power_critical_ok) {
+            change_state(PM_STATE_RAMP);
+            break;
+        }
+        if (stateTicks() > INIT_TIMEOUT_TICKS) {
+            log_put(LOG_NOTICE, "No input power");
+            change_state(PM_STATE_SWITCHOFF);
+        }
         break;
     case PM_STATE_STANDBY:
-        if (vmePresent && enable_power) {
-            if (power_input_ok) {
-                log_put(LOG_NOTICE, "Input power Ok");
-                pm->pmState = PM_STATE_RAMP;
-            }
+        if (enable_power && input_power_normal) {
+            bool ok = update_power_switches(pm, true);
+                if (true) {
+                    change_state(PM_STATE_RAMP);
+                } else {
+                    change_state(PM_STATE_PWRFAIL);
+                }
         }
         break;
     case PM_STATE_RAMP:
-        if (!vmePresent || !enable_power || !power_input_ok) {
-            pm->pmState = PM_STATE_STANDBY;
+        if (!enable_power) {
+            change_state(PM_STATE_SWITCHOFF);
             break;
         }
         if (power_critical_ok) {
             log_put(LOG_NOTICE, "Critical power supplies ready");
-            pm->pmState = PM_STATE_RUN;
+            change_state(PM_STATE_RUN);
         }
         if (stateTicks() > RAMP_TIMEOUT_TICKS) {
             if (!pm->pgood_3v3) {
                 log_put(LOG_ERR, "3.3V power failure");
             }
             log_put(LOG_ERR, "Critical power supplies failure");
-            pm->pmState = PM_STATE_PWRFAIL;
+            change_state(PM_STATE_PWRFAIL);
         }
         break;
     case PM_STATE_RUN:
-        if (!vmePresent || !enable_power || !power_input_ok) {
-            pm->pmState = PM_STATE_STANDBY;
+        if (!enable_power) {
+            change_state(PM_STATE_SWITCHOFF);
             break;
         }
-        if (!power_critical_ok) {
+        if (input_power_critical) {
+            log_put(LOG_ERR, "Input power lost");
+            change_state(PM_STATE_SWITCHOFF);
+            break;
+        }
+        if (power_critical_failure) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            pm->pmState = PM_STATE_PWRFAIL;
+            change_state(PM_STATE_PWRFAIL);
             break;
         }
         if (pm->monState != MON_STATE_READ) {
             log_put(LOG_ERR, "Error in STATE_RUN");
-            pm->pmState = PM_STATE_ERROR;
+            change_state(PM_STATE_ERROR);
             break;
         }
         if (TEST_RESTART && (stateTicks() > 5000)) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_SWITCHOFF);
             break;
         }
         break;
     case PM_STATE_PWRFAIL:
-//        dev_switchPower(&dev.pm, SWITCH_OFF);
+        update_power_switches(pm, false);
+        change_state(PM_STATE_FAILWAIT);
+        // dev_switchPower(&dev.pm, false);
+        break;
+    case PM_STATE_FAILWAIT:
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
         }
         break;
     case PM_STATE_ERROR:
-//        dev_switchPower(&dev.pm, SWITCH_OFF);
+//        dev_switchPower(&dev.pm, false);
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_SWITCHOFF);
         }
         break;
-    }
-
-    if ((pm->pmState == PM_STATE_RAMP)
-            || (pm->pmState == PM_STATE_RUN)) {
-        update_power_switches(pm, SWITCH_ON);
-    } else {
-        update_power_switches(pm, SWITCH_OFF);
+    case PM_STATE_SWITCHOFF:
+        update_power_switches(pm, false);
+        change_state(PM_STATE_STANDBY);
+        break;
     }
 
     for (int i=0; i<POWERMON_SENSORS; i++)
         pm->sensors[i].rampState = (pm->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
     int do_read_sensors = 0;
-    if ((pm->pmState == PM_STATE_STANDBY)
-            || (pm->pmState == PM_STATE_RAMP)) {
+    if (
+        (pm->pmState == PM_STATE_STANDBY)
+        || (pm->pmState == PM_STATE_WAITINPUT )
+        || (pm->pmState == PM_STATE_RAMP)
+        ) {
         do_read_sensors = 1;
     } else {
         if (pm->pmState == PM_STATE_RUN) {
@@ -246,13 +298,11 @@ void task_powermon_run (void)
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
             thermReadTick = osKernelSysTick();
+#ifdef TTVXS_1_0
             dev_thset_read(get_dev_thset());
+#endif
         }
     } else {
         struct_thset_init(get_dev_thset());
-    }
-
-    if (oldState != pm->pmState) {
-        stateStartTick = osKernelSysTick();
     }
 }

@@ -51,8 +51,6 @@
     #include <stdint.h>
     extern uint32_t SystemCoreClock;
 /* USER CODE BEGIN 0 */
-    extern void configureTimerForRunTimeStats(void);
-    extern unsigned long getRunTimeCounterValue(void);
 /* USER CODE END 0 */
 #endif
 
@@ -135,6 +133,14 @@ standard names. */
 
 /* USER CODE BEGIN 2 */
 /* Definitions needed when configGENERATE_RUN_TIME_STATS is on */
+#ifdef  __cplusplus
+extern "C" {
+#endif
+    extern void configureTimerForRunTimeStats(void);
+    extern unsigned long getRunTimeCounterValue(void);
+#ifdef  __cplusplus
+}
+#endif
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS configureTimerForRunTimeStats
 #define portGET_RUN_TIME_COUNTER_VALUE getRunTimeCounterValue
 /* USER CODE END 2 */

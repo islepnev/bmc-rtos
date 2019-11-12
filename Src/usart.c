@@ -95,11 +95,11 @@ void MX_USART1_UART_Init(void)
   LL_USART_Init(USART1, &USART_InitStruct);
 //  LL_USART_EnableAutoBaudRate(USART1);
 //  LL_USART_SetAutoBaudRateMode(USART1, LL_USART_AUTOBAUD_DETECT_ON_STARTBIT);
-  LL_USART_SetRXPinLevel(USART1, LL_USART_RXPIN_LEVEL_INVERTED);
-  LL_USART_SetTXPinLevel(USART1, LL_USART_TXPIN_LEVEL_INVERTED);
-  LL_USART_ConfigAsyncMode(USART1);
-  LL_USART_Enable(USART1);
-
+  // LL_USART_SetRXPinLevel(USART1, LL_USART_RXPIN_LEVEL_INVERTED);
+  // LL_USART_SetTXPinLevel(USART1, LL_USART_TXPIN_LEVEL_INVERTED);
+//  LL_USART_ConfigAsyncMode(USART1);
+//  LL_USART_Enable(USART1);
+  // see initialize_serial_console_hardware()
 }
 /* USART2 init function */
 

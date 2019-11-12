@@ -25,6 +25,12 @@ display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
 int enable_stats_display = 1;
 
+int get_mcb_pcb_ver(void)
+{
+    Devices* d = getDevices();
+    return d->pcb_ver;
+}
+
 Devices* getDevices(void)
 {
     return &dev;
@@ -50,9 +56,19 @@ Dev_fpga* get_dev_fpga(void)
     return &dev.fpga;
 }
 
+Dev_clkmux* get_dev_clkmux(void)
+{
+    return &dev.clkmux;
+}
+
 Dev_pll* get_dev_pll(void)
 {
     return &dev.pll;
+}
+
+Dev_auxpll* get_dev_auxpll(void)
+{
+    return &dev.auxpll;
 }
 
 Dev_thset *get_dev_thset(void)

@@ -20,7 +20,7 @@
 
 #include "logbuffer.h"
 
-enum {LOG_LINE_SIZE = 100};
+enum {LOG_LINE_SIZE = 200};
 
 struct LogEntry {
     LogPriority priority;

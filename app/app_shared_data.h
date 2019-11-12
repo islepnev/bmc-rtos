@@ -40,19 +40,24 @@ extern int enable_stats_display;
 struct Devices;
 struct Dev_powermon;
 struct Dev_fpga;
+struct Dev_clkmux;
 struct Dev_pll;
+struct Dev_auxpll;
 struct Dev_thset;
 struct Dev_vxsiic;
 struct Dev_sfpiic;
 struct Dev_at24c;
 
+int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 
 struct Dev_powermon* get_dev_powermon(void);
 const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_fpga *get_dev_fpga(void);
+struct Dev_clkmux *get_dev_clkmux(void);
 struct Dev_pll *get_dev_pll(void);
+struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_vxsiic *get_dev_vxsiic(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);

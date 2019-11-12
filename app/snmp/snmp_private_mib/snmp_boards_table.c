@@ -135,10 +135,10 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(*uint_ptr);
         break;
     case 3: {/* boardPresent */
-        return snmp_encode_truthvalue(value, dev->vxsiic.status.slot[i].present);
+        return snmp_encode_truthvalue((s32_t *)value, (u32_t)dev->vxsiic.status.slot[i].present);
     }
     case 4: {/* boardStatus */
-        *uint_ptr = (u32_t)dev->vxsiic.status.slot[i].device_status;
+        *uint_ptr = (u32_t)dev->vxsiic.status.slot[i].system_status;
         return sizeof(*uint_ptr);
         break;
     }

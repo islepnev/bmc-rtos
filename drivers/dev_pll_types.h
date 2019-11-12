@@ -21,6 +21,10 @@
 #include "dev_common_types.h"
 #include "ad9545_status.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     PLL_STATE_INIT,
     PLL_STATE_RESET,
@@ -40,5 +44,9 @@ typedef struct Dev_pll {
 } Dev_pll;
 
 SensorStatus get_pll_sensor_status(const Dev_pll *pll);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_PLL_TYPES_H

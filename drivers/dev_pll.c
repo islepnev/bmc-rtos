@@ -30,9 +30,9 @@
 #include "logbuffer.h"
 #include "app_shared_data.h"
 
-static char *OpStatusErrorStr(OpStatusTypeDef status)
+static const char *OpStatusErrorStr(int status)
 {
-    switch(status) {
+    switch((OpStatusTypeDef)status) {
     case DEV_OK: return "Success";
     case IIC_ERROR: return "I2C error";
     case IIC_BUSY: return "I2C busy";
@@ -42,7 +42,7 @@ static char *OpStatusErrorStr(OpStatusTypeDef status)
     }
 }
 
-void DEBUG_PRINT_RET(const char *func, int ret)
+static void DEBUG_PRINT_RET(const char *func, int ret)
 {
     log_printf(LOG_ERR, "%s failed: %s, I2C error 0x%08lX",
            func, OpStatusErrorStr(ret), hPll->ErrorCode);
@@ -57,7 +57,7 @@ typedef union
     uint32_t softreset7:1;
   } b;
   uint8_t raw;
-} REG_CONFIG_Type;
+} AD9516_Config_REG_Type;
 
 typedef union
 {
@@ -186,7 +186,7 @@ enum {
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
 
-static OpStatusTypeDef pllIoUpdate(Dev_pll *d)
+static HAL_StatusTypeDef pllIoUpdate(Dev_pll *d)
 {
     uint8_t data = 1;
     HAL_StatusTypeDef ret = ad9545_write1(0x000F, data);
@@ -199,7 +199,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllRegisterPulseBit_unused(Dev_pll *d, uint16_t address, uint8_t bitmask)
+static HAL_StatusTypeDef pllRegisterPulseBit_unused(Dev_pll *d, uint16_t address, uint8_t bitmask)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -269,10 +269,10 @@ OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
     if (ret != HAL_OK)
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 OpStatusTypeDef pllSetupSysclk(Dev_pll *d)
@@ -306,18 +306,19 @@ OpStatusTypeDef pllSetupSysclk(Dev_pll *d)
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-
+    uint8_t OpControlChannel0;
+    uint8_t OpControlChannel1;
     // calibrate APLL 0 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel0 = 0x02; // calibrate
+    OpControlChannel0 = 0x02; // calibrate
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -329,7 +330,7 @@ static OpStatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
         goto err;
 
     // calibrate APLL 1 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel1 = 0x02; // calibrate
+    OpControlChannel1 = 0x02; // calibrate
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -346,7 +347,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllResetOutputDividers_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllResetOutputDividers_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -399,10 +400,10 @@ static OpStatusTypeDef pllSetupOutputDrivers(Dev_pll *d)
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_14D8, setup.Driver_Config.raw)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 static OpStatusTypeDef pllClearAutomute_unused(Dev_pll *d)
@@ -422,10 +423,10 @@ static OpStatusTypeDef pllClearAutomute_unused(Dev_pll *d)
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_pll *d)
@@ -506,15 +507,16 @@ static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_pll *d)
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 static OpStatusTypeDef pllSetupRef(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
+    uint8_t OpControlGlobal;
     PllRefSetup_TypeDef refSetup = {0};
     init_PllRefSetup(&refSetup);
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, refSetup.REFA_Receiver_Settings)))
@@ -548,17 +550,17 @@ static OpStatusTypeDef pllSetupRef(Dev_pll *d)
     if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0453, refSetup.REFB_Jitter_Tolerance)))
         goto err;
 
-    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
+    OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllWriteProfile(Dev_pll *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
+static HAL_StatusTypeDef pllWriteProfile(Dev_pll *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -638,24 +640,24 @@ static OpStatusTypeDef pllSetupDPLLChannel(Dev_pll *d, PllChannel_TypeDef channe
         if (HAL_OK != (ret = pllWriteProfile(d, channel, i, dpll.profile[i])))
             goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 static OpStatusTypeDef pllSetupDPLL(Dev_pll *d)
 {
-    HAL_StatusTypeDef ret = HAL_ERROR;
+    OpStatusTypeDef ret = DEV_ERROR;
 
-    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL0)))
+    if (DEV_OK != (ret = pllSetupDPLLChannel(d, DPLL0)))
         goto err;
-    if (HAL_OK != (ret = pllSetupDPLLChannel(d, DPLL1)))
+    if (DEV_OK != (ret = pllSetupDPLLChannel(d, DPLL1)))
         goto err;
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 static OpStatusTypeDef pllSetupDPLLMode(Dev_pll *d)
@@ -669,10 +671,10 @@ static OpStatusTypeDef pllSetupDPLLMode(Dev_pll *d)
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2205, dpll_mode.dpll1_mode.raw)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d)
@@ -688,13 +690,13 @@ OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d)
     if (HAL_OK != (ret = pllIoUpdate(d)))
         goto err;
 
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllCalibrateAll(Dev_pll *d)
+static HAL_StatusTypeDef pllCalibrateAll(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -713,7 +715,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSyncAllDistDividers(Dev_pll *d)
+static HAL_StatusTypeDef pllSyncAllDistDividers(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -732,9 +734,9 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadRefStatus(Dev_pll *d)
+static HAL_StatusTypeDef pllReadRefStatus(Dev_pll *d)
 {
-    HAL_StatusTypeDef ret = DEV_ERROR;
+    HAL_StatusTypeDef ret = HAL_ERROR;
     uint8_t refa;
     ret = ad9545_read1(AD9545_REG1_3005, &refa);
     if (ret != HAL_OK)
@@ -753,9 +755,9 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllReadDPLLChannelStatus(Dev_pll *d, PllChannel_TypeDef channel)
+static HAL_StatusTypeDef pllReadDPLLChannelStatus(Dev_pll *d, PllChannel_TypeDef channel)
 {
-    HAL_StatusTypeDef ret = DEV_ERROR;
+    HAL_StatusTypeDef ret = HAL_ERROR;
 
     uint16_t reg_offset = 0x0;
     switch(channel) {
@@ -803,7 +805,7 @@ err:
 
 OpStatusTypeDef pllReadStatus(Dev_pll *d)
 {
-    HAL_StatusTypeDef ret = DEV_ERROR;
+    HAL_StatusTypeDef ret = HAL_ERROR;
 
     ret = pllIoUpdate(d);
     if (ret != HAL_OK)
@@ -846,7 +848,7 @@ OpStatusTypeDef pllReadStatus(Dev_pll *d)
     return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
 OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d)
@@ -855,13 +857,13 @@ OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d)
     HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
     if (ret != HAL_OK)
         goto err;
-    return ret;
+    return DEV_OK;
 err:
     DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllReadAllRegisters_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllReadAllRegisters_unused(Dev_pll *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     typedef struct {
@@ -937,25 +939,19 @@ void reset_I2C_Pll(void)
 
 OpStatusTypeDef pllSetup(Dev_pll *d)
 {
-    OpStatusTypeDef ret;
-    ret = pllSetupOutputDrivers(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllSetupDPLL(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllSetupDPLLMode(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllSetupRef(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllSetupDistributionWithUpdate(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllCalibrateAll(d);
-    if (DEV_OK != ret)
-        return ret;
-    ret = pllSyncAllDistDividers(d);
-    return ret;
+    if (DEV_OK != pllSetupOutputDrivers(d))
+        return DEV_ERROR;
+    if (DEV_OK != pllSetupDPLL(d))
+        return DEV_ERROR;
+    if (DEV_OK != pllSetupDPLLMode(d))
+        return DEV_ERROR;
+    if (DEV_OK != pllSetupRef(d))
+        return DEV_ERROR;
+    if (DEV_OK != pllSetupDistributionWithUpdate(d))
+        return DEV_ERROR;
+    if (HAL_OK != pllCalibrateAll(d))
+        return DEV_ERROR;
+    if (HAL_OK != pllSyncAllDistDividers(d))
+        return DEV_ERROR;
+    return DEV_OK;
 }

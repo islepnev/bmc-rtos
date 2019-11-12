@@ -28,6 +28,8 @@ static const int SPI_TIMEOUT_MS = 10;
   */
 HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
 {
+#ifdef TTVXS_1_0
+
     uint16_t SPI_transmit_buffer = {0};
     uint16_t SPI_receive_buffer = {0};
 
@@ -54,5 +56,7 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
         }
     }
     return ret;
+#else
+    return HAL_TIMEOUT; // no device
+#endif
 }
-

@@ -20,6 +20,7 @@
 #include "stm32f7xx_hal.h"
 #include "FreeRTOSConfig.h"
 #include "app_shared_data.h"
+#include "devices_types.h"
 #include "ad9545_i2c_hal.h"
 #include "dev_powermon.h"
 #include "os_serial_tty.h"
@@ -31,7 +32,6 @@
 static void setStaticPins(int enable)
 {
     pllSetStaticPins(enable);
-    update_power_switches(get_dev_powermon(), enable ? SWITCH_ON : SWITCH_OFF);
 }
 
 static int test_cpu_tick(void)
@@ -83,7 +83,9 @@ static void test_timers(void)
 
 void app_task_init(void)
 {
-    led_all_set_state(LED_ON);
+    Devices *dev = getDevices();
+    dev->pcb_ver = detect_pcb_version();
+    led_all_set_state(true);
     initialize_serial_console_hardware();
     debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
@@ -91,5 +93,5 @@ void app_task_init(void)
     test_timers();
     // required for console I/O
     debug_print("Waiting for threads to start\n");
-    led_all_set_state(LED_OFF);
+    led_all_set_state(false);
 }

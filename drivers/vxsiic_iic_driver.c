@@ -86,7 +86,7 @@ HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size
     if (ret != HAL_OK) {
         debug_printf("%s(%02X): i2c error %d, %d\n", __func__, DevAddress, ret, vxsiic_hi2c->ErrorCode);
     }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
+    osStatus status = (osStatus)osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
     if (status != osOK) {
         debug_printf("%s(%02X): i2c timeout\n", __func__, DevAddress);
         return HAL_TIMEOUT;
@@ -101,7 +101,7 @@ HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Siz
     if (ret != HAL_OK) {
         debug_printf("%s(%02X): i2c error %d, %d\n", __func__, DevAddress, ret, vxsiic_hi2c->ErrorCode);
     }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
+    osStatus status = (osStatus)osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
     if (status != osOK) {
         debug_printf("%s(%02X): i2c timeout\n", __func__, DevAddress);
         return HAL_TIMEOUT;
@@ -122,7 +122,7 @@ HAL_StatusTypeDef vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint
             return ret;
         }
     }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
+    osStatus status = (osStatus)osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
     if (status != osOK) {
         debug_printf("%s (dev_addr %02X, mem_addr 0x%04X) timeout\n", __func__, DevAddress, MemAddress);
         return HAL_TIMEOUT;
@@ -154,7 +154,7 @@ HAL_StatusTypeDef vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uin
             return ret;
         }
     }
-    osStatus status = osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
+    osStatus status = (osStatus)osSemaphoreWait(vxsiic_semaphore, I2C_TIMEOUT_MS);
     if (status != osOK) {
         debug_printf("%s (dev_addr %02X, mem_addr 0x%04X) timeout\n", __func__, DevAddress, MemAddress);
         return HAL_TIMEOUT;

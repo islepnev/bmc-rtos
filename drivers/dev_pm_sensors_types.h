@@ -17,10 +17,23 @@
 #ifndef DEV_PM_SENSORS_TYPES_H
 #define DEV_PM_SENSORS_TYPES_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
 #include "dev_powermon_types.h"
 
-int pm_sensor_isValid(const pm_sensor *d);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool pm_sensor_isValid(const pm_sensor *d);
+bool pm_sensor_isNormal(const pm_sensor *d);
+bool pm_sensor_isWarning(const pm_sensor *d);
+bool pm_sensor_isCritical(const pm_sensor *d);
 SensorStatus pm_sensor_status(const pm_sensor *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_PM_SENSORS_TYPES_H

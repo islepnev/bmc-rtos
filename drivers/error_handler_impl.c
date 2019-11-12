@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "error_handler_impl.h"
-
+#include <stdbool.h>
 #include "led_gpio_hal.h"
 
 static const int LED_BLINK_CPUDELAY = 200000;
@@ -23,17 +23,17 @@ static const int LED_BLINK_CPUDELAY = 200000;
 //void led_blink(DeviceLeds led, int duration_on, int duration_off)
 //{
 //    for (int i=0; i < duration_on * LED_BLINK_CPUDELAY; i++)
-//        led_set_state(led, LED_ON);
+//        led_set_state(led, true);
 //    for (int i=0; i < duration_off * LED_BLINK_CPUDELAY; i++)
-//        led_set_state(led, LED_OFF);
+//        led_set_state(led, false);
 //}
 
 void led_show_error(void)
 {
-    led_set_state(LED_GREEN, LED_OFF);
-    led_set_state(LED_YELLOW, LED_OFF);
-    led_set_state(LED_RED, LED_ON);
-    led_set_state(LED_INT_RED, LED_ON);
+    led_set_state(LED_GREEN, false);
+    led_set_state(LED_YELLOW, false);
+    led_set_state(LED_RED, true);
+    led_set_state(LED_INT_RED, true);
 }
 
 static void led_blink_morse(DeviceLeds led, const int buf[], unsigned int size)
@@ -43,15 +43,15 @@ static void led_blink_morse(DeviceLeds led, const int buf[], unsigned int size)
         switch(buf[n]) {
         case 0:
             for (int i=0; i < LED_BLINK_CPUDELAY; i++)
-                led_set_state(led, LED_OFF);
+                led_set_state(led, false);
             break;
         case 1:
             for (int i=0; i < LED_BLINK_CPUDELAY; i++)
-                led_set_state(led, LED_ON);
+                led_set_state(led, true);
             break;
         default:
             for (int i=0; i < 3 * LED_BLINK_CPUDELAY; i++)
-                led_set_state(led, LED_ON);
+                led_set_state(led, true);
             break;
         }
     }

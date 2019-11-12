@@ -18,6 +18,7 @@
 
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
+#include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)

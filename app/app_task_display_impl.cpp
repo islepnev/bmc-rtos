@@ -30,6 +30,7 @@
 #include "dev_fpga_types.h"
 #include "dev_thset_types.h"
 #include "dev_pll_print.h"
+#include "dev_auxpll_print.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_mcu.h"
@@ -100,11 +101,14 @@ static const char *pmStateStr(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
+    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
+    case PM_STATE_FAILWAIT: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
     case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
     default: return "?";
     }
 }
@@ -146,14 +150,30 @@ static const char *pllStateStr(PllState state)
     }
 }
 
+static const char *auxpllStateStr(AuxPllState state)
+{
+    switch(state) {
+    case AUXPLL_STATE_INIT:    return "INIT";
+    case AUXPLL_STATE_RESET:    return "RESET";
+    case AUXPLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
+    case AUXPLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
+    case AUXPLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
+    case AUXPLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
+    case AUXPLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case AUXPLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
+    default: return "?";
+    }
+}
+
 static void print_pm_switches(const pm_switches *sw)
 {
-    printf("Switch 5V main %s   3.3V %s   2.5V %s   1.0V core %s   1.0V mgt %s   5V FMC %s",
+    printf("Switch 5V main %s   3.3V %s   2.5V %s   1.0V core %s   1.0V mgt %s   1.2V mgt %s   5V FMC %s",
            sw->switch_5v  ? STR_ON : STR_OFF,
            sw->switch_3v3 ? STR_ON : STR_OFF,
            sw->switch_2v5 ? STR_ON : STR_OFF,
            sw->switch_1v0_core ? STR_ON : STR_OFF,
            sw->switch_1v0_mgt ? STR_ON : STR_OFF,
+           sw->switch_1v2_mgt ? STR_ON : STR_OFF,
            sw->switch_5v_fmc ? STR_ON : STR_OFF
                                );
     printf("%s\n", ANSI_CLEAR_EOL);
@@ -163,11 +183,12 @@ static void pm_pgood_print(const Dev_powermon *pm)
 {
 //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("Power good: 3.3V %3s,  2.5V %3s, 1.0V core %3s,  1.0 mgt %3s,  3.3 fmc %3s",
+    printf("Power good: 3.3V %3s,  2.5V %3s, 1.0V core %3s,  1.0 mgt %3s,  1.2 mgt %3s,  3.3 fmc %3s",
            pm->pgood_3v3      ? STR_ON : STR_OFF,
            pm->pgood_2v5      ? STR_ON : STR_OFF,
            pm->pgood_1v0_core ? STR_ON : STR_OFF,
            pm->pgood_1v0_mgt  ? STR_ON : STR_OFF,
+           pm->pgood_1v2_mgt  ? STR_ON : STR_OFF,
            pm->pgood_3v3_fmc  ? STR_ON : STR_OFF
                                 );
     printf("%s\n", ANSI_CLEAR_EOL);
@@ -220,7 +241,7 @@ void monPrintValues(const Dev_powermon *d)
     printf(ANSI_CLEAR_EOL "\n");
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, (SensorIndex)i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }
@@ -243,9 +264,10 @@ void pllPrint(const Dev_pll *d)
             ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
             if (ref0 != PROFILE_REF_SOURCE_INVALID)
                 ref0str = pllProfileRefSourceStr(ref0);
+            bool locked = (channel == DPLL1) ? d->status.sysclk.b.pll1_locked : d->status.sysclk.b.pll0_locked;
             printf("PLL%d: %s ref %-5s %lld ppb",
                    channel,
-                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
+                   locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
                    ref0str,
                    (int64_t)ppb0
                    );
@@ -255,6 +277,39 @@ void pllPrint(const Dev_pll *d)
         for (int i=0; i<4; i++)
             printf("%s\n", ANSI_CLEAR_EOL);
     }
+}
+
+void auxpllPrint(const Dev_auxpll *d)
+{
+    printf("AUXPLL state:   %s %s", auxpllStateStr(d->fsm_state), sensorStatusStr(get_auxpll_sensor_status(d)));
+    printf("%s\n", ANSI_CLEAR_EOL);
+    auxpllPrintStatus(d);
+//    printf("PLL readback: %02X", d->status.pll_readback.raw);
+//    if (d->fsm_state == AUXPLL_STATE_RUN) {
+//        printf("Ref A:");
+//        pllPrintRefStatusBits(d->status.ref[REFA]);
+//        printf("%s\n", ANSI_CLEAR_EOL);
+//        printf("Ref B:");
+//        pllPrintRefStatusBits(d->status.ref[REFB]);
+//        printf("%s\n", ANSI_CLEAR_EOL);
+//        for (int channel=0; channel<DPLL_COUNT; channel++) {
+//            int64_t ppb0 = pll_ftw_rel_ppb(d, channel);
+//            const char *ref0str = "";
+//            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
+//            if (ref0 != PROFILE_REF_SOURCE_INVALID)
+//                ref0str = pllProfileRefSourceStr(ref0);
+//            printf("PLL%d: %s ref %-5s %lld ppb",
+//                   channel,
+//                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
+//                   ref0str,
+//                   (int64_t)ppb0
+//                   );
+//            printf("%s\n", ANSI_CLEAR_EOL);
+//        }
+//    } else {
+//        for (int i=0; i<4; i++)
+//            printf("%s\n", ANSI_CLEAR_EOL);
+//    }
 }
 
 static void print_log_entry(uint32_t index)
@@ -282,22 +337,28 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_POWERMON_Y 2
 #define DISPLAY_POWERMON_H 4
 #define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
-#define DISPLAY_SENSORS_H 16
+#define DISPLAY_SENSORS_H (POWERMON_SENSORS + 3)
 #define DISPLAY_MAIN_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
 #define DISPLAY_MAIN_H 4
-#define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_CLKMUX_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
+#define DISPLAY_CLKMUX_H 1
+#define DISPLAY_FPGA_Y (0 + DISPLAY_CLKMUX_Y + DISPLAY_CLKMUX_H)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_PLL_H 5
-#define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#define DISPLAY_AUXPLL_Y (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#define DISPLAY_AUXPLL_H 2
+#define DISPLAY_LOG_Y (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
 #define DISPLAY_LOG_H 5
 
 #define DISPLAY_TASKS_Y 2
 
 #define DISPLAY_PLL_DETAIL_Y 2
 #define DISPLAY_PLL_DETAIL_H 25
+#define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
+#define DISPLAY_AUXPLL_DETAIL_H 3
 
-#define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#define DISPLAY_HEIGHT 30 // (DISPLAY_PLL_Y + DISPLAY_PLL_H)
 
 static void print_goto(int line, int col)
 {
@@ -423,6 +484,14 @@ static void print_main(const Devices *dev)
 //    }
 }
 
+static void print_clkmux(const Dev_clkmux *clkmux)
+{
+    print_goto(DISPLAY_CLKMUX_Y, 1);
+    printf("CLKMUX");
+    printf(sensorStatusStr(get_clkmux_sensor_status(clkmux)));
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
 static void print_fpga(const Dev_fpga *fpga)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
@@ -440,6 +509,12 @@ static void print_pll(const Dev_pll *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
     pllPrint(pll);
+}
+
+static void print_auxpll(const Dev_auxpll *pll)
+{
+    print_goto(DISPLAY_AUXPLL_Y, 1);
+    auxpllPrint(pll);
 }
 
 static void print_log_lines(int count)
@@ -488,8 +563,10 @@ static void display_summary(const Devices * dev)
     }
     print_thset(&dev->thset);
     print_main(dev);
+    print_clkmux(&dev->clkmux);
     print_fpga(&dev->fpga);
     print_pll(&dev->pll);
+    print_auxpll(&dev->auxpll);
     print_log_messages();
 }
 
@@ -554,6 +631,13 @@ static void display_pll_detail(const Devices * dev)
     pllPrintStatus(&dev->pll);
 }
 
+static void display_auxpll_detail(const Devices * dev)
+{
+    print_clearbox(DISPLAY_AUXPLL_DETAIL_Y, DISPLAY_AUXPLL_DETAIL_H);
+    print_goto(DISPLAY_AUXPLL_DETAIL_Y, 1);
+    auxpllPrintStatus(&dev->auxpll);
+}
+
 static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
@@ -612,6 +696,7 @@ void display_task_run(void)
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail(d);
+        display_auxpll_detail(d);
         break;
     case DISPLAY_BOARDS:
         display_boards(d);

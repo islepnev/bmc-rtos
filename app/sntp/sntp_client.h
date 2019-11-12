@@ -38,7 +38,7 @@ extern "C" {
 
 void sntp_client_init(void);
 
-void sntp_client_set_system_time(uint32_t sec, uint32_t microsec);
+extern void sntp_client_set_system_time(unsigned int sec, unsigned int microsec);
 
 #ifdef __cplusplus
 }

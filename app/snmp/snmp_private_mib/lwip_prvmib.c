@@ -145,13 +145,13 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
 static s16_t systemVXSPowerEnable_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    return snmp_encode_truthvalue(value, getDevicesConst()->pen_b == 0);
+    return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->pen_b == 0);
 }
 
 static s16_t systemSDCardPresent_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    return snmp_encode_truthvalue(value, getDevicesConst()->sd.detect_b == 0);
+    return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->sd.detect_b == 0);
 }
 
 static const struct snmp_scalar_node systemStatus = SNMP_SCALAR_CREATE_NODE_READONLY(

@@ -17,13 +17,27 @@
 
 #include "dev_pm_sensors_types.h"
 
-int pm_sensor_isValid(const pm_sensor *d)
+bool pm_sensor_isValid(const pm_sensor *d)
+{
+    return pm_sensor_isNormal(d) || pm_sensor_isWarning(d);
+}
+
+bool pm_sensor_isNormal(const pm_sensor *d)
 {
     SensorStatus status = pm_sensor_status(d);
-    if (status == SENSOR_NORMAL || status == SENSOR_WARNING)
-        return 1;
-    else
-        return 0;
+    return status == SENSOR_NORMAL;
+}
+
+bool pm_sensor_isWarning(const pm_sensor *d)
+{
+    SensorStatus status = pm_sensor_status(d);
+    return status == SENSOR_WARNING;
+}
+
+bool pm_sensor_isCritical(const pm_sensor *d)
+{
+    SensorStatus status = pm_sensor_status(d);
+    return status == SENSOR_CRITICAL;
 }
 
 SensorStatus pm_sensor_status(const pm_sensor *d)

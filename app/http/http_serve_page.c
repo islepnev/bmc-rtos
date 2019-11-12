@@ -52,11 +52,14 @@ static const char *pmStateStr(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
+    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return "<span class=\"yellow\">RAMP</span>";
     case PM_STATE_RUN:     return "<span class=\"green\">RUN</span>";
     case PM_STATE_PWRFAIL: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
+    case PM_STATE_FAILWAIT: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
     case PM_STATE_ERROR:   return "<span class=\"red\">ERROR</span>";
+    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
     default: return "?";
     }
 }
@@ -219,7 +222,7 @@ int http_serve_sensors(struct http_server_t *server)
             static char name[SENSOR_NAME_SIZE];
             strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
             name[SENSOR_NAME_SIZE-1] = '\0';
-            SensorStatus s = status->sensors[i].hdr.b.state;
+            SensorStatus s = (SensorStatus)status->sensors[i].hdr.b.state;
             sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
             strcat(buf, str);
             switch (status->sensors[i].hdr.b.type) {
@@ -242,7 +245,7 @@ int http_serve_sensors(struct http_server_t *server)
 //            double f = status->sensors[i].value;
 //            sprintf(str, "%.3f", f); // FIXME: causes HardFault
 //            strcat(buf, str);
-            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            sprintf(str, "%s</td>\n", sensorUnitsStr((IpmiSensorType)status->sensors[i].hdr.b.type));
             strcat(buf, str);
         }
         strcat(buf, "</tr>\n");
@@ -283,7 +286,7 @@ int http_serve_boards(struct http_server_t *server)
             static char name[SENSOR_NAME_SIZE];
             strncpy(name, status->sensors[i].name, SENSOR_NAME_SIZE-1);
             name[SENSOR_NAME_SIZE-1] = '\0';
-            SensorStatus s = status->sensors[i].hdr.b.state;
+            SensorStatus s = (SensorStatus)status->sensors[i].hdr.b.state;
             sprintf(str, "<td id=\"%s\">%s<br>", sensorStatusCssStyle(s), name);
             strcat(buf, str);
             switch (status->sensors[i].hdr.b.type) {
@@ -306,7 +309,7 @@ int http_serve_boards(struct http_server_t *server)
 //            double f = status->sensors[i].value;
 //            sprintf(str, "%.3f", f); // FIXME: causes HardFault
 //            strcat(buf, str);
-            sprintf(str, "%s</td>\n", sensorUnitsStr(status->sensors[i].hdr.b.type));
+            sprintf(str, "%s</td>\n", sensorUnitsStr((IpmiSensorType)status->sensors[i].hdr.b.type));
             strcat(buf, str);
         }
         strcat(buf, "</tr>\n");

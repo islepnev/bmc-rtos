@@ -26,18 +26,31 @@
 // #define TTY_USART USART2 // USB-RS232
 #define LED_HEARTBEAT LED_INT_GREEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct __I2C_HandleTypeDef * const hPll;
 extern const uint8_t pllDeviceAddr;
 
 extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 
 extern struct __SPI_HandleTypeDef * const fpga_spi;
+#ifdef TTVXS_1_0
 extern struct __SPI_HandleTypeDef * const therm_spi;
+#else
+extern struct __SPI_HandleTypeDef * const ad9516_spi;
+#endif
 
+uint32_t detect_pcb_version(void);
 void pll_enable_interface(int enable);
 void pllSetStaticPins(int enable);
 void pllReset(void);
 void pm_sensor_reset_i2c_master(void);
 void fpga_enable_interface(int enable);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // BSP_H

@@ -37,6 +37,7 @@ extern osThreadId powermonThreadId;
 extern osThreadId displayThreadId;
 extern osThreadId keyboardThreadId;
 extern osThreadId pllThreadId;
+extern osThreadId auxpllThreadId;
 extern osThreadId fpgaThreadId;
 extern osThreadId cliThreadId;
 extern osThreadId vxsiicThreadId;

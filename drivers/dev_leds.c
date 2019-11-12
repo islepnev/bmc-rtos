@@ -18,7 +18,7 @@
 #include "dev_leds.h"
 #include "led_gpio_hal.h"
 
-void dev_led_set(DeviceLeds led, LedState state)
+void dev_led_set(DeviceLeds led, bool state)
 {
     led_set_state(led, state);
 }

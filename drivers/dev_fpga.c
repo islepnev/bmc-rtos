@@ -89,9 +89,9 @@ DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset 
     for (int i=0; i<4; i++) {
         ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, thset->th[i].rawTemp);
         if (ret != HAL_OK)
-            return ret;
+            return DEVICE_FAIL;
     }
-    return ret;
+    return DEVICE_NORMAL;
 }
 
 DeviceStatus fpgaWritePllStatus(Dev_fpga *d, const struct Dev_pll *pll)
@@ -105,5 +105,7 @@ DeviceStatus fpgaWritePllStatus(Dev_fpga *d, const struct Dev_pll *pll)
             data |= 0x1;
     }
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data);
-    return ret;
+    if (ret != HAL_OK)
+        return DEVICE_FAIL;
+    return DEVICE_NORMAL;
 }

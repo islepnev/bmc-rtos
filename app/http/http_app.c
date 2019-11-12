@@ -106,7 +106,7 @@ static void http_app_handle_get(struct http_server_t *server, const struct http_
 
 void http_app_handle_request(struct http_server_t *server, const struct http_request_t *r)
 {
-    log_printf(LOG_INFO, "httpd: '%s', '%s', '%s', '%s'", r->method, r->version, r->path, r->args);
+    // log_printf(LOG_INFO, "httpd: '%s', '%s', '%s', '%s'", r->method, r->version, r->path, r->args);
 
     if (0 == strcmp(r->method, "GET")) {
         http_app_handle_get(server, r);

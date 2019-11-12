@@ -38,7 +38,7 @@
 #include "rtc.h"
 
 void
-sntp_client_set_system_time(uint32_t sec, uint32_t microsec)
+sntp_client_set_system_time(unsigned int sec, unsigned int microsec)
 {
   char buf[32];
   struct tm current_time_val;

@@ -17,8 +17,16 @@
 #ifndef RTC_UTIL_H
 #define RTC_UTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct tm;
 
 void get_rtc_tm(struct tm *tm);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // RTC_UTIL_H

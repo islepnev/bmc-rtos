@@ -15,18 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_FPGA_TYPES_H
-#define DEV_FPGA_TYPES_H
-
-#include <stdint.h>
-#include "dev_common_types.h"
-
-typedef struct Dev_fpga {
-    DeviceStatus present;
-    uint8_t initb;
-    uint8_t done;
-    uint16_t id;
-} Dev_fpga;
+#include "dev_fpga_types.h"
 
 SensorStatus get_fpga_sensor_status(const Dev_fpga *d)
 {
@@ -40,5 +29,3 @@ SensorStatus get_fpga_sensor_status(const Dev_fpga *d)
       return SENSOR_WARNING;
    return SENSOR_NORMAL;
 }
-
-#endif // DEV_FPGA_TYPES_H
