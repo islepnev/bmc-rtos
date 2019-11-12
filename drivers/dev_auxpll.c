@@ -336,6 +336,29 @@ err:
     return ret;
 }
 
+OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
+{
+    // output drivers
+    ad9516_write1(0x140, 0x42); // OUT6, Enable, LVDS
+    ad9516_write1(0x141, 0x43); // OUT7, Disable,
+    ad9516_write1(0x142, 0x42); // OUT8, Enable, LVDS
+    ad9516_write1(0x143, 0x42); // OUT9, Enable, LVDS
+
+    // output dividers
+    ad9516_write1(0x199, 0);
+    ad9516_write1(0x19A, 0);
+    ad9516_write1(0x19B, 0);
+    ad9516_write1(0x19C, 0x20); // bypass 3.2
+    ad9516_write1(0x19A, 0);
+    ad9516_write1(0x19E, 0);
+    ad9516_write1(0x19F, 0);
+    ad9516_write1(0x1A0, 0);
+    ad9516_write1(0x1A1, 0x20); // bypass 4.2
+
+    pllIoUpdate(d);
+    return DEV_OK;
+}
+
 //const int auxpll_vco_div_map[8] = {2, 3, 4, 5, 6, 0, 0, 0};
 //const double auxpll_prescalerdiv_map[8] = {1, 2, 2./3., 4./5., 8./9., 16./17., 32./33., 3};
 //const double AUXPLL_REF_FREQ = 20e6;
@@ -454,22 +477,7 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
     reg_clocks.b.powerdown_clock_inp = 0;
     ad9516_write1(AD9516_REG1_CLOCKS, reg_clocks.raw);
 
-    // output drivers
-    ad9516_write1(0x140, 0x42); // OUT6, Enable, LVDS
-    ad9516_write1(0x141, 0x43); // OUT7, Disable,
-    ad9516_write1(0x142, 0x42); // OUT8, Enable, LVDS
-    ad9516_write1(0x143, 0x42); // OUT9, Enable, LVDS
-
-    // output dividers
-    ad9516_write1(0x199, 0);
-    ad9516_write1(0x19A, 0);
-    ad9516_write1(0x19B, 0);
-    ad9516_write1(0x19C, 0x20); // bypass 3.2
-    ad9516_write1(0x19A, 0);
-    ad9516_write1(0x19E, 0);
-    ad9516_write1(0x19F, 0);
-    ad9516_write1(0x1A0, 0);
-    ad9516_write1(0x1A1, 0x20); // bypass 4.2
+    auxpll_output_setup(d);
 
     // initiate VCO calibration
     pll_control.pll_control_3.b.vco_cal_now = 1;
