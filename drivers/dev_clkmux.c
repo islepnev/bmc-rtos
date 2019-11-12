@@ -106,7 +106,7 @@ void dev_clkmux_set_crsw1(Dev_clkmux *d)
     data.all = 0;
     data.bit.pll_source_sel = d->pll_source & 0x3;
     mcp23017_write(MCP23017_GPIOB, data.all);
-    data.bit.crsw_sin = CRSW1_IN_AD9516_DIV3;
+    data.bit.crsw_sin = CRSW1_IN_PLL0A; // CRSW1_IN_AD9516_DIV3;
     for (int i=0; i<4; i++) {
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOB, data.all);
