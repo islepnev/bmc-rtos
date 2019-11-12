@@ -264,9 +264,10 @@ void pllPrint(const Dev_pll *d)
             ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
             if (ref0 != PROFILE_REF_SOURCE_INVALID)
                 ref0str = pllProfileRefSourceStr(ref0);
+            bool locked = (channel == DPLL1) ? d->status.sysclk.b.pll1_locked : d->status.sysclk.b.pll0_locked;
             printf("PLL%d: %s ref %-5s %lld ppb",
                    channel,
-                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
+                   locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
                    ref0str,
                    (int64_t)ppb0
                    );
