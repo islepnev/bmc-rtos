@@ -125,7 +125,7 @@ void dev_clkmux_set_crsw2(Dev_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
-    data.bit.crsw_sin = CRSW2_IN_PLL0C;
+    data.bit.crsw_sin = CRSW2_IN_AD9516;
     for (int i=0; i<4; i++) {
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOA, data.all);
