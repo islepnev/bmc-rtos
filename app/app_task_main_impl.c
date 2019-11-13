@@ -68,7 +68,7 @@ void task_main_run(void)
     mainloopCount++;
     const MainState old_state = state;
     const PmState pmState = get_dev_powermon_const()->pmState;
-//    led_toggle(LED_YELLOW);
+    led_toggle(LED_YELLOW);
 
     switch (state) {
     case MAIN_STATE_INIT:
