@@ -16,10 +16,11 @@
 */
 
 #include "ad9545_setup.h"
+#include "bsp.h"
 
 static const uint64_t SYSCLK_REF_FREQ_MILLIHZ = 38880000000ULL;
 static const uint8_t sysclk_fb_div = 31;
-static const uint32_t ref_r_divide = 209;
+static const uint32_t ref_r_divide = PLL_REF_DIV;
 
 double sysclkVcoFreq(void)
 {
@@ -46,7 +47,7 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d)
     // RefA
     d->REFA_Receiver_Settings = 0x01;
     d->REFA_R_Divider = ref_r_divide;
-    d->REFA_Input_Period = 24 * 1000000000ULL; // attoseconds (1e-18 s) units
+    d->REFA_Input_Period = PLL_REF_PERIOD_NS * 1000000000ULL; // attoseconds (1e-18 s) units
     d->REFA_Offset_Limit = 100*1000; // ppb units
     d->REFA_Validation_Timer = 10; // milliseconds
     d->REFA_Jitter_Tolerance = 5; // nanoseconds
