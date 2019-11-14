@@ -150,7 +150,8 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
     d->profile[0].Loop_BW = 50u * 1000000; // microHertz
     d->profile[0].Hitless_FB_Divider = ref_r_divide;
-    d->profile[0].Buildout_FB_Divider = 1567; // 2*R*Q/M
+    double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_0_A/d->APLL_M_Divider;
+    d->profile[0].Buildout_FB_Divider =(int)FB_DIV; // 2*R*Q/M
     d->profile[0].Buildout_FB_Fraction = 1;
     d->profile[0].Buildout_FB_Modulus = 2;
     d->profile[0].FastLock = 4; // 4: 100 ms
@@ -174,7 +175,8 @@ static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;
     d->profile[0].Loop_BW = 500 * 1000000UL; // microHertz
     d->profile[0].Hitless_FB_Divider = ref_r_divide;
-    d->profile[0].Buildout_FB_Divider = 1630; // 2*R*Q/M
+    double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_1_A/d->APLL_M_Divider;
+    d->profile[0].Buildout_FB_Divider =(int)FB_DIV; // 2*R*Q/M
     d->profile[0].Buildout_FB_Fraction = 2;
     d->profile[0].Buildout_FB_Modulus = 5;
     d->profile[0].FastLock = 4; // 4: 100 ms
