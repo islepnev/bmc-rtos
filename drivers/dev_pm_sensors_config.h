@@ -40,7 +40,7 @@ typedef enum {
     SENSOR_MCB_4V5, // new in TTVXS v1.1
     SENSOR_MCB_3V3, // new in TTVXS v1.1
     SENSOR_5V,
-    SENSOR_2V5,
+    SENSOR_1V5,
     SENSOR_3V3,
     SENSOR_CLOCK_2V5,
     SENSOR_FPGA_CORE_1V0,

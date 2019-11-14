@@ -73,7 +73,7 @@ typedef struct pm_switches {
     bool switch_5v;
     bool switch_5v_fmc;
     bool switch_3v3;
-    bool switch_2v5;
+    bool switch_1v5;
     bool switch_1v0_core;
     bool switch_1v0_mgt;
     bool switch_1v2_mgt; // added in TTVXS v1.1
@@ -96,7 +96,7 @@ typedef struct Dev_powermon {
    pm_sensor sensors[POWERMON_SENSORS];
    bool vmePresent;
    bool pgood_3v3;
-   bool pgood_2v5;
+   bool pgood_1v5;
    bool pgood_1v0_core;
    bool pgood_1v0_mgt;
    bool pgood_1v2_mgt;
