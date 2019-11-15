@@ -55,12 +55,8 @@ void fpga_enable_interface(int enable);
 #define PLL_REF_PERIOD_NS PLL_REF_PERIOD_NS_CRU16
 
 #define PLL_REF_DIV_TTVXS 209
-#define PLL_REF_DIV_CRU16 (209*3)
+#define PLL_REF_DIV_CRU16 625
 #define PLL_REF_DIV PLL_REF_DIV_CRU16
-
-#define PLL_IIC_PIN_SWAP_TTVXS 0
-#define PLL_IIC_PIN_SWAP_CRU16 1
-#define PLL_IIC_PIN_SWAP PLL_IIC_PIN_SWAP_CRU16
 
 #ifdef __cplusplus
 }
