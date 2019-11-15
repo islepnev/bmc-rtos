@@ -16,6 +16,7 @@
 */
 
 #include "ad9545_setup.h"
+#include <math.h>
 #include "bsp.h"
 
 static const uint64_t SYSCLK_REF_FREQ_MILLIHZ = 38880000000ULL;
@@ -26,7 +27,7 @@ double sysclkVcoFreq(void)
 {
     return SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
 }
-static const double sysclk_rel_offset = -2.5e-6;
+static const double sysclk_rel_offset = 0;
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
 {
@@ -54,7 +55,7 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d)
     // RefB
     d->REFB_Receiver_Settings = 0x01;
     d->REFB_R_Divider = ref_r_divide;
-    d->REFB_Input_Period = 24 * 1000000000ULL;
+    d->REFB_Input_Period = PLL_REF_PERIOD_NS * 1000000000ULL;
     d->REFB_Offset_Limit = 100*1000; // ppb units
     d->REFB_Validation_Timer = 10; // milliseconds
     d->REFB_Jitter_Tolerance = 5; // nanoseconds
@@ -137,23 +138,49 @@ ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel)
     }
 }
 
+/**
+ * @brief find_fraction r = a/b
+ * @param r (0..1)
+ * @param a nominator
+ * @param b denominator
+ */
+void find_fraction(double r, int *pa, int *pb)
+{
+    double min = 1;
+    for (int b=1; b<100; b++) {
+        int a = round(r * b);
+        double diff = fabs(r - 1.0 * a / b);
+        if (diff < min) {
+            min = diff;
+            *pa = a;
+            *pb = b;
+        }
+    }
+}
+
 static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL0);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 8;
+    d->APLL_M_Divider = 8; //8
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL0);
     d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
-    d->profile[0].Loop_BW = 50u * 1000000; // microHertz
+    d->profile[0].Loop_BW = 5000u * 1000000; // microHertz
     d->profile[0].Hitless_FB_Divider = ref_r_divide;
-    double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_0_A/d->APLL_M_Divider;
+    //double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_0_A/d->APLL_M_Divider;
+    Pll_OutputDividers_Setup_TypeDef outputDivSetup;
+    init_Pll_OutputDividers_Setup(&outputDivSetup);
+    double FB_DIV = 2.0*PLL_REF_DIV * outputDivSetup.Distribution_Divider_0_A / d->APLL_M_Divider;
+    int a = 1;
+    int b = 1;
+    find_fraction(FB_DIV - trunc(FB_DIV), &a, &b);
     d->profile[0].Buildout_FB_Divider =(int)FB_DIV; // 2*R*Q/M
-    d->profile[0].Buildout_FB_Fraction = 1;
-    d->profile[0].Buildout_FB_Modulus = 2;
+    d->profile[0].Buildout_FB_Fraction = a;
+    d->profile[0].Buildout_FB_Modulus = b;
     d->profile[0].FastLock = 4; // 4: 100 ms
     // Translation Profile 0.1
 //    d->profile[1] = d->profile[0];
@@ -166,19 +193,25 @@ static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL1);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 10;
+    d->APLL_M_Divider = 10; //10
     // Translation Profile 1.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL1);
     d->profile[0].ZD_Feedback_Path = PROFILE_INT_ZD_FEEDBACK_OUT1A;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;
-    d->profile[0].Loop_BW = 500 * 1000000UL; // microHertz
+    d->profile[0].Loop_BW = 500u * 1000000UL; // microHertz
     d->profile[0].Hitless_FB_Divider = ref_r_divide;
-    double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_1_A/d->APLL_M_Divider;
+    //double FB_DIV = 2.0*PLL_REF_DIV*d->Distribution_Divider_1_A/d->APLL_M_Divider;
+    Pll_OutputDividers_Setup_TypeDef outputDivSetup;
+    init_Pll_OutputDividers_Setup(&outputDivSetup);
+    double FB_DIV = 2.0 * PLL_REF_DIV * outputDivSetup.Distribution_Divider_1_A / d->APLL_M_Divider;
     d->profile[0].Buildout_FB_Divider =(int)FB_DIV; // 2*R*Q/M
-    d->profile[0].Buildout_FB_Fraction = 2;
-    d->profile[0].Buildout_FB_Modulus = 5;
+    int a = 1;
+    int b = 1;
+    find_fraction(FB_DIV - trunc(FB_DIV), &a, &b);
+    d->profile[0].Buildout_FB_Fraction = a;
+    d->profile[0].Buildout_FB_Modulus = b;
     d->profile[0].FastLock = 4; // 4: 100 ms
     // Translation Profile 1.1
 //    d->profile[1] = d->profile[0];
@@ -237,9 +270,9 @@ void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d)
     d->Secondary_Clock_Path_1 = 0x0; // 0x06;
     d->Automute_Control_0 = 0; // 0xFC;
     d->Automute_Control_1 = 0;
-    d->Distribution_Divider_0_A = 30;
-    d->Distribution_Divider_0_B = 30;
-    d->Distribution_Divider_0_C = 30;
-    d->Distribution_Divider_1_A = 39;
-    d->Distribution_Divider_1_B = 39;
+    d->Distribution_Divider_0_A = 10;
+    d->Distribution_Divider_0_B = 10;
+    d->Distribution_Divider_0_C = 10;
+    d->Distribution_Divider_1_A = 13;
+    d->Distribution_Divider_1_B = 13;
 }
