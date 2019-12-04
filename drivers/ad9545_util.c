@@ -17,7 +17,7 @@
 
 #include "ad9545_util.h"
 #include <stdio.h>
-#include "ad9545_setup.h"
+#include "bsp_ad9545.h"
 
 int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, int channel)
 {

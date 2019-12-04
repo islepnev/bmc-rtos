@@ -15,5 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ad9545_setup.h"
+#ifndef RUNTIMESTATSTIMER_H
+#define RUNTIMESTATSTIMER_H
 
+#include <stdint.h>
+#include "stm32f7xx_hal.h"
+#include "core_cm7.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+void configureTimerForRunTimeStats( void );
+uint32_t getRunTimeCounterValue( void );
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif /* RUNTIMESTATSTIMER_H */

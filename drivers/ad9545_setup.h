@@ -164,15 +164,47 @@ typedef enum {
     PROFILE_REF_SOURCE_INVALID = 0xF,
 } ProfileRefSource_TypeDef;
 
-void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
-void init_PllRefSetup(PllRefSetup_TypeDef *d);
-//void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d);
-//void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d);
-uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel);
-ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel);
-void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel);
-void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d);
-void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d);
-void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d);
+enum {
+    PROFILE_PRIORITY_DISABLED = 0,
+    PROFILE_PRIORITY_HIGH = 0x1 | (0x00 << 1),
+    PROFILE_PRIORITY_NORMAL  = 0x1 | (0x0F << 1),
+    PROFILE_PRIORITY_LOW  = 0x1 | (0x1F << 1)
+};
+
+//enum {
+//    PROFILE_FEEDBACK_MODE_PHASE_BUILDOUT = 0,
+//    PROFILE_FEEDBACK_MODE_INT_ZD = 2,
+//    PROFILE_FEEDBACK_MODE_EXT_ZD = 3,
+//};
+
+enum {
+    PROFILE_INT_ZD_FEEDBACK_OUT0A  = 0,
+    PROFILE_INT_ZD_FEEDBACK_OUT0AN = 1,
+    PROFILE_INT_ZD_FEEDBACK_OUT0B  = 2,
+    PROFILE_INT_ZD_FEEDBACK_OUT0BN = 3,
+    PROFILE_INT_ZD_FEEDBACK_OUT0C  = 4,
+    PROFILE_INT_ZD_FEEDBACK_OUT0CN = 5
+};
+
+enum {
+    PROFILE_INT_ZD_FEEDBACK_OUT1A  = 0,
+    PROFILE_INT_ZD_FEEDBACK_OUT1AN = 1,
+    PROFILE_INT_ZD_FEEDBACK_OUT1B  = 2,
+    PROFILE_INT_ZD_FEEDBACK_OUT1BN = 3
+};
+
+enum {
+    PROFILE_EXT_ZD_FEEDBACK_REFA   = 0,
+    PROFILE_EXT_ZD_FEEDBACK_REFAA  = 1,
+    PROFILE_EXT_ZD_FEEDBACK_REFB   = 2,
+    PROFILE_EXT_ZD_FEEDBACK_REFBB  = 3
+};
+
+enum {
+    DPLL_MODE_PROFILE_SELECT_AUTOMATIC = 0,
+    DPLL_MODE_PROFILE_SELECT_FALLBACK_PRIORITY = 1,
+    DPLL_MODE_PROFILE_SELECT_FALLBACK_HOLDOVER = 2,
+    DPLL_MODE_PROFILE_SELECT_MANUAL = 3
+};
 
 #endif // AD9545_SETUP_H

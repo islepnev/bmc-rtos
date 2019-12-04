@@ -21,8 +21,6 @@
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 
-struct __I2C_HandleTypeDef * const hPll = &hi2c2;
-
 static const int I2C_TIMEOUT_MS = 100;
 
 osSemaphoreId pll_i2c_sem;                         // Semaphore ID

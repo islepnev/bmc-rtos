@@ -52,7 +52,7 @@
 
 #include "app_shared_data.h"
 
-#include "freertos_stats.h"
+#include "rtos/freertos_stats.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;

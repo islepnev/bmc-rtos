@@ -21,8 +21,6 @@
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 
-struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c4;
-
 static const int I2C_TIMEOUT_MS = 10;
 
 osSemaphoreId powermon_i2c_sem;                         // Semaphore ID

@@ -15,5 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ad9545_setup.h"
+#ifndef BSP_POT_H
+#define BSP_POT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum {DEV_POT_COUNT = 3};
+
+typedef enum {
+    POT_TDC_A,
+    POT_TDC_B,
+    POT_TDC_C
+} PotIndex;
+
+const char *potLabel(PotIndex index);
+int potBusAddress(PotIndex index);
+int potSensorIndex(PotIndex index);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BSP_POT_H

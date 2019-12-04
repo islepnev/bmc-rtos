@@ -23,36 +23,6 @@
 #include "ad5141_i2c_hal.h"
 #include "powermon_i2c_driver.h"
 
-const char *potLabel(PotIndex index)
-{
-    switch (index) {
-    case POT_TDC_A: return "TDC_A";
-    case POT_TDC_B: return "TDC_B";
-    case POT_TDC_C: return "TDC_C";
-    }
-    return 0;
-}
-
-static int potBusAddress(PotIndex index)
-{
-    switch (index) {
-    case POT_TDC_A: return 0x20;
-    case POT_TDC_B: return 0x23;
-    case POT_TDC_C: return 0x2C;
-    }
-    return 0;
-}
-
-static int potSensorIndex(PotIndex index)
-{
-    switch (index) {
-    case POT_TDC_A: return SENSOR_TDC_A;
-    case POT_TDC_B: return SENSOR_TDC_B;
-    case POT_TDC_C: return SENSOR_TDC_C;
-    }
-    return 0;
-}
-
 void struct_pots_init(Dev_pots *d)
 {
     for (int i=0; i<DEV_POT_COUNT; i++) {

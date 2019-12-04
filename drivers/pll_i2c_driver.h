@@ -19,8 +19,6 @@
 
 #include "stm32f7xx_hal_def.h"
 
-extern struct __I2C_HandleTypeDef * const hPll;
-
 void pll_i2c_init(void);
 void pll_i2c_reset_master(void);
 HAL_StatusTypeDef pll_i2c_detect(uint16_t deviceAddr, uint32_t Trials);

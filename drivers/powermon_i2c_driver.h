@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-extern struct __I2C_HandleTypeDef * const hi2c_sensors;
-
 void powermon_i2c_init(void);
 void powermon_i2c_reset_master(void);
 HAL_StatusTypeDef powermon_i2c_detect(uint16_t deviceAddr, uint32_t Trials);

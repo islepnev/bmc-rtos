@@ -22,7 +22,7 @@
 #include "i2c.h"
 #include "bsp.h"
 #include "ad9545_i2c_hal.h"
-#include "ad9545_setup.h"
+#include "bsp_ad9545.h"
 #include "ad9545_status.h"
 #include "dev_pll_print.h"
 #include "dev_pll_types.h"
@@ -862,7 +862,7 @@ err:
     return DEV_ERROR;
 }
 
-static HAL_StatusTypeDef pllReadAllRegisters(Dev_ad9545 *d)
+static HAL_StatusTypeDef pllReadAllRegisters_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     typedef struct {
