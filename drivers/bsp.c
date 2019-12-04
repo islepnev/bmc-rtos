@@ -40,7 +40,11 @@ void update_board_version(int powermon_count, int pots_count)
 }
 
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi1;
+#ifdef TDC64
+struct __SPI_HandleTypeDef * const ad9516_spi = &hspi4;
+#else
 struct __SPI_HandleTypeDef * const therm_spi = &hspi4;
+#endif
 
 // AD9545
 // M0, M1, M2 do not have internal resistors

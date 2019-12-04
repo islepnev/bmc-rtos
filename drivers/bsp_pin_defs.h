@@ -1,3 +1,7 @@
+#ifdef TDC64
+#define AD9516_CS_B_GPIO_Port GPIOI
+#define AD9516_CS_B_Pin GPIO_PIN_0
+#endif
 #define ADT_CS_B0_GPIO_Port GPIOE
 #define ADT_CS_B0_Pin GPIO_PIN_11
 #define ADT_CS_B1_GPIO_Port GPIOE

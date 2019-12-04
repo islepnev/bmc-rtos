@@ -18,7 +18,9 @@
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
+#ifndef TDC64
 #include "adt7301_spi_hal.h"
+#endif
 #include "logbuffer.h"
 
 static const uint32_t thermReadInterval = 300;
@@ -43,6 +45,7 @@ static void struct_thset_init(Dev_thset *d)
 
 void dev_thset_read(Dev_thset *d)
 {
+#ifndef TDC64
     for(int i=0; i<DEV_THERM_COUNT; i++) {
         int16_t rawTemp;
         HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
@@ -50,6 +53,7 @@ void dev_thset_read(Dev_thset *d)
         d->th[i].valid = (ret == HAL_OK) && (temp > tempMinValid) && (temp < tempMaxValid);
         d->th[i].rawTemp = rawTemp;
     }
+#endif
 }
 
 SensorStatus dev_adt7301_status(const Dev_adt7301 *d)

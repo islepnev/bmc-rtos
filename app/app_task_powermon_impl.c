@@ -24,7 +24,6 @@
 #include "i2c.h"
 
 #include "app_task_powermon.h"
-#include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
 #include "dev_powermon.h"

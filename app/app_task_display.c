@@ -28,7 +28,6 @@
 
 #include "fpga_spi_hal.h"
 #include "ad9545_util.h"
-#include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
 #include "dev_types.h"

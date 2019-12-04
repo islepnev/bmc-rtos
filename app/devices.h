@@ -28,6 +28,7 @@ extern "C" {
 #include "dev_powermon.h"
 #include "dev_thset.h"
 #include "dev_leds.h"
+#include "dev_auxpll_types.h"
 
 enum { FPGA_DEVICE_ID = 0x2FD0};
 
@@ -39,6 +40,9 @@ typedef struct Devices {
     Dev_at24c eeprom_vxspb;
     Dev_at24c eeprom_config;
     Dev_ad9545 pll;
+#ifdef TDC64
+    Dev_auxpll auxpll;
+#endif
     Dev_powermon pm;
 } Devices;
 

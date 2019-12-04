@@ -15,26 +15,29 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "app_tasks.h"
-#include "app_task_auxpll.h"
-#include "app_task_heartbeat.h"
-#include "app_task_powermon.h"
-#include "app_task_main.h"
-#include "app_task_display.h"
-#include "app_task_cli.h"
-#include "app_task_pll.h"
-#include "app_task_fpga.h"
-#include "app_task_vxsiic.h"
+#ifndef DEV_AUXPLL_H
+#define DEV_AUXPLL_H
 
-void create_tasks(void)
-{
-    create_task_display();
-    create_task_cli();
-    create_task_powermon();
-    create_task_main();
-    create_task_pll();
-    create_task_auxpll();
-    create_task_fpga();
-    create_task_vxsiic();
-    create_task_heartbeat();
+#include "dev_common_types.h"
+#include "dev_auxpll_types.h"
+#include "ad9516_setup.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+DeviceStatus auxpllDetect(Dev_auxpll *d);
+OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
+
+//void reset_SPI_auxpll(void);
+//OpStatusTypeDef auxpllSoftwareReset(Dev_auxpll *d);
+//OpStatusTypeDef auxpllSetupSysclk(Dev_auxpll *d);
+//OpStatusTypeDef auxpllCalibrateSysclk(Dev_auxpll *d);
+OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d);
+//OpStatusTypeDef auxpllReadSysclkStatus(Dev_auxpll *d);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // DEV_AUXPLL_H

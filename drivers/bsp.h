@@ -27,6 +27,9 @@
 
 extern struct __SPI_HandleTypeDef * const fpga_spi;
 extern struct __SPI_HandleTypeDef * const therm_spi;
+#ifdef TDC64
+extern struct __SPI_HandleTypeDef * const ad9516_spi;
+#endif
 
 typedef enum {PLL_ENABLE = 0, PLL_DISABLE = 1} pll_enable_t;
 void pllSetStaticPins(pll_enable_t enable);
