@@ -19,6 +19,8 @@ cmake_policy(SET CMP0048 NEW)
 
 PROJECT(tdc72vxs4_rtos VERSION 1.11 LANGUAGES C)
 
+add_compile_definitions(TDC64)
+
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)

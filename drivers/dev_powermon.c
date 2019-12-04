@@ -123,6 +123,9 @@ void read_power_switches_state(Dev_powermon *pm)
     pm->sw_state.switch_tdc_a = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin));
     pm->sw_state.switch_tdc_b = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin));
     pm->sw_state.switch_tdc_c = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin));
+#ifdef TDC64
+    pm->sw_state.switch_tdc_d = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_D_GPIO_Port, ON_TDC_D_Pin));
+#endif
 }
 
 switch_test_t check_power_switches(const Dev_powermon *pm)
@@ -156,6 +159,12 @@ switch_test_t check_power_switches(const Dev_powermon *pm)
         log_printf(LOG_CRIT, "TDC-C switch failure: stuck %s", pm->sw_state.switch_tdc_c ? "high" : "low");
         ret = SWITCH_FAIL;
     }
+#ifdef TDC64
+    if (pm->sw_state.switch_tdc_d != pm->sw.switch_tdc_d) {
+        log_printf(LOG_CRIT, "TDC-C switch failure: stuck %s", pm->sw_state.switch_tdc_d ? "high" : "low");
+        ret = SWITCH_FAIL;
+    }
+#endif
     return ret;
 }
 
@@ -174,7 +183,9 @@ void update_power_switches(Dev_powermon *pm)
     pm->sw.switch_tdc_a = state;
     pm->sw.switch_tdc_b = state;
     pm->sw.switch_tdc_c = state;
-
+#ifdef TDC64
+    pm->sw.switch_tdc_d = state;
+#endif
     HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      pm->sw.switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -183,7 +194,9 @@ void update_power_switches(Dev_powermon *pm)
     HAL_GPIO_WritePin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c ? GPIO_PIN_SET : GPIO_PIN_RESET);
-
+#ifdef TDC64
+    HAL_GPIO_WritePin(ON_TDC_D_GPIO_Port, ON_TDC_D_Pin, pm->sw.switch_tdc_d ? GPIO_PIN_SET : GPIO_PIN_RESET);
+#endif
     read_power_switches_state(pm);
 }
 

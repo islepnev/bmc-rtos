@@ -66,12 +66,23 @@
 #define ON_3_3V_Pin GPIO_PIN_1
 #define ON_5V_GPIO_Port GPIOJ
 #define ON_5V_Pin GPIO_PIN_2
+#ifdef TDC64
+#define ON_TDC_A_GPIO_Port GPIOA
+#define ON_TDC_A_Pin GPIO_PIN_9
+#define ON_TDC_B_GPIO_Port GPIOA
+#define ON_TDC_B_Pin GPIO_PIN_10
+#define ON_TDC_C_GPIO_Port GPIOA
+#define ON_TDC_C_Pin GPIO_PIN_11
+#define ON_TDC_D_GPIO_Port GPIOA
+#define ON_TDC_D_Pin GPIO_PIN_12
+#else
 #define ON_TDC_A_GPIO_Port GPIOA
 #define ON_TDC_A_Pin GPIO_PIN_10
 #define ON_TDC_B_GPIO_Port GPIOA
 #define ON_TDC_B_Pin GPIO_PIN_11
 #define ON_TDC_C_GPIO_Port GPIOA
 #define ON_TDC_C_Pin GPIO_PIN_12
+#endif
 #define PA_SCL_GPIO_Port GPIOA
 #define PA_SCL_Pin GPIO_PIN_8
 #define PA_SDA_GPIO_Port GPIOC

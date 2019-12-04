@@ -124,6 +124,11 @@ static void print_pm_switches(const pm_switches *sw)
            sw->switch_tdc_b ? STR_ON : STR_OFF,
            sw->switch_tdc_c ? STR_ON : STR_OFF
            );
+#ifdef TDC64
+    printf("   TDC-D %s",
+           sw->switch_tdc_d ? STR_ON : STR_OFF
+           );
+#endif
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 

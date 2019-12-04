@@ -30,6 +30,9 @@ typedef struct pm_switches {
     SwitchOnOff switch_tdc_a;
     SwitchOnOff switch_tdc_b;
     SwitchOnOff switch_tdc_c;
+#ifdef TDC64
+    SwitchOnOff switch_tdc_d;
+#endif
 } pm_switches;
 
 typedef enum MonState {
