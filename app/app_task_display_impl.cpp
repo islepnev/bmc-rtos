@@ -1,25 +1,25 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-
-#include "app_task_display.h"
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "app_task_display_impl.h"
 
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
@@ -32,6 +32,7 @@
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
 #include "dev_types.h"
+#include "dev_fpga_types.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
 #include "dev_pll_print.h"
@@ -40,26 +41,21 @@
 #include "dev_mcu.h"
 #include "dev_pot.h"
 #include "dev_thset.h"
-#include "dev_leds.h"
-#include "devices.h"
+#include "devices_types.h"
 #include "version.h"
 #include "logbuffer.h"
+#include "logentry.h"
 #include "debug_helpers.h"
+#include "dev_powermon_types.h"
+#include "dev_pm_sensors_types.h"
+#include "dev_thset.h"
 
 #include "app_shared_data.h"
-#include "app_task_powermon.h"
-#include "app_task_main.h"
-#include "app_tasks.h"
 
 #include "freertos_stats.h"
 
-osThreadId displayThreadId = NULL;
-
-enum { displayThreadStackSize = 1000 };
-
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
-static const uint32_t displayTaskLoopDelay = 100;
 static int force_refresh = 0;
 
 static const char *pmStateStr(PmState state)
@@ -87,16 +83,16 @@ static const char *sensorStatusStr(SensorStatus state)
     }
 }
 
-static const char *mainStateStr(MainState state)
-{
-    switch(state) {
-    case MAIN_STATE_INIT:    return "INIT";
-    case MAIN_STATE_DETECT:  return ANSI_YELLOW "DETECT"  ANSI_CLEAR;
-    case MAIN_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
-    case MAIN_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    default: return "?";
-    }
-}
+//static const char *mainStateStr(MainState state)
+//{
+//    switch(state) {
+//    case MAIN_STATE_INIT:    return "INIT";
+//    case MAIN_STATE_DETECT:  return ANSI_YELLOW "DETECT"  ANSI_CLEAR;
+//    case MAIN_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
+//    case MAIN_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+//    default: return "?";
+//    }
+//}
 
 static const char *pllStateStr(PllState state)
 {
@@ -214,7 +210,7 @@ void monPrintValues(const Dev_powermon *d)
     pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw_state, i));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw_state, static_cast<SensorIndex>(i)));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }
@@ -268,7 +264,7 @@ static void print_log_entry(uint32_t index)
     case LOG_DEBUG: break;
     default: prefix = ANSI_PUR; break;
     }
-    printf("%s%8ld.%03ld %s%s", prefix,
+    printf("%s%8d.%03d %s%s", prefix,
            ent.tick/1000, ent.tick%1000, ent.str, suffix);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -318,7 +314,7 @@ static void print_uptime_str(void)
         printf("%u days ", dd);
     if (dd == 1)
         printf("%u day ", dd);
-    printf("%2u:%02u:%02lu", hh, mm, ss);
+    printf("%2u:%02u:%02u", hh, mm, ss);
 }
 
 static char statsBuffer[1000];
@@ -402,7 +398,7 @@ static void print_main(const Devices *dev)
 {
     print_goto(DISPLAY_MAIN_Y, 1);
 //    if (getMainState() == MAIN_STATE_RUN) {
-        printf("Main state:     %s", mainStateStr(getMainState()));
+//        printf("Main state:     %s", mainStateStr(getMainState()));
         printf("%s\n", ANSI_CLEAR_EOL);
         devPrintStatus(dev);
 //        printf("%s\n", ANSI_CLEAR_EOL);
@@ -476,7 +472,7 @@ static void display_pot(const Dev_powermon *d)
         const Dev_ad5141 *p = &d->pots.pot[i];
         const pm_sensor *sensor = &d->sensors[p->sensorIndex];
         const int isOn = monIsOn(&d->sw_state, p->sensorIndex);
-        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel(i));
+        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel(static_cast<PotIndex>(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);
         else
@@ -534,7 +530,7 @@ static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
 
-static void update_display(const Devices * dev)
+void display_task_run()
 {
     uint32_t tick = osKernelSysTick();
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
@@ -601,25 +597,9 @@ static void update_display(const Devices * dev)
     displayUpdateCount++;
 }
 
-static void displayTask(void const *arg)
+void display_task_init(void)
 {
-    (void) arg;
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
     printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
-//    fflush(stdout);
-    while(1) {
-        update_display(&dev);
-        osDelay(displayTaskLoopDelay);
-    }
-}
-
-osThreadDef(display, displayTask, osPriorityLow,      1, displayThreadStackSize);
-
-void create_task_display(void)
-{
-    displayThreadId = osThreadCreate(osThread (display), NULL);
-    if (displayThreadId == NULL) {
-        debug_print("Failed to create display thread\n");
-    }
 }

@@ -44,7 +44,7 @@ HAL_StatusTypeDef at24c_detect(void)
 
 HAL_StatusTypeDef dev_eepromVxsPb_Read(uint16_t addr, uint8_t *data)
 {
-    HAL_StatusTypeDef ret;
+    HAL_StatusTypeDef ret = HAL_ERROR;
     enum {Size = 1};
     uint8_t pData[Size];
 //    ret = HAL_I2C_Mem_Read(hi2c_eeprom_VxsPb, eeprom_VxsPb_busAddress << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);

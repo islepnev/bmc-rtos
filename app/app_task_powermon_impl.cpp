@@ -23,18 +23,14 @@
 #include "cmsis_os.h"
 #include "i2c.h"
 
-#include "app_task_powermon.h"
-#include "adt7301_spi_hal.h"
-#include "pca9548_i2c_hal.h"
-#include "ina226_i2c_hal.h"
+#include "dev_pm_sensors_types.h"
+#include "dev_pm_sensors_config.h"
+#include "dev_pm_sensors.h"
 #include "dev_powermon.h"
-#include "ansi_escape_codes.h"
-#include "display.h"
 #include "devices.h"
-#include "dev_types.h"
+#include "dev_powermon_types.h"
 #include "dev_mcu.h"
 #include "dev_thset.h"
-#include "dev_leds.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 #include "bsp.h"
@@ -59,7 +55,7 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {0};
+static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
 static void clearOldSensorStatus(void)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
@@ -141,12 +137,12 @@ void powermon_task_init(void)
 {
     clearOldSensorStatus();
     powermon_i2c_init();
-    dev_thset_init(&dev.thset);
+    dev_thset_init(get_dev_thset());
 }
 
-void powermon_task (void)
+void task_powermon_run (void)
 {
-    Dev_powermon *pm = &dev.pm;
+    Dev_powermon *pm = get_dev_powermon();
     if (!pm_initialized) {
         powermon_task_init();
         pm_initialized = 1;
@@ -159,13 +155,12 @@ void powermon_task (void)
     int power_input_ok = get_input_power_valid(pm);
     int power_critical_ok = get_critical_power_valid(pm);
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
-    if (THSET_STATE_2 == dev.thset.state) {
+    if (THSET_STATE_2 == get_dev_thset()->state) {
         pm->pmState = PM_STATE_OVERHEAT;
     }
     switch (pm->pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
-        struct_Devices_init(&dev);
         pm->pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_STANDBY:
@@ -221,11 +216,11 @@ void powermon_task (void)
         break;
     case PM_STATE_OVERHEAT:
         if (!enable_power) {
-            clear_thermal_shutdown(&dev.thset);
+            clear_thermal_shutdown(get_dev_thset());
             pm->pmState = PM_STATE_OFF;
             break;
         }
-        if (THSET_STATE_0 == dev.thset.state)
+        if (THSET_STATE_0 == get_dev_thset()->state)
             pm->pmState = PM_STATE_STANDBY;
         break;
     case PM_STATE_PWRFAIL:
@@ -257,7 +252,7 @@ void powermon_task (void)
     } else {
         clearOldSensorStatus();
     }
-    dev_thset_run(&dev.thset);
+    dev_thset_run(get_dev_thset());
     sync_ipmi_sensors();
 
     if (oldState != pm->pmState) {

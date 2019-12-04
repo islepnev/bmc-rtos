@@ -17,27 +17,49 @@
 #ifndef DEV_POWERMON_TYPES_H
 #define DEV_POWERMON_TYPES_H
 
-typedef enum SwitchOnOff {
-    SWITCH_OFF = 0,
-    SWITCH_ON = 1,
-} SwitchOnOff;
+#include <stdint.h>
+#include <stdbool.h>
+#include "dev_common_types.h"
+#include "dev_pm_sensors_config.h"
 
-typedef struct pm_switches {
-    SwitchOnOff switch_5v;
-    SwitchOnOff switch_3v3;
-    SwitchOnOff switch_1v5;
-    SwitchOnOff switch_1v0;
-    SwitchOnOff switch_tdc_a;
-    SwitchOnOff switch_tdc_b;
-    SwitchOnOff switch_tdc_c;
-} pm_switches;
+#include "dev_pot.h"
 
-typedef enum MonState {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-} MonState;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    RAMP_NONE = 0,
+    RAMP_UP   = 1,
+    RAMP_DOWN = 2,
+} RampState;
+
+typedef struct {
+    SensorIndex index;
+    DeviceStatus deviceStatus;
+    SensorStatus sensorStatus;
+    RampState rampState;
+    uint32_t lastStatusUpdatedTick;
+    uint16_t busAddress;
+    bool isOptional;
+    bool hasShunt;
+    double shuntVal;
+    double busNomVoltage;
+    double current_lsb;
+    uint16_t cal;
+    const char *label;
+    // measurements
+    double busVoltage;
+//    double shuntVoltage;
+    double current;
+    double power;
+    // calculated
+    double busVoltageMin;
+    double busVoltageMax;
+    double currentMin;
+    double currentMax;
+    double powerMax;
+} pm_sensor;
 
 typedef enum {
     PM_STATE_INIT,
@@ -48,5 +70,47 @@ typedef enum {
     PM_STATE_PWRFAIL,
     PM_STATE_OVERHEAT
 } PmState;
+
+typedef struct pm_switches {
+    bool switch_5v;
+    bool switch_3v3;
+    bool switch_1v5;
+    bool switch_1v0;
+    bool switch_tdc_a;
+    bool switch_tdc_b;
+    bool switch_tdc_c;
+} pm_switches;
+
+typedef enum MonState {
+    MON_STATE_INIT = 0,
+    MON_STATE_DETECT = 1,
+    MON_STATE_READ = 2,
+    MON_STATE_ERROR = 3
+} MonState;
+
+typedef struct Dev_powermon {
+    PmState pmState;
+    MonState monState;
+    uint32_t stateStartTick;
+    int monErrors;
+    int monCycle;
+//    DeviceStatus present;
+   pm_sensor sensors[POWERMON_SENSORS];
+   bool vmePresent;
+   bool fpga_core_pgood;
+   bool ltm_pgood;
+   pm_switches sw;
+   pm_switches sw_state;
+   Dev_pots pots;
+} Dev_powermon;
+
+int monIsOn(const pm_switches *sw, SensorIndex index);
+SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
+SensorStatus getMonStatus(const Dev_powermon *pm);
+SensorStatus getPowermonStatus(const Dev_powermon *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_POWERMON_TYPES_H

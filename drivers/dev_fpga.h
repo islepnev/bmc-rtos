@@ -20,7 +20,7 @@
 
 #include <unistd.h>
 #include "stm32f7xx_hal_def.h"
-#include "dev_types.h"
+#include "dev_fpga_types.h"
 
 #ifdef __cplusplus
 extern "C" {

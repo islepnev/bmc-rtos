@@ -19,6 +19,10 @@
 
 #include "stm32f7xx_hal_def.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 
 void powermon_i2c_init(void);
@@ -33,5 +37,9 @@ void powermon_HAL_I2C_MemTxCpltCallback(void);
 void powermon_HAL_I2C_MemRxCpltCallback(void);
 void powermon_HAL_I2C_ErrorCallback(void);
 void powermon_HAL_I2C_AbortCpltCallback(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // POWERMON_I2C_DRIVER_H

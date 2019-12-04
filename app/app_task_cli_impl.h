@@ -12,23 +12,20 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef APP_TASK_PLL_H
-#define APP_TASK_PLL_H
-
-#include "cmsis_os.h"
+#ifndef APP_TASK_CLI_IMPL_H
+#define APP_TASK_CLI_IMPL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern osThreadId pllThreadId;
-void create_task_pll(void);
+void cliTask(void const *arg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_PLL_H
+#endif // APP_TASK_CLI_IMPL_H

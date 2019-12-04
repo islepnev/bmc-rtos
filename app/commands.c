@@ -15,6 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "commands.h"
+#include "error_handler.h"
 
 osMailQDef(mq_cmd_pots, 10, CommandPots); // Declare a mail queue, size 10
 

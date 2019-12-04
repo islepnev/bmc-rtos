@@ -18,8 +18,6 @@
 #ifndef APP_SHARED_DATA_H
 #define APP_SHARED_DATA_H
 
-#include "devices.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,13 +31,28 @@ typedef enum {
     DISPLAY_NONE,
 } display_mode_t;
 
-extern Devices dev;
 extern int enable_pll_run;
 extern display_mode_t display_mode;
 extern int enable_power;
 extern int enable_stats_display;
 
-const Devices* getDevices(void);
+struct Devices;
+struct Dev_powermon;
+struct Dev_fpga;
+struct Dev_ad9545;
+struct Dev_thset;
+struct Dev_at24c;
+
+struct Devices* getDevices(void);
+const struct Devices* getDevicesConst(void);
+
+struct Dev_powermon* get_dev_powermon(void);
+const struct Dev_powermon* get_dev_powermon_const(void);
+struct Dev_fpga *get_dev_fpga(void);
+struct Dev_clkmux *get_dev_clkmux(void);
+struct Dev_ad9545 *get_dev_pll(void);
+struct Dev_thset *get_dev_thset(void);
+struct Dev_at24c *get_dev_eeprom_config(void);
 
 void schedule_display_refresh(void);
 int read_display_refresh(void);

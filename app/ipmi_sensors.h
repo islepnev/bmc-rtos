@@ -20,8 +20,16 @@
 
 #include "ipmi_sensor_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void sync_ipmi_sensors(void);
 
 extern IpmiSensors ipmi_sensors;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // IPMI_SENSORS_H

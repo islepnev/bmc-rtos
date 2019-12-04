@@ -15,20 +15,16 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "app_task_cli.h"
+#include "app_task_cli_impl.h"
 
 #include <stdio.h>
 #include <stdint.h>
-#include "cmsis_os.h"
-#include "app_tasks.h"
+
 #include "microrl.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
 #include "commands_pot.h"
-
-osThreadId cliThreadId = NULL;
-enum { cliThreadStackSize = threadStackSize };
 
 // print callback for microrl library
 static void print (const char * str)
@@ -80,7 +76,7 @@ static void screen_handle_key(char ch)
     }
 }
 
-static void cliTask(void const *arg)
+void cliTask(void const *arg)
 {
     (void) arg;
 
@@ -112,15 +108,4 @@ static void cliTask(void const *arg)
         }
 //        microrl_insert_char (prl, ch);
     }
-}
-
-osThreadDef(cli, cliTask,    osPriorityNormal, 1, cliThreadStackSize);
-
-void create_task_cli(void)
-{
-    cliThreadId = osThreadCreate(osThread (cli), NULL);
-    if (cliThreadId == NULL) {
-        debug_print("Failed to create cli thread\n");
-    }
-
 }

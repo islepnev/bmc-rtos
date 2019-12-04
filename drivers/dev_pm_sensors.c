@@ -15,7 +15,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "dev_pm_sensors.h"
+#include "dev_pm_sensors_types.h"
 #include "ina226_i2c_hal.h"
 #include "i2c.h"
 
@@ -63,38 +63,6 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     d->label = monLabel(index);
     struct_pm_sensor_clear_measurements(d);
     struct_pm_sensor_clear_minmax(d);
-}
-
-SensorStatus pm_sensor_status(const pm_sensor *d)
-{
-    if (d->deviceStatus != DEVICE_NORMAL) {
-//        printf("%s: device unknown\n", d->label);
-        return SENSOR_UNKNOWN;
-    }
-
-    double V = d->busVoltage;
-    double VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
-    double VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
-    double VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
-    double VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
-    int VNorm = (V > VMinWarn) && (V < VMaxWarn);
-    int VWarn = (V > VMinCrit) && (V < VMaxCrit);
-    if (VNorm && VWarn)
-        return SENSOR_NORMAL;
-    if (VWarn)
-        return SENSOR_WARNING;
-//    int isOn = 1; // FIXME: monIsOn(deviceAddr);
-//    return isOn ? inRange2 : 1;
-    return SENSOR_CRITICAL;
-}
-
-int pm_sensor_isValid(const pm_sensor *d)
-{
-    SensorStatus status = pm_sensor_status(d);
-    if (status == SENSOR_NORMAL || status == SENSOR_WARNING)
-        return 1;
-    else
-        return 0;
 }
 
 static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)

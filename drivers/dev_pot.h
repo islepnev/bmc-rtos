@@ -21,6 +21,10 @@
 #include "dev_types.h"
 #include "dev_pm_sensors_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {DEV_POT_COUNT = 3};
 typedef enum {
     POT_TDC_A,
@@ -50,5 +54,9 @@ void dev_ad5141_reset(Dev_ad5141 *d);
 void dev_ad5141_inc(Dev_ad5141 *d);
 void dev_ad5141_dec(Dev_ad5141 *d);
 void dev_ad5141_write(Dev_ad5141 *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_POT_H

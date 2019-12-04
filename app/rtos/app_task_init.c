@@ -78,7 +78,7 @@ static void test_timers(void)
 
 void app_task_init(void)
 {
-    led_all_set_state(LED_ON);
+    led_all_set_state(true);
     initialize_serial_console_hardware();
     log_put(LOG_NOTICE, "Initializing"); // BUG: first message not shown
     log_put(LOG_NOTICE, "Initializing");
@@ -88,5 +88,5 @@ void app_task_init(void)
     // required for console I/O
 //    debug_print("Waiting for threads to start\n");
     commands_init();
-    led_all_set_state(LED_OFF);
+    led_all_set_state(false);
 }

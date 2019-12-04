@@ -20,16 +20,16 @@
 
 #include <stdint.h>
 
-#include "dev_types.h"
+#include "dev_pll_types.h"
 #include "ad9545_setup.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, int channel);
 void pllPrintRefStatusBits(Ref_Status_REG_Type r);
-ProfileRefSource_TypeDef pll_get_current_ref(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+ProfileRefSource_TypeDef pll_get_current_ref(const Dev_ad9545 *d, int channel);
 const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r);
 
 #ifdef __cplusplus

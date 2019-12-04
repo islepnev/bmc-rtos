@@ -19,6 +19,14 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 uint32_t freertos_get_cpu_load_percent(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FREERTOS_STATS_H

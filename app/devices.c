@@ -25,6 +25,7 @@
 #include "i2c.h"
 #include "display.h"
 
+/*
 void struct_pca9548_init(Dev_pca9548 *d)
 {
     d->present = DEVICE_UNKNOWN;
@@ -43,7 +44,6 @@ void struct_at24c_init(Dev_at24c *d)
 
 void struct_Devices_init(Devices *d)
 {
-    struct_dev_leds_init(&d->leds);
     struct_pca9548_init(&d->i2cmux);
     struct_at24c_init(&d->eeprom_config);
     struct_at24c_init(&d->eeprom_vxspb);
@@ -116,8 +116,9 @@ DeviceStatus devRun(Devices *d)
     return getDeviceStatus(d);
 }
 
-PgoodState dev_readPgood(Dev_powermon *pm)
+bool dev_readPgood(Dev_powermon *pm)
 {
     pm_read_pgood(pm);
     return get_all_pgood(pm);
 }
+*/

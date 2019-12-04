@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include "ansi_escape_codes.h"
-#include "devices.h"
+#include "devices_types.h"
 
 #ifdef __cplusplus
  extern "C" {

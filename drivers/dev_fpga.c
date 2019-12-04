@@ -24,7 +24,6 @@
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "system_status.h"
-#include "app_task_powermon.h"
 
 static uint16_t live_magic = 0x55AA;
 

@@ -29,8 +29,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_pin_defs.h"
-#include "app_tasks.h"
-#include "app_task_init.h"
+#include "rtos/app_tasks.h"
+#include "rtos/app_task_init.h"
 
 /* USER CODE END Includes */
 

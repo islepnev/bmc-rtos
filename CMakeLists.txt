@@ -17,8 +17,8 @@ SET(STM32_MIN_STACK_SIZE 0x200)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
 
-PROJECT(tdc72vxs4_rtos VERSION 1.11 LANGUAGES C)
-
+PROJECT(tdc72vxs4_rtos VERSION 1.11 LANGUAGES C CXX)
+set (CMAKE_CXX_STANDARD 11)
 ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
@@ -47,6 +47,7 @@ INCLUDE_DIRECTORIES(
    drivers
    common
    app
+   bsp
 )
 
 file(GLOB_RECURSE USER_SOURCES
@@ -54,7 +55,9 @@ file(GLOB_RECURSE USER_SOURCES
    Src/*.cpp
    common/*.c
    drivers/*.c
+   drivers/*.cpp
    app/*.c
+   app/*.cpp
 )
 file(GLOB_RECURSE USER_INCLUDES
    Inc/*.h
@@ -62,6 +65,7 @@ file(GLOB_RECURSE USER_INCLUDES
    common/*.h
    drivers/*.h
    app/*.h
+   bsp/*.h
    ${HAL_LL_EXTRA_INCLUDES}
 )
 
@@ -81,7 +85,9 @@ file(GLOB_RECURSE FREERTOS_SOURCES
     ${FREERTOS_DIR}/Source/event_groups.c
 
 )
+
 set(DATA_FILE
+   doc/Doxyfile.in
    README.md
    app/version.h.in
 )
@@ -122,11 +128,11 @@ if (DOXYGEN_FOUND)
     message("Doxygen build started")
 
     # note the option ALL which allows to build the docs together with the application
-#    add_custom_target( doc_doxygen ALL
-#        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#        COMMENT "Generating API documentation with Doxygen"
-#        VERBATIM )
+    add_custom_target( doc_doxygen
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
@@ -150,9 +156,24 @@ execute_process(
   OUTPUT_VARIABLE GIT_COMMIT_HASH
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+# Get the latest commit description
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} describe --always --tags --long --dirty
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_DESCR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 configure_file(
   ${CMAKE_SOURCE_DIR}/app/version.h.in
   ${CMAKE_SOURCE_DIR}/app/version.h
 )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/build_id.in
+  ${CMAKE_SOURCE_DIR}/build_id
+)
 list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/app/version.h)
+
+add_custom_command(TARGET ${ELF} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ELF}> ${CMAKE_PROJECT_NAME}-${GIT_DESCR}.elf
+)

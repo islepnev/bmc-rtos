@@ -54,7 +54,7 @@ SensorStatus getPowermonStatus(const Dev_powermon *pm)
     return systemStatus;
 }
 
-static void prvPowermonTask( void const *arg)
+static void start_task_powermon( void const *arg)
 {
     (void) arg;
 
@@ -62,7 +62,7 @@ static void prvPowermonTask( void const *arg)
 
     while (1)
     {
-        powermon_task();
+        task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;
@@ -72,7 +72,7 @@ static void prvPowermonTask( void const *arg)
     }
 }
 
-osThreadDef(powermon, prvPowermonTask, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, start_task_powermon, osPriorityHigh,      1, powermonThreadStackSize);
 
 void create_task_powermon(void)
 {

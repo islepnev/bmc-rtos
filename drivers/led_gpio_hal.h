@@ -18,14 +18,16 @@
 #ifndef LED_GPIO_HAL_H
 #define LED_GPIO_HAL_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "dev_leds_types.h"
 
-void led_all_set_state(LedState state);
-void led_set_state(DeviceLeds led, LedState state);
+void led_all_set_state(bool state);
+void led_set_state(DeviceLeds led, bool state);
 void led_toggle(DeviceLeds led);
 
 #ifdef __cplusplus
