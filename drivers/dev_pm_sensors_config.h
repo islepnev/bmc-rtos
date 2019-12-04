@@ -45,6 +45,9 @@ typedef enum {
     SENSOR_TDC_B,
     SENSOR_TDC_C,
     SENSOR_CLOCK_2V5
+#ifdef TDC64
+    ,SENSOR_TDC_D
+#endif
 } SensorIndex;
 
 int monIsOptional(SensorIndex index);

@@ -39,6 +39,9 @@ static int potBusAddress(PotIndex index)
     case POT_TDC_A: return 0x20;
     case POT_TDC_B: return 0x23;
     case POT_TDC_C: return 0x2C;
+#ifdef TDC64
+    case POT_TDC_D: return 0x2F;
+#endif
     }
     return 0;
 }
@@ -49,6 +52,9 @@ static int potSensorIndex(PotIndex index)
     case POT_TDC_A: return SENSOR_TDC_A;
     case POT_TDC_B: return SENSOR_TDC_B;
     case POT_TDC_C: return SENSOR_TDC_C;
+#ifdef TDC64
+    case POT_TDC_D: return SENSOR_TDC_D;
+#endif
     }
     return 0;
 }

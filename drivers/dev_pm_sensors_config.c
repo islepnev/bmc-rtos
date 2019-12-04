@@ -33,8 +33,11 @@ int monIsOptional(SensorIndex index)
     case SENSOR_FPGA_MGT_1V2:  return 0;
     case SENSOR_VMCU:          return 1; // FIXME
     case SENSOR_FPGA_1V8:      return 0;
-    case SENSOR_TDC_A:         return 1;
-    case SENSOR_TDC_B:         return 1;
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
     case SENSOR_TDC_C:         return 1;
     case SENSOR_CLOCK_2V5:     return 0;
     }
@@ -55,8 +58,11 @@ double monShuntVal(SensorIndex index)
     case SENSOR_FPGA_MGT_1V2:  return 0.002;
     case SENSOR_VMCU:          return 0.002;
     case SENSOR_FPGA_1V8:      return 0.002;
-    case SENSOR_TDC_A:         return 0.002;
-    case SENSOR_TDC_B:         return 0.002;
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
     case SENSOR_TDC_C:         return 0.002;
     case SENSOR_CLOCK_2V5:     return 0.002;
     }
@@ -77,8 +83,11 @@ double monVoltageMarginWarn(SensorIndex index)
     case SENSOR_FPGA_MGT_1V2:  return 0.03;
     case SENSOR_VMCU:          return 0.1;
     case SENSOR_FPGA_1V8:      return 0.05;
-    case SENSOR_TDC_A:         return 0.1;
-    case SENSOR_TDC_B:         return 0.1;
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
     case SENSOR_TDC_C:         return 0.1;
     case SENSOR_CLOCK_2V5:     return 0.03;
     }
@@ -99,8 +108,11 @@ double monVoltageMarginCrit(SensorIndex index)
     case SENSOR_FPGA_MGT_1V2:  return 0.05;
     case SENSOR_VMCU:          return 0.15;
     case SENSOR_FPGA_1V8:      return 0.05;
-    case SENSOR_TDC_A:         return 0.15;
-    case SENSOR_TDC_B:         return 0.15;
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
     case SENSOR_TDC_C:         return 0.15;
     case SENSOR_CLOCK_2V5:     return 0.05;
     }
@@ -121,8 +133,11 @@ double monVoltageNom(SensorIndex index)
     case SENSOR_FPGA_MGT_1V2:  return 1.2;
     case SENSOR_VMCU:          return 4.6;
     case SENSOR_FPGA_1V8:      return 1.8;
-    case SENSOR_TDC_A:         return 2.5;
-    case SENSOR_TDC_B:         return 2.5;
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
     case SENSOR_TDC_C:         return 2.5;
     case SENSOR_CLOCK_2V5:     return 2.5;
     }
@@ -147,6 +162,9 @@ int sensorBusAddress(SensorIndex index)
     case SENSOR_TDC_B:         return 0x4C;
     case SENSOR_TDC_C:         return 0x4D;
     case SENSOR_CLOCK_2V5:     return 0x4E;
+#ifdef TDC64
+    case SENSOR_TDC_D:         return 0x4F;
+#endif
     }
     return 0;
 }
@@ -168,6 +186,9 @@ const char *monLabel(SensorIndex index)
     case SENSOR_TDC_A:         return  "TDC-A 2.5"; // U, 2 mOhm
     case SENSOR_TDC_B:         return  "TDC-B 2.5"; // U, 2 mOhm
     case SENSOR_TDC_C:         return  "TDC-C 2.5"; // U, 2 mOhm
+#ifdef TDC64
+    case SENSOR_TDC_D:         return  "TDC-D 2.5"; // U, 2 mOhm
+#endif
     case SENSOR_CLOCK_2V5:     return  "Clock 2.5"; // U, 2 mOhm
     }
     return "???";

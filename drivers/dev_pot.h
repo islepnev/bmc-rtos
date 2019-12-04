@@ -21,11 +21,18 @@
 #include "dev_types.h"
 #include "dev_pm_sensors_config.h"
 
+#ifdef TDC64
+enum {DEV_POT_COUNT = 4};
+#else
 enum {DEV_POT_COUNT = 3};
+#endif
 typedef enum {
     POT_TDC_A,
     POT_TDC_B,
     POT_TDC_C
+#ifdef TDC64
+    , POT_TDC_D
+#endif
 } PotIndex;
 
 typedef struct Dev_ad5141 {
