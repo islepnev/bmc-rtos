@@ -44,7 +44,7 @@ void pll_task_run(void)
         old_enable_power = enable_power;
         pllSetStaticPins(enable_power);
     }
-    Dev_pll *d = get_dev_pll();
+    Dev_ad9545 *d = get_dev_pll();
     const PllState old_state = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:

@@ -57,7 +57,7 @@ typedef union
     uint32_t softreset7:1;
   } b;
   uint8_t raw;
-} AD9516_Config_REG_Type;
+} AD9545_Config_REG_Type;
 
 typedef union
 {
@@ -186,7 +186,7 @@ enum {
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
 
-static HAL_StatusTypeDef pllIoUpdate(Dev_pll *d)
+static HAL_StatusTypeDef pllIoUpdate(Dev_ad9545 *d)
 {
     uint8_t data = 1;
     HAL_StatusTypeDef ret = ad9545_write1(0x000F, data);
@@ -199,7 +199,7 @@ err:
     return ret;
 }
 
-static HAL_StatusTypeDef pllRegisterPulseBit_unused(Dev_pll *d, uint16_t address, uint8_t bitmask)
+static HAL_StatusTypeDef pllRegisterPulseBit_unused(Dev_ad9545 *d, uint16_t address, uint8_t bitmask)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -223,7 +223,7 @@ err:
     return ret;
 }
 
-DeviceStatus pllDetect(Dev_pll *d)
+DeviceStatus pllDetect(Dev_ad9545 *d)
 {
     int devicePresent = 0;
     int deviceError = 0;
@@ -259,7 +259,7 @@ DeviceStatus pllDetect(Dev_pll *d)
     return d->present;
 }
 
-OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
+OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     ret = ad9545_write1(0x0000, 0x81);
@@ -275,7 +275,7 @@ err:
     return DEV_ERROR;
 }
 
-OpStatusTypeDef pllSetupSysclk(Dev_pll *d)
+OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -312,7 +312,7 @@ err:
     return DEV_ERROR;
 }
 
-static HAL_StatusTypeDef pllCalibrateApll_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     uint8_t OpControlChannel0;
@@ -347,7 +347,7 @@ err:
     return ret;
 }
 
-static HAL_StatusTypeDef pllResetOutputDividers_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllResetOutputDividers_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -383,7 +383,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupOutputDrivers(Dev_pll *d)
+static OpStatusTypeDef pllSetupOutputDrivers(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -406,7 +406,7 @@ err:
     return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllClearAutomute_unused(Dev_pll *d)
+static OpStatusTypeDef pllClearAutomute_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -429,7 +429,7 @@ err:
     return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_pll *d)
+static OpStatusTypeDef pllSetupDistributionWithUpdate(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     Pll_OutputDividers_Setup_TypeDef setup = {0};
@@ -513,7 +513,7 @@ err:
     return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllSetupRef(Dev_pll *d)
+static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     uint8_t OpControlGlobal;
@@ -560,7 +560,7 @@ err:
     return DEV_ERROR;
 }
 
-static HAL_StatusTypeDef pllWriteProfile(Dev_pll *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
+static HAL_StatusTypeDef pllWriteProfile(Dev_ad9545 *d, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -612,7 +612,7 @@ err:
     return ret;
 }
 
-static OpStatusTypeDef pllSetupDPLLChannel(Dev_pll *d, PllChannel_TypeDef channel)
+static OpStatusTypeDef pllSetupDPLLChannel(Dev_ad9545 *d, PllChannel_TypeDef channel)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     Pll_DPLL_Setup_TypeDef dpll = {0};
@@ -646,7 +646,7 @@ err:
     return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllSetupDPLL(Dev_pll *d)
+static OpStatusTypeDef pllSetupDPLL(Dev_ad9545 *d)
 {
     OpStatusTypeDef ret = DEV_ERROR;
 
@@ -660,7 +660,7 @@ err:
     return DEV_ERROR;
 }
 
-static OpStatusTypeDef pllSetupDPLLMode(Dev_pll *d)
+static OpStatusTypeDef pllSetupDPLLMode(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -677,7 +677,7 @@ err:
     return DEV_ERROR;
 }
 
-OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d)
+OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -696,7 +696,7 @@ err:
     return DEV_ERROR;
 }
 
-static HAL_StatusTypeDef pllCalibrateAll(Dev_pll *d)
+static HAL_StatusTypeDef pllCalibrateAll(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -715,7 +715,7 @@ err:
     return ret;
 }
 
-static HAL_StatusTypeDef pllSyncAllDistDividers(Dev_pll *d)
+static HAL_StatusTypeDef pllSyncAllDistDividers(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -734,7 +734,7 @@ err:
     return ret;
 }
 
-static HAL_StatusTypeDef pllReadRefStatus(Dev_pll *d)
+static HAL_StatusTypeDef pllReadRefStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     uint8_t refa;
@@ -755,7 +755,7 @@ err:
     return ret;
 }
 
-static HAL_StatusTypeDef pllReadDPLLChannelStatus(Dev_pll *d, PllChannel_TypeDef channel)
+static HAL_StatusTypeDef pllReadDPLLChannelStatus(Dev_ad9545 *d, PllChannel_TypeDef channel)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -803,7 +803,7 @@ err:
     return ret;
 }
 
-OpStatusTypeDef pllReadStatus(Dev_pll *d)
+OpStatusTypeDef pllReadStatus(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
 
@@ -851,7 +851,7 @@ err:
     return DEV_ERROR;
 }
 
-OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d)
+OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d)
 {
     // read sysclk status
     HAL_StatusTypeDef ret = ad9545_read1(AD9545_LIVE_REG1_3001, &d->status.sysclk.raw);
@@ -863,7 +863,7 @@ err:
     return DEV_ERROR;
 }
 
-static HAL_StatusTypeDef pllReadAllRegisters_unused(Dev_pll *d)
+static HAL_StatusTypeDef pllReadAllRegisters_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     typedef struct {
@@ -937,7 +937,7 @@ void reset_I2C_Pll(void)
     __HAL_I2C_ENABLE(hPll);
 }
 
-OpStatusTypeDef pllSetup(Dev_pll *d)
+OpStatusTypeDef pllSetup(Dev_ad9545 *d)
 {
     if (DEV_OK != pllSetupOutputDrivers(d))
         return DEV_ERROR;

@@ -4,10 +4,10 @@ if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
-SET(FREERTOS_DIR FreeRTOS)
+SET(FREERTOS_DIR external/FreeRTOS)
 
 SET(STM32_CHIP STM32F769NIH)
-SET(STM32Cube_DIR STM32Cube)
+SET(STM32Cube_DIR external/STM32Cube)
 SET(CMAKE_MODULE_PATH cmake)
 SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 
@@ -17,21 +17,27 @@ SET(STM32_MIN_STACK_SIZE 0x200)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
 
-PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C CXX)
+# use one of: cru16, tdc64, tdc72, ttvxs
+set(BOARD "ttvxs" CACHE STRING "PCB variant")
+set_property(CACHE BOARD PROPERTY STRINGS cru16 tdc64 tdc72 ttvxs)
+message(STATUS "BOARD=${BOARD}")
+
+PROJECT(${BOARD}_rtos VERSION 1.11 LANGUAGES C CXX)
 set (CMAKE_CXX_STANDARD 11)
-#SET(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+ENABLE_LANGUAGE(ASM)
 
 # uncomment to build for old TTVXS v1.0
 #add_compile_definitions(TTVXS_1_0)
-
-ENABLE_LANGUAGE(ASM)
 
 FIND_PACKAGE(CMSIS REQUIRED)
 FIND_PACKAGE(STM32HAL COMPONENTS adc dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
 
 SET(HAL_LL_COMPONENTS ${HAL_LL_COMPONENTS} gpio usart)
+file(GLOB_RECURSE HAL_LL_EXTRA_INCLUDES
+   ${STM32Cube_DIR}/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.h
+)
 file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
-   STM32Cube/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.c
+   ${STM32Cube_DIR}/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.c
 )
 
 SET(STM32HAL_SOURCES ${STM32HAL_SOURCES} ${HAL_LL_EXTRA_SOURCES})
@@ -64,16 +70,18 @@ SET(LWIP_INCLUDE_DIRS
 INCLUDE_DIRECTORIES(
     ${CMSIS_INCLUDE_DIRS}
     ${STM32HAL_INCLUDE_DIR}
-   ${FREERTOS_DIR}/Source/CMSIS_RTOS
-   ${FREERTOS_DIR}/Source/include
-   ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1
+   ${FREERTOS_DIR}/CMSIS_RTOS
+   ${FREERTOS_DIR}/include
+   ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1
    ${LWIP_INCLUDE_DIRS}
    Inc
    Src
    drivers
    common
    app
-   bsp
+   app/rtos
+   bsp/${BOARD}
+   bsp/${BOARD}/mx_init
    eth
    system
 )
@@ -86,8 +94,10 @@ file(GLOB_RECURSE USER_SOURCES
    drivers/*.cpp
    app/*.c
    app/*.cpp
+   bsp/${BOARD}/*.c
+   bsp/${BOARD}/*.cpp
+   bsp/${BOARD}/mx_init/*.c
    eth/app_ethernet.c
-#   eth/app_httpd_main.c
    eth/ethernetif.c
    eth/httpserver-netconn.c
 )
@@ -97,7 +107,9 @@ file(GLOB_RECURSE USER_INCLUDES
    common/*.h
    drivers/*.h
    app/*.h
-   bsp/*.h
+   bsp/${BOARD}/*.h
+   bsp/${BOARD}/mx_init/*.h
+   ${HAL_LL_EXTRA_INCLUDES}
 )
 
 SET(PROJECT_SOURCES
@@ -106,14 +118,14 @@ SET(PROJECT_SOURCES
 )
 
 file(GLOB_RECURSE FREERTOS_SOURCES
-    ${FREERTOS_DIR}/Source/tasks.c
-    ${FREERTOS_DIR}/Source/timers.c
-    ${FREERTOS_DIR}/Source/queue.c
-    ${FREERTOS_DIR}/Source/list.c
-    ${FREERTOS_DIR}/Source/CMSIS_RTOS/cmsis_os.c
-    ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1/port.c
-    ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
-    ${FREERTOS_DIR}/Source/event_groups.c
+    ${FREERTOS_DIR}/tasks.c
+    ${FREERTOS_DIR}/timers.c
+    ${FREERTOS_DIR}/queue.c
+    ${FREERTOS_DIR}/list.c
+    ${FREERTOS_DIR}/CMSIS_RTOS/cmsis_os.c
+    ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1/port.c
+    ${FREERTOS_DIR}/portable/MemMang/heap_4.c
+    ${FREERTOS_DIR}/event_groups.c
 
 )
 

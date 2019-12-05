@@ -36,14 +36,14 @@ typedef enum {
     PLL_STATE_FATAL
 } PllState;
 
-typedef struct Dev_pll {
+typedef struct Dev_ad9545 {
     DeviceStatus present;
     AD9545_Status status;
     PllState fsm_state;
     uint32_t recoveryCount;
-} Dev_pll;
+} Dev_ad9545;
 
-SensorStatus get_pll_sensor_status(const Dev_pll *pll);
+SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll);
 
 #ifdef __cplusplus
 }

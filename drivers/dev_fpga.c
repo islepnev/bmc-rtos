@@ -94,7 +94,7 @@ DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset 
     return DEVICE_NORMAL;
 }
 
-DeviceStatus fpgaWritePllStatus(Dev_fpga *d, const struct Dev_pll *pll)
+DeviceStatus fpgaWritePllStatus(Dev_fpga *d, const struct Dev_ad9545 *pll)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;

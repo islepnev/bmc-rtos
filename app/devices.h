@@ -28,7 +28,7 @@ extern "C" {
 
 struct Dev_thset;
 struct Dev_at24c;
-struct Dev_pll;
+struct Dev_ad9545;
 struct Dev_powermon;
 struct Devices;
 

@@ -18,7 +18,6 @@
 #ifndef DEV_POWERMON_H
 #define DEV_POWERMON_H
 
-//#include "dev_types.h"
 #include "dev_powermon_types.h"
 #include <stdbool.h>
 

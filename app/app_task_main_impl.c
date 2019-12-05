@@ -14,12 +14,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_MAIN_IMPL_H
-#define APP_TASK_MAIN_IMPL_H
 
 #include "app_task_main_impl.h"
 
-//#include "devices_types.h"
 #include "dev_powermon_types.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
@@ -119,5 +116,3 @@ void task_main_run(void)
     led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);
     led_set_state(LED_GREEN, systemStatus == SENSOR_NORMAL);
 }
-
-#endif // APP_TASK_MAIN_IMPL_H

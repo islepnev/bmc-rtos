@@ -26,15 +26,15 @@
 extern "C" {
 #endif
 
-DeviceStatus pllDetect(Dev_pll *d);
-OpStatusTypeDef pllSetup(Dev_pll *d);
+DeviceStatus pllDetect(Dev_ad9545 *d);
+OpStatusTypeDef pllSetup(Dev_ad9545 *d);
 
 void reset_I2C_Pll(void);
-OpStatusTypeDef pllSoftwareReset(Dev_pll *d);
-OpStatusTypeDef pllSetupSysclk(Dev_pll *d);
-OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d);
-OpStatusTypeDef pllReadStatus(Dev_pll *d);
-OpStatusTypeDef pllReadSysclkStatus(Dev_pll *d);
+OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d);
+OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d);
+OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d);
+OpStatusTypeDef pllReadStatus(Dev_ad9545 *d);
+OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }

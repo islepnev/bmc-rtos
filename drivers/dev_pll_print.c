@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include "ad9545_util.h"
 
-void pllPrintRefStatus(const Dev_pll *d, PllRef_TypeDef ref_input)
+void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input)
 {
     Ref_Status_REG_Type r = d->status.ref[ref_input];
     printf("Ref %d  %02X",
@@ -30,7 +30,7 @@ void pllPrintRefStatus(const Dev_pll *d, PllRef_TypeDef ref_input)
     printf("\n");
 }
 
-void pllPrintDPLLChannelStatus(const Dev_pll *d, PllChannel_TypeDef channel)
+void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel)
 {
     const DPLL_Status *dpll_status = &d->status.dpll[channel];
     {
@@ -124,7 +124,7 @@ static char *pllStateStr(PllState pllState)
     }
 }
 
-void pllPrintStatus(const Dev_pll *d)
+void pllPrintStatus(const Dev_ad9545 *d)
 {
     printf("PLL FSM state %s\n", pllStateStr(d->fsm_state));
     printf("EEPROM status %02X %s%s%s%s\n",

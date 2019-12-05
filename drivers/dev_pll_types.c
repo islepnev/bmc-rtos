@@ -19,7 +19,7 @@
 #include "dev_common_types.h"
 #include "dev_pll.h"
 
-SensorStatus get_pll_sensor_status(const Dev_pll *pll)
+SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll)
 {
     if (DEVICE_NORMAL != pll->present)
         return SENSOR_UNKNOWN;

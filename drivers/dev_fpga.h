@@ -26,13 +26,13 @@ extern "C" {
 
 struct Dev_fpga;
 struct Dev_thset;
-struct Dev_pll;
+struct Dev_ad9545;
 
 void fpgaInit(void);
 DeviceStatus fpgaDetect(struct Dev_fpga *d);
 DeviceStatus fpgaWriteBmcVersion(struct Dev_fpga *d);
 DeviceStatus fpgaWriteBmcTemperature(struct Dev_fpga *d, const struct Dev_thset *thset);
-DeviceStatus fpgaWritePllStatus(struct Dev_fpga *d, const struct Dev_pll *pll);
+DeviceStatus fpgaWritePllStatus(struct Dev_fpga *d, const struct Dev_ad9545 *pll);
 
 #ifdef __cplusplus
 }

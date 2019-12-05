@@ -61,7 +61,7 @@ Dev_clkmux* get_dev_clkmux(void)
     return &dev.clkmux;
 }
 
-Dev_pll* get_dev_pll(void)
+Dev_ad9545* get_dev_pll(void)
 {
     return &dev.pll;
 }

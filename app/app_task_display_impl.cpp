@@ -71,7 +71,7 @@ static const char *sensor_status_str(SensorStatus status)
     }
 }
 
-static char *deviceStatusResultStr(DeviceStatus status)
+static const char *deviceStatusResultStr(DeviceStatus status)
 {
     switch (status) {
     case DEVICE_UNKNOWN:
@@ -247,7 +247,7 @@ void monPrintValues(const Dev_powermon *d)
     }
 }
 
-void pllPrint(const Dev_pll *d)
+void pllPrint(const Dev_ad9545 *d)
 {
     printf("PLL state:      %s %s", pllStateStr(d->fsm_state), sensorStatusStr(get_pll_sensor_status(d)));
     printf("%s\n", ANSI_CLEAR_EOL);
@@ -505,7 +505,7 @@ static void print_fpga(const Dev_fpga *fpga)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void print_pll(const Dev_pll *pll)
+static void print_pll(const Dev_ad9545 *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
     pllPrint(pll);

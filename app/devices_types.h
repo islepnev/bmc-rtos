@@ -45,7 +45,7 @@ typedef struct Devices {
     Dev_sfpiic sfpiic;
     Dev_vxsiic vxsiic;
     Dev_at24c eeprom_config;
-    Dev_pll pll;
+    Dev_ad9545 pll;
     Dev_auxpll auxpll;
     Dev_powermon pm;
     Dev_sdcard sd;
