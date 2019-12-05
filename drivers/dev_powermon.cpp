@@ -212,7 +212,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     pm->sw_state.switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
     pm->sw_state.switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
     pm->sw_state.switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    pm->sw_state.switch_5v = read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    pm->sw_state.switch_5v = pm->sw.switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     if (!ok) {
         const char *label_on = "ON";
