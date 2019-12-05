@@ -1,8 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : I2C.c
-  * Description        : This file provides code for the configuration
-  *                      of the I2C instances.
+  * Description        : TTVXS I2C init
   ******************************************************************************
   * @attention
   *
@@ -28,12 +27,12 @@
 #include "error_handler.h"
 /* USER CODE END 0 */
 
-I2C_HandleTypeDef hi2c1;
-I2C_HandleTypeDef hi2c2;
-I2C_HandleTypeDef hi2c3;
-I2C_HandleTypeDef hi2c4;
+I2C_HandleTypeDef hi2c1; // VXS switches 0x71-0x73, VXSIIC
+I2C_HandleTypeDef hi2c2; // Power Monitors
+I2C_HandleTypeDef hi2c3; // ?
+I2C_HandleTypeDef hi2c4; // PLL AD9545
 
-/* I2C1 init function */
+// I2C1: VXSIIC
 void MX_I2C1_Init(void)
 {
 
@@ -68,7 +67,7 @@ void MX_I2C1_Init(void)
 //  HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C1);
 
 }
-/* I2C2 init function */
+// I2C2: Power Monitors
 void MX_I2C2_Init(void)
 {
 
@@ -130,7 +129,7 @@ void MX_I2C3_Init(void)
   }
 
 }
-/* I2C4 init function */
+// I2C4:  PLL AD9545
 void MX_I2C4_Init(void)
 {
 
@@ -169,7 +168,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   if(i2cHandle->Instance==I2C1)
   {
   /* USER CODE BEGIN I2C1_MspInit 0 */
-
+  // VXS switches 0x71-0x73, VXSIIC
   /* USER CODE END I2C1_MspInit 0 */
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -199,7 +198,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   else if(i2cHandle->Instance==I2C2)
   {
   /* USER CODE BEGIN I2C2_MspInit 0 */
-
+    // Power Monitors
   /* USER CODE END I2C2_MspInit 0 */
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -247,7 +246,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   else if(i2cHandle->Instance==I2C4)
   {
   /* USER CODE BEGIN I2C4_MspInit 0 */
-
+  // PLL AD9545
   /* USER CODE END I2C4_MspInit 0 */
 
     __HAL_RCC_GPIOH_CLK_ENABLE();
@@ -265,7 +264,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
     /* I2C4 clock enable */
     __HAL_RCC_I2C4_CLK_ENABLE();
   /* USER CODE BEGIN I2C4_MspInit 1 */
-
+    HAL_NVIC_SetPriority(I2C4_EV_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C4_EV_IRQn);
+    HAL_NVIC_SetPriority(I2C4_ER_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C4_ER_IRQn);
   /* USER CODE END I2C4_MspInit 1 */
   }
 }
@@ -333,7 +335,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
   else if(i2cHandle->Instance==I2C4)
   {
   /* USER CODE BEGIN I2C4_MspDeInit 0 */
-
+  // PLL AD9545
   /* USER CODE END I2C4_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C4_CLK_DISABLE();
@@ -343,6 +345,8 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
     PH11     ------> I2C4_SCL
     */
     HAL_GPIO_DeInit(GPIOH, PLL_SDA_Pin|PLL_SCL_Pin);
+    HAL_NVIC_DisableIRQ(I2C4_EV_IRQn);
+    HAL_NVIC_DisableIRQ(I2C4_ER_IRQn);
 
   /* USER CODE BEGIN I2C4_MspDeInit 1 */
 

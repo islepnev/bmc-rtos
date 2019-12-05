@@ -22,6 +22,7 @@
 #include "dev_pll.h"
 #include "ad9545_i2c_hal.h"
 #include "logbuffer.h"
+#include "pll_i2c_driver.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -30,6 +31,11 @@ static uint32_t stateTicks(void)
 }
 
 static int old_enable_power = 0;
+
+void pll_task_init(void)
+{
+    pll_i2c_init();
+}
 
 /*
 1. Configure the system clock.

@@ -18,41 +18,55 @@
 
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
+#include "bsp.h"
+#include "pll_i2c_driver.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_I2C_MasterTxCpltCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_I2C_MasterTxCpltCallback();
 }
 
 void HAL_I2C_MasterRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_I2C_MasterRxCpltCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_I2C_MasterRxCpltCallback();
 }
 
 void HAL_I2C_MemTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_HAL_I2C_MemTxCpltCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_HAL_I2C_MemTxCpltCallback();
 }
 
 void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_HAL_I2C_MemRxCpltCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_HAL_I2C_MemRxCpltCallback();
 }
 
 void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_HAL_I2C_ErrorCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_HAL_I2C_ErrorCallback();
 }
 
 void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
+    if (hi2c == hPll)
+        pll_HAL_I2C_AbortCpltCallback();
     if (hi2c == vxsiic_hi2c)
         vxsiic_HAL_I2C_AbortCpltCallback();
 }

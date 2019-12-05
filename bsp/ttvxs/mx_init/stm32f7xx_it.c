@@ -104,6 +104,7 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 extern ETH_HandleTypeDef EthHandle;
 extern TIM_HandleTypeDef htim1;
 extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c4;
 extern SPI_HandleTypeDef hspi5;
 /* USER CODE BEGIN EV */
 
@@ -275,6 +276,34 @@ void I2C1_ER_IRQHandler(void)
   /* USER CODE BEGIN I2C1_ER_IRQn 1 */
 
   /* USER CODE END I2C1_ER_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C4 event interrupt.
+  */
+void I2C4_EV_IRQHandler(void)
+{
+    /* USER CODE BEGIN I2C4_EV_IRQn 0 */
+
+    /* USER CODE END I2C4_EV_IRQn 0 */
+    HAL_I2C_EV_IRQHandler(&hi2c4);
+    /* USER CODE BEGIN I2C4_EV_IRQn 1 */
+
+    /* USER CODE END I2C4_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C4 error interrupt.
+  */
+void I2C4_ER_IRQHandler(void)
+{
+    /* USER CODE BEGIN I2C4_ER_IRQn 0 */
+
+    /* USER CODE END I2C4_ER_IRQn 0 */
+    HAL_I2C_ER_IRQHandler(&hi2c4);
+    /* USER CODE BEGIN I2C4_ER_IRQn 1 */
+
+    /* USER CODE END I2C4_ER_IRQn 1 */
 }
 
 /**

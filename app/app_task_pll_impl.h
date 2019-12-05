@@ -18,6 +18,7 @@
 #ifndef APP_TASK_PLL_IMPL_H
 #define APP_TASK_PLL_IMPL_H
 
+void pll_task_init(void);
 void pll_task_run(void);
 
 #endif // APP_TASK_PLL_IMPL_H
