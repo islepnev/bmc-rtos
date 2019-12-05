@@ -17,7 +17,7 @@
 
 #include "ad9545_util.h"
 #include <stdio.h>
-#include "ad9545_setup.h"
+#include "bsp_ad9545.h"
 
 int64_t pll_ftw_rel_ppb(const Dev_ad9545 *d, int channel)
 {
@@ -67,5 +67,5 @@ ProfileRefSource_TypeDef pll_get_current_ref(const Dev_ad9545 *d, int channel)
         return PROFILE_REF_SOURCE_INVALID;
     Pll_DPLL_Setup_TypeDef dpll = {0};
     init_DPLL_Setup(&dpll, channel);
-    return (ProfileRefSource_TypeDef)dpll.profile[active_profile].Profile_Ref_Source;
+    return dpll.profile[active_profile].Profile_Ref_Source;
 }

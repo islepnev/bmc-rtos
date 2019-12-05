@@ -20,8 +20,8 @@
 
 #include <stdint.h>
 
-#include "ad9545_setup.h"
 #include "dev_pll_types.h"
+#include "ad9545_setup.h"
 
 #ifdef __cplusplus
 extern "C" {

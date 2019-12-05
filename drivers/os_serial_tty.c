@@ -22,9 +22,7 @@
 #include <errno.h>
 #include "cmsis_os.h"
 #include "bsp.h"
-#include "bsp_pin_defs.h"
 #include "stm32f7xx_ll_usart.h"
-#include "stm32f7xx_hal_gpio.h"
 #include "app_shared_data.h"
 #include "devices_types.h"
 
@@ -41,8 +39,6 @@ static void USART_TXE_Callback_FromISR(USART_TypeDef *usart)
     }
     if (osOK == event.status) {
         LL_USART_DisableIT_TXE(usart);
-        HAL_GPIO_WritePin(RJ45_LED_OR_A_GPIO_Port, RJ45_LED_OR_A_Pin, GPIO_PIN_RESET);
-//        HAL_GPIO_WritePin(RJ45_LED_G_A_GPIO_Port, RJ45_LED_G_A_Pin, GPIO_PIN_RESET);
     }
 }
 
@@ -84,8 +80,6 @@ int __io_putchar(int ch)
     if (!message_q_ttytx_id)
         return EIO;
     if (osOK == osMessagePut(message_q_ttytx_id, ch, osWaitForever)) {
-        HAL_GPIO_WritePin(RJ45_LED_OR_A_GPIO_Port, RJ45_LED_OR_A_Pin, GPIO_PIN_SET);
-//        HAL_GPIO_WritePin(RJ45_LED_G_A_GPIO_Port, RJ45_LED_G_A_Pin, GPIO_PIN_SET);
         LL_USART_EnableIT_TXE(TTY_USART);
         LL_USART_TransmitData8(TTY_USART, ch);
     }
@@ -94,8 +88,6 @@ int __io_putchar(int ch)
 
 void initialize_serial_console_hardware(void)
 {
-    HAL_GPIO_WritePin(RJ45_LED_OR_A_GPIO_Port, RJ45_LED_OR_A_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(RJ45_LED_G_A_GPIO_Port, RJ45_LED_G_A_Pin, GPIO_PIN_SET);
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
     message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
     LL_USART_EnableIT_RXNE(TTY_USART);

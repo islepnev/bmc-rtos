@@ -22,13 +22,14 @@
 #include "i2c.h"
 #include "bsp.h"
 #include "ad9545_i2c_hal.h"
-#include "ad9545_setup.h"
+#include "bsp_ad9545.h"
 #include "ad9545_status.h"
 #include "dev_pll_print.h"
 #include "dev_pll_types.h"
 #include "ansi_escape_codes.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
+#include "pll_i2c_driver.h"
 
 static const char *OpStatusErrorStr(int status)
 {
@@ -57,7 +58,7 @@ typedef union
     uint32_t softreset7:1;
   } b;
   uint8_t raw;
-} AD9545_Config_REG_Type;
+} REG_CONFIG_Type;
 
 typedef union
 {
@@ -315,10 +316,9 @@ err:
 static HAL_StatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    uint8_t OpControlChannel0;
-    uint8_t OpControlChannel1;
+
     // calibrate APLL 0 (requires IO Update, not autoclearing)
-    OpControlChannel0 = 0x02; // calibrate
+    uint8_t OpControlChannel0 = 0x02; // calibrate
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -330,7 +330,7 @@ static HAL_StatusTypeDef pllCalibrateApll_unused(Dev_ad9545 *d)
         goto err;
 
     // calibrate APLL 1 (requires IO Update, not autoclearing)
-    OpControlChannel1 = 0x02; // calibrate
+    uint8_t OpControlChannel1 = 0x02; // calibrate
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate(d)))
@@ -516,7 +516,6 @@ err:
 static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-    uint8_t OpControlGlobal;
     PllRefSetup_TypeDef refSetup = {0};
     init_PllRefSetup(&refSetup);
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_0300, refSetup.REFA_Receiver_Settings)))
@@ -550,7 +549,7 @@ static OpStatusTypeDef pllSetupRef(Dev_ad9545 *d)
     if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0453, refSetup.REFB_Jitter_Tolerance)))
         goto err;
 
-    OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
+    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
     if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
         goto err;
 

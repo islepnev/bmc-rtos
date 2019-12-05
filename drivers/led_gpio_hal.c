@@ -32,19 +32,19 @@ void led_set_state(DeviceLeds led, bool state)
 {
     switch(led) {
     case LED_RED :
-        HAL_GPIO_WritePin(FP_LED_B0_GPIO_Port,    FP_LED_B0_Pin,    state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-        break;
-    case LED_YELLOW :
-        HAL_GPIO_WritePin(FP_LED_B1_GPIO_Port,    FP_LED_B1_Pin,    state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-        break;
-    case LED_GREEN :
-        HAL_GPIO_WritePin(FP_LED_B2_GPIO_Port,    FP_LED_B2_Pin,    state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-        break;
-    case LED_INT_RED :
         HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin,    state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
-    case LED_INT_GREEN :
+    case LED_YELLOW :
+        HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        break;
+    case LED_GREEN :
         HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin,  state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        break;
+    case LED_INT_RED :
+        HAL_GPIO_WritePin(LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        break;
+    case LED_INT_GREEN :
+        HAL_GPIO_WritePin(LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
         break;
     }
 }
@@ -53,19 +53,19 @@ void led_toggle(DeviceLeds led)
 {
     switch(led) {
     case LED_RED :
-        HAL_GPIO_TogglePin(FP_LED_B0_GPIO_Port,    FP_LED_B0_Pin);
-        break;
-    case LED_YELLOW :
-        HAL_GPIO_TogglePin(FP_LED_B1_GPIO_Port,    FP_LED_B1_Pin);
-        break;
-    case LED_GREEN :
-        HAL_GPIO_TogglePin(FP_LED_B2_GPIO_Port,    FP_LED_B2_Pin);
-        break;
-    case LED_INT_RED :
         HAL_GPIO_TogglePin(LED_RED_B_GPIO_Port,    LED_RED_B_Pin);
         break;
-    case LED_INT_GREEN :
+    case LED_YELLOW :
+        HAL_GPIO_TogglePin(LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin);
+        break;
+    case LED_GREEN :
         HAL_GPIO_TogglePin(LED_GREEN_B_GPIO_Port,  LED_GREEN_B_Pin);
+        break;
+    case LED_INT_RED :
+        HAL_GPIO_TogglePin(LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin);
+        break;
+    case LED_INT_GREEN :
+        HAL_GPIO_TogglePin(LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin);
         break;
     }
 }
