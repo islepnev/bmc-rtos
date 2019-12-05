@@ -46,7 +46,9 @@
 #include "dev_thset.h"
 
 #include "app_shared_data.h"
+#include "rtos/freertos_stats.h"
 #include "cmsis_os.h"
+#include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_rtc.h"
 #include "rtc_util.h"
 #include "ethernetif.h"
@@ -404,6 +406,8 @@ static void print_header(void)
     uint8_t macaddress[6];
     get_mac_address(macaddress);
     printf("  MAC:%02X:%02X:%02X:%02X:%02X:%02X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
+    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
+    printf(" %lu%%", freertos_get_cpu_load_percent());
     if (display_mode == DISPLAY_NONE) {
         printf("     display refresh paused");
     } else {
