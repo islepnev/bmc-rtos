@@ -36,12 +36,14 @@ void struct_pm_sensor_clear_minmax(pm_sensor *d)
     d->busVoltageMax = 0;
     d->currentMin = 0;
     d->currentMax = 0;
+    d->powerMax = 0;
 }
 
 void struct_pm_sensor_clear_measurements(pm_sensor *d)
 {
     d->busVoltage = 0;
     d->current = 0;
+    d->power = 0;
 }
 
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
@@ -56,6 +58,9 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
     d->hasShunt = monShuntVal(index) > 1e-6;
     d->shuntVal = monShuntVal(index);
     d->busNomVoltage = monVoltageNom(index);
+    const double current_max = 16; // amperers
+    d->current_lsb = current_max / 32768.0;
+    d->cal = 0.00512 / (d->current_lsb * d->shuntVal);
     d->label = monLabel(index);
     struct_pm_sensor_clear_measurements(d);
     struct_pm_sensor_clear_minmax(d);
@@ -86,6 +91,13 @@ static void pm_sensor_set_readCurrent(pm_sensor *d, double value)
         d->currentMax = value;
     if (value < d->currentMin)
         d->currentMin = value;
+}
+
+static void pm_sensor_set_readPower(pm_sensor *d, double value)
+{
+    d->power = value;
+    if (value > d->powerMax)
+        d->powerMax = value;
 }
 
 static void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
@@ -133,6 +145,9 @@ static HAL_StatusTypeDef pm_sensor_write_conf(pm_sensor *d)
     uint16_t data;
     data = default_configreg().raw;
     HAL_StatusTypeDef ret = ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data);
+    if (HAL_OK != ret)
+        return ret;
+    ret = ina226_i2c_Write(deviceAddr, INA226_REG_CAL, d->cal);
     return ret;
 }
 
@@ -154,16 +169,30 @@ DeviceStatus pm_sensor_detect(pm_sensor *d)
     return d->deviceStatus;
 }
 
+#define INA226_USE_INTERNAL_CALC 0
+
 DeviceStatus pm_sensor_read(pm_sensor *d)
 {
     uint16_t deviceAddr = d->busAddress;
+//    uint16_t rawMask = 0;
     uint16_t rawVoltage = 0;
+    uint16_t rawShuntVoltage = 0;
+#if INA226_USE_INTERNAL_CALC
     uint16_t rawCurrent = 0;
+    uint16_t rawPower = 0;
+#endif
     configreg_t configreg = {0};
     int err = 0;
     while (1) {
-        if ((HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage))
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawCurrent))
+        if (1
+//                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MASK, &rawMask))
+//                && (rawMask & 0x0400)
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage))
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawShuntVoltage))
+#if INA226_USE_INTERNAL_CALC
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CURRENT, &rawCurrent))
+                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_POWER, &rawPower))
+#endif
                 && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw))
                 && (configreg.raw == default_configreg().raw)) {
             break;
@@ -177,12 +206,19 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
             return d->deviceStatus;
         }
     }
-    pm_sensor_set_readVoltage(d, (int16_t)rawVoltage * 1.25e-3f);
-    const double shuntVoltage = (int16_t)rawCurrent * 2.5e-6f;
+    const double readVoltage  = (int16_t)rawVoltage * 1.25e-3f;
+    pm_sensor_set_readVoltage(d, readVoltage);
+#if INA226_USE_INTERNAL_CALC
+    pm_sensor_set_readCurrent(d, d->current_lsb * (int16_t)rawCurrent);
+    pm_sensor_set_readPower(d, (int16_t)rawPower * d->current_lsb * 25.0);
+#else
+    const double shuntVoltage = (int16_t)rawShuntVoltage * 2.5e-6f;
     double readCurrent = 0;
     if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
         readCurrent = shuntVoltage / d->shuntVal;
     pm_sensor_set_readCurrent(d, readCurrent);
+    pm_sensor_set_readPower(d, readCurrent * readVoltage);
+#endif
     pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
     return d->deviceStatus;
 }

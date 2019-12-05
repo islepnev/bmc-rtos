@@ -17,22 +17,20 @@
 
 #include "app_task_init.h"
 #include <stdlib.h>
-#include "stm32f7xx_hal.h"
-#include "FreeRTOSConfig.h"
 #include "app_shared_data.h"
-#include "devices_types.h"
 #include "ad9545_i2c_hal.h"
+#include "FreeRTOSConfig.h"
+#include "cmsis_os.h"
+#include "stm32f7xx_hal.h"
+#include "devices_types.h"
 #include "dev_powermon.h"
 #include "os_serial_tty.h"
 #include "ansi_escape_codes.h"
 #include "debug_helpers.h"
 #include "led_gpio_hal.h"
 #include "bsp.h"
-
-static void setStaticPins(int enable)
-{
-    pllSetStaticPins(enable);
-}
+#include "logbuffer.h"
+#include "commands.h"
 
 static int test_cpu_tick(void)
 {
@@ -87,11 +85,12 @@ void app_task_init(void)
     dev->pcb_ver = detect_pcb_version();
     led_all_set_state(true);
     initialize_serial_console_hardware();
-    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
+    log_put(LOG_NOTICE, "Initializing");
+//    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
     configureTimerForRunTimeStats();
-    setStaticPins(enable_power);
-    test_timers();
+//    test_timers();
     // required for console I/O
-    debug_print("Waiting for threads to start\n");
+//    debug_print("Waiting for threads to start\n");
+    commands_init();
     led_all_set_state(false);
 }

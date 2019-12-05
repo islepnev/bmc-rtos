@@ -14,21 +14,12 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#ifndef APP_TASK_PLL_H
-#define APP_TASK_PLL_H
+#ifndef COMMANDS_H
+#define COMMANDS_H
 
 #include "cmsis_os.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-extern osThreadId pllThreadId;
-void create_task_pll(void);
+void commands_init(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif // APP_TASK_PLL_H
+#endif // COMMANDS_H

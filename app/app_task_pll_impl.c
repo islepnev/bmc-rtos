@@ -19,6 +19,7 @@
 #include "cmsis_os.h"
 #include "app_shared_data.h"
 #include "bsp.h"
+#include "gpio.h"
 #include "dev_pll.h"
 #include "ad9545_i2c_hal.h"
 #include "logbuffer.h"
@@ -30,10 +31,9 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static int old_enable_power = 0;
-
 void pll_task_init(void)
 {
+    ad9545_gpio_init();
     pll_i2c_init();
 }
 
@@ -46,16 +46,18 @@ void pll_task_init(void)
 */
 void pll_task_run(void)
 {
-    if (old_enable_power != enable_power) {
-        old_enable_power = enable_power;
-        pllSetStaticPins(enable_power);
-    }
     Dev_ad9545 *d = get_dev_pll();
     const PllState old_state = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:
-        if (enable_pll_run && enable_power)
-            d->fsm_state = PLL_STATE_RESET;
+        if (enable_pll_run && enable_power) {
+            if (pll_gpio_test()) {
+                d->fsm_state = PLL_STATE_RESET;
+            } else {
+                log_put(LOG_ERR, "PLL GPIO test fail");
+                d->fsm_state = PLL_STATE_ERROR;
+            }
+        }
         break;
     case PLL_STATE_RESET:
         reset_I2C_Pll();

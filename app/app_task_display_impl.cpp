@@ -43,6 +43,7 @@
 #include "debug_helpers.h"
 #include "dev_powermon_types.h"
 #include "dev_pm_sensors_types.h"
+#include "dev_powermon.h"
 #include "dev_thset.h"
 
 #include "app_shared_data.h"
@@ -196,26 +197,39 @@ static void pm_pgood_print(const Dev_powermon *pm)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
+static void pm_sensor_print_header(void)
+{
+    printf("%10s %6s %6s %6s %5s", "sensor ", "  V  ", "  A  ", " A max ", "  W  ");
+    printf(ANSI_CLEAR_EOL "\n");
+}
+
+static void pm_sensor_print_values(const pm_sensor *d, int isOn)
+{
+    SensorStatus sensorStatus = pm_sensor_status(d);
+    int offvoltage = !isOn && (d->busVoltage > 0.1);
+    const char *color = "";
+    switch (sensorStatus) {
+    case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
+    case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
+    case SENSOR_WARNING:  color = ANSI_YELLOW; break;
+    case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
+    }
+    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
+    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+        int backfeed = (d->current < -0.010);
+        printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
+    } else {
+        printf("         ");
+    }
+    //        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
+}
+
 static void pm_sensor_print(const pm_sensor *d, int isOn)
 {
     printf("%10s", d->label);
     if (d->deviceStatus == DEVICE_NORMAL) {
-        SensorStatus sensorStatus = pm_sensor_status(d);
-        const char *color = "";
-        switch (sensorStatus) {
-        case SENSOR_UNKNOWN:  color = ANSI_YELLOW; break;
-        case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
-        case SENSOR_WARNING:  color = ANSI_YELLOW; break;
-        case SENSOR_CRITICAL: color = ANSI_RED;    break;
-        }
-        printf("%s % 6.3f%s", color, d->busVoltage, ANSI_CLEAR);
-        if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-            printf(" % 6.3f % 6.3f", d->current, d->currentMax);
-        } else {
-            printf("         ");
-        }
-//        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
-        printf(" %s", isOn ? (pm_sensor_isValid(d) ? STR_RESULT_NORMAL : STR_RESULT_FAIL) : STR_RESULT_OFF);
+        pm_sensor_print_values(d, isOn);
+        printf(" %s", isOn ? sensorStatusStr(d->sensorStatus) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
     }
@@ -234,13 +248,7 @@ static const char *monStateStr(MonState monState)
 
 void monPrintValues(const Dev_powermon *d)
 {
-//    printf("Sensors state:  %s %s",
-//           monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
-//    if (d->monErrors)
-//        printf("     %d errors", d->monErrors);
-//    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("%10s %6s %6s %6s", "sensor ", "  V  ", "  A  ", " A max ");
-    printf(ANSI_CLEAR_EOL "\n");
+    pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
             pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, (SensorIndex)i));
@@ -251,13 +259,13 @@ void monPrintValues(const Dev_powermon *d)
 
 void pllPrint(const Dev_ad9545 *d)
 {
-    printf("PLL state:      %s %s", pllStateStr(d->fsm_state), sensorStatusStr(get_pll_sensor_status(d)));
+    printf("PLL AD9545:      %s %s", pllStateStr(d->fsm_state), sensorStatusStr(get_pll_sensor_status(d)));
     printf("%s\n", ANSI_CLEAR_EOL);
     if (d->fsm_state == PLL_STATE_RUN) {
-        printf("Ref A:");
+        printf("  Ref A:");
         pllPrintRefStatusBits(d->status.ref[REFA]);
         printf("%s\n", ANSI_CLEAR_EOL);
-        printf("Ref B:");
+        printf("  Ref B:");
         pllPrintRefStatusBits(d->status.ref[REFB]);
         printf("%s\n", ANSI_CLEAR_EOL);
         for (int channel=0; channel<DPLL_COUNT; channel++) {
@@ -267,7 +275,7 @@ void pllPrint(const Dev_ad9545 *d)
             if (ref0 != PROFILE_REF_SOURCE_INVALID)
                 ref0str = pllProfileRefSourceStr(ref0);
             bool locked = (channel == DPLL1) ? d->status.sysclk.b.pll1_locked : d->status.sysclk.b.pll0_locked;
-            printf("PLL%d: %s ref %-5s %lld ppb",
+            printf("  DPLL%d: %s ref %-5s %lld ppb",
                    channel,
                    locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
                    ref0str,
@@ -283,8 +291,9 @@ void pllPrint(const Dev_ad9545 *d)
 
 void auxpllPrint(const Dev_auxpll *d)
 {
-    printf("AUXPLL state:   %s %s", auxpllStateStr(d->fsm_state), sensorStatusStr(get_auxpll_sensor_status(d)));
+    printf("PLL AD9516:   %s %s", auxpllStateStr(d->fsm_state), sensorStatusStr(get_auxpll_sensor_status(d)));
     printf("%s\n", ANSI_CLEAR_EOL);
+    printf("  ");
     auxpllPrintStatus(d);
 //    printf("PLL readback: %02X", d->status.pll_readback.raw);
 //    if (d->fsm_state == AUXPLL_STATE_RUN) {
@@ -440,7 +449,7 @@ static void print_powermon(const Dev_powermon *pm)
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
     } else {
-        print_pm_switches(&pm->sw);
+        print_pm_switches(&pm->sw_state);
         pm_pgood_print(pm);
         printf("%s\n", ANSI_CLEAR_EOL);
     }
@@ -454,7 +463,10 @@ static void print_sensors(const Dev_powermon *pm)
     } else {
         print_goto(DISPLAY_SENSORS_Y, 1);
         SensorStatus sensorStatus = pm_sensors_getStatus(pm);
-        printf("System power supplies: %s\n", sensorStatusStr(sensorStatus));
+        printf("Power supplies: %4.1f W, %4.1f W max %s\n",
+               pm_get_power_w(pm),
+               pm_get_power_max_w(pm),
+               sensorStatusStr(sensorStatus));
         monPrintValues(pm);
     }
 }
@@ -653,11 +665,11 @@ void display_task_run(void)
     struct tm tm;
     get_rtc_tm(&tm);
     int time_updated = old_tm.tm_sec != tm.tm_sec;
-    int need_refresh = tick > old_tick + DISPLAY_REFRESH_TIME_MS;
+    if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
+        schedule_display_refresh();
     if (old_display_mode != display_mode)
-        need_refresh = 1;
-    if (time_updated)
-        need_refresh = 1;
+        schedule_display_refresh();
+    int need_refresh = read_display_refresh();
     if (!need_refresh)
         return;
     old_tick = tick;

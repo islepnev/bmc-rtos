@@ -63,6 +63,9 @@ struct Dev_vxsiic *get_dev_vxsiic(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 struct Dev_at24c *get_dev_eeprom_config(void);
 
+void schedule_display_refresh(void);
+int read_display_refresh(void);
+
 #ifdef __cplusplus
 }
 #endif

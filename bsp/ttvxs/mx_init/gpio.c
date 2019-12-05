@@ -1,34 +1,31 @@
-/**
-  ******************************************************************************
-  * File Name          : gpio.c
-  * Description        : This file provides code for the configuration
-  *                      of all used GPIO pins.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+/*
+**    TTVXS GPIO init
+**
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
-/* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
-/* USER CODE BEGIN 0 */
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "bsp_pin_defs.h"
-/* USER CODE END 0 */
 
-/*----------------------------------------------------------------------------*/
-/* Configure GPIO                                                             */
-/*----------------------------------------------------------------------------*/
-/* USER CODE BEGIN 1 */
+typedef struct {
+    GPIO_TypeDef* GPIOx;
+    uint16_t pin;
+} pin_def_t;
 
 void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state)
 {
@@ -41,20 +38,6 @@ bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin)
     return HAL_GPIO_ReadPin(gpio, pin) == GPIO_PIN_SET;
 }
 
-typedef struct {
-    GPIO_TypeDef* GPIOx;
-    uint16_t pin;
-} pin_def_t;
-
-/* USER CODE END 1 */
-
-/** Configure pins as
-        * Analog
-        * Input
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
 void MX_GPIO_Init(void)
 {
 
@@ -102,8 +85,6 @@ void MX_GPIO_Init(void)
       HAL_GPIO_Init(on_pins[i].GPIOx, &GPIO_InitStruct);
   }
 
-  HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, GPIO_PIN_RESET);
-
   // RFU*
   static const pin_def_t rfu_pins[15] = {
       {RFU0_GPIO_Port, RFU0_Pin},
@@ -133,7 +114,7 @@ void MX_GPIO_Init(void)
   }
 
   HAL_GPIO_WritePin(GPIOI, I2C_RESET3_B_Pin
-                          |PLL_RESET_B_Pin|GPIO1_Pin, GPIO_PIN_RESET);
+                          |GPIO1_Pin, GPIO_PIN_RESET);
 
   HAL_GPIO_WritePin(GPIOG, I2C_RESET2_B_Pin|RJ45_LED_G_A_Pin|RJ45_LED_OR_A_Pin, GPIO_PIN_RESET);
 
@@ -155,37 +136,6 @@ void MX_GPIO_Init(void)
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
       HAL_GPIO_Init(led_pins[i].GPIOx, &GPIO_InitStruct);
   }
-
-  // PLL AD9545
-  GPIO_InitStruct.Pin = PLL_M0_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PLL_M0_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = PLL_M3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(PLL_M3_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = PLL_M4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PLL_M4_GPIO_Port, &GPIO_InitStruct);
-
-  HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, GPIO_PIN_RESET);
-  GPIO_InitStruct.Pin = PLL_M5_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PLL_M5_GPIO_Port, &GPIO_InitStruct);
-
-  HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, GPIO_PIN_RESET);
-  GPIO_InitStruct.Pin = PLL_M6_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PLL_M6_GPIO_Port, &GPIO_InitStruct);
 
   // PGOOD, PEN
   static const pin_def_t pgood_pins[6] = {
@@ -212,7 +162,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(PGOOD_PWR_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = I2C_RESET3_B_Pin
-                          |PLL_RESET_B_Pin|GPIO1_Pin;
+                          |GPIO1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -293,9 +243,3 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(AD9516_CS_B_GPIO_Port, &GPIO_InitStruct);
 #endif
 }
-
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

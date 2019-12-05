@@ -35,7 +35,6 @@ void auxpll_task_run(void)
 {
     if (old_enable_power != enable_power) {
         old_enable_power = enable_power;
-        // auxpllSetStaticPins(enable_power);
     }
     Dev_auxpll *d = get_dev_auxpll();
     const AuxPllState old_state = d->fsm_state;

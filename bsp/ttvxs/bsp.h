@@ -21,6 +21,7 @@
 #define BSP_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define TTY_USART USART1 // Front panel RJ45
 // #define TTY_USART USART2 // USB-RS232
@@ -43,11 +44,9 @@ extern struct __SPI_HandleTypeDef * const ad9516_spi;
 #endif
 
 uint32_t detect_pcb_version(void);
-void pll_enable_interface(int enable);
-void pllSetStaticPins(int enable);
-void pllReset(void);
+void pll_enable_interface(bool enable);
 void pm_sensor_reset_i2c_master(void);
-void fpga_enable_interface(int enable);
+void fpga_enable_interface(bool enable);
 
 #ifdef __cplusplus
 }

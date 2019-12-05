@@ -37,7 +37,7 @@ static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], (SensorIndex)i);
+        struct_pm_sensor_init(&d->sensors[i], static_cast<SensorIndex>(i));
     }
 }
 
@@ -335,4 +335,32 @@ MonState runMon(Dev_powermon *pm)
         pm_setStateStartTick(pm);
     }
     return pm->monState;
+}
+
+static double get_sensor_power_w(const pm_sensor *d)
+{
+    SensorStatus sensor_status = pm_sensor_status(d);
+    int sensor_present = ((sensor_status == SENSOR_NORMAL) || (sensor_status == SENSOR_WARNING));
+    if (sensor_present)
+        return d->busVoltage * d->current;
+    else
+        return 0;
+}
+
+double pm_get_power_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_VXS_5V]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_MCB_4V5]);
+    return mw;
+}
+
+double pm_get_power_max_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += pm->sensors[SENSOR_5VPC].powerMax;
+    mw += pm->sensors[SENSOR_VXS_5V].powerMax;
+    mw += pm->sensors[SENSOR_MCB_4V5].powerMax;
+    return mw;
 }

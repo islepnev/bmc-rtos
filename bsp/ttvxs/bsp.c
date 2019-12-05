@@ -48,32 +48,13 @@ uint32_t detect_pcb_version(void)
     return a1 * 2 + a0;
 }
 
-void pllSetStaticPins(int enable)
-{
-    GPIO_PinState low = GPIO_PIN_RESET;
-    GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    //    HAL_GPIO_WritePin(PLL_M0_GPIO_Port, PLL_M0_Pin, low);
-    HAL_GPIO_WritePin(PLL_M3_GPIO_Port, PLL_M3_Pin, low); // M3=0 - do not load eeprom
-    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, high);   // M4=1 - I2C mode
-    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, low); // M5=0 - I2C address offset
-    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, high);   // M6=1 - I2C address offset
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, high);
-}
-
-void pllReset()
-{
-    // toggle reset_b pin
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
-}
-
 void pm_sensor_reset_i2c_master(void)
 {
     __HAL_I2C_DISABLE(hi2c_sensors);
     __HAL_I2C_ENABLE(hi2c_sensors);
 }
 
-void fpga_enable_interface(int enable)
+void fpga_enable_interface(bool enable)
 {
     GPIO_PinState low = GPIO_PIN_RESET;
     GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;

@@ -90,3 +90,17 @@ Dev_at24c *get_dev_eeprom_config(void)
 {
     return &dev.eeprom_config;
 }
+static int display_refresh_flag = 0;
+
+void schedule_display_refresh(void)
+{
+    display_refresh_flag = 1;
+}
+
+int read_display_refresh(void)
+{
+    // FIXME: make atomic
+    int value = display_refresh_flag;
+    display_refresh_flag = 0;
+    return value;
+}

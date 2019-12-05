@@ -18,6 +18,8 @@
 #ifndef DEV_PLL_H
 #define DEV_PLL_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
 #include "dev_pll_types.h"
 #include "ad9545_setup.h"
@@ -35,6 +37,10 @@ OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d);
 OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d);
 OpStatusTypeDef pllReadStatus(Dev_ad9545 *d);
 OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d);
+
+void pllReset(void);
+bool pll_gpio_test(void);
+void ad9545_gpio_init(void);
 
 #ifdef __cplusplus
 }
