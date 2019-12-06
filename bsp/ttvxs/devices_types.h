@@ -21,7 +21,7 @@
 #include "dev_eeprom_types.h"
 #include "dev_fpga_types.h"
 #include "dev_ttvxs_clkmux_types.h"
-#include "dev_pll_types.h"
+#include "dev_ad9545.h"
 #include "dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"

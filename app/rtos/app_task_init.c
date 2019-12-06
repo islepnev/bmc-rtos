@@ -18,7 +18,7 @@
 #include "app_task_init.h"
 #include <stdlib.h>
 #include "app_shared_data.h"
-#include "ad9545_i2c_hal.h"
+#include "ad9545/ad9545_i2c_hal.h"
 #include "FreeRTOSConfig.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"

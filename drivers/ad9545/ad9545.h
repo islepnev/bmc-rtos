@@ -20,26 +20,26 @@
 
 #include <stdbool.h>
 
-#include "dev_common_types.h"
-#include "dev_pll_types.h"
-#include "ad9545_setup.h"
+#include "ad9545/ad9545_setup_regs.h"
+#include "ad9545/ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DeviceStatus pllDetect(Dev_ad9545 *d);
-OpStatusTypeDef pllSetup(Dev_ad9545 *d);
+void init_ad9545_setup(ad9545_setup_t *setup);
+bool ad9545_detect(void);
+bool ad9545_setup(const ad9545_setup_t *setup);
 
-void reset_I2C_Pll(void);
-OpStatusTypeDef pllSoftwareReset(Dev_ad9545 *d);
-OpStatusTypeDef pllSetupSysclk(Dev_ad9545 *d);
-OpStatusTypeDef pllCalibrateSysclk(Dev_ad9545 *d);
-OpStatusTypeDef pllReadStatus(Dev_ad9545 *d);
-OpStatusTypeDef pllReadSysclkStatus(Dev_ad9545 *d);
+void ad9545_reset_i2c(void);
+bool ad9545_software_reset(void);
+bool ad9545_setup_sysclk(const PllSysclkSetup_TypeDef *sysclkSetup);
+bool ad9545_calibrate_sysclk(void);
+bool ad9545_read_status(AD9545_Status *status);
+bool ad9545_read_sysclk_status(AD9545_Status *status);
 
-void pllReset(void);
-bool pll_gpio_test(void);
+void ad9545_reset(void);
+bool ad9545_gpio_test(void);
 void ad9545_gpio_init(void);
 
 #ifdef __cplusplus

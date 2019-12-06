@@ -14,8 +14,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD9545_STATUS_H
-#define AD9545_STATUS_H
+
+#ifndef AD9545_STATUS_REGS_H
+#define AD9545_STATUS_REGS_H
 
 #include <stdint.h>
 
@@ -161,4 +162,4 @@ typedef struct {
     DPLL_Status dpll[DPLL_COUNT];
 } AD9545_Status;
 
-#endif // AD9545_STATUS_H
+#endif // AD9545_STATUS_REGS_H

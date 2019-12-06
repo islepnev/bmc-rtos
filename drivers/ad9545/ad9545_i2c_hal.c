@@ -20,7 +20,7 @@
 #include "bsp.h"
 #include "pll_i2c_driver.h"
 
-HAL_StatusTypeDef ad9545_detect(void)
+HAL_StatusTypeDef ad9545_i2c_detect(void)
 {
     HAL_StatusTypeDef ret;
     uint32_t Trials = 2;

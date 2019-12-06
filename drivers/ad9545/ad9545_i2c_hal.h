@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-HAL_StatusTypeDef ad9545_detect(void);
+HAL_StatusTypeDef ad9545_i2c_detect(void);
 HAL_StatusTypeDef ad9545_read1(uint16_t reg, uint8_t *data);
 HAL_StatusTypeDef ad9545_write1(uint16_t reg, uint8_t data);
 HAL_StatusTypeDef ad9545_read2(uint16_t reg, uint16_t *data);

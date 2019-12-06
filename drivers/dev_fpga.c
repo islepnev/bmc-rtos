@@ -24,7 +24,7 @@
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "dev_fpga_types.h"
-#include "dev_pll_types.h"
+#include "dev_ad9545.h"
 #include "dev_thset_types.h"
 
 static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)

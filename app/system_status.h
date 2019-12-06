@@ -20,8 +20,16 @@
 
 #include "dev_common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct Devices;
 DeviceStatus getDeviceStatus(const struct Devices *d);
 SensorStatus getSystemStatus(const struct Devices *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SYSTEM_STATUS_H

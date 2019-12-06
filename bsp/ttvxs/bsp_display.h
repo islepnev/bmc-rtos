@@ -15,19 +15,13 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include "dev_common_types.h"
-#include "dev_pll.h"
+#ifndef BSP_DISPLAY_H
+#define BSP_DISPLAY_H
 
-SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll)
-{
-    if (DEVICE_NORMAL != pll->present)
-        return SENSOR_UNKNOWN;
-    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
-        return SENSOR_CRITICAL;
-    if (!pll->status.dpll[0].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    if (!pll->status.dpll[1].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
+struct pm_switches;
+struct Dev_powermon;
+
+void print_pm_switches(const pm_switches *sw);
+void pm_pgood_print(const Dev_powermon *pm);
+
+#endif /* BSP_DISPLAY_H */

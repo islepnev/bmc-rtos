@@ -34,7 +34,7 @@ void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
     d->sysclk_Ref_Frequency_milliHz = SYSCLK_REF_FREQ_MILLIHZ;
     d->Sysclk_Stability_Timer = 0x32;
     d->Temperature_Low_Threshold = (int16_t)128 * -5;
-    d->Temperature_Hihg_Threshold = (int16_t)128 * 70;
+    d->Temperature_High_Threshold = (int16_t)128 * 70;
     d->AuxDPLL_Bandwidth = 500 * 10; // deciHertz
     d->CompensationValue = (-1.0) * sysclk_rel_offset * (double)(1ULL<<45); // rel. error * 2^45
     d->TDC_Compensation_Source = 0x11;

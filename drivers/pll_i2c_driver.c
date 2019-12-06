@@ -33,7 +33,7 @@ void pll_i2c_init(void)
     osSemaphoreWait(pll_i2c_sem, osWaitForever);
 }
 
-void pll_i2c_reset_master(void)
+void pll_i2c_reset_master(struct __I2C_HandleTypeDef *hPll)
 {
     __HAL_I2C_DISABLE(hPll);
     hPll->ErrorCode = HAL_I2C_ERROR_NONE;
@@ -67,7 +67,7 @@ void pll_HAL_I2C_ErrorCallback(void)
 {
     debug_printf("%s I2C error, code %d\n", __func__, hPll->ErrorCode);
     // reinitialize I2C
-    pll_i2c_reset_master();
+    pll_i2c_reset_master(hPll);
     osSemaphoreRelease(pll_i2c_sem);
 }
 

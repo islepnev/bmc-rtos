@@ -14,21 +14,43 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
+#ifndef DEV_AD9545_TYPES_H
+#define DEV_AD9545_TYPES_H
 
-#include "dev_pll_types.h"
+#include <stdint.h>
+#include "dev_common_types.h"
+#include "ad9545/ad9545_setup_regs.h"
+#include "ad9545/ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
-void pllPrintStatus(const Dev_ad9545 *d);
+typedef enum {
+    PLL_STATE_INIT,
+    PLL_STATE_RESET,
+    PLL_STATE_SETUP_SYSCLK,
+    PLL_STATE_SYSCLK_WAITLOCK,
+    PLL_STATE_SETUP,
+    PLL_STATE_RUN,
+    PLL_STATE_ERROR,
+    PLL_STATE_FATAL
+} ad9545_state_t;
+
+typedef struct Dev_ad9545 {
+    DeviceStatus present;
+    ad9545_setup_t setup;
+    AD9545_Status status;
+    ad9545_state_t fsm_state;
+    uint32_t recoveryCount;
+} Dev_ad9545;
+
+SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll);
+const char *dev_ad9545_state_str(ad9545_state_t state);
+void dev_ad9545_verbose_status(const Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_PLL_PRINT_H
+#endif // DEV_AD9545_TYPES_H

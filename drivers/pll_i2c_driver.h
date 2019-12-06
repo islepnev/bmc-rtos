@@ -19,8 +19,14 @@
 
 #include "stm32f7xx_hal_def.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct __I2C_HandleTypeDef;
+
 void pll_i2c_init(void);
-void pll_i2c_reset_master(void);
+void pll_i2c_reset_master(struct __I2C_HandleTypeDef *hPll);
 HAL_StatusTypeDef pll_i2c_detect(uint16_t deviceAddr, uint32_t Trials);
 HAL_StatusTypeDef pll_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef pll_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
@@ -31,5 +37,9 @@ void pll_HAL_I2C_MemTxCpltCallback(void);
 void pll_HAL_I2C_MemRxCpltCallback(void);
 void pll_HAL_I2C_ErrorCallback(void);
 void pll_HAL_I2C_AbortCpltCallback(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PLL_I2C_DRIVER_H
