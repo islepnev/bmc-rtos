@@ -31,8 +31,8 @@ static const int SPI_TIMEOUT_MS = 500;
 void set_csb(int state)
 {
     GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(AD9516_CS_B_GPIO_Port, AD9516_CS_B_Pin, write);
-    GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_B_GPIO_Port, AD9516_CS_B_Pin);
+    HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
+    GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
     if (write != read) {
         Error_Handler();
     }
