@@ -33,12 +33,6 @@ HAL_StatusTypeDef vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data)
 HAL_StatusTypeDef vxsiic_read_pp_ioexp(uint8_t pp, uint8_t reg, uint8_t *data);
 HAL_StatusTypeDef vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data);
 HAL_StatusTypeDef vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data);
-void vxsiic_I2C_MasterTxCpltCallback(void);
-void vxsiic_I2C_MasterRxCpltCallback(void);
-void vxsiic_HAL_I2C_MemTxCpltCallback(void);
-void vxsiic_HAL_I2C_MemRxCpltCallback(void);
-void vxsiic_HAL_I2C_ErrorCallback(void);
-void vxsiic_HAL_I2C_AbortCpltCallback(void);
 
 #ifdef __cplusplus
 }

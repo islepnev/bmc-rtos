@@ -18,11 +18,10 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "cmsis_os.h"
+#include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
 #include "debug_helpers.h"
-
-struct __I2C_HandleTypeDef * const vxsiic_hi2c = &hi2c1;
 
 static const int I2C_TIMEOUT_MS = 25;
 

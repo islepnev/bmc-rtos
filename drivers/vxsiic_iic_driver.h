@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-extern struct __I2C_HandleTypeDef * const vxsiic_hi2c;
-
 void vxsiic_reset_i2c_master(void);
 HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);

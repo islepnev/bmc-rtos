@@ -34,6 +34,7 @@ extern "C" {
 extern struct __I2C_HandleTypeDef * const hi2c_ad9545;
 extern const uint8_t ad9545_deviceAddr;
 
+extern struct __I2C_HandleTypeDef * const vxsiic_hi2c;
 extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 extern struct __I2C_HandleTypeDef * const hi2c_eeprom_cfg;
 extern const uint8_t eeprom_cfg_deviceAddr;

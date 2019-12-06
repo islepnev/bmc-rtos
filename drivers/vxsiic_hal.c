@@ -20,6 +20,7 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "i2c.h"
+#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "debug_helpers.h"
 #include "vxsiic_hal.h"
@@ -31,7 +32,6 @@ enum {
     PAYLOAD_BOARD_IOEXP_I2C_ADDRESS = 0x41,
     PAYLOAD_BOARD_EEPROM_I2C_ADDRESS = 0x51
 };
-
 
 void vxsiic_reset_mux(void)
 {
@@ -76,7 +76,6 @@ HAL_StatusTypeDef vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
     ret = vxsiic_write(i2c_address << 1, &data, 1);
     return ret;
 }
-
 
 HAL_StatusTypeDef vxsiic_get_pp_i2c_status(uint8_t pp)
 {
