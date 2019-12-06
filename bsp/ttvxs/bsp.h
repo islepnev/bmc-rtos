@@ -31,10 +31,12 @@
 extern "C" {
 #endif
 
-extern struct __I2C_HandleTypeDef * const hPll;
-extern const uint8_t pllDeviceAddr;
+extern struct __I2C_HandleTypeDef * const hi2c_ad9545;
+extern const uint8_t ad9545_deviceAddr;
 
 extern struct __I2C_HandleTypeDef * const hi2c_sensors;
+extern struct __I2C_HandleTypeDef * const hi2c_eeprom_cfg;
+extern const uint8_t eeprom_cfg_deviceAddr;
 
 extern struct __SPI_HandleTypeDef * const fpga_spi;
 #ifdef TTVXS_1_0

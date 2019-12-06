@@ -29,10 +29,12 @@
 #include "usart.h"
 #include "error_handler.h"
 
-struct __I2C_HandleTypeDef * const hPll = &hi2c4;
-const uint8_t pllDeviceAddr = 0x4A;
+struct __I2C_HandleTypeDef * const hi2c_ad9545 = &hi2c4;
+const uint8_t ad9545_deviceAddr = 0x4A;
 
 struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c2;
+struct __I2C_HandleTypeDef * const hi2c_eeprom_cfg = &hi2c3;
+const uint8_t eeprom_cfg_deviceAddr = 0x50;
 
 struct __SPI_HandleTypeDef * const fpga_spi = &hspi5;
 #ifdef TTVXS_1_0

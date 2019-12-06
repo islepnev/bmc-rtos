@@ -55,7 +55,6 @@ static HAL_StatusTypeDef vxsiic_select_pp(Dev_vxsiic *d, uint8_t pp)
 
 void dev_vxsiic_init(Dev_vxsiic *d)
 {
-    vxsiic_init();
     iic_stats_t zz = {0};
     for (int i=0; i<VXSIIC_SLOTS; i++) {
         d->status.slot[i].iic_stats = zz;

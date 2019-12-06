@@ -22,6 +22,7 @@
 #include "FreeRTOSConfig.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
+#include "bus/i2c_driver.h"
 #include "devices_types.h"
 #include "dev_powermon.h"
 #include "os_serial_tty.h"
@@ -84,6 +85,7 @@ void app_task_init(void)
     Devices *dev = getDevices();
     dev->pcb_ver = detect_pcb_version();
     led_all_set_state(true);
+    i2c_driver_init();
     initialize_serial_console_hardware();
     log_put(LOG_NOTICE, "Initializing");
 //    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");

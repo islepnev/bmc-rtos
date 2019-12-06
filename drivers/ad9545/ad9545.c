@@ -29,12 +29,11 @@
 #include "ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "logbuffer.h"
-#include "pll_i2c_driver.h"
 
 static void DEBUG_PRINT_RET(const char *func, int ret)
 {
     log_printf(LOG_ERR, "%s failed: return code %d, I2C error 0x%08lX",
-           func, ret, hPll->ErrorCode);
+           func, ret, hi2c_ad9545->ErrorCode);
 }
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
@@ -775,8 +774,8 @@ err:
 
 void ad9545_reset_i2c(void)
 {
-    __HAL_I2C_DISABLE(hPll);
-    __HAL_I2C_ENABLE(hPll);
+    __HAL_I2C_DISABLE(hi2c_ad9545);
+    __HAL_I2C_ENABLE(hi2c_ad9545);
 }
 
 bool ad9545_setup(const ad9545_setup_t *setup)

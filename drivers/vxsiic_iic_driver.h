@@ -25,15 +25,7 @@ extern "C" {
 
 extern struct __I2C_HandleTypeDef * const vxsiic_hi2c;
 
-void vxsiic_I2C_MasterTxCpltCallback(void);
-void vxsiic_I2C_MasterRxCpltCallback(void);
-void vxsiic_HAL_I2C_MemTxCpltCallback(void);
-void vxsiic_HAL_I2C_MemRxCpltCallback(void);
-void vxsiic_HAL_I2C_ErrorCallback(void);
-void vxsiic_HAL_I2C_AbortCpltCallback(void);
-
 void vxsiic_reset_i2c_master(void);
-void vxsiic_init(void);
 HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);

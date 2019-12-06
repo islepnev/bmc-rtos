@@ -25,7 +25,6 @@
 #include "ad9545/ad9545.h"
 #include "ad9545/ad9545_i2c_hal.h"
 #include "logbuffer.h"
-#include "pll_i2c_driver.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -38,7 +37,6 @@ void pll_task_init(void)
     Dev_ad9545 *d = get_dev_pll();
     init_ad9545_setup(&d->setup);
     ad9545_gpio_init();
-    pll_i2c_init();
 }
 
 /*
