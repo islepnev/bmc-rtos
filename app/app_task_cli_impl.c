@@ -64,6 +64,14 @@ void cycle_display_mode(void)
     }
 }
 
+static void screen_handle_key(char ch)
+{
+    switch (display_mode) {
+    default:
+        break;
+    }
+}
+
 void cliTask(void const *arg)
 {
     (void) arg;
@@ -91,6 +99,7 @@ void cliTask(void const *arg)
                 log_put(LOG_INFO, "Received command power OFF");
             break;
         default:
+            screen_handle_key(ch);
             break;
         }
 //        microrl_insert_char (prl, ch);

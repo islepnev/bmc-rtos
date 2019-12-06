@@ -500,7 +500,7 @@ static void print_main(const Devices *dev)
 //    }
 }
 
-static void print_clkmux(const Dev_clkmux *clkmux)
+static void print_clkmux(const Dev_ttvxs_clkmux *clkmux)
 {
     print_goto(DISPLAY_CLKMUX_Y, 1);
     printf("CLKMUX");

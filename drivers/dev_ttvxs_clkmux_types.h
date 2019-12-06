@@ -15,15 +15,31 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_sfpiic.h"
-//#include "dev_vxsiic.h"
-//#include "dev_pll.h"
-#include "devices_types.h"
-//#include "fpga_spi_hal.h"
-#include "dev_eeprom.h"
-#include "dev_powermon.h"
-//#include "dev_thset.h"
-//#include "i2c.h"
-//#include "display.h"
-#include "dev_leds_types.h"
+#ifndef DEV_TTVXS_CLKMUX_TYPES_H
+#define DEV_TTVXS_CLKMUX_TYPES_H
 
+#include <stdint.h>
+#include "dev_common_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    TTVXS_PLL_SOURCE_DIV3 = 0,
+    TTVXS_PLL_SOURCE_FMC = 1,
+    TTVXS_PLL_SOURCE_EXT = 2,
+} ttvxs_pll_source_t;
+
+typedef struct Dev_ttvxs_clkmux {
+    DeviceStatus present;
+    ttvxs_pll_source_t pll_source;
+} Dev_ttvxs_clkmux;
+
+SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_TTVXS_CLKMUX_TYPES_H

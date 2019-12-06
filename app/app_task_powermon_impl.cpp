@@ -28,7 +28,6 @@
 #include "dev_powermon.h"
 //#include "ansi_escape_codes.h"
 //#include "display.h"
-#include "devices.h"
 #include "dev_powermon_types.h"
 #include "dev_thset.h"
 //#include "dev_leds.h"

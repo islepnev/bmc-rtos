@@ -20,7 +20,6 @@
 #include "dev_powermon_types.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
-#include "devices.h"
 #include "system_status.h"
 
 #include "app_shared_data.h"

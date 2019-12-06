@@ -15,46 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_clkmux.h"
+#include "dev_ttvxs_clkmux.h"
 #include <string.h>
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
 
-#include "dev_clkmux_types.h"
+#include "dev_ttvxs_clkmux_types.h"
 #include "mcp23017_i2c_hal.h"
-#include "logbuffer.h"
 
-/*
-#include "dev_vxsiic_pp.h"
-#include "vxsiic_iic_driver.h"
-#include "vxsiic_hal.h"
-#include "logbuffer.h"
-#include "debug_helpers.h"
-#include "ipmi_sensor_types.h"
-#include "cmsis_os.h"
-*/
-
-void dev_clkmux_init(Dev_clkmux *d)
+void dev_ttvxs_clkmux_init(Dev_ttvxs_clkmux *d)
 {
-    Dev_clkmux zz = {0};
+    Dev_ttvxs_clkmux zz = {0};
     *d = zz;
 }
-
-typedef enum {
-    MCP23017_IODIRA = 0,
-    MCP23017_IODIRB = 1,
-    MCP23017_IPOLA = 2,
-    MCP23017_IPOLB = 3,
-    MCP23017_GPINTENA = 4,
-    MCP23017_GPINTENB = 5,
-    MCP23017_GPPUA = 0xC,
-    MCP23017_GPPUB = 0xD,
-    MCP23017_GPIOA = 0x12,
-    MCP23017_GPIOB = 0x13,
-    MCP23017_OLATA = 0x14,
-    MCP23017_OLATB = 0x15,
-} mcp23017_regs_bank_0;
-
 
 typedef union {
     struct {
@@ -78,7 +51,7 @@ typedef union {
     uint8_t all;
 } clkmux_gpiob;
 
-void dev_clkmux_set_pll_source(Dev_clkmux *d)
+void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -100,7 +73,7 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 
-void dev_clkmux_set_crsw1(Dev_clkmux *d)
+void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -121,7 +94,7 @@ void dev_clkmux_set_crsw1(Dev_clkmux *d)
     }
 }
 
-void dev_clkmux_set_crsw2(Dev_clkmux *d)
+void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
@@ -140,7 +113,7 @@ void dev_clkmux_set_crsw2(Dev_clkmux *d)
     }
 }
 
-DeviceStatus dev_clkmux_detect(Dev_clkmux *d)
+DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
 {
     if (HAL_OK != mcp23017_detect()) {
         goto unknown;
@@ -174,7 +147,7 @@ unknown:
     return DEVICE_UNKNOWN;
 }
 
-DeviceStatus dev_clkmux_set(struct Dev_clkmux *d)
+DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
 {
     dev_clkmux_set_pll_source(d);
     dev_clkmux_set_crsw1(d);

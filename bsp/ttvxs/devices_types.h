@@ -20,7 +20,7 @@
 
 #include "dev_eeprom_types.h"
 #include "dev_fpga_types.h"
-#include "dev_clkmux_types.h"
+#include "dev_ttvxs_clkmux_types.h"
 #include "dev_pll_types.h"
 #include "dev_auxpll_types.h"
 #include "dev_thset_types.h"
@@ -41,7 +41,7 @@ enum {
 typedef struct Devices {
     Dev_thset thset;
     Dev_fpga fpga;
-    Dev_clkmux clkmux;
+    Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
     Dev_vxsiic vxsiic;
     Dev_at24c eeprom_config;

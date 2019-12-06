@@ -15,23 +15,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_CLKMUX_H
-#define DEV_CLKMUX_H
+#include "dev_ttvxs_clkmux_types.h"
 
-#include "dev_common_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Dev_clkmux;
-
-void dev_clkmux_init(struct Dev_clkmux *d);
-DeviceStatus dev_clkmux_detect(struct Dev_clkmux *d);
-DeviceStatus dev_clkmux_set(struct Dev_clkmux *d);
-
-#ifdef __cplusplus
+SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d)
+{
+   if (!d->present)
+      return SENSOR_UNKNOWN;
+   return SENSOR_NORMAL;
 }
-#endif
-
-#endif // DEV_CLKMUX_H

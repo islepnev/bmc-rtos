@@ -56,7 +56,7 @@ Dev_fpga* get_dev_fpga(void)
     return &dev.fpga;
 }
 
-Dev_clkmux* get_dev_clkmux(void)
+Dev_ttvxs_clkmux* get_dev_clkmux(void)
 {
     return &dev.clkmux;
 }
