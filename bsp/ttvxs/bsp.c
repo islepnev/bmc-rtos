@@ -25,6 +25,7 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_ll_gpio.h"
 #include "i2c.h"
+#include "bus/i2c_driver.h"
 #include "spi.h"
 #include "usart.h"
 #include "error_handler.h"
@@ -52,8 +53,7 @@ uint32_t detect_pcb_version(void)
 
 void pm_sensor_reset_i2c_master(void)
 {
-    __HAL_I2C_DISABLE(hi2c_sensors);
-    __HAL_I2C_ENABLE(hi2c_sensors);
+    i2c_driver_reset(hi2c_sensors);
 }
 
 void fpga_enable_interface(bool enable)

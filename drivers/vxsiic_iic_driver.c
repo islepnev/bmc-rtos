@@ -15,13 +15,9 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "vxsiic_iic_driver.h"
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_i2c.h"
-#include "cmsis_os.h"
 #include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
-#include "debug_helpers.h"
 
 static const int I2C_TIMEOUT_MS = 25;
 
