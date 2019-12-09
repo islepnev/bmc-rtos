@@ -15,24 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SYSTEM_STATUS_H
-#define SYSTEM_STATUS_H
+#ifndef BSP_TTY_H
+#define BSP_TTY_H
 
-#include "dev_common_types.h"
+#define TTY_USART USART1 // Front panel RJ45
+// #define TTY_USART USART2 // USB-RS232
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void bsp_tty_setup_uart(void);
 
-struct Devices;
-struct Dev_ad9545;
-
-DeviceStatus getDeviceStatus(const struct Devices *d);
-SensorStatus getSystemStatus(const struct Devices *d);
-SensorStatus getPllStatus(const struct Dev_ad9545 *d);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // SYSTEM_STATUS_H
+#endif // BSP_TTY_H

@@ -113,8 +113,8 @@ int main(void)
   MX_SPI2_Init();
   MX_SPI5_Init();
   MX_TIM2_Init();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
+  MX_USART1_UART_Init(); // front-panel usb
+  MX_USART2_UART_Init(); // mezzanine usb
   MX_USART6_UART_Init();
   MX_ADC1_Init();
   MX_RTC_Init();

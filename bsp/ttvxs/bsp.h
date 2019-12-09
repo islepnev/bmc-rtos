@@ -23,8 +23,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define TTY_USART USART1 // Front panel RJ45
-// #define TTY_USART USART2 // USB-RS232
 #define LED_HEARTBEAT LED_INT_GREEN
 
 #ifdef __cplusplus
