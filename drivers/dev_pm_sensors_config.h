@@ -26,7 +26,12 @@ extern "C" {
 
 enum {POWERMON_SENSORS_PCB_4_1 = 13};
 enum {POWERMON_SENSORS_PCB_4_2 = 15};
+#ifdef TDC64
+enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_4_2+1};
+#else
 enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_4_2};
+#endif
+
 #define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
@@ -44,10 +49,10 @@ typedef enum {
     SENSOR_TDC_A,
     SENSOR_TDC_B,
     SENSOR_TDC_C,
-    SENSOR_CLOCK_2V5
 #ifdef TDC64
-    ,SENSOR_TDC_D
+    SENSOR_TDC_D,
 #endif
+    SENSOR_CLOCK_2V5
 } SensorIndex;
 
 int monIsOptional(SensorIndex index);

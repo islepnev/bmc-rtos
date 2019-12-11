@@ -29,6 +29,9 @@ const char *potLabel(PotIndex index)
     case POT_TDC_A: return "TDC_A";
     case POT_TDC_B: return "TDC_B";
     case POT_TDC_C: return "TDC_C";
+#ifdef TDC64
+    case POT_TDC_D: return "TDC_D";
+#endif
     }
     return 0;
 }

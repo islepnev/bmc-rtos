@@ -47,8 +47,11 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0;
     case SENSOR_FPGA_MGT_1V2: return sw->switch_1v0;
     case SENSOR_FPGA_1V8: return sw->switch_3v3;
-    case SENSOR_TDC_A: return sw->switch_3v3;
-    case SENSOR_TDC_B: return sw->switch_3v3;
+    case SENSOR_TDC_A:
+    case SENSOR_TDC_B:
+#ifdef TDC64
+    case SENSOR_TDC_D:
+#endif
     case SENSOR_TDC_C: return sw->switch_3v3;
     case SENSOR_CLOCK_2V5: return sw->switch_3v3;
     }
