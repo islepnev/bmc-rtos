@@ -340,7 +340,7 @@ OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
 {
     // output drivers
 #ifdef TDC64
-    ad9516_write1(0x140, 0x43); // OUT6, Disable,
+    ad9516_write1(0x140, 0x42); // OUT6, Enable, LVDS
     ad9516_write1(0x141, 0x42); // OUT7, Enable, LVDS
 #else
     ad9516_write1(0x140, 0x42); // OUT6, Enable, LVDS
