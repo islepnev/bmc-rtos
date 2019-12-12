@@ -159,8 +159,8 @@ int sensorBusAddress(SensorIndex index)
     case SENSOR_VMCU:          return 0x49;
     case SENSOR_FPGA_1V8:      return 0x4A;
     case SENSOR_TDC_A:         return 0x4B;
-    case SENSOR_TDC_B:         return 0x4C;
-    case SENSOR_TDC_C:         return 0x4D;
+    case SENSOR_TDC_B:         return 0x4D;
+    case SENSOR_TDC_C:         return 0x4C;
     case SENSOR_CLOCK_2V5:     return 0x4E;
 #ifdef TDC64
     case SENSOR_TDC_D:         return 0x4F;
