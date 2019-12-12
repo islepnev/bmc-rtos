@@ -33,7 +33,15 @@ enum {
     FPGA_SPI_ADDR_4 = 4,
     FPGA_SPI_ADDR_5 = 5,
     FPGA_SPI_ADDR_6 = 6,
-    FPGA_SPI_ADDR_7 = 7
+    FPGA_SPI_ADDR_7 = 7,
+    FPGA_SPI_ADDR_8 = 8,
+    FPGA_SPI_ADDR_9 = 9,
+    FPGA_SPI_ADDR_A = 0xA,
+    FPGA_SPI_ADDR_B = 0xB,
+    FPGA_SPI_ADDR_C = 0xC,
+    FPGA_SPI_ADDR_D = 0xD,
+    FPGA_SPI_ADDR_E = 0xE,
+    FPGA_SPI_ADDR_F = 0xF
 };
 
 void fpga_spi_hal_init(void);
