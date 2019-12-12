@@ -143,7 +143,7 @@ void pot_screen_handle_key(const char ch)
         pot_action_reset();
     }
     const char max_id_char = '1'+DEV_POT_COUNT-1;
-    if (ch >= '1' && ch < max_id_char) {
+    if (ch >= '1' && ch <= max_id_char) {
         pot_action_set_id(ch-'1');
     }
     if (ch == 'w' || ch == 'W') {
