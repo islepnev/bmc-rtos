@@ -46,7 +46,6 @@ extern struct __SPI_HandleTypeDef * const ad9516_spi;
 
 uint32_t detect_pcb_version(void);
 void pm_sensor_reset_i2c_master(void);
-void fpga_enable_interface(bool enable);
 
 #ifdef __cplusplus
 }

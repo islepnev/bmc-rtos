@@ -46,6 +46,8 @@ enum {
 
 HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
 HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
+void fpga_enable_interface(void);
+void fpga_disable_interface(void);
 
 #ifdef __cplusplus
 }

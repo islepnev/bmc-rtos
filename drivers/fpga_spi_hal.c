@@ -88,3 +88,16 @@ HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
     }
     return ret;
 }
+
+void fpga_enable_interface(void)
+{
+    if (IS_SPI_ALL_INSTANCE(fpga_spi->Instance))
+        fpga_disable_interface();
+    HAL_SPI_MspInit(fpga_spi);
+}
+
+void fpga_disable_interface(void)
+{
+    // HAL_SPI_Abort(fpga_spi);
+    HAL_SPI_MspDeInit(fpga_spi);
+}

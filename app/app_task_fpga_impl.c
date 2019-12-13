@@ -25,6 +25,7 @@
 #include "dev_common_types.h"
 #include "dev_fpga_types.h"
 #include "dev_fpga.h"
+#include "fpga_spi_hal.h"
 #include "dev_powermon.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
@@ -75,7 +76,10 @@ void fpga_task_run(void)
 {
     if (old_enable_power != enable_power) {
         old_enable_power = enable_power;
-        fpga_enable_interface(enable_power);
+        if (enable_power)
+            fpga_enable_interface();
+        else
+            fpga_disable_interface();
     }
     Dev_fpga *d = get_dev_fpga();
     d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
@@ -94,13 +98,16 @@ void fpga_task_run(void)
         d->present = DEVICE_UNKNOWN;
         break;
     case FPGA_STATE_LOAD:
-        if (!fpga_enable)
+        if (!fpga_enable) {
             state = FPGA_STATE_STANDBY;
+            break;
+        }
         if (fpga_done) {
             const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
             const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
             log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             state = FPGA_STATE_RESET;
+            break;
         }
         if (stateTicks() > LOAD_DELAY_TICKS) {
             log_put(LOG_ERR, "FPGA load timeout");
@@ -157,7 +164,7 @@ void fpga_task_run(void)
 //            log_printf(LOG_ERR, "FPGA SPI error");
 //        }
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = FPGA_STATE_RUN;
+            state = FPGA_STATE_STANDBY;
         }
         break;
     default:
