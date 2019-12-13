@@ -12,15 +12,11 @@
 #define CAN_TXD_GPIO_Port GPIOB
 #define CAN_TXD_Pin GPIO_PIN_13
 #else
-#define AD9516_SPI_GPIO_Port GPIOI
-#define AD9516_CS_B_GPIO_Port GPIOI
-#define AD9516_CS_B_Pin GPIO_PIN_0
-#define AD9516_SCLK_GPIO_Port GPIOI
-#define AD9516_SCLK_Pin GPIO_PIN_1
-#define AD9516_SDO_GPIO_Port GPIOI
-#define AD9516_SDO_Pin GPIO_PIN_2
-#define AD9516_SDIO_GPIO_Port GPIOI
-#define AD9516_SDIO_Pin GPIO_PIN_3
+#define SPI2_GPIO_Port GPIOI
+#define SPI2_NSS_Pin GPIO_PIN_0
+#define SPI2_SCLK_Pin GPIO_PIN_1
+#define SPI2_SDO_Pin GPIO_PIN_2
+#define SPI2_SDIO_Pin GPIO_PIN_3
 #endif
 #define CONFIG_IIC_SCL_GPIO_Port GPIOH
 #define CONFIG_IIC_SCL_Pin GPIO_PIN_7

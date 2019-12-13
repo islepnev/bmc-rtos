@@ -132,8 +132,6 @@ static const char *auxpllStateStr(AuxPllState state)
     switch(state) {
     case AUXPLL_STATE_INIT:    return "INIT";
     case AUXPLL_STATE_RESET:    return "RESET";
-    case AUXPLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
-    case AUXPLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
     case AUXPLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
     case AUXPLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
     case AUXPLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;

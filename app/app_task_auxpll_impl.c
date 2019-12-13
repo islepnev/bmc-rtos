@@ -40,46 +40,29 @@ void auxpll_task_run(void)
     const AuxPllState old_state = d->fsm_state;
     switch(d->fsm_state) {
     case AUXPLL_STATE_INIT:
+        d->status.pll_readback.raw = 0;
         if (enable_pll_run && enable_power)
             d->fsm_state = AUXPLL_STATE_RESET;
         break;
     case AUXPLL_STATE_RESET:
+        if (!(enable_pll_run && enable_power)) {
+            d->fsm_state = AUXPLL_STATE_ERROR;
+            break;
+        }
         // reset_I2C_Pll();
-        // auxpllReset();
-        osDelay(50);
+        ad9516_enable_interface();
+        if (!auxpllSoftwareReset()) {
+            break;
+        }
         auxpllDetect(d);
         if (DEVICE_NORMAL == d->present) {
-//            if (DEV_OK != auxpllSoftwareReset(d)) {
-//                d->fsm_state = AUXPLL_STATE_ERROR;
-//                break;
-//            }
-            d->fsm_state = AUXPLL_STATE_SETUP_SYSCLK;
+            d->fsm_state = AUXPLL_STATE_SETUP;
             break;
         }
         if (stateTicks() > 2000) {
             log_put(LOG_ERR, "AUXPLL AD9516 not found");
             d->fsm_state = AUXPLL_STATE_ERROR;
             break;
-        }
-        break;
-    case AUXPLL_STATE_SETUP_SYSCLK:
-//        if (DEV_OK != auxpllSetupSysclk(d)) {
-//            d->fsm_state = AUXPLL_STATE_ERROR;
-//            break;
-//        }
-//        if (DEV_OK != auxpllCalibrateSysclk(d)) {
-//            d->fsm_state = AUXPLL_STATE_ERROR;
-//            break;
-//        }
-        d->fsm_state = AUXPLL_STATE_SYSCLK_WAITLOCK;
-        break;
-    case AUXPLL_STATE_SYSCLK_WAITLOCK:
-//        if (d->status.pll_readback.b.vco_cal_finished) {
-            d->fsm_state = AUXPLL_STATE_SETUP;
-//        }
-        if (stateTicks() > 2000) {
-            log_put(LOG_ERR, "AUXPLL sysclock lock timeout");
-            d->fsm_state = AUXPLL_STATE_ERROR;
         }
         break;
     case AUXPLL_STATE_SETUP:
@@ -90,6 +73,10 @@ void auxpll_task_run(void)
         d->fsm_state = AUXPLL_STATE_RUN;
         break;
     case AUXPLL_STATE_RUN:
+        if (!(enable_pll_run && enable_power)) {
+            d->fsm_state = AUXPLL_STATE_ERROR;
+            break;
+        }
 //        if (!d->status.sysclk.b.locked) {
 //            log_put(LOG_ERR, "AUXPLL sysclock unlocked");
 //            d->fsm_state = AUXPLL_STATE_ERROR;
@@ -98,6 +85,7 @@ void auxpll_task_run(void)
         d->recoveryCount = 0;
         break;
     case AUXPLL_STATE_ERROR:
+        ad9516_disable_interface();
         if (d->recoveryCount > 3) {
             d->fsm_state = AUXPLL_STATE_FATAL;
             log_put(LOG_CRIT, "AUXPLL fatal error");
@@ -132,6 +120,8 @@ void auxpll_task_run(void)
         if (DEV_OK != auxpllReadStatus(d)) {
             d->fsm_state = AUXPLL_STATE_ERROR;
         }
+    } else {
+        d->status.pll_readback.raw = 0;
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {

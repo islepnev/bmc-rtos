@@ -18,6 +18,7 @@
 #include "ad9516_spi_hal.h"
 
 #include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_gpio.h"
 #include "gpio.h"
 #include "spi.h"
 #include "bsp.h"
@@ -28,14 +29,16 @@
 
 static const int SPI_TIMEOUT_MS = 500;
 
-void set_csb(int state)
+static bool set_csb(int state)
 {
+    if (ad9516_spi->Init.NSS != SPI_NSS_SOFT)
+        return true;
     GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(AD9516_CS_B_GPIO_Port, AD9516_CS_B_Pin, write);
-    GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_B_GPIO_Port, AD9516_CS_B_Pin);
-    if (write != read) {
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, write);
+    GPIO_PinState read = HAL_GPIO_ReadPin(SPI2_GPIO_Port, SPI2_NSS_Pin);
+    if (write != read)
         Error_Handler();
-    }
+    return write == read;
 }
 
 //HAL_StatusTypeDef ad9516_read1_simplex(uint16_t reg, uint8_t *data)
@@ -128,4 +131,28 @@ HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data)
         return HAL_ERROR;
     }
     return ret;
+}
+
+HAL_StatusTypeDef ad9516_write_config(uint8_t data)
+{
+    return ad9516_write1_internal(0, data);
+}
+
+static void ad9516_spi_abort(void)
+{
+    if (HAL_OK != HAL_SPI_Abort(ad9516_spi))
+        log_printf(LOG_ERR, "%s: HAL error", __func__);
+}
+
+void ad9516_enable_interface(void)
+{
+    if (IS_SPI_ALL_INSTANCE(ad9516_spi->Instance))
+        ad9516_disable_interface();
+    HAL_SPI_MspInit(ad9516_spi);
+}
+
+void ad9516_disable_interface(void)
+{
+    ad9516_spi_abort();
+    HAL_SPI_MspDeInit(ad9516_spi);
 }

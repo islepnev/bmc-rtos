@@ -58,15 +58,16 @@ void pm_sensor_reset_i2c_master(void)
 
 void fpga_enable_interface(bool enable)
 {
+    /*
     GPIO_PinState low = GPIO_PIN_RESET;
     GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
     HAL_GPIO_WritePin(FPGA_RX_GPIO_Port, FPGA_RX_Pin, high);
     HAL_GPIO_WritePin(FPGA_TX_GPIO_Port, FPGA_TX_Pin, high);
-    HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port, I2C_RESET2_B_Pin, high);
-    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, high);
-    HAL_GPIO_WritePin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, high);
-    HAL_GPIO_WritePin(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   high);
+    // HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port, I2C_RESET2_B_Pin, high);
+    // HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, high);
+    // HAL_GPIO_WritePin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, high);
+    // HAL_GPIO_WritePin(FPGA_DONE_GPIO_Port,   FPGA_DONE_Pin,   high);
     HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port,    FPGA_NSS_Pin,    high);
 //    HAL_GPIO_WritePin(FPGA_SCLK_GPIO_Port,   FPGA_NSS_Pin,    low);
 //    HAL_GPIO_WritePin(FPGA_MOSI_GPIO_Port,   FPGA_MOSI_Pin,   low);
@@ -101,4 +102,5 @@ void fpga_enable_interface(bool enable)
 //        FPGA_INIT_B_GPIO_Port->ODR &= ~FPGA_INIT_B_Pin;
 //        FPGA_DONE_GPIO_Port->ODR &= ~FPGA_DONE_Pin;
     }
+*/
 }

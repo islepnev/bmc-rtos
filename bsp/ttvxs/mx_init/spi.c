@@ -39,8 +39,6 @@ void MX_SPI2_Init(void)
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
-  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -52,11 +50,15 @@ void MX_SPI2_Init(void)
   hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
 #else
   // AD9516-4
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT; // SPI_NSS_SOFT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
 #endif
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
   {
@@ -89,6 +91,36 @@ void MX_SPI5_Init(void)
 
 }
 
+void SPI2_synchronize(void)
+{
+    __HAL_RCC_GPIOI_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // force NSS high
+    GPIO_InitStruct.Pin = SPI2_NSS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
+
+    // toggle SCLK to reset SPI interface on device
+    GPIO_InitStruct.Pin = SPI2_SCLK_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET); // CS# assert
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
+    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
+}
+
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
 
@@ -96,7 +128,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
   if(spiHandle->Instance==SPI2)
   {
   /* USER CODE BEGIN SPI2_MspInit 0 */
-
+    SPI2_synchronize();
   /* USER CODE END SPI2_MspInit 0 */
     /* SPI2 clock enable */
     __HAL_RCC_SPI2_CLK_ENABLE();
@@ -108,7 +140,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     PI1     ------> SPI2_SCK
     PI0     ------> SPI2_NSS
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; // OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -168,7 +200,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     PI1     ------> SPI2_SCK
     PI0     ------> SPI2_NSS
     */
-    HAL_GPIO_DeInit(GPIOI, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
+    HAL_GPIO_DeInit(GPIOI, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
 
     HAL_NVIC_DisableIRQ(SPI2_IRQn);
   /* USER CODE BEGIN SPI2_MspDeInit 1 */

@@ -116,8 +116,6 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOI, I2C_RESET3_B_Pin
                           |GPIO1_Pin, GPIO_PIN_RESET);
 
-  HAL_GPIO_WritePin(GPIOG, I2C_RESET2_B_Pin|RJ45_LED_G_A_Pin|RJ45_LED_OR_A_Pin, GPIO_PIN_RESET);
-
   HAL_GPIO_WritePin(GPIOF, FPGA_NSS_Pin, GPIO_PIN_RESET);
 
   // LEDs
@@ -131,22 +129,23 @@ void MX_GPIO_Init(void)
   for (int i=0; i<5; i++) {
       HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = led_pins[i].pin;
-      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
       HAL_GPIO_Init(led_pins[i].GPIOx, &GPIO_InitStruct);
   }
 
   // PGOOD, PEN
-  static const pin_def_t pgood_pins[6] = {
+  static const pin_def_t pgood_pins[7] = {
       {PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin},
       {PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin},
+      {PGOOD_1V2_MGT_GPIO_Port,PGOOD_1V2_MGT_Pin },
       {PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin},
       {PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin},
       {PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin},
       {PEN_B_GPIO_Port, PEN_B_Pin}
   };
-  for (int i=0; i<6; i++) {
+  for (int i=0; i<7; i++) {
       GPIO_InitStruct.Pin = pgood_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
       GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -156,21 +155,43 @@ void MX_GPIO_Init(void)
   // PGOOD_PWR output
   HAL_GPIO_WritePin(PGOOD_PWR_GPIO_Port, PGOOD_PWR_Pin, GPIO_PIN_RESET);
   GPIO_InitStruct.Pin = PGOOD_PWR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PGOOD_PWR_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = I2C_RESET3_B_Pin
-                          |GPIO1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  // MCU_GPIO1
+  GPIO_InitStruct.Pin = GPIO1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIO1_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = I2C_RESET2_B_Pin|RJ45_LED_G_A_Pin|RJ45_LED_OR_A_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  // MCU_GPIO2
+  GPIO_InitStruct.Pin = GPIO2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIO2_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = I2C_RESET2_B_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port, I2C_RESET2_B_Pin, GPIO_PIN_SET);
+  HAL_GPIO_Init(I2C_RESET2_B_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = I2C_RESET3_B_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, GPIO_PIN_SET);
+  HAL_GPIO_Init(I2C_RESET3_B_GPIO_Port, &GPIO_InitStruct);
+
+  HAL_GPIO_WritePin(GPIOG, RJ45_LED_G_A_Pin|RJ45_LED_OR_A_Pin, GPIO_PIN_RESET);
+  GPIO_InitStruct.Pin = RJ45_LED_G_A_Pin|RJ45_LED_OR_A_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
@@ -179,23 +200,16 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(uSD_Detect_GPIO_Port, &GPIO_InitStruct);
 
-  // ???
-  HAL_GPIO_WritePin(GPIOH, GPIO2_Pin, GPIO_PIN_RESET);
-  GPIO_InitStruct.Pin = GPIO2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
-
-  // ???
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  // PC15-OSC32_OUT
+//  GPIO_InitStruct.Pin = GPIO_PIN_15;
+//  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+//  GPIO_InitStruct.Pull = GPIO_NOPULL;
+//  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = FPGA_NSS_Pin;
+  // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
@@ -236,10 +250,12 @@ void MX_GPIO_Init(void)
 
 #ifdef TTVXS_1_0
 #else
-  GPIO_InitStruct.Pin = AD9516_CS_B_Pin;
+  GPIO_InitStruct.Pin = SPI2_NSS_Pin;
+  // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD; // OD;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL; // 4.7k pullup on PCB
+  GPIO_InitStruct.Pull = GPIO_PULLUP; // 4.7k pullup on PCB
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(AD9516_CS_B_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
 #endif
 }
