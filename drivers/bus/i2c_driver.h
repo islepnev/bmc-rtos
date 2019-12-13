@@ -1,4 +1,6 @@
 /*
+**    Generic interrupt mode SPI driver
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -14,8 +16,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef PLL_I2C_DRIVER_H
-#define PLL_I2C_DRIVER_H
+
+#ifndef I2C_DRIVER_H
+#define I2C_DRIVER_H
 
 #include "stm32f7xx_hal_def.h"
 
@@ -44,4 +47,4 @@ void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c);
 }
 #endif
 
-#endif // PLL_I2C_DRIVER_H
+#endif // I2C_DRIVER_H

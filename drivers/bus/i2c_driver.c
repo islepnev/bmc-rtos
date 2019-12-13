@@ -1,4 +1,6 @@
 /*
+**    Generic interrupt mode SPI driver
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -18,7 +20,6 @@
 #include "i2c_driver.h"
 
 #include "i2c.h"
-//#include "bsp.h"
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 
