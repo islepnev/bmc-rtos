@@ -30,7 +30,10 @@ extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
 extern I2C_HandleTypeDef hi2c3;
 extern I2C_HandleTypeDef hi2c4;
+extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
 extern SPI_HandleTypeDef hspi5;
 extern ETH_HandleTypeDef EthHandle;
 
@@ -209,9 +212,24 @@ void ETH_IRQHandler(void)
     HAL_ETH_IRQHandler(&EthHandle);
 }
 
+void SPI1_IRQHandler(void)
+{
+    HAL_SPI_IRQHandler(&hspi1);
+}
+
 void SPI2_IRQHandler(void)
 {
     HAL_SPI_IRQHandler(&hspi2);
+}
+
+void SPI3_IRQHandler(void)
+{
+    HAL_SPI_IRQHandler(&hspi3);
+}
+
+void SPI4_IRQHandler(void)
+{
+    HAL_SPI_IRQHandler(&hspi4);
 }
 
 void SPI5_IRQHandler(void)

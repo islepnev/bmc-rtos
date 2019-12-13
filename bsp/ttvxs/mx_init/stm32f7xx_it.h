@@ -65,7 +65,10 @@ void I2C4_ER_IRQHandler(void);
 void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void ETH_IRQHandler(void);
+void SPI1_IRQHandler(void);
 void SPI2_IRQHandler(void);
+void SPI3_IRQHandler(void);
+void SPI4_IRQHandler(void);
 void SPI5_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 

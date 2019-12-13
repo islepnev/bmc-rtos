@@ -67,7 +67,6 @@ static void struct_fpga_init(Dev_fpga *d)
 void fpga_task_init(void)
 {
     struct_fpga_init(get_dev_fpga());
-    fpgaInit();
 }
 
 static int old_enable_power = 0;

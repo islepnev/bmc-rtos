@@ -31,7 +31,6 @@ struct Dev_ad9545;
 struct Devices;
 struct Dev_powermon;
 
-void fpgaInit(void);
 bool fpgaDetect(struct Dev_fpga *d);
 bool fpga_check_live_magic(void);
 bool fpga_test(void);

@@ -20,6 +20,7 @@
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal.h"
 #include "spi.h"
+#include "bus/spi_driver.h"
 #include "bsp.h"
 #include "led_gpio_hal.h"
 #include "bsp_pin_defs.h"
@@ -29,51 +30,10 @@
 
 static const int SPI_TIMEOUT_MS = 100; // osWaitForever;
 
-osSemaphoreDef (sem_fpga_spi);
-osSemaphoreId  (sem_fpga_spi);
-
-void HAL_SPI5_RxCpltCallback(void)
-{
-    Error_Handler();
-}
-
-void HAL_SPI5_TxRxCpltCallback(void)
-{
-    if (!sem_fpga_spi)
-        Error_Handler();
-    osStatus ret = osSemaphoreRelease(sem_fpga_spi);
-    if (ret != osOK) {
-        Error_Handler();
-    }
-}
-
-void HAL_SPI5_ErrorCallback(void)
-{
-    Error_Handler();
-}
-
 typedef enum {
     NSS_ASSERT = 0,
     NSS_DEASSERT = 1,
 } NssState;
-
-void fpga_spi_hal_init(void)
-{
-    sem_fpga_spi = osSemaphoreCreate(osSemaphore(sem_fpga_spi), 1);
-    if (NULL == sem_fpga_spi)
-        Error_Handler();
-    osSemaphoreWait(sem_fpga_spi, 0);
-}
-
-static void fpga_spi_hal_wait_transfer_complete(void)
-{
-    if (!sem_fpga_spi)
-        Error_Handler();
-    if (osSemaphoreWait(sem_fpga_spi, SPI_TIMEOUT_MS) < 0) {
-        Error_Handler();
-    }
-    osDelay(1);
-}
 
 /**
  * @brief toggle NSS pin by software
@@ -98,10 +58,7 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
     txBuf[0] = (0x8000 | (addr & 0x7FFF));
     txBuf[1] = 0;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive_IT(fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size);
-    if (HAL_OK == ret) {
-        fpga_spi_hal_wait_transfer_complete();
-    }
+    HAL_StatusTypeDef ret = spi_driver_tx_rx(fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if ((HAL_OK == ret) && data) {
         uint16_t result = rxBuf[1];
@@ -123,10 +80,7 @@ HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
     txBuf[0] = (0x0000 | (addr & 0x7FFF));
     txBuf[1] = data;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = HAL_SPI_Transmit_IT(fpga_spi, (uint8_t *)txBuf, Size);
-    if (HAL_OK == ret) {
-        fpga_spi_hal_wait_transfer_complete();
-    }
+    HAL_StatusTypeDef ret = spi_driver_tx(fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (HAL_OK != ret) {
         log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error %d\n", ret);

@@ -94,11 +94,6 @@ bool fpga_test(void)
     }
 }
 
-void fpgaInit(void)
-{
-    fpga_spi_hal_init();
-}
-
 bool fpgaDetect(Dev_fpga *d)
 {
     int err = 0;
