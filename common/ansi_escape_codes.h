@@ -3,8 +3,10 @@
 
 /* Terminal control ANSI escape codes */
 #define CSI "\x1B["
+#define RIS "\x1B" "c"
 
-#define ANSI_CLEARTERM CSI "2J"
+//#define ANSI_CLEARTERM CSI "2J"
+#define ANSI_CLEARTERM RIS
 #define ANSI_GOHOME    CSI "1;1H"
 
 #define ANSI_BOLD      CSI "1m"

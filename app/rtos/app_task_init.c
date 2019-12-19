@@ -18,14 +18,17 @@
 #include "app_task_init.h"
 #include <stdlib.h>
 #include "app_shared_data.h"
-#include "ad9545_i2c_hal.h"
+#include "ad9545/ad9545_i2c_hal.h"
 #include "FreeRTOSConfig.h"
+#include "cmsis_os.h"
+#include "stm32f7xx_hal.h"
+#include "devices_types.h"
 #include "dev_powermon.h"
 #include "os_serial_tty.h"
 #include "ansi_escape_codes.h"
 #include "debug_helpers.h"
 #include "led_gpio_hal.h"
-#include "cmsis_os.h"
+#include "bsp.h"
 #include "logbuffer.h"
 #include "commands.h"
 
@@ -51,7 +54,7 @@ static int test_hal_systick(void)
     const uint32_t tick_freq_hz = 1000U / uwTickFreq;
     const uint32_t cpu_cycles_per_tick = SystemCoreClock / tick_freq_hz; // loop cannot be faster than 1 cpu clock
     while(1) {
-        if (i > cpu_cycles_per_tick) {
+        if (i > 10*cpu_cycles_per_tick) {
             debug_printf("HAL systick timer %d Hz stopped\n", tick_freq_hz);
             return -1;
         }
@@ -67,7 +70,7 @@ static int test_hal_systick(void)
     return 0;
 }
 
-static void test_timers(void)
+void test_timers(void)
 {
     int ret0 = test_cpu_tick();
     int ret1 = test_hal_systick();
@@ -78,15 +81,12 @@ static void test_timers(void)
 
 void app_task_init(void)
 {
-    led_all_set_state(true);
+    configureTimerForRunTimeStats();
+    // test_timers();
     initialize_serial_console_hardware();
-    log_put(LOG_NOTICE, "Initializing"); // BUG: first message not shown
     log_put(LOG_NOTICE, "Initializing");
 //    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
-    configureTimerForRunTimeStats();
-//    test_timers();
     // required for console I/O
 //    debug_print("Waiting for threads to start\n");
     commands_init();
-    led_all_set_state(false);
 }

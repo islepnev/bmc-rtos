@@ -28,7 +28,7 @@ static const uint32_t mainTaskLoopDelay = 10;
 static void start_thread_main(void const *arg)
 {
     (void) arg;
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     task_main_init();
     while (1)
     {

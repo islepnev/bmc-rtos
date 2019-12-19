@@ -14,20 +14,23 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef DEV_PLL_PRINT_H
+#define DEV_PLL_PRINT_H
 
-#include <stdint.h>
-#include "dev_common_types.h"
-#include "dev_pll.h"
+//#include "dev_pll_types.h"
+#include "ad9545_status_regs.h"
 
-SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll)
-{
-    if (DEVICE_NORMAL != pll->present)
-        return SENSOR_UNKNOWN;
-    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
-        return SENSOR_CRITICAL;
-    if (!pll->status.dpll[0].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    if (!pll->status.dpll[1].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
+//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+void ad9545_verbose_status(const AD9545_Status *status);
+void ad9545_brief_status(const AD9545_Status *status);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // DEV_PLL_PRINT_H

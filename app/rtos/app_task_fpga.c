@@ -31,7 +31,7 @@ static void start_fpga_thread(void const *arg)
 {
     (void) arg;
 
-//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
 
     fpga_task_init();
     for( ;; )
@@ -41,7 +41,7 @@ static void start_fpga_thread(void const *arg)
     }
 }
 
-osThreadDef(fpga, start_fpga_thread, osPriorityAboveNormal,  1, fpgaThreadStackSize);
+osThreadDef(fpga, start_fpga_thread, osPriorityNormal,  1, fpgaThreadStackSize);
 
 void create_task_fpga(void)
 {

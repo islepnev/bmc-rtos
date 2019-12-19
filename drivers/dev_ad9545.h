@@ -14,22 +14,43 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef POWERMON_I2C_DRIVER_H
-#define POWERMON_I2C_DRIVER_H
+#ifndef DEV_AD9545_TYPES_H
+#define DEV_AD9545_TYPES_H
 
-#include "stm32f7xx_hal_def.h"
+#include <stdint.h>
+#include "dev_common_types.h"
+#include "ad9545/ad9545_setup_regs.h"
+#include "ad9545/ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void powermon_i2c_reset_master(void);
-HAL_StatusTypeDef powermon_i2c_detect(uint16_t deviceAddr, uint32_t Trials);
-HAL_StatusTypeDef powermon_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef powermon_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+typedef enum {
+    PLL_STATE_INIT,
+    PLL_STATE_RESET,
+    PLL_STATE_SETUP_SYSCLK,
+    PLL_STATE_SYSCLK_WAITLOCK,
+    PLL_STATE_SETUP,
+    PLL_STATE_RUN,
+    PLL_STATE_ERROR,
+    PLL_STATE_FATAL
+} ad9545_state_t;
+
+typedef struct Dev_ad9545 {
+    DeviceStatus present;
+    ad9545_setup_t setup;
+    AD9545_Status status;
+    ad9545_state_t fsm_state;
+    uint32_t recoveryCount;
+} Dev_ad9545;
+
+SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll);
+const char *dev_ad9545_state_str(ad9545_state_t state);
+void dev_ad9545_verbose_status(const Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // POWERMON_I2C_DRIVER_H
+#endif // DEV_AD9545_TYPES_H

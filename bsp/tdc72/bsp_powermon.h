@@ -15,26 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
+#ifndef BSP_POWERMON_H
+#define BSP_POWERMON_H
 
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_pll_types.h"
-#include "dev_thset_types.h"
-//#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
-#include "dev_types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_pca9548 i2cmux;
-    Dev_at24c eeprom_vxspb;
-    Dev_at24c eeprom_config;
-    Dev_ad9545 pll;
-    Dev_powermon pm;
-} Devices;
+#include "dev_pm_sensors_types.h"
 
-#endif // DEVICES_TYPES_H
+struct pm_switches;
+
+int monIsOn(const pm_switches *sw, SensorIndex index);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BSP_POWERMON_H

@@ -18,9 +18,8 @@
 #ifndef DEV_FPGA_H
 #define DEV_FPGA_H
 
-#include <unistd.h>
-#include "stm32f7xx_hal_def.h"
-#include "dev_fpga_types.h"
+#include <stdbool.h>
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,14 +31,14 @@ struct Dev_ad9545;
 struct Devices;
 struct Dev_powermon;
 
-DeviceStatus fpgaDetect(struct Dev_fpga *d);
-DeviceStatus fpga_check_live_magic(Dev_fpga *d);
-DeviceStatus fpga_test(struct Dev_fpga *d);
-HAL_StatusTypeDef fpgaWriteBmcVersion(void);
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const struct Dev_thset *thset);
-HAL_StatusTypeDef fpgaWritePllStatus(const struct Dev_ad9545 *pll);
-HAL_StatusTypeDef fpgaWriteSystemStatus(const struct Devices *d);
-HAL_StatusTypeDef fpgaWriteSensors(const struct Dev_powermon *d);
+bool fpgaDetect(struct Dev_fpga *d);
+bool fpga_check_live_magic(void);
+bool fpga_test(void);
+bool fpgaWriteBmcVersion(void);
+bool fpgaWriteBmcTemperature(const struct Dev_thset *thset);
+bool fpgaWritePllStatus(const struct Dev_ad9545 *pll);
+bool fpgaWriteSystemStatus(const struct Devices *d);
+bool fpgaWriteSensors(const struct Dev_powermon *d);
 
 #ifdef __cplusplus
 }

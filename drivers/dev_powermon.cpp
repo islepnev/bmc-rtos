@@ -16,6 +16,7 @@
 //
 
 #include "dev_powermon.h"
+
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
@@ -27,6 +28,7 @@
 #include "dev_pot.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
+#include "bsp_powermon.h"
 #include "cmsis_os.h"
 #include "powermon_i2c_driver.h"
 #include "app_shared_data.h"
@@ -35,32 +37,10 @@
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
-int monIsOn(const pm_switches *sw, SensorIndex index)
-{
-    switch(index) {
-    case SENSOR_1V5: return sw->switch_1v5;
-    case SENSOR_5V: return sw->switch_5v;
-    case SENSOR_5VPC: return 1;
-    case SENSOR_VME_5V: return 1;
-    case SENSOR_3V3: return sw->switch_3v3;
-    case SENSOR_VME_3V3: return 1;
-    case SENSOR_VMCU: return 1;
-    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0;
-    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0;
-    case SENSOR_FPGA_MGT_1V2: return sw->switch_1v0;
-    case SENSOR_FPGA_1V8: return sw->switch_3v3;
-    case SENSOR_TDC_A: return sw->switch_3v3;
-    case SENSOR_TDC_B: return sw->switch_3v3;
-    case SENSOR_TDC_C: return sw->switch_3v3;
-    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
-    }
-    return 0;
-}
-
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], i);
+        struct_pm_sensor_init(&d->sensors[i], static_cast<SensorIndex>(i));
     }
 }
 
@@ -195,26 +175,6 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
         if (!pm_sensor_isValid(&d->sensors[i]))
             return 0;
     return 1;
-}
-
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
-{
-    SensorStatus maxStatus = SENSOR_NORMAL;
-    for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &d->sensors[i];
-        if (sensor->isOptional)
-            continue;
-        DeviceStatus deviceStatus = sensor->deviceStatus;
-        if (deviceStatus != DEVICE_NORMAL)
-            maxStatus = SENSOR_CRITICAL;
-        int isOn = monIsOn(&d->sw, i);
-        if (isOn) {
-            SensorStatus status = pm_sensor_status(sensor);
-            if (status > maxStatus)
-                maxStatus = status;
-        }
-    }
-    return maxStatus;
 }
 
 void monClearMinMax(Dev_powermon *d)
@@ -397,15 +357,6 @@ int get_critical_power_valid(const Dev_powermon *pm)
     return 1;
 }
 
-int get_fpga_core_power_present(const Dev_powermon *pm)
-{
-    SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
-    SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
-    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
-    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
-    return present_1v0 && present_1v8;
-}
-
 static double get_sensor_power_w(const pm_sensor *d)
 {
     SensorStatus sensor_status = pm_sensor_status(d);
@@ -432,4 +383,13 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     mw += pm->sensors[SENSOR_VME_5V].powerMax;
     mw += pm->sensors[SENSOR_VME_3V3].powerMax;
     return mw;
+}
+
+int get_fpga_core_power_present(const Dev_powermon *pm)
+{
+    SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
+    SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
+    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    return present_1v0 && present_1v8;
 }

@@ -27,11 +27,12 @@
 #include "bsp_pin_defs.h"
 /* USER CODE END 0 */
 
-I2C_HandleTypeDef hi2c2;
-SMBUS_HandleTypeDef hsmbus3;
-I2C_HandleTypeDef hi2c4;
+I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;     // PLL AD9545
+I2C_HandleTypeDef hi2c3; // VXS PA
+I2C_HandleTypeDef hi2c4;     // Power Monitors
 
-/* I2C1 init function */
+// I2C1: VXS PB, IO Exp, EEPROM 0x51
 void MX_I2C1_Init(void)
 {
   LL_I2C_InitTypeDef I2C_InitStruct = {0};
@@ -85,7 +86,7 @@ void MX_I2C1_Init(void)
   LL_I2C_Init(I2C1, &I2C_InitStruct);
 
 }
-/* I2C2 init function */
+// I2C2: PLL AD9545
 void MX_I2C2_Init(void)
 {
 
@@ -121,26 +122,26 @@ void MX_I2C2_Init(void)
 void MX_I2C3_SMBUS_Init(void)
 {
 
-  hsmbus3.Instance = I2C3;
-  hsmbus3.Init.Timing = 0x20404768;
-  hsmbus3.Init.AnalogFilter = SMBUS_ANALOGFILTER_ENABLE;
-  hsmbus3.Init.OwnAddress1 = 2;
-  hsmbus3.Init.AddressingMode = SMBUS_ADDRESSINGMODE_7BIT;
-  hsmbus3.Init.DualAddressMode = SMBUS_DUALADDRESS_DISABLE;
-  hsmbus3.Init.OwnAddress2 = 0;
-  hsmbus3.Init.OwnAddress2Masks = SMBUS_OA2_NOMASK;
-  hsmbus3.Init.GeneralCallMode = SMBUS_GENERALCALL_DISABLE;
-  hsmbus3.Init.NoStretchMode = SMBUS_NOSTRETCH_DISABLE;
-  hsmbus3.Init.PacketErrorCheckMode = SMBUS_PEC_DISABLE;
-  hsmbus3.Init.PeripheralMode = SMBUS_PERIPHERAL_MODE_SMBUS_SLAVE;
-  hsmbus3.Init.SMBusTimeout = 0x00008293;
-  if (HAL_SMBUS_Init(&hsmbus3) != HAL_OK)
-  {
-    Error_Handler();
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x20404768;
+  // hi2c3.Init.AnalogFilter = SMBUS_ANALOGFILTER_ENABLE;
+  hi2c3.Init.OwnAddress1 = 2;
+  hi2c3.Init.AddressingMode = SMBUS_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = SMBUS_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = SMBUS_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = SMBUS_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = SMBUS_NOSTRETCH_DISABLE;
+  // hi2c3.Init.PacketErrorCheckMode = SMBUS_PEC_DISABLE;
+  // hi2c3.Init.PeripheralMode = SMBUS_PERIPHERAL_MODE_SMBUS_SLAVE;
+  // hi2c3.Init.SMBusTimeout = 0x00008293;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK) {
+  // if (HAL_SMBUS_Init(&hi2c3) != HAL_OK) {
+      Error_Handler();
   }
-
 }
-/* I2C4 init function */
+
+// I2C4: Power Monitors
 void MX_I2C4_Init(void)
 {
 
@@ -179,7 +180,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   if(i2cHandle->Instance==I2C2)
   {
   /* USER CODE BEGIN I2C2_MspInit 0 */
-
+    // PLL AD9545
   /* USER CODE END I2C2_MspInit 0 */
 
     __HAL_RCC_GPIOF_CLK_ENABLE();
@@ -209,7 +210,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
   else if(i2cHandle->Instance==I2C4)
   {
   /* USER CODE BEGIN I2C4_MspInit 0 */
-
+    // Power Monitors
   /* USER CODE END I2C4_MspInit 0 */
 
     __HAL_RCC_GPIOH_CLK_ENABLE();
@@ -282,7 +283,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
   if(i2cHandle->Instance==I2C2)
   {
   /* USER CODE BEGIN I2C2_MspDeInit 0 */
-
+  // PLL AD9545
   /* USER CODE END I2C2_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_I2C2_CLK_DISABLE();

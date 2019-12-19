@@ -31,7 +31,7 @@ static const uint32_t pllTaskLoopDelay = 10;
 static void pllTask(void const *arg)
 {
     (void) arg;
-//    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     pll_task_init();
     while(1) {
         pll_task_run();
@@ -39,7 +39,7 @@ static void pllTask(void const *arg)
     }
 }
 
-osThreadDef(pll, pllTask, osPriorityAboveNormal, 1, pllThreadStackSize);
+osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
 
 void create_task_pll(void)
 {

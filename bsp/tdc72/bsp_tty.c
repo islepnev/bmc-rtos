@@ -14,23 +14,13 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
 
-#include "dev_pll_types.h"
-#include "ad9545_setup.h"
-#include "ad9545_status.h"
+#include "bsp_tty.h"
+#include "bsp.h"
+#include "app_shared_data.h"
+#include "devices_types.h"
+#include "stm32f7xx_ll_usart.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
-void pllPrintStatus(const Dev_ad9545 *d);
-
-#ifdef __cplusplus
+void bsp_tty_setup_uart(void)
+{
 }
-#endif
-
-#endif // DEV_PLL_PRINT_H

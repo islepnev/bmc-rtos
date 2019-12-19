@@ -21,8 +21,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include "stm32f7xx_hal_def.h"
-//#include <stdint.h>
 
 HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data);
 

@@ -17,7 +17,7 @@
 #ifndef BSP_AD9545_H
 #define BSP_AD9545_H
 
-#include "ad9545_setup.h"
+#include "ad9545/ad9545_setup_regs.h"
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
 void init_PllRefSetup(PllRefSetup_TypeDef *d);

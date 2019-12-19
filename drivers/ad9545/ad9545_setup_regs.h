@@ -14,8 +14,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD9545_SETUP_H
-#define AD9545_SETUP_H
+
+#ifndef AD9545_SETUP_REGS_H
+#define AD9545_SETUP_REGS_H
 
 #include <stdint.h>
 
@@ -37,7 +38,7 @@ typedef struct {
     uint64_t sysclk_Ref_Frequency_milliHz;
     uint32_t Sysclk_Stability_Timer;
     uint16_t Temperature_Low_Threshold;
-    uint16_t Temperature_Hihg_Threshold;
+    uint16_t Temperature_High_Threshold;
     uint16_t AuxDPLL_Bandwidth;
     int64_t CompensationValue;
     uint8_t TDC_Compensation_Source;
@@ -207,4 +208,14 @@ enum {
     DPLL_MODE_PROFILE_SELECT_MANUAL = 3
 };
 
-#endif // AD9545_SETUP_H
+typedef struct ad9545_setup_t {
+    Pll_OutputDrivers_Setup_TypeDef out_drivers;
+    Pll_OutputDividers_Setup_TypeDef out_dividers;
+    Pll_DPLL_Setup_TypeDef dpll0;
+    Pll_DPLL_Setup_TypeDef dpll1;
+    Pll_DPLLMode_Setup_TypeDef dpll_mode;
+    PllRefSetup_TypeDef ref;
+    PllSysclkSetup_TypeDef sysclk;
+} ad9545_setup_t;
+
+#endif // AD9545_SETUP_REGS_H

@@ -21,21 +21,22 @@
 #define BSP_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#define TTY_USART USART3
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LED_HEARTBEAT LED_INT_GREEN
 
-extern struct __SPI_HandleTypeDef * const fpga_spi;
-extern struct __SPI_HandleTypeDef * const therm_spi;
-extern struct __I2C_HandleTypeDef * const hPll;
-extern struct __I2C_HandleTypeDef * const hi2c_sensors;
 
-typedef enum {PLL_ENABLE = 0, PLL_DISABLE = 1} pll_enable_t;
-void pllSetStaticPins(pll_enable_t enable);
-void pllReset(void);
+#define ad9545_deviceAddr 0x4A
 
-typedef enum {PLL_GPIO_TEST_FAIL = 0, PLL_GPIO_TEST_OK = 1} pll_gpio_test_t;
-pll_gpio_test_t pll_gpio_test(void);
+#define hi2c_ad9545 hi2c2
+#define hi2c_sensors hi2c4
+
+#define fpga_spi hspi1
+#define therm_spi hspi4
 
 typedef enum {
     PCB_4_1 = 0,
@@ -46,5 +47,9 @@ typedef enum {
 extern board_version_t board_version;
 
 void update_board_version(int powermon_count, int pots_count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // BSP_H

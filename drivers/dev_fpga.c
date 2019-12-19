@@ -17,12 +17,16 @@
 
 #include "dev_fpga.h"
 
-#include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_def.h"
 #include "spi.h"
 #include "fpga_spi_hal.h"
 #include "version.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"
+#include "dev_fpga_types.h"
+#include "dev_ad9545.h"
+#include "dev_thset_types.h"
+#include "devices_types.h"
 #include "system_status.h"
 
 static uint16_t live_magic = 0x55AA;
@@ -39,7 +43,7 @@ static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *
     return ret;
 }
 
-static void fpga_write_live_magic(Dev_fpga *d)
+static void fpga_write_live_magic(void)
 {
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
@@ -50,7 +54,7 @@ static void fpga_write_live_magic(Dev_fpga *d)
     fpga_spi_hal_write_reg(addr2, wdata2);
 }
 
-DeviceStatus fpga_check_live_magic(Dev_fpga *d)
+bool fpga_check_live_magic(void)
 {
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
@@ -61,36 +65,42 @@ DeviceStatus fpga_check_live_magic(Dev_fpga *d)
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
         log_put(LOG_ERR, "FPGA register contents unexpectedly changed");
-        return DEVICE_FAIL;
+        return false;
     }
-    fpga_write_live_magic(d);
-    return DEVICE_NORMAL;
+    fpga_write_live_magic();
+    return true;
 }
 
-DeviceStatus fpga_test(Dev_fpga *d)
+bool fpga_test(void)
 {
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
-    fpga_spi_hal_write_reg(addr1, wdata1);
-    fpga_spi_hal_write_reg(addr2, wdata2);
-    fpga_spi_hal_read_reg(addr1, &rdata1);
-    fpga_spi_hal_read_reg(addr2, &rdata2);
+    if (HAL_OK != fpga_spi_hal_write_reg(addr1, wdata1))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_write_reg(addr2, wdata2))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_read_reg(addr1, &rdata1))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_read_reg(addr2, &rdata2))
+        goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        fpga_write_live_magic(d);
-        return DEVICE_NORMAL;
-    } else {
-        log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
-        log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        return DEVICE_FAIL;
+        fpga_write_live_magic();
+        return true;
     }
+    log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
+    log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
+    return false;
+err:
+    log_printf(LOG_ERR, "FPGA register test failed: SPI error");
+    return false;
 }
 
-DeviceStatus fpgaDetect(Dev_fpga *d)
+bool fpgaDetect(Dev_fpga *d)
 {
     int err = 0;
     for (int i=0; i<FPGA_REG_COUNT; i++) {
@@ -115,98 +125,82 @@ DeviceStatus fpgaDetect(Dev_fpga *d)
 //        if (rdata != wdata)
 //            log_printf(LOG_ERR, "FPGA register test failed: addr %04X, wdata %04X, rdata %04X", addr, wdata, rdata);
 //    }
-    return d->present;
+    return DEVICE_NORMAL == d->present;
 }
 
-HAL_StatusTypeDef fpgaWriteBmcVersion(void)
+bool fpgaWriteBmcVersion(void)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM);
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM);
-    if (ret != HAL_OK)
-        return ret;
-    return ret;
+    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
+        return false;
+    return true;
 }
 
-HAL_StatusTypeDef fpgaWriteBmcTemperature(const Dev_thset *thset)
+bool fpgaWriteBmcTemperature(const Dev_thset *thset)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     for (int i=0; i<4; i++) {
-        ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, thset->th[i].rawTemp);
-        if (ret != HAL_OK)
-            return ret;
+        if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, thset->th[i].rawTemp))
+            return false;
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef fpgaWritePllStatus(const Dev_ad9545 *pll)
+bool fpgaWritePllStatus(const Dev_ad9545 *pll)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
-    if ((DEVICE_NORMAL != pll->present) || (pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
+    if (SENSOR_NORMAL == get_pll_sensor_status(pll)) {
         data |= 0x8;
-    else {
+    } else {
         if (pll->status.sysclk.b.pll0_locked)
             data |= 0x1;
     }
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data);
-    return ret;
+    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data))
+        return false;
+    return true;
 }
 
-HAL_StatusTypeDef fpgaWriteSystemStatus(const Devices *d)
+bool fpgaWriteSystemStatus(const Devices *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
     data = getSystemStatus(d);
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data);
     if (HAL_OK != ret)
-        return ret;
+        return false;
     data = getPowermonStatus(&d->pm);
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data);
     if (HAL_OK != ret)
-        return ret;
+        return false;
     data = getPllStatus(&d->pll);
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data);
     if (HAL_OK != ret)
-        return ret;
-    return ret;
+        return false;
+    return true;
 }
 
-HAL_StatusTypeDef fpgaWriteSensors(const struct Dev_powermon *d)
+bool fpgaWriteSensors(const struct Dev_powermon *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].busVoltage * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].current * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].busVoltage * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].current * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].busVoltage * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].current * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].busVoltage * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].current * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].busVoltage * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].current * 1000));
-    if (ret != HAL_OK)
-        return ret;
-    return ret;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_A].current * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_B].current * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_C].current * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_5V].current * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].current * 1000)))
+        return false;
+    return true;
 }

@@ -35,7 +35,6 @@ void pm_read_pgood(Dev_powermon *pm);
 void read_power_switches_state(Dev_powermon *pm);
 bool check_power_switches(const Dev_powermon *pm);
 void update_power_switches(Dev_powermon *pm);
-int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);

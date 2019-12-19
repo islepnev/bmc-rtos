@@ -22,8 +22,10 @@
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"
 #include "app_shared_data.h"
-#include "dev_leds.h"
+#include "dev_common_types.h"
+#include "dev_fpga_types.h"
 #include "dev_fpga.h"
+#include "fpga_spi_hal.h"
 #include "dev_powermon.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
@@ -66,8 +68,17 @@ void fpga_task_init(void)
     struct_fpga_init(get_dev_fpga());
 }
 
+static int old_enable_power = 0;
+
 void fpga_task_run(void)
 {
+    if (old_enable_power != enable_power) {
+        old_enable_power = enable_power;
+        if (enable_power)
+            fpga_enable_interface();
+        else
+            fpga_disable_interface();
+    }
     Dev_fpga *d = get_dev_fpga();
     old_state = state;
     if (board_version >= PCB_4_2) {
@@ -91,8 +102,10 @@ void fpga_task_run(void)
         d->present = DEVICE_UNKNOWN;
         break;
     case FPGA_STATE_LOAD:
-        if (!fpga_enable)
+        if (!fpga_enable) {
             state = FPGA_STATE_STANDBY;
+            break;
+        }
         if (fpga_done) {
             if (board_version >= PCB_4_2) {
                 const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
@@ -100,6 +113,7 @@ void fpga_task_run(void)
                 log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
             state = FPGA_STATE_RESET;
+            break;
         }
         if (stateTicks() > LOAD_DELAY_TICKS) {
             log_put(LOG_ERR, "FPGA load timeout");
@@ -107,11 +121,13 @@ void fpga_task_run(void)
         }
         break;
     case FPGA_STATE_RESET:
-        if (!fpga_power_present)
+        if (!fpga_power_present) {
             state = FPGA_STATE_STANDBY;
+            break;
+        }
         if (1
                 && DEVICE_NORMAL == fpgaDetect(d)
-                && DEVICE_NORMAL == fpga_test(d)
+                && DEVICE_NORMAL == fpga_test()
                 ) {
             state = FPGA_STATE_RUN;
             if (board_version < PCB_4_2) {
@@ -130,15 +146,20 @@ void fpga_task_run(void)
         }
         break;
     case FPGA_STATE_RUN:
-        if (!fpga_power_present)
+        if (!fpga_power_present) {
             state = FPGA_STATE_STANDBY;
-        if ((DEVICE_NORMAL != fpga_check_live_magic(d)) ||
-                (HAL_OK != fpgaWriteBmcVersion()) ||
-            (HAL_OK != fpgaWriteBmcTemperature(get_dev_thset())) ||
-            (HAL_OK != fpgaWritePllStatus(get_dev_pll())) ||
-            (HAL_OK != fpgaWriteSystemStatus(getDevicesConst())) ||
-            (HAL_OK != fpgaWriteSensors(get_dev_powermon_const()))
-                ) {
+            break;
+        }
+        if (!fpga_done)
+            state = FPGA_STATE_STANDBY;
+        if ((!fpga_check_live_magic()) ||
+            (!fpgaWriteBmcVersion()) ||
+            (!fpgaWriteBmcTemperature(get_dev_thset())) ||
+            (!fpgaWritePllStatus(get_dev_pll())) ||
+            (!fpgaWriteSystemStatus(getDevicesConst())) ||
+            (!fpgaWriteSensors(get_dev_powermon_const()))
+            ) {
+            log_printf(LOG_ERR, "FPGA SPI error");
             state = FPGA_STATE_ERROR;
             break;
         }
@@ -163,4 +184,5 @@ void fpga_task_run(void)
     if (old_state != state) {
         stateStartTick = osKernelSysTick();
     }
+    old_state = state;
 }

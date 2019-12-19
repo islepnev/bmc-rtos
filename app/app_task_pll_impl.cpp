@@ -16,13 +16,15 @@
 */
 
 #include "app_task_pll_impl.h"
+#include <string.h>
 #include "cmsis_os.h"
 #include "app_shared_data.h"
 #include "bsp.h"
-#include "dev_pll.h"
-#include "ad9545_i2c_hal.h"
+#include "gpio.h"
+#include "dev_ad9545.h"
+#include "ad9545/ad9545.h"
+#include "ad9545/ad9545_i2c_hal.h"
 #include "logbuffer.h"
-#include "pll_i2c_driver.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
@@ -30,11 +32,11 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static int old_enable_power = 0;
-
 void pll_task_init(void)
 {
-    pll_i2c_init();
+    Dev_ad9545 *d = get_dev_pll();
+    init_ad9545_setup(&d->setup);
+    ad9545_gpio_init();
 }
 
 /*
@@ -47,28 +49,25 @@ void pll_task_init(void)
 void pll_task_run(void)
 {
     Dev_ad9545 *d = get_dev_pll();
-    const PllState old_state = d->fsm_state;
+    const ad9545_state_t old_state = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:
         if (enable_pll_run && enable_power) {
-            pllSetStaticPins(PLL_ENABLE);
-            if (pll_gpio_test()) {
+            if (ad9545_gpio_test()) {
                 d->fsm_state = PLL_STATE_RESET;
             } else {
                 log_put(LOG_ERR, "PLL GPIO test fail");
                 d->fsm_state = PLL_STATE_ERROR;
             }
-        } else {
-            pllSetStaticPins(PLL_DISABLE);
         }
         break;
     case PLL_STATE_RESET:
-        reset_I2C_Pll();
-        pllReset();
+        ad9545_reset_i2c();
+        ad9545_reset();
         osDelay(50);
-        pllDetect(d);
+        d->present = ad9545_detect() ? DEVICE_NORMAL : DEVICE_FAIL;
         if (DEVICE_NORMAL == d->present) {
-            if (DEV_OK != pllSoftwareReset(d)) {
+            if (!ad9545_software_reset()) {
                 d->fsm_state = PLL_STATE_ERROR;
                 break;
             }
@@ -82,11 +81,11 @@ void pll_task_run(void)
         }
         break;
     case PLL_STATE_SETUP_SYSCLK:
-        if (DEV_OK != pllSetupSysclk(d)) {
+        if (!ad9545_setup_sysclk(&d->setup.sysclk)) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        if (DEV_OK != pllCalibrateSysclk(d)) {
+        if (!ad9545_calibrate_sysclk()) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
@@ -102,7 +101,7 @@ void pll_task_run(void)
         }
         break;
     case PLL_STATE_SETUP:
-        if (DEV_OK != pllSetup(d)) {
+        if (!ad9545_setup(&d->setup)) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
@@ -143,14 +142,20 @@ void pll_task_run(void)
             d->fsm_state != PLL_STATE_RESET &&
             d->fsm_state != PLL_STATE_ERROR &&
             d->fsm_state != PLL_STATE_FATAL) {
-        if (DEV_OK != pllReadSysclkStatus(d)) {
+        if (!ad9545_read_sysclk_status(&d->status)) {
             d->fsm_state = PLL_STATE_ERROR;
         }
+    } else {
+        d->status.sysclk.raw = 0;
     }
     if (d->fsm_state == PLL_STATE_RUN) {
-        if (DEV_OK != pllReadStatus(d)) {
+        if (!ad9545_read_status(&d->status)) {
             d->fsm_state = PLL_STATE_ERROR;
         }
+    } else {
+        memset(&d->status.misc, 0, sizeof(d->status.misc));
+        memset(&d->status.ref, 0, sizeof(d->status.ref));
+        memset(&d->status.dpll, 0, sizeof(d->status.dpll));
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {

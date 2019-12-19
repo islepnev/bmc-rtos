@@ -27,7 +27,6 @@
 #include "task.h"
 
 #include "fpga_spi_hal.h"
-#include "ad9545_util.h"
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
@@ -35,7 +34,9 @@
 #include "dev_fpga_types.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"
-#include "dev_pll_print.h"
+#include "bsp_powermon.h"
+#include "dev_pm_sensors.h"
+#include "ad9545/ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "dev_mcu.h"
@@ -51,7 +52,6 @@
 #include "dev_thset.h"
 
 #include "app_shared_data.h"
-
 #include "rtos/freertos_stats.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
@@ -68,43 +68,6 @@ static const char *pmStateStr(PmState state)
     case PM_STATE_OFF:     return ANSI_GRAY   "OFF"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
     case PM_STATE_OVERHEAT: return ANSI_RED    "OVERHEAT" ANSI_CLEAR;
-    default: return "?";
-    }
-}
-
-static const char *sensorStatusStr(SensorStatus state)
-{
-    switch(state) {
-    case SENSOR_UNKNOWN:  return STR_RESULT_UNKNOWN;
-    case SENSOR_NORMAL:   return STR_RESULT_NORMAL;
-    case SENSOR_WARNING:  return STR_RESULT_WARNING;
-    case SENSOR_CRITICAL: return STR_RESULT_CRIT;
-    default: return STR_RESULT_FAIL;
-    }
-}
-
-//static const char *mainStateStr(MainState state)
-//{
-//    switch(state) {
-//    case MAIN_STATE_INIT:    return "INIT";
-//    case MAIN_STATE_DETECT:  return ANSI_YELLOW "DETECT"  ANSI_CLEAR;
-//    case MAIN_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
-//    case MAIN_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-//    default: return "?";
-//    }
-//}
-
-static const char *pllStateStr(PllState state)
-{
-    switch(state) {
-    case PLL_STATE_INIT:    return "INIT";
-    case PLL_STATE_RESET:    return "RESET";
-    case PLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
-    case PLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
-    case PLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
-    case PLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
-    case PLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case PLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
     default: return "?";
     }
 }
@@ -183,67 +146,20 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
     printf("%10s", d->label);
     if (d->deviceStatus == DEVICE_NORMAL) {
         pm_sensor_print_values(d, isOn);
-        printf(" %s", isOn ? sensorStatusStr(d->sensorStatus) : STR_RESULT_OFF);
+        printf(" %s", isOn ? sensor_status_ansi_str(d->sensorStatus) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
     }
 }
 
-static const char *monStateStr(MonState monState)
-{
-    switch(monState) {
-    case MON_STATE_INIT: return "INIT";
-    case MON_STATE_DETECT: return "DETECT";
-    case MON_STATE_READ: return "READ";
-    case MON_STATE_ERROR: return "ERROR";
-    default: return "?";
-    }
-}
-
 void monPrintValues(const Dev_powermon *d)
 {
-//    printf("Sensors state:  %s %s",
-//           monStateStr(d->monState), d->monErrors ? STR_RESULT_FAIL : STR_RESULT_NORMAL);
-//    if (d->monErrors)
-//        printf("     %d errors", d->monErrors);
-//    printf("%s\n", ANSI_CLEAR_EOL);
     pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw_state, static_cast<SensorIndex>(i)));
+            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, (SensorIndex)i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
-    }
-}
-
-void pllPrint(const Dev_ad9545 *d)
-{
-    printf("PLL state:      %s", pllStateStr(d->fsm_state));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    if (d->fsm_state == PLL_STATE_RUN) {
-        printf("Ref A:");
-        pllPrintRefStatusBits(d->status.ref[REFA]);
-        printf("%s\n", ANSI_CLEAR_EOL);
-        printf("Ref B:");
-        pllPrintRefStatusBits(d->status.ref[REFB]);
-        printf("%s\n", ANSI_CLEAR_EOL);
-        for (int channel=0; channel<DPLL_COUNT; channel++) {
-            int64_t ppb0 = pll_ftw_rel_ppb(d, channel);
-            const char *ref0str = "";
-            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
-            if (ref0 != PROFILE_REF_SOURCE_INVALID)
-                ref0str = pllProfileRefSourceStr(ref0);
-            printf("PLL%d: %s ref %-5s %lld ppb",
-                   channel,
-                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
-                   ref0str,
-                   (int64_t)ppb0
-                   );
-            printf("%s\n", ANSI_CLEAR_EOL);
-        }
-    } else {
-        for (int i=0; i<4; i++)
-            printf("%s\n", ANSI_CLEAR_EOL);
     }
 }
 
@@ -264,7 +180,7 @@ static void print_log_entry(uint32_t index)
     case LOG_DEBUG: break;
     default: prefix = ANSI_PUR; break;
     }
-    printf("%s%8d.%03d %s%s", prefix,
+    printf("%s%8ld.%03ld %s%s", prefix,
            ent.tick/1000, ent.tick%1000, ent.str, suffix);
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -314,7 +230,7 @@ static void print_uptime_str(void)
         printf("%u days ", dd);
     if (dd == 1)
         printf("%u day ", dd);
-    printf("%2u:%02u:%02u", hh, mm, ss);
+    printf("%2u:%02u:%02lu", hh, mm, ss);
 }
 
 static char statsBuffer[1000];
@@ -322,7 +238,7 @@ static char statsBuffer[1000];
 static void print_header(void)
 {
     // Title
-    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_BGR_BLUE);
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
     printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
     printf(" %lu%%", freertos_get_cpu_load_percent());
     if (display_mode == DISPLAY_NONE) {
@@ -338,11 +254,11 @@ static void print_header(void)
                ANSI_BGR_BLUE);
     }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-    if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
-           HAL_GetDEVID(), HAL_GetREVID(),
-           HAL_GetHalVersion(),
-           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
-           );
+//    if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
+//           HAL_GetDEVID(), HAL_GetREVID(),
+//           HAL_GetHalVersion(),
+//           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+//           );
 }
 
 static void print_powermon(const Dev_powermon *pm)
@@ -373,7 +289,7 @@ static void print_sensors(const Dev_powermon *pm)
         printf("Power supplies: %4.1f W, %4.1f W max %s\n",
                pm_get_power_w(pm),
                pm_get_power_max_w(pm),
-               sensorStatusStr(sensorStatus));
+               sensor_status_ansi_str(sensorStatus));
         monPrintValues(pm);
     }
 }
@@ -390,7 +306,7 @@ static void print_thset(const Dev_thset *d)
         printf(" ");
     }
     const SensorStatus status = dev_thset_thermStatus(d);
-    printf("%s", sensorStatusStr(status));
+    printf("%s", sensor_status_ansi_str(status));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -410,17 +326,24 @@ static void print_main(const Devices *dev)
 static void print_fpga(const Dev_fpga *fpga)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
-    printf("FPGA ID: %04X %s   ", fpga->id, deviceStatusResultStr(fpga->present));
-    if (fpga->present == DEVICE_NORMAL)
-        for (int i=0; i<FPGA_REG_COUNT; i++)
-            printf(" %04X", fpga->regs[i]);
+    printf("FPGA %s",
+           fpga->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
+    if (fpga->initb && !fpga->done)
+        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
+    if (fpga->done)
+        printf("%04X", fpga->id);
+    printf(sensor_status_ansi_str(get_fpga_sensor_status(fpga)));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_pll(const Dev_ad9545 *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
-    pllPrint(pll);
+    printf("PLL AD9545:      %s %s",
+           dev_ad9545_state_str(pll->fsm_state),
+           sensor_status_ansi_str(get_pll_sensor_status(pll)));
+    printf("%s\n", ANSI_CLEAR_EOL);
+    ad9545_brief_status(&pll->status);
 }
 
 static void print_log_lines(int count)
@@ -523,14 +446,14 @@ static void display_pll_detail(const Devices * dev)
 {
     print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
     print_goto(DISPLAY_PLL_DETAIL_Y, 1);
-    pllPrintStatus(&dev->pll);
+    dev_ad9545_verbose_status(&dev->pll);
 }
 
 static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
 
-void display_task_run()
+void display_task_run(void)
 {
     uint32_t tick = osKernelSysTick();
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)

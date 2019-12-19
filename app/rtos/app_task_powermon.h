@@ -24,9 +24,6 @@
 extern "C" {
 #endif
 
-//PmState getPmState(void);
-//Dev_powermon getPmData(void);
-SensorStatus getPowermonStatus(const Dev_powermon *pm);
 void create_task_powermon(void);
 
 #ifdef __cplusplus

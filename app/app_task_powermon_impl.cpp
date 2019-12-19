@@ -27,7 +27,6 @@
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors.h"
 #include "dev_powermon.h"
-#include "devices.h"
 #include "dev_powermon_types.h"
 #include "dev_mcu.h"
 #include "dev_thset.h"
@@ -121,22 +120,11 @@ static void log_sensor_status_change(const Dev_powermon *pm)
     }
 }
 
-SensorStatus getMonStatus(const Dev_powermon *pm)
-{
-    SensorStatus monStatus = SENSOR_CRITICAL;
-    if ((pm->monState == MON_STATE_READ)
-            && (getMonStateTicks(pm) > SENSORS_SETTLE_TICKS)) {
-        monStatus = pm_sensors_getStatus(pm);
-    }
-    return monStatus;
-}
-
 static int pm_initialized = 0;
 
 void powermon_task_init(void)
 {
     clearOldSensorStatus();
-    powermon_i2c_init();
     dev_thset_init(get_dev_thset());
 }
 
@@ -252,7 +240,7 @@ void task_powermon_run (void)
     } else {
         clearOldSensorStatus();
     }
-    dev_thset_run(get_dev_thset());
+//    dev_thset_run(get_dev_thset()); // FIXME
     sync_ipmi_sensors();
 
     if (oldState != pm->pmState) {

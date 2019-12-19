@@ -104,7 +104,6 @@ typedef struct Dev_powermon {
    Dev_pots pots;
 } Dev_powermon;
 
-int monIsOn(const pm_switches *sw, SensorIndex index);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 SensorStatus getMonStatus(const Dev_powermon *pm);
 SensorStatus getPowermonStatus(const Dev_powermon *d);
