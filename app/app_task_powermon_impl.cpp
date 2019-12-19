@@ -240,7 +240,7 @@ void task_powermon_run (void)
     } else {
         clearOldSensorStatus();
     }
-//    dev_thset_run(get_dev_thset()); // FIXME
+    dev_thset_run(get_dev_thset());
     sync_ipmi_sensors();
 
     if (oldState != pm->pmState) {
