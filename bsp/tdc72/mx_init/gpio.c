@@ -70,8 +70,8 @@ void MX_GPIO_Init(void)
 
   // FPGA_NSS
   GPIO_InitStruct.Pin = FPGA_NSS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
   HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
