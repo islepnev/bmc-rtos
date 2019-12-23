@@ -71,6 +71,15 @@ static void pot_action_up(void)
     schedule_display_refresh();
 }
 
+static void pot_action_set_id(int id)
+{
+    if (id < 0 || id >= DEV_POT_COUNT)
+        return;
+
+    pot_screen_selected = id;
+    schedule_display_refresh();
+}
+
 static void pot_send_command(command_id_t id, uint32_t arg)
 {
     CommandPots *cmd = osMailAlloc(mq_cmd_pots_id, osWaitForever);
@@ -132,6 +141,10 @@ void pot_screen_handle_key(const char ch)
     }
     if (ch == '0') {
         pot_action_reset();
+    }
+    const char max_id_char = '1'+DEV_POT_COUNT-1;
+    if (ch >= '1' && ch <= max_id_char) {
+        pot_action_set_id(ch-'1');
     }
     if (ch == 'w' || ch == 'W') {
         pot_action_write();

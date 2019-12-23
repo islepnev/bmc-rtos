@@ -478,7 +478,7 @@ static void display_pot(const Dev_powermon *d)
 {
     print_goto(2, 1);
     printf("Voltage adjustments\n" ANSI_CLEAR_EOL);
-    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom\n" ANSI_CLEAR_EOL);
+    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; 1-4: set tdc_id; w: write eeprom\n" ANSI_CLEAR_EOL);
     print_goto(4, 1);
     printf("\n");
     printf("   adjustment ");
