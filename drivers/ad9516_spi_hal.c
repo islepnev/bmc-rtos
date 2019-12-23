@@ -25,17 +25,21 @@
 #include "error_handler.h"
 #include "logbuffer.h"
 #include "cmsis_os.h"
+#include <stdbool.h>
 
 static const int SPI_TIMEOUT_MS = 500;
 
-void set_csb(int state)
+bool set_csb(int state)
 {
     GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
     HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
     GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
     if (write != read) {
-        Error_Handler();
+//        Error_Handler();
+        log_printf(LOG_ERR, "SPI set_csb error writing: wrote %02X, read %02X", write, read);
+        return false;
     }
+    return true;
 }
 
 //HAL_StatusTypeDef ad9516_read1_simplex(uint16_t reg, uint8_t *data)
@@ -70,14 +74,19 @@ HAL_StatusTypeDef ad9516_read1_duplex(uint16_t reg, uint8_t *data)
     tx[0] = 0x80 | (reg >> 8);  // MSB first, bit 15 = read
     tx[1] = reg & 0xFF;
     tx[2] = 0;
-    set_csb(0);
+    bool ok = set_csb(0);
+    if(!ok)
+        return HAL_ERROR;
     volatile HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(ad9516_spi, tx, rx, Size, SPI_TIMEOUT_MS);
-    set_csb(1);
+    ok = set_csb(1);
+    if(!ok)
+        return HAL_ERROR;
     if (ret == HAL_OK) {
         if (data) {
             *data = rx[2];
         }
     } else {
+        log_printf(LOG_ERR, "HAL_SPI_TransmitReceive error on ad9516_read1_duplex");
         Error_Handler();
     }
     return HAL_OK;
@@ -91,11 +100,17 @@ HAL_StatusTypeDef ad9516_write1_internal(uint16_t reg, uint8_t data)
     tx[0] = (reg >> 8) & 0x1F;  // MSB first
     tx[1] = reg & 0xFF;
     tx[2] = data;
-    set_csb(0);
+    bool ok = set_csb(0);
+    if(!ok)
+        return HAL_ERROR;
     volatile HAL_StatusTypeDef ret = HAL_SPI_Transmit(ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
-    set_csb(1);
-    if (ret != HAL_OK)
+    ok = set_csb(1);
+    if(!ok)
+        return HAL_ERROR;
+    if (ret != HAL_OK) {
+        log_printf(LOG_ERR, "HAL_SPI_TransmitReceive error on ad9516_write1_internal");
         Error_Handler();
+    }
     return ret;
 }
 
