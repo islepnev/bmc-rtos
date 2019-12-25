@@ -112,7 +112,7 @@ void MX_USART3_UART_Init(void)
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
   LL_USART_Init(USART3, &USART_InitStruct);
-  LL_USART_EnableAutoBaudRate(USART3);
+  // LL_USART_EnableAutoBaudRate(USART3);
   LL_USART_SetAutoBaudRateMode(USART3, LL_USART_AUTOBAUD_DETECT_ON_STARTBIT);
   LL_USART_ConfigAsyncMode(USART3);
   LL_USART_Enable(USART3);
