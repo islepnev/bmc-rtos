@@ -80,6 +80,15 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (spiHandle->Instance==SPI1) {
+        // FPGA
+        // software NSS
+        GPIO_InitStruct.Pin = FPGA_NSS_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
+
         __HAL_RCC_SPI1_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         GPIO_InitStruct.Pin = FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin;
@@ -111,7 +120,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 {
     if (spiHandle->Instance==SPI1) {
         __HAL_RCC_SPI1_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOA, FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin);
+        HAL_GPIO_DeInit(GPIOA, FPGA_NSS_Pin|FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin);
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
     }
     else if (spiHandle->Instance==SPI4) {

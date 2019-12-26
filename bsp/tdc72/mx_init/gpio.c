@@ -63,18 +63,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ADT_CS_B3_GPIO_Port, ADT_CS_B3_Pin, GPIO_PIN_SET);
 
   GPIO_InitStruct.Pin = ON_TDC_C_Pin|ON_TDC_B_Pin|ON_TDC_A_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  // FPGA_NSS
-  GPIO_InitStruct.Pin = FPGA_NSS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
   // MON_SMB_SW_RST_B
   GPIO_InitStruct.Pin = MON_SMB_SW_RST_B_Pin;
@@ -139,7 +131,7 @@ void MX_GPIO_Init(void)
   // PCB R35.5 should be mounted 10kΩ
   // PCB R37.5 should NOT be mounted
   GPIO_InitStruct.Pin = ON_5V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_WritePin(ON_5V_GPIO_Port, ON_5V_Pin, GPIO_PIN_SET);
@@ -147,7 +139,7 @@ void MX_GPIO_Init(void)
 
   // ON_1_5V
   GPIO_InitStruct.Pin = ON_1_5V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_WritePin(ON_1_5V_GPIO_Port, ON_1_5V_Pin, GPIO_PIN_SET);
@@ -155,7 +147,7 @@ void MX_GPIO_Init(void)
 
   // ON_3_3V
   GPIO_InitStruct.Pin = ON_3_3V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_WritePin(ON_3_3V_GPIO_Port, ON_3_3V_Pin, GPIO_PIN_SET);
@@ -163,7 +155,7 @@ void MX_GPIO_Init(void)
 
   // ON_1_0V_1_2V
   GPIO_InitStruct.Pin = ON_1_0V_1_2V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, GPIO_PIN_SET);
