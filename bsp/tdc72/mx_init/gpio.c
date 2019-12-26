@@ -53,20 +53,34 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOJ_CLK_ENABLE();
 
-  HAL_GPIO_WritePin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, GPIO_PIN_SET);
+  // ON_5V (always on)
+  // PCB R35.5 should be mounted 10kΩ
+  // PCB R37.5 should NOT be mounted
+
+  // ON_* (open drain, default = 1)
+  static const pin_def_t on_pins[7] = {
+      {ON_5V_GPIO_Port, ON_5V_Pin},
+      {ON_1_5V_GPIO_Port, ON_1_5V_Pin},
+      {ON_3_3V_GPIO_Port, ON_3_3V_Pin},
+      {ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin},
+      {ON_TDC_A_GPIO_Port, ON_TDC_A_Pin},
+      {ON_TDC_B_GPIO_Port, ON_TDC_B_Pin},
+      {ON_TDC_C_GPIO_Port, ON_TDC_C_Pin}
+  };
+
+  for (int i=0; i<7; i++) {
+      HAL_GPIO_WritePin(on_pins[i].GPIOx, on_pins[i].pin, GPIO_PIN_SET);
+      GPIO_InitStruct.Pin = on_pins[i].pin;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // PCB 4.1 has no pullups?
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      HAL_GPIO_Init(on_pins[i].GPIOx, &GPIO_InitStruct);
+  }
 
   HAL_GPIO_WritePin(ADT_CS_B0_GPIO_Port, ADT_CS_B0_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(ADT_CS_B1_GPIO_Port, ADT_CS_B1_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(ADT_CS_B2_GPIO_Port, ADT_CS_B2_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(ADT_CS_B3_GPIO_Port, ADT_CS_B3_Pin, GPIO_PIN_SET);
-
-  GPIO_InitStruct.Pin = ON_TDC_C_Pin|ON_TDC_B_Pin|ON_TDC_A_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   // MON_SMB_SW_RST_B
   GPIO_InitStruct.Pin = MON_SMB_SW_RST_B_Pin;
@@ -126,40 +140,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_WritePin(SYSTEM_RDY_GPIO_Port, SYSTEM_RDY_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(SYSTEM_RDY_GPIO_Port, &GPIO_InitStruct);
-
-  // ON_5V (always on)
-  // PCB R35.5 should be mounted 10kΩ
-  // PCB R37.5 should NOT be mounted
-  GPIO_InitStruct.Pin = ON_5V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_WritePin(ON_5V_GPIO_Port, ON_5V_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(ON_5V_GPIO_Port, &GPIO_InitStruct);
-
-  // ON_1_5V
-  GPIO_InitStruct.Pin = ON_1_5V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_WritePin(ON_1_5V_GPIO_Port, ON_1_5V_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(ON_1_5V_GPIO_Port, &GPIO_InitStruct);
-
-  // ON_3_3V
-  GPIO_InitStruct.Pin = ON_3_3V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_WritePin(ON_3_3V_GPIO_Port, ON_3_3V_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(ON_3_3V_GPIO_Port, &GPIO_InitStruct);
-
-  // ON_1_0V_1_2V
-  GPIO_InitStruct.Pin = ON_1_0V_1_2V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(ON_1_0V_1_2V_GPIO_Port, &GPIO_InitStruct);
 
   // ADT_CS_B*
   // 4.7 kΩ pull-up on PCB
