@@ -28,7 +28,7 @@
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
-static const uint32_t pllTaskLoopDelay = 10;
+static const uint32_t pllTaskLoopDelay = 50;
 
 static void pllTask(void const *arg)
 {
