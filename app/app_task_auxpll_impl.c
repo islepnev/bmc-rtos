@@ -35,6 +35,10 @@ void auxpll_task_run(void)
 {
     if (old_enable_power != enable_power) {
         old_enable_power = enable_power;
+        if (enable_power)
+            ad9516_enable_interface();
+        else
+            ad9516_disable_interface();
     }
     Dev_auxpll *d = get_dev_auxpll();
     const AuxPllState old_state = d->fsm_state;
@@ -49,8 +53,6 @@ void auxpll_task_run(void)
             d->fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
-        // reset_I2C_Pll();
-        ad9516_enable_interface();
         if (!auxpllSoftwareReset()) {
             break;
         }
