@@ -29,6 +29,7 @@
 #include "bsp.h"
 #include "gpio.h"
 #include "bsp_pin_defs.h"
+#include "bsp_powermon.h"
 #include "devices_types.h"
 #include "cmsis_os.h"
 
@@ -239,10 +240,16 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
     return 1;
 }
 
+void monClearMinMax(Dev_powermon *d)
+{
+    for (int i=0; i<POWERMON_SENSORS; i++)
+        struct_pm_sensor_clear_minmax(&d->sensors[i]);
+}
+
 void monClearMeasurements(Dev_powermon *d)
 {
+    monClearMinMax(d);
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear_minmax(&d->sensors[i]);
         struct_pm_sensor_clear_measurements(&d->sensors[i]);
     }
 }

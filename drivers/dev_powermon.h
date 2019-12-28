@@ -18,8 +18,8 @@
 #ifndef DEV_POWERMON_H
 #define DEV_POWERMON_H
 
-#include "dev_powermon_types.h"
 #include <stdbool.h>
+#include "dev_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +32,6 @@ void struct_powermon_init(Dev_powermon *d);
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
 bool update_power_switches(Dev_powermon *pm, bool state);
-//int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);

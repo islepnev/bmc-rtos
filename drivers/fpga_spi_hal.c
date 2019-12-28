@@ -54,7 +54,7 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
 {
     enum {Size = 2}; // number of 16-bit words
     uint16_t txBuf[2];
-    uint16_t rxBuf[2];
+    uint16_t rxBuf[2] = {0};
     txBuf[0] = (0x8000 | (addr & 0x7FFF));
     txBuf[1] = 0;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);

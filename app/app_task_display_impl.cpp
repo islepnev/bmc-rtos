@@ -25,7 +25,6 @@
 #include "dev_common_types.h"
 #include "dev_powermon_types.h"
 
-//#include "dev_types.h"
 #include "dev_fpga_types.h"
 #include "dev_thset_types.h"
 #include "ad9545/ad9545_print.h"
@@ -33,9 +32,8 @@
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "bsp_display.h"
+#include "bsp_powermon.h"
 #include "dev_mcu.h"
-//#include "dev_leds.h"
-//#include "devices.h"
 #include "devices_types.h"
 #include "version.h"
 #include "logbuffer.h"
@@ -96,8 +94,6 @@ static void devPrintStatus(const struct Devices *d)
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.present));
     printf("%s\n", ANSI_CLEAR_EOL);
-//    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
-//    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static const char *pmStateStr(PmState state)
@@ -115,17 +111,6 @@ static const char *pmStateStr(PmState state)
     default: return "?";
     }
 }
-
-//static const char *mainStateStr(MainState state)
-//{
-//    switch(state) {
-//    case MAIN_STATE_INIT:    return "INIT";
-//    case MAIN_STATE_DETECT:  return ANSI_YELLOW "DETECT"  ANSI_CLEAR;
-//    case MAIN_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
-//    case MAIN_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-//    default: return "?";
-//    }
-//}
 
 static const char *auxpllStateStr(AuxPllState state)
 {
@@ -178,17 +163,6 @@ static void pm_sensor_print(const pm_sensor *d, int isOn)
     }
 }
 
-//static const char *monStateStr(MonState monState)
-//{
-//    switch(monState) {
-//    case MON_STATE_INIT: return "INIT";
-//    case MON_STATE_DETECT: return "DETECT";
-//    case MON_STATE_READ: return "READ";
-//    case MON_STATE_ERROR: return "ERROR";
-//    default: return "?";
-//    }
-//}
-
 void monPrintValues(const Dev_powermon *d)
 {
     pm_sensor_print_header();
@@ -208,32 +182,6 @@ void auxpllPrint(const Dev_auxpll *d)
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("  ");
     auxpllPrintStatus(d);
-//    printf("PLL readback: %02X", d->status.pll_readback.raw);
-//    if (d->fsm_state == AUXPLL_STATE_RUN) {
-//        printf("Ref A:");
-//        pllPrintRefStatusBits(d->status.ref[REFA]);
-//        printf("%s\n", ANSI_CLEAR_EOL);
-//        printf("Ref B:");
-//        pllPrintRefStatusBits(d->status.ref[REFB]);
-//        printf("%s\n", ANSI_CLEAR_EOL);
-//        for (int channel=0; channel<DPLL_COUNT; channel++) {
-//            int64_t ppb0 = pll_ftw_rel_ppb(d, channel);
-//            const char *ref0str = "";
-//            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(d, channel);
-//            if (ref0 != PROFILE_REF_SOURCE_INVALID)
-//                ref0str = pllProfileRefSourceStr(ref0);
-//            printf("PLL%d: %s ref %-5s %lld ppb",
-//                   channel,
-//                   d->status.sysclk.b.pll0_locked ? ANSI_GREEN "LOCKED  " ANSI_CLEAR: ANSI_RED "UNLOCKED" ANSI_CLEAR,
-//                   ref0str,
-//                   (int64_t)ppb0
-//                   );
-//            printf("%s\n", ANSI_CLEAR_EOL);
-//        }
-//    } else {
-//        for (int i=0; i<4; i++)
-//            printf("%s\n", ANSI_CLEAR_EOL);
-//    }
 }
 
 static void print_log_entry(uint32_t index)

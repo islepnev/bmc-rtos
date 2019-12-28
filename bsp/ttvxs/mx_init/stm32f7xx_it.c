@@ -207,6 +207,11 @@ void USART2_IRQHandler(void)
     serial_console_interrupt_handler(USART2);
 }
 
+void USART3_IRQHandler(void)
+{
+    serial_console_interrupt_handler(USART2);
+}
+
 void ETH_IRQHandler(void)
 {
     HAL_ETH_IRQHandler(&EthHandle);

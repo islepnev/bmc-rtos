@@ -32,8 +32,8 @@ enum { SENSOR_NAME_SIZE = 16 };
 #pragma pack(push, 1)
 typedef union {
   struct {
-      uint32_t type:8;
-      uint32_t state:8;
+      uint32_t type:8; // IpmiSensorType
+      uint32_t state:8; // SensorStatus
       uint32_t optional:1;
       uint32_t reserved:15;
   } b;

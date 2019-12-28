@@ -23,8 +23,6 @@
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 
-static const int SPI_TIMEOUT_MS = 100;
-
 osSemaphoreId spi1_sem;
 osSemaphoreId spi2_sem;
 osSemaphoreId spi3_sem;
