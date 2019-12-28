@@ -168,8 +168,8 @@ bool get_critical_power_failure(const Dev_powermon *pm)
 
 void update_system_powergood_pin(const Dev_powermon *pm)
 {
-    int state = get_critical_power_valid(pm);
-    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, state);
+    system_power_present = get_critical_power_valid(pm);
+    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
 }
 
 bool pm_switches_isEqual(const pm_switches &l, const pm_switches &r)
