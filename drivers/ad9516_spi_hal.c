@@ -21,6 +21,7 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "gpio.h"
 #include "spi.h"
+#include "bus/spi_driver.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
@@ -74,7 +75,7 @@ HAL_StatusTypeDef ad9516_read1_duplex(uint16_t reg, uint8_t *data)
     tx[1] = reg & 0xFF;
     tx[2] = 0;
     set_csb(0);
-    volatile HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(ad9516_spi, tx, rx, Size, SPI_TIMEOUT_MS);
+    volatile HAL_StatusTypeDef ret = spi_driver_tx_rx(ad9516_spi, tx, rx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
     if (ret == HAL_OK) {
         if (data) {
@@ -95,7 +96,7 @@ HAL_StatusTypeDef ad9516_write1_internal(uint16_t reg, uint8_t data)
     tx[1] = reg & 0xFF;
     tx[2] = data;
     set_csb(0);
-    volatile HAL_StatusTypeDef ret = HAL_SPI_Transmit(ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
+    volatile HAL_StatusTypeDef ret = spi_driver_tx(ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
     if (ret != HAL_OK)
         Error_Handler();
