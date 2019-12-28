@@ -57,6 +57,11 @@ void task_clkmux_init()
 void task_clkmux_run(void)
 {
     Dev_ttvxs_clkmux *d = get_dev_clkmux();
+    if (!enable_power || !system_power_present) {
+        state = CLKMUX_STATE_RESET;
+        d->present = DEVICE_UNKNOWN;
+        return;
+    }
     switch (state) {
     case CLKMUX_STATE_RESET: {
         struct_vxs_i2c_init(d);
