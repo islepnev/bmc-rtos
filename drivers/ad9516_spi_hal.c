@@ -81,10 +81,8 @@ HAL_StatusTypeDef ad9516_read1_duplex(uint16_t reg, uint8_t *data)
         if (data) {
             *data = rx[2];
         }
-    } else {
-        Error_Handler();
     }
-    return HAL_OK;
+    return ret;
 }
 
 HAL_StatusTypeDef ad9516_write1_internal(uint16_t reg, uint8_t data)
@@ -98,8 +96,6 @@ HAL_StatusTypeDef ad9516_write1_internal(uint16_t reg, uint8_t data)
     set_csb(0);
     volatile HAL_StatusTypeDef ret = spi_driver_tx(ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
-    if (ret != HAL_OK)
-        Error_Handler();
     return ret;
 }
 
