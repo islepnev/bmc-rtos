@@ -46,8 +46,8 @@ typedef enum {
     FPGA_STATE_ERROR,
 } fpga_state_t;
 
-static volatile fpga_state_t state = FPGA_STATE_STANDBY;
-static volatile fpga_state_t old_state = FPGA_STATE_STANDBY;
+static fpga_state_t state = FPGA_STATE_STANDBY;
+static fpga_state_t old_state = FPGA_STATE_STANDBY;
 
 static uint32_t fpga_load_start_tick = 0;
 
@@ -70,25 +70,25 @@ void fpga_task_init(void)
     struct_fpga_init(get_dev_fpga());
 }
 
-static int old_enable_power = 0;
+static int old_fpga_done = -1;
 
 void fpga_task_run(void)
 {
-    if (old_enable_power != enable_power) {
-        old_enable_power = enable_power;
-        if (enable_power)
+    Dev_fpga *d = get_dev_fpga();
+    d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+    d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+    int fpga_core_power_present = get_fpga_core_power_present(get_dev_powermon_const());
+    int fpga_power_present = enable_power && fpga_core_power_present;
+    int fpga_enable = fpga_power_present && d->initb;
+//    int fpga_loading = fpga_power_present && d->initb && !d->done;
+    int fpga_done = fpga_power_present && d->done;
+    if (old_fpga_done != fpga_done) {
+        old_fpga_done = fpga_done;
+        if (fpga_done)
             fpga_enable_interface();
         else
             fpga_disable_interface();
     }
-    Dev_fpga *d = get_dev_fpga();
-    d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
-    d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
-    volatile int fpga_core_power_present = get_fpga_core_power_present(get_dev_powermon_const());
-    volatile int fpga_power_present = enable_power && fpga_core_power_present;
-    volatile int fpga_enable = fpga_power_present && d->initb;
-//    int fpga_loading = fpga_power_present && d->initb && !d->done;
-    volatile int fpga_done = fpga_power_present && d->done;
     switch (state) {
     case FPGA_STATE_STANDBY:
         if (fpga_enable) {
