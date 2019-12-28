@@ -32,6 +32,13 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
+void pll_clear_status(Dev_ad9545 *d)
+{
+    memset(&d->status.misc, 0, sizeof(d->status.misc));
+    memset(&d->status.ref, 0, sizeof(d->status.ref));
+    memset(&d->status.dpll, 0, sizeof(d->status.dpll));
+}
+
 void pll_task_init(void)
 {
     Dev_ad9545 *d = get_dev_pll();
@@ -49,16 +56,23 @@ void pll_task_init(void)
 void pll_task_run(void)
 {
     Dev_ad9545 *d = get_dev_pll();
+    if (!enable_power || !system_power_present) {
+        if (d->fsm_state != PLL_STATE_INIT) {
+            d->fsm_state = PLL_STATE_INIT;
+            d->present = DEVICE_UNKNOWN;
+            pll_clear_status(d);
+            log_put(LOG_INFO, "PLL AD9545 shutdown");
+        }
+        return;
+    }
     const ad9545_state_t old_state = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:
-        if (enable_pll_run && enable_power) {
-            if (ad9545_gpio_test()) {
-                d->fsm_state = PLL_STATE_RESET;
-            } else {
-                log_put(LOG_ERR, "PLL GPIO test fail");
-                d->fsm_state = PLL_STATE_ERROR;
-            }
+        if (ad9545_gpio_test()) {
+            d->fsm_state = PLL_STATE_RESET;
+        } else {
+            log_put(LOG_ERR, "PLL AD9545 GPIO test fail");
+            d->fsm_state = PLL_STATE_ERROR;
         }
         break;
     case PLL_STATE_RESET:
@@ -96,7 +110,7 @@ void pll_task_run(void)
             d->fsm_state = PLL_STATE_SETUP;
         }
         if (stateTicks() > 2000) {
-            log_put(LOG_ERR, "PLL sysclock lock timeout");
+            log_put(LOG_ERR, "PLL AD9545 sysclock lock timeout");
             d->fsm_state = PLL_STATE_ERROR;
         }
         break;
@@ -109,7 +123,7 @@ void pll_task_run(void)
         break;
     case PLL_STATE_RUN:
         if (!d->status.sysclk.b.locked) {
-            log_put(LOG_ERR, "PLL sysclock unlocked");
+            log_put(LOG_ERR, "PLL AD9545 sysclock unlocked");
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
@@ -118,7 +132,7 @@ void pll_task_run(void)
     case PLL_STATE_ERROR:
         if (d->recoveryCount > 3) {
             d->fsm_state = PLL_STATE_FATAL;
-            log_put(LOG_CRIT, "PLL fatal error");
+            log_put(LOG_CRIT, "PLL AD9545 fatal error");
             break;
         }
         if (stateTicks() > 1000) {
@@ -153,9 +167,7 @@ void pll_task_run(void)
             d->fsm_state = PLL_STATE_ERROR;
         }
     } else {
-        memset(&d->status.misc, 0, sizeof(d->status.misc));
-        memset(&d->status.ref, 0, sizeof(d->status.ref));
-        memset(&d->status.dpll, 0, sizeof(d->status.dpll));
+        pll_clear_status(d);
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {
@@ -163,10 +175,10 @@ void pll_task_run(void)
     }
     if (stateChanged && (old_state != PLL_STATE_RESET)) {
         if (d->fsm_state == PLL_STATE_ERROR) {
-            log_put(LOG_ERR, "PLL interface error");
+            log_put(LOG_ERR, "PLL AD9545 interface error");
         }
         if (d->fsm_state == PLL_STATE_RUN) {
-            log_put(LOG_INFO, "PLL started");
+            log_put(LOG_INFO, "PLL AD9545 started");
         }
     }
 }
