@@ -18,7 +18,11 @@
 #define SYSTEM_STATUS_H
 
 #include "dev_types.h"
-#include "devices.h"
+#include "devices_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef union
 {
@@ -41,7 +45,12 @@ SensorStatus getFpgaStatus(const Dev_fpga *d);
 int getPllLockState(const Dev_ad9545 *d);
 SensorStatus getPllStatus(const Dev_ad9545 *d);
 SensorStatus pollVxsiicStatus(Devices *dev);
+DeviceStatus getDeviceStatus(const Devices *d);
 SensorStatus getSystemStatus(const Devices *dev);
 encoded_system_status_t encode_system_status(const Devices *dev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SYSTEM_STATUS_H

@@ -17,4 +17,7 @@
 #ifndef APP_TASK_DISPLAY_IMPL_H
 #define APP_TASK_DISPLAY_IMPL_H
 
+void display_task_run(void);
+void display_task_init(void);
+
 #endif // APP_TASK_DISPLAY_IMPL_H

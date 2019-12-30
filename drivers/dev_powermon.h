@@ -18,37 +18,13 @@
 #ifndef DEV_POWERMON_H
 #define DEV_POWERMON_H
 
-#include <unistd.h>
-#include "stm32f7xx_hal_def.h"
-#include "dev_types.h"
+#include <stdbool.h>
 #include "dev_powermon_types.h"
-#include "dev_pm_sensors.h"
 #include "dev_pot.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct Dev_powermon {
-    PmState pmState;
-    MonState monState;
-    uint32_t stateStartTick;
-    int monErrors;
-    int monCycle;
-//    DeviceStatus present;
-   pm_sensor sensors[POWERMON_SENSORS];
-   int vmePresent;
-   int fpga_core_pgood;
-   int ltm_pgood;
-   pm_switches sw;
-   pm_switches sw_state;
-   Dev_pots pots;
-} Dev_powermon;
-
-typedef enum {
-    SWITCH_FAIL,
-    SWITCH_OK
-} switch_test_t;
 
 void struct_powermon_sensors_init(Dev_powermon *d);
 void struct_powermon_init(Dev_powermon *d);
@@ -57,9 +33,8 @@ void struct_powermon_init(Dev_powermon *d);
 int pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
 void read_power_switches_state(Dev_powermon *pm);
-switch_test_t check_power_switches(const Dev_powermon *pm);
+bool check_power_switches(const Dev_powermon *pm);
 void update_power_switches(Dev_powermon *pm);
-int monIsOn(const pm_switches *sw, SensorIndex index);
 void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
@@ -71,7 +46,7 @@ MonState runMon(Dev_powermon *pm);
 int get_input_power_valid(const Dev_powermon *pm);
 int get_critical_power_valid(const Dev_powermon *pm);
 int get_fpga_core_power_present(const Dev_powermon *pm);
-PgoodState get_all_pgood(const Dev_powermon *pm);
+bool get_all_pgood(const Dev_powermon *pm);
 double pm_get_power_w(const Dev_powermon *pm);
 double pm_get_power_max_w(const Dev_powermon *pm);
 

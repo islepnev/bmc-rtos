@@ -39,11 +39,15 @@ enum {
     FPGA_SPI_ADDR_A = 0xA,
     FPGA_SPI_ADDR_B = 0xB,
     FPGA_SPI_ADDR_C = 0xC,
-    FPGA_SPI_ADDR_D = 0xD
+    FPGA_SPI_ADDR_D = 0xD,
+    FPGA_SPI_ADDR_E = 0xE,
+    FPGA_SPI_ADDR_F = 0xF
 };
 
 HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
 HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
+void fpga_enable_interface(void);
+void fpga_disable_interface(void);
 
 #ifdef __cplusplus
 }

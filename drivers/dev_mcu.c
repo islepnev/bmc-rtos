@@ -16,14 +16,9 @@
 //
 
 #include "dev_mcu.h"
-#include "stm32f7xx_hal.h"
+#include "cmsis_os.h"
 
 uint32_t getTickFreqHz(void)
 {
-    switch (HAL_GetTickFreq()) {
-    case HAL_TICK_FREQ_10HZ : return 10;
-    case HAL_TICK_FREQ_100HZ: return 100;
-    case HAL_TICK_FREQ_1KHZ: return 1000;
-    };
-    return 1000;
+    return osKernelSysTickFrequency;
 }

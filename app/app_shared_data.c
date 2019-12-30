@@ -17,17 +17,53 @@
 
 #include "app_shared_data.h"
 
-Devices dev = {0};
+#include "devices_types.h"
+
+static Devices dev = {0};
 int enable_pll_run = 0;
 display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
 int enable_stats_display = 1;
 
-const Devices* getDevices(void)
+Devices* getDevices(void)
 {
     return &dev;
 }
 
+const Devices* getDevicesConst(void)
+{
+    return &dev;
+}
+
+Dev_powermon* get_dev_powermon(void)
+{
+    return &dev.pm;
+}
+
+const Dev_powermon* get_dev_powermon_const(void)
+{
+    return &dev.pm;
+}
+
+Dev_fpga* get_dev_fpga(void)
+{
+    return &dev.fpga;
+}
+
+Dev_ad9545* get_dev_pll(void)
+{
+    return &dev.pll;
+}
+
+Dev_thset *get_dev_thset(void)
+{
+    return &dev.thset;
+}
+
+Dev_at24c *get_dev_eeprom_config(void)
+{
+    return &dev.eeprom_config;
+}
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

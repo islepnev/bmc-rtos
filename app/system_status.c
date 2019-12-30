@@ -16,8 +16,23 @@
 */
 
 #include "system_status.h"
-#include "app_task_powermon.h"
+#include "app_task_powermon_impl.h"
 #include "app_task_vxsiic_impl.h"
+#include "dev_fpga.h"
+#include "dev_thset.h"
+
+DeviceStatus getDeviceStatus(const Devices *d)
+{
+    DeviceStatus status = DEVICE_FAIL;
+    if ((d->i2cmux.present == DEVICE_NORMAL)
+            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
+            && (d->eeprom_config.present == DEVICE_NORMAL)
+            && (d->pll.present == DEVICE_NORMAL)
+            && (d->fpga.present == DEVICE_NORMAL)
+            )
+        status = DEVICE_NORMAL;
+    return status;
+}
 
 SensorStatus getMiscStatus(const Devices *d)
 {
@@ -32,8 +47,8 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
 {
     if (d->present != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
-    if (d->id != FPGA_DEVICE_ID)
-        return SENSOR_WARNING;
+//    if (d->id != FPGA_DEVICE_ID)
+//        return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }
 

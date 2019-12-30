@@ -19,7 +19,7 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "bsp_pin_defs.h"
 
-void led_all_set_state(LedState state)
+void led_all_set_state(bool state)
 {
     led_set_state(LED_RED,       state);
     led_set_state(LED_YELLOW,    state);
@@ -28,7 +28,7 @@ void led_all_set_state(LedState state)
     led_set_state(LED_INT_GREEN, state);
 }
 
-void led_set_state(DeviceLeds led, LedState state)
+void led_set_state(DeviceLeds led, bool state)
 {
     switch(led) {
     case LED_RED :

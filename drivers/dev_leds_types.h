@@ -25,9 +25,4 @@ typedef enum {
     LED_INT_GREEN = 5
 } DeviceLeds;
 
-typedef enum {
-    LED_OFF = 0,
-    LED_ON = 1
-} LedState;
-
 #endif // DEV_LEDS_TYPES_H

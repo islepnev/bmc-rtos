@@ -19,6 +19,7 @@
 #include "spi.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
+#include "stm32f7xx_hal_gpio.h"
 
 static const int SPI_TIMEOUT_MS = 10;
 
@@ -59,7 +60,7 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
     }
 
     HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_RESET);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(&therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
     HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
     if (data) {
         if (ret == HAL_OK) {
