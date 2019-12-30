@@ -24,7 +24,7 @@
 
 osThreadId vxsiicThreadId = NULL;
 enum { vxsiicThreadStackSize = threadStackSize };
-static const uint32_t vxsiicTaskLoopDelay = 10;
+static const uint32_t vxsiicTaskLoopDelay = 100;
 
 static void vxsiic_start_thread( void const *arg)
 {

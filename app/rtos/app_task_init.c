@@ -54,7 +54,7 @@ static int test_hal_systick(void)
     const uint32_t tick_freq_hz = 1000U / uwTickFreq;
     const uint32_t cpu_cycles_per_tick = SystemCoreClock / tick_freq_hz; // loop cannot be faster than 1 cpu clock
     while(1) {
-        if (i > 10*cpu_cycles_per_tick) {
+        if (i > cpu_cycles_per_tick) {
             debug_printf("HAL systick timer %d Hz stopped\n", tick_freq_hz);
             return -1;
         }
