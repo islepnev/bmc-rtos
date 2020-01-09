@@ -68,17 +68,10 @@ void fpga_task_init(void)
     struct_fpga_init(get_dev_fpga());
 }
 
-static int old_enable_power = 0;
+static int old_fpga_done = -1;
 
 void fpga_task_run(void)
 {
-    if (old_enable_power != enable_power) {
-        old_enable_power = enable_power;
-        if (enable_power)
-            fpga_enable_interface();
-        else
-            fpga_disable_interface();
-    }
     Dev_fpga *d = get_dev_fpga();
     old_state = state;
     if (board_version >= PCB_4_2) {
@@ -93,6 +86,13 @@ void fpga_task_run(void)
     int fpga_enable = fpga_power_present && d->initb;
 //    int fpga_loading = fpga_power_present && d->initb && !d->done;
     int fpga_done = fpga_power_present && d->done;
+    if (old_fpga_done != fpga_done) {
+        old_fpga_done = fpga_done;
+        if (fpga_done)
+            fpga_enable_interface();
+        else
+            fpga_disable_interface();
+    }
     switch (state) {
     case FPGA_STATE_STANDBY:
         if (fpga_enable) {
