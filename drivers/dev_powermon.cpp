@@ -161,22 +161,22 @@ void update_power_switches(Dev_powermon *pm)
     if (turnon_1v5)
         osDelay(10);
     pm->sw.switch_1v0 = state;
-    bool turnon_tdc = !pm->sw.switch_tdc_a && state;
-    pm->sw.switch_tdc_a = state;
-    pm->sw.switch_tdc_b = state;
-    pm->sw.switch_tdc_c = state;
+    // bool turnon_tdc = !pm->sw.switch_tdc_a && state;
+    pm->sw.switch_tdc_a = true; // state;
+    pm->sw.switch_tdc_b = true; // state;
+    pm->sw.switch_tdc_c = true; // state;
 
     HAL_GPIO_WritePin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    // HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    if (turnon_tdc)
-        osDelay(50);
-    HAL_GPIO_WritePin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    if (turnon_tdc)
-        osDelay(3);
-    HAL_GPIO_WritePin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    if (turnon_tdc)
-        osDelay(3);
-    HAL_GPIO_WritePin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    if (turnon_tdc)
+    //        osDelay(50);
+    //    HAL_GPIO_WritePin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    if (turnon_tdc)
+    //        osDelay(3);
+    //    HAL_GPIO_WritePin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    if (turnon_tdc)
+    //        osDelay(3);
+    //    HAL_GPIO_WritePin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
     read_power_switches_state(pm);
 }
