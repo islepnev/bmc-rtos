@@ -17,8 +17,8 @@
 
 #include "app_task_clkmux_impl.h"
 #include "cmsis_os.h"
-#include "dev_clkmux.h"
-#include "dev_clkmux_types.h"
+#include "dev_ttvxs_clkmux.h"
+#include "dev_ttvxs_clkmux_types.h"
 #include "app_shared_data.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
@@ -42,31 +42,36 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static void struct_vxs_i2c_init(Dev_clkmux *d)
+static void struct_vxs_i2c_init(Dev_ttvxs_clkmux *d)
 {
     d->present = DEVICE_UNKNOWN;
-    d->pll_source = CLOCK_SOURCE_DIV3;
+    d->pll_source = TTVXS_PLL_SOURCE_DIV3;
 }
 
 void task_clkmux_init()
 {
-    Dev_clkmux *d = get_dev_clkmux();
-    dev_clkmux_init(d);
+    Dev_ttvxs_clkmux *d = get_dev_clkmux();
+    dev_ttvxs_clkmux_init(d);
 }
 
 void task_clkmux_run(void)
 {
-    Dev_clkmux *d = get_dev_clkmux();
+    Dev_ttvxs_clkmux *d = get_dev_clkmux();
+    if (!enable_power || !system_power_present) {
+        state = CLKMUX_STATE_RESET;
+        d->present = DEVICE_UNKNOWN;
+        return;
+    }
     switch (state) {
     case CLKMUX_STATE_RESET: {
         struct_vxs_i2c_init(d);
-        DeviceStatus status = dev_clkmux_detect(d);
+        DeviceStatus status = dev_ttvxs_clkmux_detect(d);
         if (status == DEVICE_NORMAL)
             state = CLKMUX_STATE_RUN;
         break;
     }
     case CLKMUX_STATE_RUN:
-        if (DEVICE_NORMAL == dev_clkmux_set(d))
+        if (DEVICE_NORMAL == dev_ttvxs_clkmux_set(d))
             state = CLKMUX_STATE_PAUSE;
         else
             state = CLKMUX_STATE_ERROR;

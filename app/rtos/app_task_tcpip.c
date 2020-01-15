@@ -31,7 +31,7 @@ static void start_thread_tcpip( void const *arg)
 {
     (void) arg;
 
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     task_tcpip_init();
 
     while (1)

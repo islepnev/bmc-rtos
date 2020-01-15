@@ -19,7 +19,7 @@
 #include <stdio.h>
 
 #include "stm32f7xx_ll_usart.h"
-#include "bsp.h"
+#include "bsp_tty.h"
 #include "ansi_escape_codes.h"
 
 static inline void debug_send_char(const char c)

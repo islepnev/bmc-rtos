@@ -219,59 +219,62 @@ err:
     return ret;
 }
 
-DeviceStatus auxpllDetect(Dev_auxpll *d)
+bool auxpllSoftwareReset(void)
 {
-    int devicePresent = 0;
-    HAL_StatusTypeDef ret;
-    uint8_t data = 0;
+    bool ret = true;
     volatile AD9516_Serial_Config_REG_Type serial_config_reg;
     serial_config_reg.raw = 0;
     serial_config_reg.b.long_instr = 1;
     serial_config_reg.b.long_instr_2 = 1;
     serial_config_reg.b.sdo_active = 1;
     serial_config_reg.b.sdo_active_2 = 1;
+    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+        ret = false;
     serial_config_reg.b.softreset = 1;
     serial_config_reg.b.softreset_2 = 1;
-    ad9516_write1(AD9516_REG1_CONFIG_0, serial_config_reg.raw);
+    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+        ret = false;
     serial_config_reg.b.softreset = 0;
     serial_config_reg.b.softreset_2 = 0;
-    ad9516_write1(AD9516_REG1_CONFIG_0, serial_config_reg.raw);
-    ad9516_read1(AD9516_REG1_PART_ID, &data);
+    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+        ret = false;
+    if (!ret)
+        return false;
+    uint8_t data = 0;
+    if (HAL_OK != ad9516_read1(AD9516_REG1_CONFIG_0, &data))
+        return false;
+    if (data != serial_config_reg.raw)
+        return false;
+    return true;
+}
+
+DeviceStatus auxpllDetect(Dev_auxpll *d)
+{
+    int devicePresent = 0;
+    HAL_StatusTypeDef ret;
+    uint8_t data = 0;
+    if (HAL_OK != ad9516_read1(AD9516_REG1_PART_ID, &data))
+        goto err;
     devicePresent = (data == AD9516_PART_ID);
     if (devicePresent)
         log_put(LOG_INFO, "AUXPLL AD9516 present");
     d->present = devicePresent ? DEVICE_NORMAL : DEVICE_FAIL;
     // ad9516_test_loop(); // FIXME
     return d->present;
-}
-/*
-OpStatusTypeDef pllSoftwareReset(Dev_pll *d)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    ret = ad9545_write1(0x0000, 0x81);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9545_write1(0x0000, 0);
-    if (ret != HAL_OK)
-        goto err;
-
-    return ret;
 err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    d->present = DEVICE_FAIL;
+    return d->present;
 }
 
-OpStatusTypeDef pllCalibrateSysclk(Dev_pll *d)
+/*
+bool auxpllSoftwareReset(void)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
-
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x04)))
+    ret = ad9516_write1(0x0000, 0x81);
+    if (ret != HAL_OK)
         goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
-        goto err;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x04)))
-        goto err;
-    if (HAL_OK != (ret = pllIoUpdate(d)))
+    ret = ad9516_write1(0x0000, 0);
+    if (ret != HAL_OK)
         goto err;
 
     return ret;
@@ -285,7 +288,9 @@ OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d)
     HAL_StatusTypeDef ret = HAL_ERROR;
 
     uint8_t data = 0;
-    ad9516_read1(AD9516_REG1_PART_ID, &data);
+    ret = ad9516_read1(AD9516_REG1_PART_ID, &data);
+    if (ret != HAL_OK)
+        goto err;
     if (data != AD9516_PART_ID)
         goto err;
 

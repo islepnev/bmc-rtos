@@ -19,6 +19,7 @@
 
 #include "stm32f7xx_hal.h"
 #include "i2c.h"
+#include "bus/i2c_driver.h"
 
 static I2C_HandleTypeDef * const hi2c = &hi2c4;
 
@@ -39,7 +40,7 @@ HAL_StatusTypeDef mcp23017_read(uint8_t reg, uint8_t *data)
     HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
-    ret = HAL_I2C_Mem_Read(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    ret = i2c_driver_mem_read(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData[0];
@@ -48,12 +49,23 @@ HAL_StatusTypeDef mcp23017_read(uint8_t reg, uint8_t *data)
     return ret;
 }
 
-HAL_StatusTypeDef mcp23017_write(uint8_t reg, uint8_t data)
+static HAL_StatusTypeDef mcp23017_write_internal(uint8_t reg, uint8_t data)
 {
     HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
     pData[0] = data;
-    ret = HAL_I2C_Mem_Write(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    ret = i2c_driver_mem_write(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
     return ret;
+}
+
+HAL_StatusTypeDef mcp23017_write(uint8_t reg, uint8_t data)
+{
+    HAL_StatusTypeDef ret_wr = mcp23017_write_internal(reg, data);
+    uint8_t read = 0;
+    HAL_StatusTypeDef ret_rd = mcp23017_read(reg, &read);
+    if (data != read) {
+        return HAL_ERROR;
+    }
+    return ret_wr;
 }

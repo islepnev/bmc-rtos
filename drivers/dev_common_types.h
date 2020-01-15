@@ -17,6 +17,10 @@
 #ifndef DEV_COMMON_TYPES_H
 #define DEV_COMMON_TYPES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     SENSOR_UNKNOWN  = 0,
     SENSOR_NORMAL   = 1, // numeric value used
@@ -37,5 +41,12 @@ typedef enum {
     IIC_TIMEOUT  = 3,
     DEV_ERROR    = 0x20U,
 } OpStatusTypeDef;
+
+const char *sensor_status_ansi_str(SensorStatus state);
+//const char *sensor_status_text(SensorStatus state);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_COMMON_TYPES_H

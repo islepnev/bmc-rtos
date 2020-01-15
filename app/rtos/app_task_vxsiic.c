@@ -30,7 +30,7 @@ static void start_thread_vxsiic( void const *arg)
 {
     (void) arg;
 
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     task_vxsiic_init();
 
     while (1)

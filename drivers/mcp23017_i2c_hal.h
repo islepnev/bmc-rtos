@@ -25,6 +25,21 @@
 extern "C" {
 #endif
 
+typedef enum {
+    MCP23017_IODIRA = 0,
+    MCP23017_IODIRB = 1,
+    MCP23017_IPOLA = 2,
+    MCP23017_IPOLB = 3,
+    MCP23017_GPINTENA = 4,
+    MCP23017_GPINTENB = 5,
+    MCP23017_GPPUA = 0xC,
+    MCP23017_GPPUB = 0xD,
+    MCP23017_GPIOA = 0x12,
+    MCP23017_GPIOB = 0x13,
+    MCP23017_OLATA = 0x14,
+    MCP23017_OLATB = 0x15
+} mcp23017_regs_bank_0;
+
 HAL_StatusTypeDef mcp23017_detect(void);
 HAL_StatusTypeDef mcp23017_read(uint8_t reg, uint8_t *data);
 HAL_StatusTypeDef mcp23017_write(uint8_t reg, uint8_t data);

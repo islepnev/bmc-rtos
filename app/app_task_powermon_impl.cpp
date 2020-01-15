@@ -28,7 +28,6 @@
 #include "dev_powermon.h"
 //#include "ansi_escape_codes.h"
 //#include "display.h"
-#include "devices.h"
 #include "dev_powermon_types.h"
 #include "dev_thset.h"
 //#include "dev_leds.h"
@@ -69,17 +68,6 @@ static void clearOldSensorStatus(void)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
-static const char *sensorStatusStr(SensorStatus state)
-{
-    switch(state) {
-    case SENSOR_UNKNOWN:  return "  UNKNOWN";
-    case SENSOR_NORMAL:   return "  NORMAL";
-    case SENSOR_WARNING:  return " WARNING";
-    case SENSOR_CRITICAL: return "CRITICAL";
-    default: return "FAIL";
-    }
-}
-
 static void log_sensor_status_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
@@ -101,7 +89,7 @@ static void log_sensor_status_change(const Dev_powermon *pm)
             int curr_frac = 1000 * (curr - curr_int);
             snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
                      sensor->label,
-                     sensorStatusStr(status),
+                     sensor_status_ansi_str(status),
                      volt_int,
                      volt_frac,
                      neg?"-":"",

@@ -31,14 +31,14 @@ static const uint32_t auxpllTaskLoopDelay = 10;
 static void auxpllTask(void const *arg)
 {
     (void) arg;
-    debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while(1) {
         auxpll_task_run();
         osDelay(auxpllTaskLoopDelay);
     }
 }
 
-osThreadDef(auxpll, auxpllTask, osPriorityBelowNormal,      1, auxpllThreadStackSize);
+osThreadDef(auxpll, auxpllTask, osPriorityNormal,      1, auxpllThreadStackSize);
 
 void create_task_auxpll(void)
 {

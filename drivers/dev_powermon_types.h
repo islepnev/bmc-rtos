@@ -43,16 +43,20 @@ typedef struct {
     bool hasShunt;
     double shuntVal;
     double busNomVoltage;
+    double current_lsb;
+    uint16_t cal;
     const char *label;
     // measurements
     double busVoltage;
 //    double shuntVoltage;
     double current;
+    double power;
     // calculated
     double busVoltageMin;
     double busVoltageMax;
     double currentMin;
     double currentMax;
+    double powerMax;
 } pm_sensor;
 
 typedef enum {
@@ -105,7 +109,6 @@ typedef struct Dev_powermon {
    pm_switches sw_state;
 } Dev_powermon;
 
-int monIsOn(const pm_switches *sw, SensorIndex index);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 SensorStatus getMonStatus(const Dev_powermon *pm);
 SensorStatus getPowermonStatus(const Dev_powermon *d);

@@ -29,6 +29,7 @@
 #include "bsp.h"
 #include "gpio.h"
 #include "bsp_pin_defs.h"
+#include "bsp_powermon.h"
 #include "devices_types.h"
 #include "cmsis_os.h"
 
@@ -37,7 +38,7 @@ static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], (SensorIndex)i);
+        struct_pm_sensor_init(&d->sensors[i], static_cast<SensorIndex>(i));
     }
 }
 
@@ -167,8 +168,8 @@ bool get_critical_power_failure(const Dev_powermon *pm)
 
 void update_system_powergood_pin(const Dev_powermon *pm)
 {
-    int state = get_critical_power_valid(pm);
-    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, state);
+    system_power_present = get_critical_power_valid(pm);
+    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
 }
 
 bool pm_switches_isEqual(const pm_switches &l, const pm_switches &r)
@@ -212,7 +213,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     pm->sw_state.switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
     pm->sw_state.switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
     pm->sw_state.switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    pm->sw_state.switch_5v = read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    pm->sw_state.switch_5v = pm->sw.switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     if (!ok) {
         const char *label_on = "ON";
@@ -239,10 +240,16 @@ int pm_sensors_isAllValid(const Dev_powermon *d)
     return 1;
 }
 
+void monClearMinMax(Dev_powermon *d)
+{
+    for (int i=0; i<POWERMON_SENSORS; i++)
+        struct_pm_sensor_clear_minmax(&d->sensors[i]);
+}
+
 void monClearMeasurements(Dev_powermon *d)
 {
+    monClearMinMax(d);
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear_minmax(&d->sensors[i]);
         struct_pm_sensor_clear_measurements(&d->sensors[i]);
     }
 }
@@ -335,4 +342,41 @@ MonState runMon(Dev_powermon *pm)
         pm_setStateStartTick(pm);
     }
     return pm->monState;
+}
+
+static double get_sensor_power_w(const pm_sensor *d)
+{
+    SensorStatus sensor_status = pm_sensor_status(d);
+    int sensor_present = ((sensor_status == SENSOR_NORMAL) || (sensor_status == SENSOR_WARNING));
+    if (sensor_present)
+        return d->busVoltage * d->current;
+    else
+        return 0;
+}
+
+double pm_get_power_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_VXS_5V]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_MCB_4V5]);
+    return mw;
+}
+
+double pm_get_power_max_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += pm->sensors[SENSOR_5VPC].powerMax;
+    mw += pm->sensors[SENSOR_VXS_5V].powerMax;
+    mw += pm->sensors[SENSOR_MCB_4V5].powerMax;
+    return mw;
+}
+
+int get_fpga_core_power_present(const Dev_powermon *pm)
+{
+    SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
+    SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
+    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    return present_1v0 && present_1v8;
 }

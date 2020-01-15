@@ -37,7 +37,7 @@
 
 #define RETURN_IF(x) { int ret = x; if (ret) return ret; }
 
-static const char *sensorStatusStr(SensorStatus state)
+static const char *sensor_status_html(SensorStatus state)
 {
     switch(state) {
     case SENSOR_UNKNOWN:  return "unknown";
@@ -48,7 +48,7 @@ static const char *sensorStatusStr(SensorStatus state)
     }
 }
 
-static const char *pmStateStr(PmState state)
+static const char *pm_state_html(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
@@ -100,9 +100,9 @@ int http_serve_index(struct http_server_t *server)
     strcat(buf, str);
     sprintf(str, "<br>\n");
     strcat(buf, str);
-    sprintf(str, "System status: %s<br>\n", sensorStatusStr(getSystemStatus(getDevicesConst())));
+    sprintf(str, "System status: %s<br>\n", sensor_status_html(getSystemStatus(getDevicesConst())));
     strcat(buf, str);
-    sprintf(str, "Powermon state: %s<br>\n", pmStateStr(getDevicesConst()->pm.pmState));
+    sprintf(str, "Powermon state: %s<br>\n", pm_state_html(getDevicesConst()->pm.pmState));
     strcat(buf, str);
     strcat(buf, "<p><a href=\"https://afi-project.jinr.ru/projects/ttvxs/wiki\">TTVXS project Wiki</a>\n");
     return http_server_write(server, buf);

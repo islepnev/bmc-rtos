@@ -18,6 +18,8 @@
 #ifndef DEV_AUXPLL_H
 #define DEV_AUXPLL_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
 #include "dev_auxpll_types.h"
 #include "ad9516_setup.h"
@@ -30,7 +32,7 @@ DeviceStatus auxpllDetect(Dev_auxpll *d);
 OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
 
 //void reset_SPI_auxpll(void);
-//OpStatusTypeDef auxpllSoftwareReset(Dev_auxpll *d);
+bool auxpllSoftwareReset(void);
 //OpStatusTypeDef auxpllSetupSysclk(Dev_auxpll *d);
 //OpStatusTypeDef auxpllCalibrateSysclk(Dev_auxpll *d);
 OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d);

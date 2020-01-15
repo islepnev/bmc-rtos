@@ -18,10 +18,13 @@
 #ifndef APP_TASK_PLL_H
 #define APP_TASK_PLL_H
 
+#include "cmsis_os.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+extern osThreadId pllThreadId;
 void create_task_pll(void);
 
 #ifdef __cplusplus

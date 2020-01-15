@@ -55,7 +55,7 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getPllStatus(const Dev_pll *d)
+SensorStatus getPllStatus(const struct Dev_ad9545 *d)
 {
     if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
         return SENSOR_CRITICAL;

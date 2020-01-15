@@ -18,7 +18,6 @@
 #include "error_handler.h"
 
 #include "stm32f7xx_hal_conf.h"
-//#include "stm32f7xx.h"
 #include "cmsis_os.h"
 //#include "core_cm7.h"
 
