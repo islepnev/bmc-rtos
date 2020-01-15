@@ -61,8 +61,8 @@ sntp_client_set_system_time(unsigned int sec, unsigned int microsec)
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
   HAL_StatusTypeDef ret = HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
   RTC_DateTypeDef sDate = {0};
-  sDate.WeekDay = current_time_val.tm_wday+1; // RTC_WEEKDAY_MONDAY;
-  sDate.Month = current_time_val.tm_mon;
+  sDate.WeekDay = (current_time_val.tm_wday == 0) ? RTC_WEEKDAY_SUNDAY : current_time_val.tm_wday;
+  sDate.Month = RTC_MONTH_JANUARY + current_time_val.tm_mon;
   sDate.Date = current_time_val.tm_mday;
   sDate.Year = current_time_val.tm_year - 100;
   ret = HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);

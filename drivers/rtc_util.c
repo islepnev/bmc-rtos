@@ -32,8 +32,8 @@ void get_rtc_tm(struct tm *tm)
     tm->tm_hour = sTime.Hours;
     tm->tm_min  = sTime.Minutes;
     tm->tm_sec  = sTime.Seconds;
-    tm->tm_wday = sDate.WeekDay-1;
-    tm->tm_mon  = sDate.Month;
+    tm->tm_wday = sDate.WeekDay % 7;
+    tm->tm_mon  = sDate.Month - 1;
     tm->tm_mday = sDate.Date;
     tm->tm_year = 100 + sDate.Year;
 }
