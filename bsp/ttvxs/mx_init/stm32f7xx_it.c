@@ -209,7 +209,7 @@ void USART2_IRQHandler(void)
 
 void USART3_IRQHandler(void)
 {
-    serial_console_interrupt_handler(USART2);
+    serial_console_interrupt_handler(USART3);
 }
 
 void ETH_IRQHandler(void)
