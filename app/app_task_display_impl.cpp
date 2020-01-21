@@ -30,7 +30,6 @@
 #include "adt7301_spi_hal.h"
 #include "pca9548_i2c_hal.h"
 #include "ina226_i2c_hal.h"
-#include "dev_types.h"
 #include "dev_fpga_types.h"
 #include "dev_eeprom.h"
 #include "dev_powermon.h"

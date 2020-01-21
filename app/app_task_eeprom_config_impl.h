@@ -14,24 +14,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef APP_TASK_EEPROM_CONFIG_IMPL_H
+#define APP_TASK_EEPROM_CONFIG_IMPL_H
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
+void task_eeprom_config_run(void);
 
-#include <unistd.h>
-#include "dev_common_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Dev_at24c;
-
-DeviceStatus dev_eepromConfig_detect(struct Dev_at24c *d);
-DeviceStatus dev_eepromConfig_read(struct Dev_at24c *d);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEV_EEPROM_H
+#endif // APP_TASK_EEPROM_CONFIG_IMPL_H

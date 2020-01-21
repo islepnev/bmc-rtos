@@ -15,23 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
+#include "bsp_sfpiic.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "bsp_pin_defs.h"
 
-#include <unistd.h>
-#include "dev_common_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Dev_at24c;
-
-DeviceStatus dev_eepromConfig_detect(struct Dev_at24c *d);
-DeviceStatus dev_eepromConfig_read(struct Dev_at24c *d);
-
-#ifdef __cplusplus
+void bsp_sfpiic_reset(void)
+{
+    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
 }
-#endif
-
-#endif // DEV_EEPROM_H

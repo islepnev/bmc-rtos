@@ -14,14 +14,24 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef DEV_TYPES_H
-#define DEV_TYPES_H
+
+#ifndef DEV_SFPIIC_H
+#define DEV_SFPIIC_H
 
 #include <stdint.h>
 #include "dev_common_types.h"
 
-typedef struct Dev_pca9548 {
-    DeviceStatus present;
-} Dev_pca9548;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // DEV_TYPES_H
+struct Dev_sfpiic;
+
+DeviceStatus dev_sfpiic_detect(struct Dev_sfpiic *d);
+DeviceStatus dev_sfpiic_read(struct Dev_sfpiic *d);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_SFPIIC_H

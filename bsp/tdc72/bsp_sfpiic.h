@@ -15,23 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
-
-#include <unistd.h>
-#include "dev_common_types.h"
+#ifndef BSP_SFPIIC_H
+#define BSP_SFPIIC_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_at24c;
-
-DeviceStatus dev_eepromConfig_detect(struct Dev_at24c *d);
-DeviceStatus dev_eepromConfig_read(struct Dev_at24c *d);
+void bsp_sfpiic_reset(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_EEPROM_H
+#endif // BSP_SFPIIC_H

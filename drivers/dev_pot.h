@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include "bsp_pot.h"
-#include "dev_types.h"
+#include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 
 #ifdef __cplusplus
