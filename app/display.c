@@ -35,7 +35,7 @@ char *deviceStatusResultStr(DeviceStatus status)
 
 void devPrintStatus(const Devices *d)
 {
-    printf("SFP I2C mux:   %s", deviceStatusResultStr(d->i2cmux.present));
+    printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.present));
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
     printf("%s\n", ANSI_CLEAR_EOL);

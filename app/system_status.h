@@ -17,7 +17,6 @@
 #ifndef SYSTEM_STATUS_H
 #define SYSTEM_STATUS_H
 
-#include "dev_types.h"
 #include "devices_types.h"
 
 #ifdef __cplusplus

@@ -24,8 +24,8 @@
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
-    if ((d->i2cmux.present == DEVICE_NORMAL)
-            && (d->eeprom_vxspb.present == DEVICE_NORMAL)
+    if ((d->sfpiic.present == DEVICE_NORMAL)
+            // && (d->eeprom_vxspb.present == DEVICE_NORMAL)
             && (d->eeprom_config.present == DEVICE_NORMAL)
             && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
@@ -36,8 +36,8 @@ DeviceStatus getDeviceStatus(const Devices *d)
 
 SensorStatus getMiscStatus(const Devices *d)
 {
-//    if (d->i2cmux.present != DEVICE_NORMAL)
-//        return SENSOR_CRITICAL;
+    if (d->sfpiic.present != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
     if (d->eeprom_config.present != DEVICE_NORMAL)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;

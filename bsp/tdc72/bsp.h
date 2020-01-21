@@ -34,9 +34,13 @@ extern "C" {
 
 #define hi2c_ad9545 hi2c2
 #define hi2c_sensors hi2c4
+#define hi2c_sfpiic hi2c4
 
 #define fpga_spi hspi1
 #define therm_spi hspi4
+
+#define hi2c_eeprom_cfg hi2c2
+#define eeprom_cfg_deviceAddr 0x50
 
 typedef enum {
     PCB_4_1 = 0,

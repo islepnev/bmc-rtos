@@ -19,7 +19,7 @@
 
 #include "devices_types.h"
 
-static Devices dev = {0};
+static Devices dev = {};
 int enable_pll_run = 0;
 display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
@@ -58,6 +58,11 @@ Dev_ad9545* get_dev_pll(void)
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;
+}
+
+Dev_sfpiic *get_dev_sfpiic(void)
+{
+    return &dev.sfpiic;
 }
 
 Dev_at24c *get_dev_eeprom_config(void)

@@ -19,7 +19,6 @@
 #include <string.h>
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_config.h"
-#include "dev_types.h"
 #include "dev_powermon.h"
 #include "app_shared_data.h"
 #include "system_status.h"

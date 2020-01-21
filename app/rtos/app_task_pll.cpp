@@ -21,6 +21,7 @@
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
+#include "app_task_eeprom_config_impl.h"
 #include "app_task_pll_impl.h"
 #include "debug_helpers.h"
 
@@ -34,6 +35,7 @@ static void pllTask(void const *arg)
     // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     pll_task_init();
     while(1) {
+        task_eeprom_config_run();
         pll_task_run();
         osDelay(pllTaskLoopDelay);
     }

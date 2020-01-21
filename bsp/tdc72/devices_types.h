@@ -22,15 +22,15 @@
 #include "dev_fpga_types.h"
 #include "dev_ad9545.h"
 #include "dev_thset_types.h"
+#include "dev_sfpiic_types.h"
 //#include "dev_vxsiic_types.h"
 #include "dev_powermon_types.h"
 #include "dev_leds_types.h"
-#include "dev_types.h"
 
 typedef struct Devices {
     Dev_thset thset;
     Dev_fpga fpga;
-    Dev_pca9548 i2cmux;
+    Dev_sfpiic sfpiic;
     Dev_at24c eeprom_vxspb;
     Dev_at24c eeprom_config;
     Dev_ad9545 pll;
