@@ -169,7 +169,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(PGOOD_PWR_GPIO_Port, PGOOD_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOI, I2C_RESET3_B_Pin
+  HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin
                           |PLL_RESET_B_Pin|GPIO1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
