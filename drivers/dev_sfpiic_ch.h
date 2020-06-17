@@ -14,10 +14,23 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_SFPIIC_IMPL_H
-#define APP_TASK_SFPIIC_IMPL_H
+#ifndef DEV_VXSIIC_PP_H
+#define DEV_VXSIIC_PP_H
 
-void task_sfpiic_init(void);
-void task_sfpiic_run(void);
+#include <stdint.h>
+#include "stm32f7xx_hal_def.h"
 
-#endif // APP_TASK_SFPIIC_IMPL_H
+#include "dev_common_types.h"
+#include "dev_sfpiic_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+HAL_StatusTypeDef dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_VXSIIC_PP_H

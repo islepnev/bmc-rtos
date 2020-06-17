@@ -28,6 +28,7 @@
 #include "debug_helpers.h"
 #include "led_gpio_hal.h"
 #include "bsp.h"
+#include "bsp_i2c_callbacks.h"
 
 static void setStaticPins(int enable)
 {

@@ -16,66 +16,70 @@
 //
 
 #include "dev_sfpiic.h"
+#include "dev_sfpiic_ch.h"
+#include "dev_sfpiic_driver.h"
 #include "dev_sfpiic_types.h"
+#include "logbuffer.h"
 
-#include "stm32f7xx_hal.h"
-#include "i2c.h"
-#include "bsp_pin_defs.h"
-
-static const int I2C_TIMEOUT_MS = 10;
-
-static I2C_HandleTypeDef * const hi2c = &hi2c2;
-
-enum { PCA9548_BASE_I2C_ADDRESS = 0x74 };
-
-static HAL_StatusTypeDef sfp_i2c_detect(void)
+static HAL_StatusTypeDef dev_sfpiic_select_ch(uint8_t ch)
 {
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    uint32_t Trials = 2;
-    ret = HAL_I2C_IsDeviceReady(hi2c, PCA9548_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
+    if (ch >= SFPIIC_CH_CNT)
+        return HAL_ERROR;
+
+    sfpiic_master_reset();
+    sfpiic_switch_reset();
+
+    HAL_StatusTypeDef ret = sfpiic_switch_set_channel(ch);
     return ret;
 }
 
-static HAL_StatusTypeDef sfp_i2c_read(int slot, uint8_t address, uint8_t *data)
+void dev_sfpiic_init(struct Dev_sfpiic *d)
 {
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    return ret;
-}
-
-static HAL_StatusTypeDef pca9548_read(uint8_t *data)
-{
-    HAL_StatusTypeDef ret;
-    uint8_t pData;
-    ret = HAL_I2C_Master_Receive(hi2c, PCA9548_BASE_I2C_ADDRESS << 1, &pData, 1, I2C_TIMEOUT_MS);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = pData;
-        }
+    sfpiic_init();
+    sfpiic_stats_t zz = {0};
+    for (int i=0; i<SFPIIC_CH_CNT; i++) {
+        d->status.ch[i].iic_stats = zz;
     }
-    return ret;
 }
-
-static void dev_sfpiic_reset(void)
-{
-    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_SET);
-}
-
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    dev_sfpiic_reset();
-    if (HAL_OK != sfp_i2c_detect())
+    sfpiic_master_reset();
+    sfpiic_switch_reset();
+    if (HAL_OK != sfpiic_switch_detect())
         status = DEVICE_FAIL;
     d->present = status;
     return d->present;
 }
 
-DeviceStatus dev_sfpiic_read(Dev_sfpiic *d)
+static int sfp_old_present[SFPIIC_CH_CNT] = {0};
+
+DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
-    uint8_t data = 0;
-    if (HAL_OK != pca9548_read(&data))
-        d->present = DEVICE_FAIL;
+    HAL_StatusTypeDef ret = HAL_OK;
+//    for(uint8_t ch=0; ch<3; ++ch) {
+//        // SFP channals
+//    }
+
+    for(uint8_t ch=3; ch<SFPIIC_CH_CNT; ++ch) {
+        // QSFP channals
+        ret = dev_sfpiic_select_ch(ch);
+        if (HAL_OK != ret) {
+            d->present = DEVICE_FAIL;
+            return d->present;
+        }
+        sfpiic_ch_status_t *status = &d->status.ch[ch];
+        if (HAL_OK == dev_sfpiic_ch_update(d, ch)) {
+            status->present = 1;
+            if (!sfp_old_present[ch])
+                log_printf(LOG_NOTICE, "SFP ch #%d: inserted", ch);
+        } else {
+            if (sfp_old_present[ch])
+                log_printf(LOG_NOTICE, "SFP ch #%d: removed", ch);
+            status->present = 0;
+        }
+        sfp_old_present[ch] = status->present;
+    }
     return d->present;
 }
 
