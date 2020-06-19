@@ -14,21 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_THSET_TYPES_H
-#define DEV_THSET_TYPES_H
+#ifndef DEV_SFPIIC_PRINT_H
+#define DEV_SFPIIC_PRINT_H
 
-#include <stdint.h>
+#include "dev_sfpiic_types.h"
 
-enum {DEV_THERM_COUNT = 2};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct Dev_temp {
-    int valid;
-    int16_t rawTemp;
-    double temp;
-} Dev_temp;
+void sfpPrintStatus(const Dev_sfpiic *d);
 
-typedef struct Dev_thset {
-    Dev_temp th[DEV_THERM_COUNT];
-} Dev_thset;
+#ifdef __cplusplus
+}
+#endif
 
-#endif // DEV_THSET_TYPES_H
+#endif // DEV_SFPIIC_PRINT_H

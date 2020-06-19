@@ -18,18 +18,21 @@
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "adt7301_spi_hal.h"
+#include "max31725_i2c_hal.h"
+#include "tmp421_i2c_hal.h"
 
 // Temperature limits
-static const int tempMinCrit = -40;
-static const int tempMaxCrit = 80.0;
-static const int tempMinWarn = 0.1;
-static const int tempMaxWarn = 60.0;
+static const double tempMinCrit = -40;
+static const double tempMaxCrit = 80;
+static const double tempMinWarn = 0.1;
+static const double tempMaxWarn = 60;
 
 void struct_thset_init(Dev_thset *d)
 {
     for (int i=0; i<DEV_THERM_COUNT; i++) {
         d->th[i].valid = 0;
         d->th[i].rawTemp = 0;
+        d->th[i].temp = 0;
     }
 }
 
@@ -49,8 +52,7 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
     for(int i=0; i<DEV_THERM_COUNT; i++) {
         if (!d->th[i].valid)
             continue;
-        int16_t temp = adt7301_convert_temp_adt7301_scale32(d->th[i].rawTemp);
-        temp /= 32;
+        double temp = d->th[i].temp;
         if (temp < tempMinCrit || temp > tempMaxCrit) {
             if (SENSOR_CRITICAL > maxStatus)
                 maxStatus = SENSOR_CRITICAL;
@@ -65,10 +67,14 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 
 void dev_thset_read(Dev_thset *d)
 {
+#ifdef TTVXS_1_0
     for(int i=0; i<DEV_THERM_COUNT; i++) {
         int16_t rawTemp;
         HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
         d->th[i].valid = (ret == HAL_OK);
         d->th[i].rawTemp = rawTemp;
     }
+#endif
+    max31725_read(&d->th[0]);
+    tmp421_read(&d->th[1]);
 }

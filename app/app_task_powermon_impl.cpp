@@ -298,9 +298,7 @@ void task_powermon_run (void)
         uint32_t ticks = osKernelSysTick() - thermReadTick;
         if (ticks > thermReadInterval) {
             thermReadTick = osKernelSysTick();
-#ifdef TTVXS_1_0
             dev_thset_read(get_dev_thset());
-#endif
         }
     } else {
         struct_thset_init(get_dev_thset());

@@ -38,7 +38,7 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
     sfpiic_init();
     sfpiic_stats_t zz = {0};
     for (int i=0; i<SFPIIC_CH_CNT; i++) {
-        d->status.ch[i].iic_stats = zz;
+        d->status.sfp[i].iic_stats = zz;
     }
 }
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
@@ -46,7 +46,7 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
     DeviceStatus status = DEVICE_NORMAL;
     sfpiic_master_reset();
     sfpiic_switch_reset();
-    if (HAL_OK != sfpiic_switch_detect())
+    if (HAL_OK != sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
         status = DEVICE_FAIL;
     d->present = status;
     return d->present;
@@ -57,18 +57,14 @@ static int sfp_old_present[SFPIIC_CH_CNT] = {0};
 DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-//    for(uint8_t ch=0; ch<3; ++ch) {
-//        // SFP channals
-//    }
 
-    for(uint8_t ch=3; ch<SFPIIC_CH_CNT; ++ch) {
-        // QSFP channals
+    for(uint8_t ch=0; ch<SFPIIC_CH_CNT; ++ch) {
         ret = dev_sfpiic_select_ch(ch);
         if (HAL_OK != ret) {
             d->present = DEVICE_FAIL;
             return d->present;
         }
-        sfpiic_ch_status_t *status = &d->status.ch[ch];
+        sfpiic_ch_status_t *status = &d->status.sfp[ch];
         if (HAL_OK == dev_sfpiic_ch_update(d, ch)) {
             status->present = 1;
             if (!sfp_old_present[ch])

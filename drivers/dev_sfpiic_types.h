@@ -37,12 +37,15 @@ typedef enum {
 struct sfpiic_ch_status_t {
    int present;
    SensorStatus system_status;
+   uint16_t last_iic_addr;
    int16_t temp; // in 1/256 degrees C
    uint16_t volt; // in 100uV
    uint16_t tx_en_cnt;
-   char vendor_name[16];
-   char vendor_serial[16];
-   GenericSensor sensors[MAX_SENSOR_COUNT];
+   char vendor_name[17];
+   char vendor_serial[17];
+   uint16_t tx_pow[4];
+   uint16_t rx_pow[4];
+//   GenericSensor sensors[MAX_SENSOR_COUNT];
    sfpiic_stats_t iic_stats;
    sfpiic_stats_t iic_master_stats;
    sfpiic_ch_state_t ch_state;
@@ -51,7 +54,7 @@ struct sfpiic_ch_status_t {
 typedef struct sfpiic_ch_status_t sfpiic_ch_status_t;
 
 struct sfpiic_status_t {
-   sfpiic_ch_status_t ch[SFPIIC_CH_CNT];
+   sfpiic_ch_status_t sfp[SFPIIC_CH_CNT];
 };
 
 typedef struct sfpiic_status_t sfpiic_status_t;

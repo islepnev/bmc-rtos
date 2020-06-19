@@ -23,7 +23,10 @@
 extern "C" {
 #endif
 
-extern struct __I2C_HandleTypeDef * const sfpiic_hi2c;
+extern struct __I2C_HandleTypeDef * const hi2c_sfpiic;
+enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
+//enum { SFP_I2C_ADDRESS = 0x51 };
+//enum { SFP_I2C_ADDRESS = 0x56 };
 
 void sfpiic_I2C_MasterTxCpltCallback(void);
 void sfpiic_I2C_MasterRxCpltCallback(void);
@@ -34,14 +37,13 @@ void sfpiic_HAL_I2C_AbortCpltCallback(void);
 
 void sfpiic_master_reset(void);
 void sfpiic_switch_reset(void);
-HAL_StatusTypeDef sfpiic_switch_detect(void);
+HAL_StatusTypeDef sfpiic_device_detect(uint16_t addr);
 HAL_StatusTypeDef sfpiic_switch_set_channel(uint8_t channel);
 void sfpiic_init(void);
 HAL_StatusTypeDef sfpiic_read(uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef sfpiic_write_main(uint16_t addr, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef sfpiic_write(uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef sfpiic_mem_read(uint16_t MemAddress, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef sfpiic_mem_write(uint16_t MemAddress, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
+HAL_StatusTypeDef sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 HAL_StatusTypeDef sfpiic_get_ch_i2c_status(uint8_t ch);
 #ifdef  __cplusplus
 }
