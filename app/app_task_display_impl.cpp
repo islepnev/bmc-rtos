@@ -462,7 +462,7 @@ static void print_thset(const Dev_thset *d)
     printf("Temp: ");
     for (int i=0; i<DEV_THERM_COUNT; i++) {
         if (d->th[i].valid)
-            printf("%5.1f", d->th[i].rawTemp / 32.0);
+            printf("%5.1f", d->th[i].temp);
         else
             printf(" --- ");
         printf(" ");
