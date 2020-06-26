@@ -130,17 +130,17 @@ bool get_all_pgood(const Dev_powermon *pm)
 
 bool get_input_power_valid(const Dev_powermon *pm)
 {
-    return pm_sensor_isValid(&pm->sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
 }
 
 bool get_input_power_normal(const Dev_powermon *pm)
 {
-    return pm_sensor_isNormal(&pm->sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isNormal(&pm->sensors[SENSOR_VME_5V]);
 }
 
 bool get_input_power_failed(const Dev_powermon *pm)
 {
-    return SENSOR_CRITICAL == pm_sensor_status(&pm->sensors[SENSOR_VXS_5V]);
+    return SENSOR_CRITICAL == pm_sensor_status(&pm->sensors[SENSOR_VME_5V]);
 }
 
 bool get_critical_power_valid(const Dev_powermon *pm)
