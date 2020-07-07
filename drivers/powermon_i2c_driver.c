@@ -23,20 +23,20 @@ static const int I2C_TIMEOUT_MS = 10;
 
 void powermon_i2c_reset_master(void)
 {
-    i2c_driver_reset(hi2c_sensors);
+    i2c_driver_reset(&hi2c_sensors);
 }
 
 HAL_StatusTypeDef powermon_i2c_detect(uint16_t deviceAddr, uint32_t Trials)
 {
-    return i2c_driver_detect(hi2c_sensors, deviceAddr, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(&hi2c_sensors, deviceAddr, Trials, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef powermon_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_read(hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_read(&hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef powermon_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_write(hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write(&hi2c_sensors, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }

@@ -80,7 +80,7 @@ HAL_StatusTypeDef vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
 HAL_StatusTypeDef vxsiic_get_pp_i2c_status(uint8_t pp)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    HAL_I2C_StateTypeDef state = HAL_I2C_GetState(vxsiic_hi2c);
+    HAL_I2C_StateTypeDef state = HAL_I2C_GetState(&vxsiic_hi2c);
     if (state != HAL_I2C_STATE_READY) {
         debug_printf("%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
         ret = HAL_ERROR;

@@ -72,6 +72,21 @@ static SemaphoreHandle_t sem_by_hspi(struct __SPI_HandleTypeDef *hspi)
     return NULL;
 }
 
+int hspi_index(struct __SPI_HandleTypeDef *hspi)
+{
+    if (hspi == &hspi1)
+        return 1;
+    if (hspi == &hspi2)
+        return 2;
+    if (hspi == &hspi3)
+        return 3;
+    if (hspi == &hspi4)
+        return 4;
+    if (hspi == &hspi5)
+        return 5;
+    return 0;
+}
+
 static int32_t spi_driver_wait_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);

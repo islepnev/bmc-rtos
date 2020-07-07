@@ -32,14 +32,14 @@ static HAL_StatusTypeDef at24c_detect(uint8_t address)
 {
     HAL_StatusTypeDef ret;
     uint32_t Trials = 10;
-    return i2c_driver_detect(hi2c_eeprom_cfg, address << 1, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(&hi2c_eeprom_cfg, address << 1, Trials, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
 {
     enum {Size = 1};
     uint8_t pData[Size];
-    HAL_StatusTypeDef ret = i2c_driver_mem_read(hi2c_eeprom_cfg, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = i2c_driver_mem_read(&hi2c_eeprom_cfg, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData[0];

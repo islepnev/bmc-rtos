@@ -24,17 +24,17 @@ static const int I2C_TIMEOUT_MS = 100;
 
 static HAL_StatusTypeDef pll_i2c_detect(uint16_t deviceAddr, uint32_t Trials)
 {
-    return i2c_driver_detect(hi2c_ad9545, deviceAddr, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(&hi2c_ad9545, deviceAddr, Trials, I2C_TIMEOUT_MS);
 }
 
 static HAL_StatusTypeDef pll_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_read(hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_read(&hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
 static HAL_StatusTypeDef pll_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_write(hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write(&hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef ad9545_i2c_detect(void)

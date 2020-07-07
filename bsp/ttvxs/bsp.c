@@ -30,20 +30,6 @@
 #include "usart.h"
 #include "error_handler.h"
 
-struct __I2C_HandleTypeDef * const hi2c_ad9545 = &hi2c4;
-const uint8_t ad9545_deviceAddr = 0x4A;
-struct __I2C_HandleTypeDef * const vxsiic_hi2c = &hi2c1;
-struct __I2C_HandleTypeDef * const hi2c_sensors = &hi2c2;
-struct __I2C_HandleTypeDef * const hi2c_eeprom_cfg = &hi2c3;
-const uint8_t eeprom_cfg_deviceAddr = 0x50;
-
-struct __SPI_HandleTypeDef * const fpga_spi = &hspi5;
-#ifdef TTVXS_1_0
-struct __SPI_HandleTypeDef * const therm_spi = &hspi2;
-#else
-struct __SPI_HandleTypeDef * const ad9516_spi = &hspi2;
-#endif
-
 uint32_t detect_pcb_version(void)
 {
     bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
@@ -53,7 +39,7 @@ uint32_t detect_pcb_version(void)
 
 void pm_sensor_reset_i2c_master(void)
 {
-    i2c_driver_reset(hi2c_sensors);
+    i2c_driver_reset(&hi2c_sensors);
 }
 /*
 void fpga_enable_interface(bool enable)

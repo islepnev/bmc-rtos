@@ -23,8 +23,6 @@
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 
-static const int I2C_TIMEOUT_MS = 100;
-
 osSemaphoreId i2c1_sem;
 osSemaphoreId i2c2_sem;
 osSemaphoreId i2c3_sem;

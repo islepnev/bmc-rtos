@@ -18,13 +18,13 @@
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
 
-#include "stm32f7xx_hal.h"
 #include "i2c.h"
-#include "bsp_pin_defs.h"
+#include "bsp.h"
+#include "bsp_sfpiic.h"
+#include "bus/i2c_driver.h"
+#include "cmsis_os.h"
 
 static const int I2C_TIMEOUT_MS = 10;
-
-static I2C_HandleTypeDef * const hi2c = &hi2c2;
 
 enum { PCA9548_BASE_I2C_ADDRESS = 0x74 };
 
@@ -32,13 +32,14 @@ static HAL_StatusTypeDef sfp_i2c_detect(void)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
     uint32_t Trials = 2;
-    ret = HAL_I2C_IsDeviceReady(hi2c, PCA9548_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
+    ret = i2c_driver_detect(&hi2c_sfpiic, PCA9548_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
 }
 
 static HAL_StatusTypeDef sfp_i2c_read(int slot, uint8_t address, uint8_t *data)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
+    // TODO
     return ret;
 }
 
@@ -46,7 +47,7 @@ static HAL_StatusTypeDef pca9548_read(uint8_t *data)
 {
     HAL_StatusTypeDef ret;
     uint8_t pData;
-    ret = HAL_I2C_Master_Receive(hi2c, PCA9548_BASE_I2C_ADDRESS << 1, &pData, 1, I2C_TIMEOUT_MS);
+    ret = i2c_driver_read(&hi2c_sfpiic, PCA9548_BASE_I2C_ADDRESS << 1, &pData, 1, I2C_TIMEOUT_MS);
     if (ret == HAL_OK) {
         if (data) {
             *data = pData;
@@ -55,16 +56,10 @@ static HAL_StatusTypeDef pca9548_read(uint8_t *data)
     return ret;
 }
 
-static void dev_sfpiic_reset(void)
-{
-    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_SET);
-}
-
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    dev_sfpiic_reset();
+    bsp_sfpiic_reset();
     if (HAL_OK != sfp_i2c_detect())
         status = DEVICE_FAIL;
     d->present = status;
