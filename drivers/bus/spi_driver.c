@@ -82,13 +82,28 @@ static SemaphoreHandle_t sem_by_hspi(struct __SPI_HandleTypeDef *hspi)
     return NULL;
 }
 
+int hspi_index(struct __SPI_HandleTypeDef *hspi)
+{
+    if (hspi == &hspi1)
+        return 1;
+    if (hspi == &hspi2)
+        return 2;
+    if (hspi == &hspi3)
+        return 3;
+    if (hspi == &hspi4)
+        return 4;
+    if (hspi == &hspi5)
+        return 5;
+    return 0;
+}
+
 static int32_t spi_driver_wait_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);
     if (sem) {
         osStatus result = osSemaphoreWait(sem, millisec);
         if (result != osOK) {
-            debug_printf("%s: error %d\n", __func__, result);
+            debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
         }
         return result;
     }
@@ -104,7 +119,7 @@ void spi_driver_release_sem(struct __SPI_HandleTypeDef *hspi)
     if (sem) {
         osStatus result = osSemaphoreRelease(sem);
         if (result != osOK) {
-            debug_printf("%s: error %d\n", __func__, result);
+            debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
         }
     } else {
         Error_Handler();
@@ -130,7 +145,7 @@ void HAL_SPI_ErrorCallback(struct __SPI_HandleTypeDef *hspi)
 {
     if (!hspi)
         Error_Handler();
-    debug_printf("%s SPI error, code %d\n", __func__, hspi->ErrorCode);
+    debug_printf("%s SPI%d error, code %d\n", __func__, hspi_index(hspi), hspi->ErrorCode);
     // reinitialize SPI
     spi_driver_reset(hspi);
     spi_driver_release_sem(hspi);
@@ -143,11 +158,11 @@ HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *tx
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
     if (ret != HAL_OK) {
-        debug_printf("%s: spi error %d, %d\n", __func__, ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
     osStatus status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
-        debug_printf("%s: spi timeout\n", __func__);
+        debug_printf("%s: SPI%d timeout\n", __func__, hspi_index(hspi));
         return HAL_TIMEOUT;
     }
     return ret;
@@ -160,11 +175,11 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
     if (ret != HAL_OK) {
-        debug_printf("%s: spi error %d, %d\n", __func__, ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
     osStatus status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
-        debug_printf("%s: spi timeout\n", __func__);
+        debug_printf("%s: SPI%d timeout\n", __func__, hspi_index(hspi));
         return HAL_TIMEOUT;
     }
     return ret;
@@ -177,7 +192,7 @@ HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *tx
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive(hspi, txBuf, rxBuf, Size, millisec);
     if (ret != HAL_OK) {
-        debug_printf("%s: spi error %d, %d\n", __func__, ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
     return ret;
 }
@@ -189,7 +204,7 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit(hspi, txBuf, Size, millisec);
     if (ret != HAL_OK) {
-        debug_printf("%s: spi error %d, %d\n", __func__, ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
     return ret;
 }
