@@ -16,9 +16,6 @@
 */
 
 #include "app_task_sfpiic_impl.h"
-
-#include <stdbool.h>
-
 #include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
