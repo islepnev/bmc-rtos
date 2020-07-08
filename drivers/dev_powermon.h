@@ -43,10 +43,11 @@ int pm_sensors_isAllValid(const Dev_powermon *d);
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
-int get_input_power_valid(const Dev_powermon *pm);
-int get_critical_power_valid(const Dev_powermon *pm);
-int get_fpga_core_power_present(const Dev_powermon *pm);
+bool get_input_power_valid(const Dev_powermon *pm);
+bool get_critical_power_valid(const Dev_powermon *pm);
+bool get_fpga_core_power_present(const Dev_powermon *pm);
 bool get_all_pgood(const Dev_powermon *pm);
+void update_system_powergood_pin(const Dev_powermon *pm);
 double pm_get_power_w(const Dev_powermon *pm);
 double pm_get_power_max_w(const Dev_powermon *pm);
 

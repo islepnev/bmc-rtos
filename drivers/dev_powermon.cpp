@@ -98,6 +98,12 @@ bool get_all_pgood(const Dev_powermon *pm)
     return pm->fpga_core_pgood && pm->ltm_pgood;
 }
 
+void update_system_powergood_pin(const Dev_powermon *pm)
+{
+    system_power_present = get_critical_power_valid(pm);
+    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
+}
+
 void read_power_switches_state(Dev_powermon *pm)
 {
     pm->sw_state.switch_1v0   = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin));
@@ -248,7 +254,7 @@ uint32_t getMonStateTicks(const Dev_powermon *pm)
 
 void pot_command_process(Dev_pots *d, const CommandPots *cmd)
 {
-    if (cmd->arg >= DEV_POT_COUNT)
+    if (!cmd || cmd->arg >= DEV_POT_COUNT)
         return;
     Dev_ad5141 *p = &d->pot[cmd->arg];
     switch (cmd->command_id) {
@@ -353,20 +359,20 @@ MonState runMon(Dev_powermon *pm)
     return pm->monState;
 }
 
-int get_input_power_valid(const Dev_powermon *pm)
+bool get_input_power_valid(const Dev_powermon *pm)
 {
     return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
 }
 
-int get_critical_power_valid(const Dev_powermon *pm)
+bool get_critical_power_valid(const Dev_powermon *pm)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &pm->sensors[i];
         if (!sensor->isOptional)
             if (!pm_sensor_isValid(sensor))
-                return 0;
+                return false;
     }
-    return 1;
+    return true;
 }
 
 static double get_sensor_power_w(const pm_sensor *d)
@@ -397,11 +403,11 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-int get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const Dev_powermon *pm)
 {
     SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
     SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
-    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
-    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;
 }
