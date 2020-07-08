@@ -24,10 +24,10 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 
-osSemaphoreId i2c1_sem = NULL;
-osSemaphoreId i2c2_sem = NULL;
-osSemaphoreId i2c3_sem = NULL;
-osSemaphoreId i2c4_sem = NULL;
+osSemaphoreId i2c1_sem;
+osSemaphoreId i2c2_sem;
+osSemaphoreId i2c3_sem;
+osSemaphoreId i2c4_sem;
 osSemaphoreDef(i2c1_sem);
 osSemaphoreDef(i2c2_sem);
 osSemaphoreDef(i2c3_sem);

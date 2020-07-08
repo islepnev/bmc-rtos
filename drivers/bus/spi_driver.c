@@ -1,7 +1,7 @@
 /*
-**    Generic interrupt mode SPI driver
+**    Interrupt mode SPI driver
 **
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 
-osSemaphoreId spi1_sem = NULL;
-osSemaphoreId spi2_sem = NULL;
-osSemaphoreId spi3_sem = NULL;
-osSemaphoreId spi4_sem = NULL;
-osSemaphoreId spi5_sem = NULL;
+#define USE_INTERRUPT_MODE_SPI
+
+osSemaphoreId spi1_sem;
+osSemaphoreId spi2_sem;
+osSemaphoreId spi3_sem;
+osSemaphoreId spi4_sem;
+osSemaphoreId spi5_sem;
 osSemaphoreDef(spi1_sem);
 osSemaphoreDef(spi2_sem);
 osSemaphoreDef(spi3_sem);
@@ -150,7 +152,7 @@ void HAL_SPI_ErrorCallback(struct __SPI_HandleTypeDef *hspi)
     spi_driver_reset(hspi);
     spi_driver_release_sem(hspi);
 }
-#if 1
+#ifdef USE_INTERRUPT_MODE_SPI
 HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     if (!hspi)
