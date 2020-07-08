@@ -51,6 +51,7 @@ typedef enum {
 extern board_version_t board_version;
 
 void update_board_version(int powermon_count, int pots_count);
+bool fpga_done_pin_present(void);
 
 #ifdef __cplusplus
 }

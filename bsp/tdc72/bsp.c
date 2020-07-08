@@ -42,3 +42,8 @@ void update_board_version(int powermon_count, int pots_count)
     if (powermon_count == POWERMON_SENSORS_PCB_4_2)
         board_version = PCB_4_2;
 }
+
+bool fpga_done_pin_present(void)
+{
+    return board_version >= PCB_4_2;
+}
