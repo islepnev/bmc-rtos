@@ -25,6 +25,7 @@ extern "C" {
 
 struct __SPI_HandleTypeDef;
 
+int hspi_index(struct __SPI_HandleTypeDef *hspi);
 void spi_driver_init(void);
 void spi_driver_reset(struct __SPI_HandleTypeDef *handle);
 HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
