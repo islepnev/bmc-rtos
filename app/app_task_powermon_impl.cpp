@@ -232,7 +232,7 @@ void task_powermon_run (void)
                 sensorReadTick = osKernelSysTick();
                 runMon(pm);
             }
-
+    update_system_powergood_pin(pm);
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)
             ) {
