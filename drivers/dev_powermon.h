@@ -42,7 +42,7 @@ bool get_input_power_valid(const Dev_powermon *pm);
 bool get_input_power_normal(const Dev_powermon *pm);
 bool get_input_power_failed(const Dev_powermon *pm);
 bool get_critical_power_valid(const Dev_powermon *pm);
-int get_fpga_core_power_present(const Dev_powermon *pm);
+bool get_fpga_core_power_present(const Dev_powermon *pm);
 bool get_critical_power_failure(const Dev_powermon *pm);
 bool get_all_pgood(const Dev_powermon *pm);
 void update_system_powergood_pin(const Dev_powermon *pm);

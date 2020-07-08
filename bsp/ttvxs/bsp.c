@@ -59,3 +59,8 @@ void fpga_enable_interface(bool enable)
     }
 }
 */
+
+bool fpga_done_pin_present(void)
+{
+    return true;
+}

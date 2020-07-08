@@ -376,11 +376,11 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-int get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const Dev_powermon *pm)
 {
     SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
     SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
-    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
-    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;
 }
