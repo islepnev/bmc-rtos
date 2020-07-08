@@ -18,6 +18,8 @@
 #ifndef APP_SHARED_DATA_H
 #define APP_SHARED_DATA_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,6 +33,7 @@ typedef enum {
     DISPLAY_NONE,
 } display_mode_t;
 
+extern bool system_power_present;
 extern int enable_pll_run;
 extern display_mode_t display_mode;
 extern int enable_power;
