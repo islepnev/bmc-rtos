@@ -18,8 +18,6 @@
 #ifndef APP_TASK_POWERMON_H
 #define APP_TASK_POWERMON_H
 
-#include "dev_powermon.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
