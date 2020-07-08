@@ -1,7 +1,7 @@
 /*
-**    Generic interrupt mode SPI driver
+**    Interrupt mode SPI driver
 **
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 #include "spi.h"
 #include "debug_helpers.h"
 #include "cmsis_os.h"
+#include "error_handler.h"
+
+#define USE_INTERRUPT_MODE_SPI
 
 osSemaphoreId spi1_sem;
 osSemaphoreId spi2_sem;
@@ -42,6 +45,15 @@ void spi_driver_init(void)
     spi3_sem = osSemaphoreCreate(osSemaphore(spi3_sem), 1);
     spi4_sem = osSemaphoreCreate(osSemaphore(spi4_sem), 1);
     spi5_sem = osSemaphoreCreate(osSemaphore(spi5_sem), 1);
+    if (NULL == spi1_sem
+            || NULL == spi2_sem
+            || NULL == spi3_sem
+            || NULL == spi4_sem
+            || NULL == spi5_sem
+            ) {
+        Error_Handler();
+    }
+
     osSemaphoreWait(spi1_sem, osWaitForever);
     osSemaphoreWait(spi2_sem, osWaitForever);
     osSemaphoreWait(spi3_sem, osWaitForever);
@@ -90,17 +102,30 @@ int hspi_index(struct __SPI_HandleTypeDef *hspi)
 static int32_t spi_driver_wait_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);
-    if (sem)
-        return osSemaphoreWait(sem, millisec);
-    else
+    if (sem) {
+        osStatus result = osSemaphoreWait(sem, millisec);
+        if (result != osOK) {
+            debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
+        }
+        return result;
+    }
+    else {
+        Error_Handler();
         return -1;
+    }
 }
 
 void spi_driver_release_sem(struct __SPI_HandleTypeDef *hspi)
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);
-    if (sem)
-        osSemaphoreRelease(sem);
+    if (sem) {
+        osStatus result = osSemaphoreRelease(sem);
+        if (result != osOK) {
+            debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
+        }
+    } else {
+        Error_Handler();
+    }
 }
 
 void HAL_SPI_TxCpltCallback(struct __SPI_HandleTypeDef *hspi)
@@ -120,14 +145,18 @@ void HAL_SPI_TxRxCpltCallback(struct __SPI_HandleTypeDef *hspi)
 
 void HAL_SPI_ErrorCallback(struct __SPI_HandleTypeDef *hspi)
 {
+    if (!hspi)
+        Error_Handler();
     debug_printf("%s SPI%d error, code %d\n", __func__, hspi_index(hspi), hspi->ErrorCode);
     // reinitialize SPI
     spi_driver_reset(hspi);
     spi_driver_release_sem(hspi);
 }
-
+#ifdef USE_INTERRUPT_MODE_SPI
 HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
+    if (!hspi)
+        Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
     if (ret != HAL_OK) {
@@ -143,6 +172,8 @@ HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *tx
 
 HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
 {
+    if (!hspi)
+        Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
     if (ret != HAL_OK) {
@@ -155,3 +186,28 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
     }
     return ret;
 }
+#else
+HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+{
+    if (!hspi)
+        Error_Handler();
+    HAL_StatusTypeDef ret = HAL_OK;
+    ret = HAL_SPI_TransmitReceive(hspi, txBuf, rxBuf, Size, millisec);
+    if (ret != HAL_OK) {
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
+    }
+    return ret;
+}
+
+HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
+{
+    if (!hspi)
+        Error_Handler();
+    HAL_StatusTypeDef ret = HAL_OK;
+    ret = HAL_SPI_Transmit(hspi, txBuf, Size, millisec);
+    if (ret != HAL_OK) {
+        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
+    }
+    return ret;
+}
+#endif
