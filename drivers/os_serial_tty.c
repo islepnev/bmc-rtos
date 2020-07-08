@@ -23,6 +23,7 @@
 #include "cmsis_os.h"
 #include "bsp.h"
 #include "bsp_tty.h"
+#include "error_handler.h"
 #include "stm32f7xx_ll_usart.h"
 
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
@@ -89,6 +90,8 @@ void initialize_serial_console_hardware(void)
 {
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
     message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
+    if (!message_q_ttyrx_id || !message_q_ttytx_id)
+        Error_Handler();
     LL_USART_EnableIT_RXNE(TTY_USART);
     bsp_tty_setup_uart();
 }
