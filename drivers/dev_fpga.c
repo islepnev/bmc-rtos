@@ -78,20 +78,26 @@ bool fpga_test(void)
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
-    fpga_spi_hal_write_reg(addr1, wdata1);
-    fpga_spi_hal_write_reg(addr2, wdata2);
-    fpga_spi_hal_read_reg(addr1, &rdata1);
-    fpga_spi_hal_read_reg(addr2, &rdata2);
+    if (HAL_OK != fpga_spi_hal_write_reg(addr1, wdata1))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_write_reg(addr2, wdata2))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_read_reg(addr1, &rdata1))
+        goto err;
+    if (HAL_OK != fpga_spi_hal_read_reg(addr2, &rdata2))
+        goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
         fpga_write_live_magic();
         return true;
-    } else {
-        log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
-        log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        return false;
     }
+    log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
+    log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
+    return false;
+err:
+    log_printf(LOG_ERR, "FPGA register test failed: SPI error");
+    return false;
 }
 
 bool fpgaDetect(Dev_fpga *d)

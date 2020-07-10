@@ -113,10 +113,12 @@ void MX_GPIO_Init(void)
       HAL_GPIO_Init(rfu_pins[i].GPIOx, &GPIO_InitStruct);
   }
 
-  HAL_GPIO_WritePin(GPIOI, I2C_RESET3_B_Pin
-                          |GPIO1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port, I2C_RESET3_B_Pin, GPIO_PIN_RESET);
 
-  HAL_GPIO_WritePin(GPIOF, FPGA_NSS_Pin, GPIO_PIN_RESET);
+  // PMCU_PRSNT_PM2C_B
+  HAL_GPIO_WritePin(GPIO2_GPIO_Port, GPIO2_Pin, GPIO_PIN_RESET);
+
+  HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
 
   // LEDs
   static const pin_def_t led_pins[5] = {
@@ -160,16 +162,16 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PGOOD_PWR_GPIO_Port, &GPIO_InitStruct);
 
-  // MCU_GPIO1
+  // MCU_GPIO1 (connected to FPGA PLL_IRQ)
   GPIO_InitStruct.Pin = GPIO1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIO1_GPIO_Port, &GPIO_InitStruct);
 
-  // MCU_GPIO2
+  // MCU_GPIO2 (PMCU_PRSNT_PM2C_B)
   GPIO_InitStruct.Pin = GPIO2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIO2_GPIO_Port, &GPIO_InitStruct);

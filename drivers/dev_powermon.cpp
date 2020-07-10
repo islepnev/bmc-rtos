@@ -20,6 +20,9 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_i2c.h"
+#include "i2c.h"
+#include "bus/i2c_driver.h"
+
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "display.h"
@@ -256,8 +259,9 @@ void monClearMeasurements(Dev_powermon *d)
 
 int monDetect(Dev_powermon *d)
 {
-    if (HAL_I2C_STATE_READY != hi2c_sensors->State) {
-        log_printf(LOG_ERR, "%s: I2C not ready, state %d", __func__, hi2c_sensors->State);
+    if (HAL_I2C_STATE_READY != hi2c_sensors.State) {
+        log_printf(LOG_ERR, "%s: I2C%d not ready, state %d",
+                   __func__, hi2c_index(&hi2c_sensors), hi2c_sensors.State);
         return 0;
     }
     int count = 0;
@@ -372,11 +376,11 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-int get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const Dev_powermon *pm)
 {
     SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
     SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
-    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
-    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;
 }

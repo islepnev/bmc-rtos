@@ -29,6 +29,11 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
+void auxpll_clear_status(Dev_auxpll *d)
+{
+    d->status.pll_readback.raw = 0;
+}
+
 static int old_enable = 0;
 
 void auxpll_task_run(void)
@@ -36,25 +41,28 @@ void auxpll_task_run(void)
     bool enable = enable_power && system_power_present;
     if (old_enable != enable) {
         old_enable = enable;
-        if (enable)
-            ad9516_enable_interface();
-        else
-            ad9516_disable_interface();
     }
     Dev_auxpll *d = get_dev_auxpll();
+    if (!enable) {
+        if (d->fsm_state != AUXPLL_STATE_INIT) {
+            d->fsm_state = AUXPLL_STATE_INIT;
+            d->present = DEVICE_UNKNOWN;
+            ad9516_disable_interface();
+            auxpll_clear_status(d);
+            log_put(LOG_INFO, "PLL AD9516 shutdown");
+        }
+        return;
+    }
     const AuxPllState old_state = d->fsm_state;
     switch(d->fsm_state) {
     case AUXPLL_STATE_INIT:
-        d->status.pll_readback.raw = 0;
-        if (enable)
-            d->fsm_state = AUXPLL_STATE_RESET;
+        ad9516_enable_interface();
+        auxpll_clear_status(d);
+        d->fsm_state = AUXPLL_STATE_RESET;
         break;
     case AUXPLL_STATE_RESET:
-        if (!enable) {
-            d->fsm_state = AUXPLL_STATE_ERROR;
-            break;
-        }
         if (!auxpllSoftwareReset()) {
+            d->fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
         auxpllDetect(d);
@@ -83,13 +91,13 @@ void auxpll_task_run(void)
         d->recoveryCount = 0;
         break;
     case AUXPLL_STATE_ERROR:
-        ad9516_disable_interface();
         if (d->recoveryCount > 3) {
             d->fsm_state = AUXPLL_STATE_FATAL;
             log_put(LOG_CRIT, "AUXPLL AD9516 fatal error");
             break;
         }
         if (stateTicks() > 1000) {
+            ad9516_disable_interface();
             d->recoveryCount++;
             d->fsm_state = AUXPLL_STATE_INIT;
         }
@@ -116,7 +124,7 @@ void auxpll_task_run(void)
             d->fsm_state = AUXPLL_STATE_ERROR;
         }
     } else {
-        d->status.pll_readback.raw = 0;
+        auxpll_clear_status(d);
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {

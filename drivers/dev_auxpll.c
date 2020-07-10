@@ -45,7 +45,7 @@
 static void DEBUG_PRINT_RET(const char *func, int ret)
 {
     log_printf(LOG_ERR, "%s failed: %d, SPI error 0x%08lX",
-           func, ret, ad9516_spi->ErrorCode);
+           func, ret, ad9516_spi.ErrorCode);
 }
 
 typedef union {

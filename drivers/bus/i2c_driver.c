@@ -22,8 +22,7 @@
 #include "i2c.h"
 #include "debug_helpers.h"
 #include "cmsis_os.h"
-
-static const int I2C_TIMEOUT_MS = 100;
+#include "error_handler.h"
 
 osSemaphoreId i2c1_sem;
 osSemaphoreId i2c2_sem;
@@ -41,6 +40,13 @@ void i2c_driver_init(void)
     i2c2_sem = osSemaphoreCreate(osSemaphore(i2c2_sem), 1);
     i2c3_sem = osSemaphoreCreate(osSemaphore(i2c3_sem), 1);
     i2c4_sem = osSemaphoreCreate(osSemaphore(i2c4_sem), 1);
+    if (NULL == i2c1_sem
+            || NULL == i2c2_sem
+            || NULL == i2c3_sem
+            || NULL == i2c4_sem
+            ) {
+        Error_Handler();
+    }
     osSemaphoreWait(i2c1_sem, osWaitForever);
     osSemaphoreWait(i2c2_sem, osWaitForever);
     osSemaphoreWait(i2c3_sem, osWaitForever);

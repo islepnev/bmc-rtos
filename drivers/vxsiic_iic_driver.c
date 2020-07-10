@@ -23,25 +23,25 @@ static const int I2C_TIMEOUT_MS = 25;
 
 void vxsiic_reset_i2c_master(void)
 {
-    i2c_driver_reset(vxsiic_hi2c);
+    i2c_driver_reset(&vxsiic_hi2c);
 }
 
 HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_read(vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_read(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_write(vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_write(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_read(vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_read(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
 HAL_StatusTypeDef vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_write(vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }

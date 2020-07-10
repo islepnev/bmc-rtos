@@ -19,7 +19,7 @@
 
 #include "devices_types.h"
 
-static Devices dev = {0};
+static Devices dev = {};
 bool system_power_present = false;
 int enable_pll_run = 0;
 display_mode_t display_mode = DISPLAY_SUMMARY;
