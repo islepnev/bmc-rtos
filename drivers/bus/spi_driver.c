@@ -160,7 +160,9 @@ HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *tx
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
     if (ret != HAL_OK) {
-        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
+                     (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
+        return ret;
     }
     osStatus status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
@@ -177,7 +179,9 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
     if (ret != HAL_OK) {
-        debug_printf("%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
+        debug_printf("%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
+                     (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
+        return ret;
     }
     osStatus status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
