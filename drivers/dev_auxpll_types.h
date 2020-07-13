@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include "dev_common_types.h"
-#include "ad9516_status.h"
+#include "ad9516/ad9516_status.h"
 
 #ifdef __cplusplus
 extern "C" {

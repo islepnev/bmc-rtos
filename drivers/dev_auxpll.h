@@ -22,7 +22,7 @@
 
 #include "dev_common_types.h"
 #include "dev_auxpll_types.h"
-#include "ad9516_setup.h"
+#include "ad9516/ad9516_setup.h"
 
 #ifdef __cplusplus
 extern "C" {

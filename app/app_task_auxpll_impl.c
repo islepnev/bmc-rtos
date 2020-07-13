@@ -20,7 +20,7 @@
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "dev_auxpll.h"
-#include "ad9516_spi_hal.h"
+#include "ad9516/ad9516_spi_hal.h"
 #include "logbuffer.h"
 
 static uint32_t stateStartTick = 0;
