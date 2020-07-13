@@ -14,8 +14,10 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "dev_thset.h"
 
+#include "dev_thset_types.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 #include "adt7301_spi_hal.h"

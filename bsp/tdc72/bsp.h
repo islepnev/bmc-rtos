@@ -42,6 +42,8 @@ extern "C" {
 #define hi2c_eeprom_cfg hi2c2
 #define eeprom_cfg_deviceAddr 0x50
 
+#define DEV_THERM_COUNT 4
+
 typedef enum {
     PCB_4_1 = 0,
     PCB_4_2 = 1

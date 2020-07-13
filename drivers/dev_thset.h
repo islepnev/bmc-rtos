@@ -14,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef DEV_THSET_H
 #define DEV_THSET_H
 
@@ -28,12 +29,6 @@ extern "C" {
 
 void dev_thset_init(Dev_thset *d);
 void dev_thset_run(Dev_thset *d);
-//void dev_thset_read(Dev_thset *d);
-//void dev_print_thermometers(const Devices *dev);
-
-//void dev_thset_read(Dev_thset *d);
-//void dev_thset_print(const Dev_thset d);
-//SensorStatus dev_adt7301_status(const Dev_adt7301 *d);
 SensorStatus dev_thset_thermStatus(const Dev_thset *d);
 int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
 thset_state_t thermal_shutdown_check(Dev_thset *d);
