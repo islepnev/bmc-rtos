@@ -179,17 +179,3 @@ bool fpgaWriteSystemStatus(const Devices *d)
         return false;
     return true;
 }
-
-bool fpgaWriteSensors(const struct Dev_powermon *d)
-{
-    uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VXS_5V].busVoltage * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VXS_5V].current * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_3V3].busVoltage * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_3V3].current * 1000)))
-        return false;
-    return true;
-}
