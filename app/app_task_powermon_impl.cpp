@@ -61,17 +61,6 @@ static void clearOldSensorStatus(void)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
-static const char *sensorStatusStr(SensorStatus state)
-{
-    switch(state) {
-    case SENSOR_UNKNOWN:  return "  UNKNOWN";
-    case SENSOR_NORMAL:   return "  NORMAL";
-    case SENSOR_WARNING:  return " WARNING";
-    case SENSOR_CRITICAL: return "CRITICAL";
-    default: return "FAIL";
-    }
-}
-
 static void log_sensor_status_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
@@ -93,7 +82,7 @@ static void log_sensor_status_change(const Dev_powermon *pm)
             int curr_frac = 1000 * (curr - curr_int);
             snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
                      sensor->label,
-                     sensorStatusStr(status),
+                     sensor_status_text(status),
                      volt_int,
                      volt_frac,
                      neg?"-":"",
@@ -128,6 +117,15 @@ void powermon_task_init(void)
     dev_thset_init(get_dev_thset());
 }
 
+void change_state(PmState state)
+{
+    Dev_powermon *pm = get_dev_powermon();
+    if (pm->pmState == state)
+        return;
+    pm->pmState = state;
+    stateStartTick = osKernelSysTick();
+}
+
 void task_powermon_run (void)
 {
     Dev_powermon *pm = get_dev_powermon();
@@ -137,87 +135,86 @@ void task_powermon_run (void)
     }
     pmLoopCount++;
 //    int vmePresent = 1; // pm_read_liveInsert(&dev.pm);
-    const PmState oldState = pm->pmState;
     pm_read_pgood(pm);
     update_power_switches(pm);
     int power_input_ok = get_input_power_valid(pm);
     int power_critical_ok = get_critical_power_valid(pm);
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
     if (THSET_STATE_2 == get_dev_thset()->state) {
-        pm->pmState = PM_STATE_OVERHEAT;
+        change_state(PM_STATE_OVERHEAT);
     }
     switch (pm->pmState) {
     case PM_STATE_INIT:
         struct_powermon_init(pm);
-        pm->pmState = PM_STATE_STANDBY;
+        change_state(PM_STATE_STANDBY);
         break;
     case PM_STATE_STANDBY:
         if (!enable_power) {
-            pm->pmState = PM_STATE_OFF;
+            change_state(PM_STATE_OFF);
             break;
         }
         if (power_input_ok) {
             log_put(LOG_NOTICE, "Input power Ok");
-            pm->pmState = PM_STATE_RAMP;
+            change_state(PM_STATE_RAMP);
         }
         break;
     case PM_STATE_RAMP:
         if (!enable_power) {
-            pm->pmState = PM_STATE_OFF;
+            change_state(PM_STATE_OFF);
             break;
         }
         if (!power_input_ok) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
             break;
         }
         if (power_critical_ok) {
             log_put(LOG_NOTICE, "Critical power supplies ready");
-            pm->pmState = PM_STATE_RUN;
+            change_state(PM_STATE_RUN);
         }
         if (stateTicks() > RAMP_TIMEOUT_TICKS) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            pm->pmState = PM_STATE_PWRFAIL;
+            change_state(PM_STATE_PWRFAIL);
         }
         break;
     case PM_STATE_RUN:
         if (!enable_power) {
-            pm->pmState = PM_STATE_OFF;
+            change_state(PM_STATE_OFF);
             break;
         }
         if (!power_input_ok) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
             break;
         }
         if (!power_critical_ok) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            pm->pmState = PM_STATE_PWRFAIL;
+            change_state(PM_STATE_PWRFAIL);
             break;
         }
         if (TEST_RESTART && (stateTicks() > 5000)) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
             break;
         }
         break;
     case PM_STATE_OFF:
         if (enable_power)
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
         break;
     case PM_STATE_OVERHEAT:
         if (!enable_power) {
             clear_thermal_shutdown(get_dev_thset());
-            pm->pmState = PM_STATE_OFF;
+            change_state(PM_STATE_OFF);
             break;
         }
         if (THSET_STATE_0 == get_dev_thset()->state)
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
         break;
     case PM_STATE_PWRFAIL:
         if (!enable_power) {
-            pm->pmState = PM_STATE_OFF;
+            change_state(PM_STATE_OFF);
             break;
         }
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
-            pm->pmState = PM_STATE_STANDBY;
+            change_state(PM_STATE_STANDBY);
         }
         break;
     }
@@ -242,8 +239,4 @@ void task_powermon_run (void)
     }
     dev_thset_run(get_dev_thset());
     sync_ipmi_sensors();
-
-    if (oldState != pm->pmState) {
-        stateStartTick = osKernelSysTick();
-    }
 }
