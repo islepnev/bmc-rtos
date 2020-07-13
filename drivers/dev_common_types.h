@@ -43,7 +43,7 @@ typedef enum {
 } OpStatusTypeDef;
 
 const char *sensor_status_ansi_str(SensorStatus state);
-//const char *sensor_status_text(SensorStatus state);
+const char *sensor_status_text(SensorStatus state);
 
 #ifdef __cplusplus
 }
