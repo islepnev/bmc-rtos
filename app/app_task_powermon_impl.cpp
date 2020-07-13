@@ -28,6 +28,7 @@
 #include "dev_powermon.h"
 //#include "ansi_escape_codes.h"
 //#include "display.h"
+#include "dev_common_types.h"
 #include "dev_powermon_types.h"
 #include "dev_thset.h"
 //#include "dev_leds.h"
@@ -89,7 +90,7 @@ static void log_sensor_status_change(const Dev_powermon *pm)
             int curr_frac = 1000 * (curr - curr_int);
             snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
                      sensor->label,
-                     sensor_status_ansi_str(status),
+                     sensor_status_text(status),
                      volt_int,
                      volt_frac,
                      neg?"-":"",
@@ -120,6 +121,12 @@ static int pm_initialized = 0;
 static bool old_inut_power_normal = false;
 static bool old_inut_power_critical = false;
 
+void powermon_task_init(void)
+{
+    clearOldSensorStatus();
+    // dev_thset_init(get_dev_thset());
+}
+
 void change_state(PmState state)
 {
     Dev_powermon *pm = get_dev_powermon();
@@ -133,7 +140,7 @@ void task_powermon_run (void)
 {
     Dev_powermon *pm = get_dev_powermon();
     if (!pm_initialized) {
-        clearOldSensorStatus();
+        powermon_task_init();
         pm_initialized = 1;
     }
     pmLoopCount++;
@@ -252,19 +259,11 @@ void task_powermon_run (void)
     for (int i=0; i<POWERMON_SENSORS; i++)
         pm->sensors[i].rampState = (pm->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
-    int do_read_sensors = 0;
-    if (
+    bool do_read_sensors =
         (pm->pmState == PM_STATE_STANDBY)
-        || (pm->pmState == PM_STATE_WAITINPUT )
+        || (pm->pmState == PM_STATE_WAITINPUT)
         || (pm->pmState == PM_STATE_RAMP)
-        ) {
-        do_read_sensors = 1;
-    } else {
-        if (pm->pmState == PM_STATE_RUN) {
-            do_read_sensors = 1;
-
-        }
-    }
+        || (pm->pmState == PM_STATE_RUN);
     if (do_read_sensors) {
         uint32_t ticks = osKernelSysTick() - sensorReadTick;
         uint32_t interval = (pm->pmState == PM_STATE_RAMP) ? sensor_read_interval_ramp : sensor_read_interval_run;
