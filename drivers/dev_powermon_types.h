@@ -63,12 +63,15 @@ typedef struct {
 
 typedef enum {
     PM_STATE_INIT,
+    PM_STATE_WAITINPUT,
     PM_STATE_STANDBY,
     PM_STATE_RAMP,
     PM_STATE_RUN,
-    PM_STATE_OFF,
     PM_STATE_PWRFAIL,
-    PM_STATE_OVERHEAT
+    PM_STATE_FAILWAIT,
+    PM_STATE_OFF,
+    PM_STATE_OVERHEAT,
+    PM_STATE_ERROR
 } PmState;
 
 typedef struct pm_switches {
@@ -80,6 +83,11 @@ typedef struct pm_switches {
     bool switch_tdc_b;
     bool switch_tdc_c;
 } pm_switches;
+
+typedef struct pm_pgoods {
+   bool fpga_core_pgood;
+   bool ltm_pgood;
+} pm_pgoods;
 
 typedef enum MonState {
     MON_STATE_INIT = 0,
@@ -97,8 +105,7 @@ typedef struct Dev_powermon {
 //    DeviceStatus present;
    pm_sensor sensors[POWERMON_SENSORS];
    bool vmePresent;
-   bool fpga_core_pgood;
-   bool ltm_pgood;
+   pm_pgoods pgood;
    pm_switches sw;
    pm_switches sw_state;
    Dev_pots pots;

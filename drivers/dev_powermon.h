@@ -20,7 +20,6 @@
 
 #include <stdbool.h>
 #include "dev_powermon_types.h"
-#include "dev_pot.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,24 +27,22 @@ extern "C" {
 
 void struct_powermon_sensors_init(Dev_powermon *d);
 void struct_powermon_init(Dev_powermon *d);
-//int readPowerGoodFpga();
-//int readPowerGood1v5();
-int pm_read_liveInsert(Dev_powermon *pm);
+bool pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
-void read_power_switches_state(Dev_powermon *pm);
-bool check_power_switches(const Dev_powermon *pm);
-void update_power_switches(Dev_powermon *pm);
+bool update_power_switches(Dev_powermon *pm, bool state);
 void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
-int pm_sensors_isAllValid(const Dev_powermon *d);
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
+bool pm_sensors_isAllValid(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 bool get_input_power_valid(const Dev_powermon *pm);
+bool get_input_power_normal(const Dev_powermon *pm);
+bool get_input_power_failed(const Dev_powermon *pm);
 bool get_critical_power_valid(const Dev_powermon *pm);
 bool get_fpga_core_power_present(const Dev_powermon *pm);
+bool get_critical_power_failure(const Dev_powermon *pm);
 bool get_all_pgood(const Dev_powermon *pm);
 void update_system_powergood_pin(const Dev_powermon *pm);
 double pm_get_power_w(const Dev_powermon *pm);
