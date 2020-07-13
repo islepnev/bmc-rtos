@@ -20,7 +20,7 @@
 #include "dev_thset_types.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
-#include "adt7301_spi_hal.h"
+#include "bsp_thset.h"
 #include "logbuffer.h"
 
 static const uint32_t thermReadInterval = 300;
