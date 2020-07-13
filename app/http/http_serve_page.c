@@ -59,7 +59,8 @@ static const char *pm_state_html(PmState state)
     case PM_STATE_PWRFAIL: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
     case PM_STATE_FAILWAIT: return "<span class=\"red\">POWER SUPPLY FAILURE</span>";
     case PM_STATE_ERROR:   return "<span class=\"red\">ERROR</span>";
-    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
+    case PM_STATE_OFF: return "SWITCH-OFF";
+    case PM_STATE_OVERHEAT: return "<span class=\"red\">OVERHEAT</span>";
     default: return "?";
     }
 }

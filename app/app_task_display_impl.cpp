@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -22,29 +22,27 @@
 
 #include "app_task_display_impl.h"
 
-#include "dev_common_types.h"
-#include "dev_powermon_types.h"
-
-#include "dev_fpga_types.h"
-#include "dev_thset_types.h"
 #include "ad9545/ad9545_print.h"
-#include "dev_auxpll_print.h"
 #include "ansi_escape_codes.h"
-#include "display.h"
+#include "app_shared_data.h"
 #include "bsp_display.h"
 #include "bsp_powermon.h"
-#include "dev_mcu.h"
-#include "devices_types.h"
-#include "version.h"
-#include "logbuffer.h"
-#include "logentry.h"
 #include "debug_helpers.h"
-#include "dev_powermon_types.h"
+#include "dev_auxpll_print.h"
+#include "dev_common_types.h"
+#include "dev_fpga_types.h"
+#include "dev_mcu.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_powermon.h"
+#include "dev_powermon_types.h"
 #include "dev_thset.h"
+#include "dev_thset_types.h"
+#include "devices_types.h"
+#include "display.h"
+#include "logbuffer.h"
+#include "logentry.h"
+#include "version.h"
 
-#include "app_shared_data.h"
 #include "rtos/freertos_stats.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
@@ -104,10 +102,11 @@ static const char *pmStateStr(PmState state)
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
+    case PM_STATE_OFF:     return ANSI_GRAY   "OFF"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
     case PM_STATE_FAILWAIT: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
     case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case PM_STATE_SWITCHOFF: return "SWITCH-OFF";
+    case PM_STATE_OVERHEAT: return ANSI_RED    "OVERHEAT" ANSI_CLEAR;
     default: return "?";
     }
 }

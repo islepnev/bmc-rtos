@@ -27,15 +27,14 @@ extern "C" {
 
 void struct_powermon_sensors_init(Dev_powermon *d);
 void struct_powermon_init(Dev_powermon *d);
-//int readPowerGoodFpga();
-//int readPowerGood1v5();
-int pm_read_liveInsert(Dev_powermon *pm);
+bool pm_read_liveInsert(Dev_powermon *pm);
 void pm_read_pgood(Dev_powermon *pm);
 bool update_power_switches(Dev_powermon *pm, bool state);
+void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);
 int monReadValues(Dev_powermon *d);
-int pm_sensors_isAllValid(const Dev_powermon *d);
+bool pm_sensors_isAllValid(const Dev_powermon *d);
 uint32_t getMonStateTicks(const Dev_powermon *pm);
 MonState runMon(Dev_powermon *pm);
 bool get_input_power_valid(const Dev_powermon *pm);

@@ -37,10 +37,6 @@ uint32_t detect_pcb_version(void)
     return a1 * 2 + a0;
 }
 
-void pm_sensor_reset_i2c_master(void)
-{
-    i2c_driver_reset(&hi2c_sensors);
-}
 /*
 void fpga_enable_interface(bool enable)
 {

@@ -67,13 +67,12 @@ typedef enum {
     PM_STATE_RUN,
     PM_STATE_PWRFAIL,
     PM_STATE_FAILWAIT,
-    PM_STATE_SWITCHOFF,
+    PM_STATE_OFF,
+    PM_STATE_OVERHEAT,
     PM_STATE_ERROR
 } PmState;
 
 typedef struct pm_switches {
-//    bool operator==(const pm_switches &r) = default;
-
     bool switch_5v;
     bool switch_5v_fmc;
     bool switch_3v3;
@@ -82,6 +81,15 @@ typedef struct pm_switches {
     bool switch_1v0_mgt;
     bool switch_1v2_mgt; // added in TTVXS v1.1
 } pm_switches;
+
+typedef struct pm_pgoods {
+   bool pgood_3v3;
+   bool pgood_2v5;
+   bool pgood_1v0_core;
+   bool pgood_1v0_mgt;
+   bool pgood_1v2_mgt;
+   bool pgood_3v3_fmc;
+} pm_pgoods;
 
 typedef enum MonState {
     MON_STATE_INIT = 0,
@@ -99,12 +107,7 @@ typedef struct Dev_powermon {
 //    DeviceStatus present;
    pm_sensor sensors[POWERMON_SENSORS];
    bool vmePresent;
-   bool pgood_3v3;
-   bool pgood_2v5;
-   bool pgood_1v0_core;
-   bool pgood_1v0_mgt;
-   bool pgood_1v2_mgt;
-   bool pgood_3v3_fmc;
+   pm_pgoods pgood;
    pm_switches sw;
    pm_switches sw_state;
 } Dev_powermon;
