@@ -38,7 +38,6 @@ bool fpgaWriteBmcVersion(void);
 bool fpgaWriteBmcTemperature(const struct Dev_thset *thset);
 bool fpgaWritePllStatus(const struct Dev_ad9545 *pll);
 bool fpgaWriteSystemStatus(const struct Devices *d);
-bool fpgaWriteSensors(const struct Dev_powermon *d);
 
 #ifdef __cplusplus
 }

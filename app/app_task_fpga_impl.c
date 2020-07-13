@@ -28,6 +28,7 @@
 #include "fpga_spi_hal.h"
 #include "dev_powermon.h"
 #include "bsp.h"
+#include "bsp_fpga.h"
 #include "bsp_pin_defs.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
