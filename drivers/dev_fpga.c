@@ -140,7 +140,8 @@ bool fpgaWriteBmcVersion(void)
 bool fpgaWriteBmcTemperature(const Dev_thset *thset)
 {
     for (int i=0; i<4; i++) {
-        if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, thset->th[i].rawTemp))
+        int16_t v = (i<DEV_THERM_COUNT && thset->th[i].valid) ? thset->th[i].rawTemp : 0x8000;
+        if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, v))
             return false;
     }
     return true;
