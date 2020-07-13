@@ -19,14 +19,21 @@
 
 #include <stdint.h>
 
-enum {DEV_THERM_COUNT = 1};
+#include "bsp.h"
 
 typedef struct Dev_adt7301 {
     int valid;
     int16_t rawTemp;
 } Dev_adt7301;
 
+typedef enum {
+    THSET_STATE_0,
+    THSET_STATE_1,
+    THSET_STATE_2,
+} thset_state_t;
+
 typedef struct Dev_thset {
+    thset_state_t state;
     Dev_adt7301 th[DEV_THERM_COUNT];
 } Dev_thset;
 

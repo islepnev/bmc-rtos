@@ -19,18 +19,20 @@
 #define DEV_THSET_H
 
 #include <stdint.h>
+
 #include "dev_common_types.h"
+#include "dev_thset_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_thset;
-
-void struct_thset_init(struct Dev_thset *d);
+void dev_thset_init(Dev_thset *d);
+void dev_thset_run(Dev_thset *d);
+SensorStatus dev_thset_thermStatus(const Dev_thset *d);
 int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
-SensorStatus dev_thset_thermStatus(const struct Dev_thset *d);
-void dev_thset_read(struct Dev_thset *d);
+thset_state_t thermal_shutdown_check(Dev_thset *d);
+void clear_thermal_shutdown(Dev_thset *d);
 
 #ifdef __cplusplus
 }

@@ -33,7 +33,6 @@ typedef enum {
     DISPLAY_NONE,
 } display_mode_t;
 
-//extern Devices dev;
 extern bool system_power_present;
 extern int enable_pll_run;
 extern display_mode_t display_mode;

@@ -46,6 +46,7 @@ extern "C" {
 #define ad9516_spi hspi2
 #endif
 
+#define DEV_THERM_COUNT 1
 
 uint32_t detect_pcb_version(void);
 void pm_sensor_reset_i2c_master(void);
