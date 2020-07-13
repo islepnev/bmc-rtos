@@ -25,8 +25,12 @@
 #endif
 
 #include <stdbool.h>
+#include "stm32f7xx_hal_gpio.h"
 
 void MX_GPIO_Init(void);
+
+void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state);
+bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin);
 
 #ifdef __cplusplus
 }
