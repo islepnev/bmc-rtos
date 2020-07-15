@@ -61,6 +61,17 @@ void read_power_switches_state(pm_switches *sw_state)
     sw_state->switch_5v = sw_state->switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
 }
 
+void write_power_switches(pm_switches *sw)
+{
+    write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, sw->switch_1v0_core);
+    write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  sw->switch_1v0_mgt);
+    write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  sw->switch_1v2_mgt);
+    write_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      sw->switch_2v5);
+    write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw->switch_3v3);
+    write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   sw->switch_5v_fmc);
+    write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw->switch_5v);
+}
+
 static int read_pgood_1v0_core(void)
 {
     return read_gpio_pin(PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin);

@@ -17,24 +17,18 @@
 
 #include "dev_powermon.h"
 
-#include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bsp_powermon.h"
-#include "bus/i2c_driver.h"
 #include "devices_types.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
-#include "display.h"
 #include "logbuffer.h"
 #include "powermon_i2c_driver.h"
 
 #include "cmsis_os.h"
 #include "gpio.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_i2c.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
@@ -165,13 +159,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     pm->sw.switch_3v3 = state;
     pm->sw.switch_5v_fmc = state;
     pm->sw.switch_5v = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
-    write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, pm->sw.switch_1v0_core);
-    write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  pm->sw.switch_1v0_mgt);
-    write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  pm->sw.switch_1v2_mgt);
-    write_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      pm->sw.switch_2v5);
-    write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      pm->sw.switch_3v3);
-    write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   pm->sw.switch_5v_fmc);
-    write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   pm->sw.switch_5v);
+    write_power_switches(&pm->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 //    pm->sw_state
