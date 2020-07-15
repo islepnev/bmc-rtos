@@ -70,7 +70,7 @@ static int test_hal_systick(void)
     return 0;
 }
 
-void test_timers(void)
+static void test_timers(void)
 {
     int ret0 = test_cpu_tick();
     int ret1 = test_hal_systick();
@@ -83,6 +83,8 @@ void app_task_init(void)
 {
     configureTimerForRunTimeStats();
     // test_timers();
+    Devices *dev = getDevices();
+    dev->pcb_ver = detect_pcb_version();
     initialize_serial_console_hardware();
     log_put(LOG_NOTICE, "Initializing");
 //    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");

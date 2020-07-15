@@ -106,7 +106,7 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
-    d->profile[0].Loop_BW = 50u * 1000000; // microHertz
+    d->profile[0].Loop_BW = 500u * 1000000; // microHertz
     d->profile[0].Hitless_FB_Divider = ref_r_divide;
     d->profile[0].Buildout_FB_Divider = 1567; // 2*R*Q/M
     d->profile[0].Buildout_FB_Fraction = 1;

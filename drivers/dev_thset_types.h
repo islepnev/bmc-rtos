@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-enum {DEV_THERM_COUNT = 4};
+#include "bsp.h"
 
 typedef struct Dev_adt7301 {
     int valid;

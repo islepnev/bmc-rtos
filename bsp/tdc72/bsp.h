@@ -42,6 +42,8 @@ extern "C" {
 #define hi2c_eeprom_cfg hi2c2
 #define eeprom_cfg_deviceAddr 0x50
 
+#define DEV_THERM_COUNT 4
+
 typedef enum {
     PCB_4_1 = 0,
     PCB_4_2 = 1
@@ -50,7 +52,9 @@ typedef enum {
 // run-time detected board version (see i2c supply sensors)
 extern board_version_t board_version;
 
+uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count, int pots_count);
+bool fpga_done_pin_present(void);
 
 #ifdef __cplusplus
 }

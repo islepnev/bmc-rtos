@@ -23,32 +23,6 @@
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors.h"
 
-/*
-// TTVXS
-int monIsOn(const pm_switches *sw, SensorIndex index)
-{
-    switch(index) {
-    case SENSOR_VPC_3V3: return 1;
-    case SENSOR_5VPC: return 1;
-    case SENSOR_5V: return 1;
-    case SENSOR_VXS_5V: return 1;
-    case SENSOR_2V5: return sw->switch_2v5;
-    case SENSOR_3V3: return sw->switch_3v3;
-    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0_core;
-    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0_mgt;
-    case SENSOR_FPGA_MGT_1V2: return sw->switch_1v2_mgt; // TTVXS v1.0: sw->switch_2v5;
-    case SENSOR_MCB_4V5: return 1;
-    case SENSOR_FPGA_1V8: return sw->switch_2v5;
-    case SENSOR_VADJ: return sw->switch_2v5;
-    case SENSOR_FMC_5V: return sw->switch_5v_fmc;
-    case SENSOR_FMC_12V: return sw->switch_5v_fmc;
-    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
-    case SENSOR_MCB_3V3: return 1;
-    }
-    return 0;
-}
-*/
-
 int monIsOn(const pm_switches *sw, SensorIndex index)
 {
     switch(index) {

@@ -56,7 +56,7 @@ SensorStatus getPowermonStatus(const Dev_powermon *d)
     const SensorStatus monStatus = getMonStatus(d);
     const PmState pmState = d->pmState;
     SensorStatus pmStatus = (pmState == PM_STATE_RUN || pmState == PM_STATE_OFF) ? SENSOR_NORMAL : SENSOR_WARNING;
-    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_OVERHEAT)
+    if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_OVERHEAT || pmState == PM_STATE_ERROR)
         pmStatus = SENSOR_CRITICAL;
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (pmStatus > systemStatus)

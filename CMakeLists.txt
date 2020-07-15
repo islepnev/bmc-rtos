@@ -22,7 +22,7 @@ set(BOARD "tdc72" CACHE STRING "PCB variant")
 set_property(CACHE BOARD PROPERTY STRINGS cru16 tdc64 tdc72 ttvxs)
 message(STATUS "BOARD=${BOARD}")
 
-PROJECT(${BOARD}_rtos VERSION 1.14 LANGUAGES C CXX)
+PROJECT(${BOARD}_rtos VERSION 1.15 LANGUAGES C CXX)
 set (CMAKE_CXX_STANDARD 11)
 ENABLE_LANGUAGE(ASM)
 
@@ -127,7 +127,7 @@ SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdo
 option(BUILD_DOC "Build documentation" ON)
 
 # check if Doxygen is installed
-find_package(Doxygen)
+find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
 if (DOXYGEN_FOUND)
     # set input and output files
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)

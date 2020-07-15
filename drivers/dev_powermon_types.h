@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -21,65 +21,27 @@
 #include <stdbool.h>
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
-
+#include "dev_pm_sensors_types.h"
+#include "bsp_powermon_types.h"
 #include "dev_pot.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    RAMP_NONE = 0,
-    RAMP_UP   = 1,
-    RAMP_DOWN = 2,
-} RampState;
-
-typedef struct {
-    SensorIndex index;
-    DeviceStatus deviceStatus;
-    SensorStatus sensorStatus;
-    RampState rampState;
-    uint32_t lastStatusUpdatedTick;
-    uint16_t busAddress;
-    bool isOptional;
-    bool hasShunt;
-    double shuntVal;
-    double busNomVoltage;
-    double current_lsb;
-    uint16_t cal;
-    const char *label;
-    // measurements
-    double busVoltage;
-//    double shuntVoltage;
-    double current;
-    double power;
-    // calculated
-    double busVoltageMin;
-    double busVoltageMax;
-    double currentMin;
-    double currentMax;
-    double powerMax;
-} pm_sensor;
 
 typedef enum {
     PM_STATE_INIT,
+    PM_STATE_WAITINPUT,
     PM_STATE_STANDBY,
     PM_STATE_RAMP,
     PM_STATE_RUN,
-    PM_STATE_OFF,
     PM_STATE_PWRFAIL,
-    PM_STATE_OVERHEAT
+    PM_STATE_FAILWAIT,
+    PM_STATE_OFF,
+    PM_STATE_OVERHEAT,
+    PM_STATE_ERROR
 } PmState;
-
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_3v3;
-    bool switch_1v5;
-    bool switch_1v0;
-    bool switch_tdc_a;
-    bool switch_tdc_b;
-    bool switch_tdc_c;
-} pm_switches;
 
 typedef enum MonState {
     MON_STATE_INIT = 0,
@@ -97,8 +59,7 @@ typedef struct Dev_powermon {
 //    DeviceStatus present;
    pm_sensor sensors[POWERMON_SENSORS];
    bool vmePresent;
-   bool fpga_core_pgood;
-   bool ltm_pgood;
+   pm_pgoods pgood;
    pm_switches sw;
    pm_switches sw_state;
    Dev_pots pots;

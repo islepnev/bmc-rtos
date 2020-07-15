@@ -80,6 +80,10 @@
 #define PB_SCL_Pin GPIO_PIN_6
 #define PB_SDA_GPIO_Port GPIOB
 #define PB_SDA_Pin GPIO_PIN_9
+#define PCB_VER_A0_GPIO_Port GPIOE
+#define PCB_VER_A0_Pin GPIO_PIN_4
+#define PCB_VER_A1_GPIO_Port GPIOE
+#define PCB_VER_A1_Pin GPIO_PIN_3
 #define PLL_M0_GPIO_Port GPIOF
 #define PLL_M0_Pin GPIO_PIN_8
 #define PLL_M3_GPIO_Port GPIOB

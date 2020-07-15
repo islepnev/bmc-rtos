@@ -42,8 +42,8 @@ void init_ad9545_setup(ad9545_setup_t *setup)
 {
     init_Pll_OutputDrivers_Setup(&setup->out_drivers);
     init_Pll_OutputDividers_Setup(&setup->out_dividers);
-    init_DPLL_Setup(&setup->dpll0, 0);
-    init_DPLL_Setup(&setup->dpll1, 1);
+    init_DPLL_Setup(&setup->dpll0, DPLL0);
+    init_DPLL_Setup(&setup->dpll1, DPLL1);
     init_Pll_DPLLMode_Setup(&setup->dpll_mode);
     init_PllRefSetup(&setup->ref);
     init_PllSysclkSetup(&setup->sysclk);
@@ -174,27 +174,28 @@ err:
 static HAL_StatusTypeDef pllCalibrateApll_unused(void)
 {
     HAL_StatusTypeDef ret = HAL_ERROR;
+    uint8_t OpControlChannel;
 
     // calibrate APLL 0 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel0 = 0x02; // calibrate
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
+    OpControlChannel = 0x02; // calibrate
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate()))
         goto err;
-    OpControlChannel0 = 0; // clear calibrate bit
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel0)))
+    OpControlChannel = 0; // clear calibrate bit
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2100, OpControlChannel)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate()))
         goto err;
 
     // calibrate APLL 1 (requires IO Update, not autoclearing)
-    uint8_t OpControlChannel1 = 0x02; // calibrate
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
+    OpControlChannel = 0x02; // calibrate
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate()))
         goto err;
-    OpControlChannel1 = 0; // clear calibrate bit
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel1)))
+    OpControlChannel = 0; // clear calibrate bit
+    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2200, OpControlChannel)))
         goto err;
     if (HAL_OK != (ret = pllIoUpdate()))
         goto err;
@@ -401,10 +402,11 @@ static bool pllSetupRef(const PllRefSetup_TypeDef *refSetup)
     if (HAL_OK != (ret = ad9545_write2(AD9545_REG2_0453, refSetup->REFB_Jitter_Tolerance)))
         goto err;
 
-    uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
-    if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
-        goto err;
-
+    {
+        uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
+        if (HAL_OK != (ret = ad9545_write1(AD9545_REG1_2000, OpControlGlobal)))
+            goto err;
+    }
     return true;
 err:
     DEBUG_PRINT_RET(__func__, ret);

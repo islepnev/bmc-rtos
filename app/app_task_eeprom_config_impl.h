@@ -17,6 +17,14 @@
 #ifndef APP_TASK_EEPROM_CONFIG_IMPL_H
 #define APP_TASK_EEPROM_CONFIG_IMPL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void task_eeprom_config_run(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_EEPROM_CONFIG_IMPL_H

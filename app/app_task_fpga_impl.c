@@ -28,6 +28,7 @@
 #include "fpga_spi_hal.h"
 #include "dev_powermon.h"
 #include "bsp.h"
+#include "bsp_fpga.h"
 #include "bsp_pin_defs.h"
 #include "debug_helpers.h"
 #include "logbuffer.h"
@@ -59,8 +60,9 @@ static uint32_t stateTicks(void)
 
 static void struct_fpga_init(Dev_fpga *d)
 {
-    Dev_fpga zz = {0};
+    Dev_fpga zz = {};
     *d = zz;
+    d->present = DEVICE_UNKNOWN;
 }
 
 void fpga_task_init(void)
@@ -73,8 +75,7 @@ static int old_fpga_done = -1;
 void fpga_task_run(void)
 {
     Dev_fpga *d = get_dev_fpga();
-    old_state = state;
-    if (board_version >= PCB_4_2) {
+    if (fpga_done_pin_present()) {
         d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
         d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
     } else {
@@ -99,7 +100,7 @@ void fpga_task_run(void)
             state = FPGA_STATE_LOAD;
             fpga_load_start_tick = osKernelSysTick();
         }
-        d->present = DEVICE_UNKNOWN;
+        struct_fpga_init(d);
         break;
     case FPGA_STATE_LOAD:
         if (!fpga_enable) {
@@ -107,7 +108,7 @@ void fpga_task_run(void)
             break;
         }
         if (fpga_done) {
-            if (board_version >= PCB_4_2) {
+            if (fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
                 log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
@@ -130,19 +131,20 @@ void fpga_task_run(void)
                 && DEVICE_NORMAL == fpga_test()
                 ) {
             state = FPGA_STATE_RUN;
-            if (board_version < PCB_4_2) {
+            if (! fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
                 log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
         }
-
-        uint32_t detect_timeout = DETECT_DELAY_TICKS;
-        if (board_version < PCB_4_2)
-            detect_timeout += LOAD_DELAY_TICKS;
-        if (stateTicks() > detect_timeout) {
-            log_put(LOG_ERR, "FPGA detect timeout");
-            state = FPGA_STATE_ERROR;
+        {
+            uint32_t detect_timeout = DETECT_DELAY_TICKS;
+            if (! fpga_done_pin_present())
+                detect_timeout += LOAD_DELAY_TICKS;
+            if (stateTicks() > detect_timeout) {
+                log_put(LOG_ERR, "FPGA detect timeout");
+                state = FPGA_STATE_ERROR;
+            }
         }
         break;
     case FPGA_STATE_RUN:

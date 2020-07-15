@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2017-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,27 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICES_TYPES_H
-#define DEVICES_TYPES_H
+#ifndef BSP_THSET_H
+#define BSP_THSET_H
 
-#include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_ad9545.h"
-#include "dev_thset_types.h"
-#include "dev_sfpiic_types.h"
-//#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
-#include "dev_leds_types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct Devices {
-    Dev_thset thset;
-    Dev_fpga fpga;
-    Dev_sfpiic sfpiic;
-    Dev_at24c eeprom_vxspb;
-    Dev_at24c eeprom_config;
-    Dev_ad9545 pll;
-    Dev_powermon pm;
-    uint32_t pcb_ver;
-} Devices;
+#include <stdint.h>
+#include "stm32f7xx_hal_def.h"
 
-#endif // DEVICES_TYPES_H
+HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BSP_THSET_H

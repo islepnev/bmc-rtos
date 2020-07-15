@@ -18,7 +18,15 @@
 #ifndef APP_TASK_PLL_IMPL_H
 #define APP_TASK_PLL_IMPL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void pll_task_init(void);
 void pll_task_run(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_PLL_IMPL_H

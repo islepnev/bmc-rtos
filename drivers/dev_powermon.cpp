@@ -1,5 +1,5 @@
 //
-//    Copyright 2019 Ilja Slepnev
+//    Copyright 2019-2020 Ilja Slepnev
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -17,25 +17,25 @@
 
 #include "dev_powermon.h"
 
-#include <stdbool.h>
-
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_i2c.h"
 #include "ansi_escape_codes.h"
-#include "display.h"
-#include "logbuffer.h"
-#include "dev_pm_sensors.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_pot.h"
+#include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bsp_powermon.h"
-#include "cmsis_os.h"
-#include "powermon_i2c_driver.h"
-#include "app_shared_data.h"
 #include "commands.h"
+#include "dev_pm_sensors.h"
+#include "dev_pm_sensors_types.h"
+#include "dev_pot.h"
+#include "display.h"
 #include "error_handler.h"
+#include "logbuffer.h"
+#include "powermon_i2c_driver.h"
+
+#include "cmsis_os.h"
+#include "gpio.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_i2c.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
@@ -55,8 +55,8 @@ void struct_powermon_init(Dev_powermon *d)
     struct_powermon_sensors_init(d);
 //    d->present = DEVICE_UNKNOWN;
     d->vmePresent = 0;
-    d->fpga_core_pgood = 0;
-    d->ltm_pgood = 0;
+    d->pgood.fpga_core_pgood = 0;
+    d->pgood.ltm_pgood = 0;
     d->sw.switch_5v = 1;
     d->sw.switch_3v3 = 1;
     d->sw.switch_1v5 = 1;
@@ -66,22 +66,21 @@ void struct_powermon_init(Dev_powermon *d)
 
 static int readPowerGoodFpga(void)
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin));
+    return read_gpio_pin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin);
 }
 
 static int readPowerGood1v5(void)
 {
-    return (GPIO_PIN_SET == HAL_GPIO_ReadPin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin));
+    return read_gpio_pin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin);
 }
 
 static int readLiveInsertPin(void)
 {
-    GPIO_PinState state;
-    state = HAL_GPIO_ReadPin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
-    return (GPIO_PIN_RESET == state);
+    bool state = read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    return (false == state);
 }
 
-int pm_read_liveInsert(Dev_powermon *pm)
+bool pm_read_liveInsert(Dev_powermon *pm)
 {
     pm->vmePresent = readLiveInsertPin();
     return pm->vmePresent;
@@ -89,27 +88,81 @@ int pm_read_liveInsert(Dev_powermon *pm)
 
 void pm_read_pgood(Dev_powermon *pm)
 {
-    pm->fpga_core_pgood = readPowerGoodFpga();
-    pm->ltm_pgood = readPowerGood1v5();
+    pm->pgood.fpga_core_pgood = readPowerGoodFpga();
+    pm->pgood.ltm_pgood = readPowerGood1v5();
 }
 
 bool get_all_pgood(const Dev_powermon *pm)
 {
-    return pm->fpga_core_pgood && pm->ltm_pgood;
+    return pm->pgood.fpga_core_pgood && pm->pgood.ltm_pgood;
 }
 
-void read_power_switches_state(Dev_powermon *pm)
+bool get_input_power_valid(const Dev_powermon *pm)
 {
-    pm->sw_state.switch_1v0   = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin));
-    pm->sw_state.switch_1v5   = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_1_5V_GPIO_Port, ON_1_5V_Pin));
-    pm->sw_state.switch_3v3   = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_3_3V_GPIO_Port, ON_3_3V_Pin));
-    pm->sw_state.switch_5v    = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_5V_GPIO_Port,   ON_5V_Pin));
-    pm->sw_state.switch_tdc_a = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin));
-    pm->sw_state.switch_tdc_b = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin));
-    pm->sw_state.switch_tdc_c = (GPIO_PIN_SET == HAL_GPIO_ReadPin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin));
+    return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
 }
 
-bool check_power_switches(const Dev_powermon *pm)
+bool get_input_power_normal(const Dev_powermon *pm)
+{
+    return pm_sensor_isNormal(&pm->sensors[SENSOR_VME_5V]);
+}
+
+bool get_input_power_failed(const Dev_powermon *pm)
+{
+    return SENSOR_CRITICAL == pm_sensor_status(&pm->sensors[SENSOR_VME_5V]);
+}
+
+bool get_critical_power_valid(const Dev_powermon *pm)
+{
+    for (int i=0; i < POWERMON_SENSORS; i++) {
+        const pm_sensor *sensor = &pm->sensors[i];
+        if (!sensor->isOptional)
+            if (!pm_sensor_isValid(sensor))
+                return false;
+    }
+    return true;
+}
+
+bool get_critical_power_failure(const Dev_powermon *pm)
+{
+    for (int i=0; i < POWERMON_SENSORS; i++) {
+        const pm_sensor *sensor = &pm->sensors[i];
+        if (!sensor->isOptional)
+            if (pm_sensor_isCritical(sensor))
+                return true;
+    }
+    return false;
+}
+
+void update_system_powergood_pin(const Dev_powermon *pm)
+{
+    system_power_present = get_critical_power_valid(pm);
+    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
+}
+
+bool pm_switches_isEqual(const pm_switches &l, const pm_switches &r)
+{
+    return l.switch_1v0 == r.switch_1v0
+           && l.switch_1v5 == r.switch_1v5
+           && l.switch_3v3 == r.switch_3v3
+           && l.switch_5v == r.switch_5v
+           && l.switch_tdc_a == r.switch_tdc_a
+           && l.switch_tdc_b == r.switch_tdc_b
+           && l.switch_tdc_c == r.switch_tdc_c;
+}
+
+static void read_power_switches_state(Dev_powermon *pm)
+{
+    pm->sw_state.switch_1v0   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
+    pm->sw_state.switch_1v5   = read_gpio_pin(ON_1_5V_GPIO_Port, ON_1_5V_Pin);
+    pm->sw_state.switch_3v3   = read_gpio_pin(ON_3_3V_GPIO_Port, ON_3_3V_Pin);
+    pm->sw_state.switch_5v    = read_gpio_pin(ON_5V_GPIO_Port,   ON_5V_Pin);
+    pm->sw_state.switch_tdc_a = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
+    pm->sw_state.switch_tdc_b = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
+    pm->sw_state.switch_tdc_c = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
+}
+
+static bool check_power_switches(const Dev_powermon *pm)
 {
     bool ret = true;
     if (pm->sw_state.switch_5v != pm->sw.switch_5v) {
@@ -143,21 +196,26 @@ bool check_power_switches(const Dev_powermon *pm)
     return ret;
 }
 
-void update_power_switches(Dev_powermon *pm)
+bool update_power_switches(Dev_powermon *pm, bool state)
 {
     // turn off only when failed
     bool state_primary = (pm->pmState != PM_STATE_PWRFAIL) && (pm->pmState != PM_STATE_OFF) && (pm->pmState != PM_STATE_OVERHEAT);
-    bool state = state_primary;
+//    bool state = state_primary;
+
+    if (state)
+        log_put(LOG_NOTICE, "Switching ON");
+    else
+        log_put(LOG_NOTICE, "Switching OFF");
 
     // primary switches (required for monitors)
     pm->sw.switch_5v  = state_primary; // VME 5V and 3.3V
     pm->sw.switch_3v3 = state_primary;
-    HAL_GPIO_WritePin(ON_5V_GPIO_Port,        ON_5V_Pin,        pm->sw.switch_5v  ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    write_gpio_pin(ON_5V_GPIO_Port,        ON_5V_Pin,        pm->sw.switch_5v);
 
     // secondary switches
     bool turnon_1v5 = !pm->sw.switch_1v5 && state;
     pm->sw.switch_1v5 = state;
-    HAL_GPIO_WritePin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      pm->sw.switch_1v5 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    write_gpio_pin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      pm->sw.switch_1v5);
     if (turnon_1v5)
         osDelay(10);
     pm->sw.switch_1v0 = state;
@@ -166,27 +224,30 @@ void update_power_switches(Dev_powermon *pm)
     pm->sw.switch_tdc_b = true; // state;
     pm->sw.switch_tdc_c = true; // state;
 
-    HAL_GPIO_WritePin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    //    HAL_GPIO_WritePin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    write_gpio_pin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3);
+    //    write_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0);
     //    if (turnon_tdc)
     //        osDelay(50);
-    //    HAL_GPIO_WritePin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    write_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a);
     //    if (turnon_tdc)
     //        osDelay(3);
-    //    HAL_GPIO_WritePin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    write_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b);
     //    if (turnon_tdc)
     //        osDelay(3);
-    //    HAL_GPIO_WritePin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    //    write_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c);
 
     read_power_switches_state(pm);
+    bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
+    check_power_switches(pm);
+    return ok;
 }
 
-int pm_sensors_isAllValid(const Dev_powermon *d)
+bool pm_sensors_isAllValid(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
         if (!pm_sensor_isValid(&d->sensors[i]))
-            return 0;
-    return 1;
+            return false;
+    return true;
 }
 
 void monClearMinMax(Dev_powermon *d)
@@ -205,10 +266,6 @@ void monClearMeasurements(Dev_powermon *d)
 
 int monDetect(Dev_powermon *d)
 {
-//    if (HAL_I2C_STATE_READY != hi2c_sensors->State) {
-//        log_printf(LOG_ERR, "%s: I2C not ready, state %d", __func__, hi2c_sensors->State);
-//        return 0;
-//    }
     int count = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         powermon_i2c_reset_master();
@@ -248,7 +305,7 @@ uint32_t getMonStateTicks(const Dev_powermon *pm)
 
 void pot_command_process(Dev_pots *d, const CommandPots *cmd)
 {
-    if (cmd->arg >= DEV_POT_COUNT)
+    if (!cmd || cmd->arg >= DEV_POT_COUNT)
         return;
     Dev_ad5141 *p = &d->pot[cmd->arg];
     switch (cmd->command_id) {
@@ -353,22 +410,6 @@ MonState runMon(Dev_powermon *pm)
     return pm->monState;
 }
 
-int get_input_power_valid(const Dev_powermon *pm)
-{
-    return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
-}
-
-int get_critical_power_valid(const Dev_powermon *pm)
-{
-    for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
-        if (!sensor->isOptional)
-            if (!pm_sensor_isValid(sensor))
-                return 0;
-    }
-    return 1;
-}
-
 static double get_sensor_power_w(const pm_sensor *d)
 {
     SensorStatus sensor_status = pm_sensor_status(d);
@@ -397,11 +438,11 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-int get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const Dev_powermon *pm)
 {
     SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
     SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
-    int present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
-    int present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
+    bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
+    bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;
 }

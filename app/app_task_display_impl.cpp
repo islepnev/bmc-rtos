@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -21,37 +21,31 @@
 
 #include "app_task_display_impl.h"
 
-#include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
-#include "usart.h"
-#include "task.h"
-
-#include "fpga_spi_hal.h"
-#include "adt7301_spi_hal.h"
-#include "pca9548_i2c_hal.h"
-#include "ina226_i2c_hal.h"
-#include "dev_fpga_types.h"
-#include "dev_eeprom.h"
-#include "dev_powermon.h"
-#include "bsp_powermon.h"
-#include "dev_pm_sensors.h"
 #include "ad9545/ad9545_print.h"
 #include "ansi_escape_codes.h"
-#include "display.h"
+#include "app_shared_data.h"
+#include "bsp_display.h"
+#include "bsp_powermon.h"
+#include "debug_helpers.h"
+#include "dev_eeprom.h"
+#include "dev_common_types.h"
+#include "dev_fpga_types.h"
 #include "dev_mcu.h"
+#include "dev_pm_sensors_types.h"
 #include "dev_pot.h"
+#include "dev_powermon.h"
+#include "dev_powermon_types.h"
 #include "dev_thset.h"
+#include "dev_thset_types.h"
 #include "devices_types.h"
-#include "version.h"
+#include "display.h"
 #include "logbuffer.h"
 #include "logentry.h"
-#include "debug_helpers.h"
-#include "dev_powermon_types.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_thset.h"
+#include "version.h"
 
-#include "app_shared_data.h"
 #include "rtos/freertos_stats.h"
+#include "cmsis_os.h"
+#include "stm32f7xx_hal.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -61,28 +55,17 @@ static const char *pmStateStr(PmState state)
 {
     switch(state) {
     case PM_STATE_INIT:    return "INIT";
+    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
     case PM_STATE_STANDBY: return "STANDBY";
     case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
     case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
     case PM_STATE_OFF:     return ANSI_GRAY   "OFF"     ANSI_CLEAR;
     case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
+    case PM_STATE_FAILWAIT: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
+    case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
     case PM_STATE_OVERHEAT: return ANSI_RED    "OVERHEAT" ANSI_CLEAR;
     default: return "?";
     }
-}
-
-static void print_pm_switches(const pm_switches *sw)
-{
-    printf("Switch 5V %s   3.3V %s   1.5V %s   1.0V %s   TDC-A %s   TDC-B %s   TDC-C %s",
-           sw->switch_5v  ? STR_ON : STR_OFF,
-           sw->switch_3v3 ? STR_ON : STR_OFF,
-           sw->switch_1v5 ? STR_ON : STR_OFF,
-           sw->switch_1v0 ? STR_ON : STR_OFF,
-           sw->switch_tdc_a ? STR_ON : STR_OFF,
-           sw->switch_tdc_b ? STR_ON : STR_OFF,
-           sw->switch_tdc_c ? STR_ON : STR_OFF
-           );
-    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_pm_pots(const Dev_pots *d)
@@ -99,17 +82,6 @@ static void print_pm_pots(const Dev_pots *d)
     } else {
         printf(STR_RESULT_UNKNOWN);
     }
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
-
-static void pm_pgood_print(const Dev_powermon *pm)
-{
-//    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
-//    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("Power good: 1.5V: %3s, 1.0V core %3s",
-           pm->ltm_pgood ? STR_ON : STR_OFF,
-           pm->fpga_core_pgood ? STR_ON : STR_OFF
-    );
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -253,11 +225,6 @@ static void print_header(void)
                ANSI_BGR_BLUE);
     }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-//    if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
-//           HAL_GetDEVID(), HAL_GetREVID(),
-//           HAL_GetHalVersion(),
-//           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
-//           );
 }
 
 static void print_powermon(const Dev_powermon *pm)
@@ -425,6 +392,17 @@ static void display_tasks(void)
 {
     print_clearbox(DISPLAY_TASKS_Y, uxTaskGetNumberOfTasks());
     print_goto(DISPLAY_TASKS_Y, 1);
+    printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u", tskKERNEL_VERSION_NUMBER,
+           __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
+           osCMSIS >> 16, osCMSIS & 0xFFFF
+           );
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX",
+           HAL_GetDEVID(), HAL_GetREVID(),
+           HAL_GetHalVersion(),
+           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+           );
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     char *buf = statsBuffer;
     strcpy(buf, "Task");
     buf += strlen(buf);

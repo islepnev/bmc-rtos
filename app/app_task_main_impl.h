@@ -17,7 +17,15 @@
 #ifndef APP_TASK_MAIN_IMPL_H
 #define APP_TASK_MAIN_IMPL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void task_main_init(void);
 void task_main_run(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_MAIN_IMPL_H
