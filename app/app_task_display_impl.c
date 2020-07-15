@@ -292,11 +292,6 @@ static void print_header(void)
                ANSI_BGR_BLUE);
     }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-//    if (0) printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX\n",
-//           HAL_GetDEVID(), HAL_GetREVID(),
-//           HAL_GetHalVersion(),
-//           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
-//           );
 }
 
 static void print_powermon(const Dev_powermon *pm)
@@ -488,7 +483,17 @@ static void display_tasks(void)
 {
     print_clearbox(DISPLAY_TASKS_Y, uxTaskGetNumberOfTasks());
     print_goto(DISPLAY_TASKS_Y, 1);
-    printf("FreeRTOS %s\n", tskKERNEL_VERSION_NUMBER);
+    printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u", tskKERNEL_VERSION_NUMBER,
+           __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
+           osCMSIS >> 16, osCMSIS & 0xFFFF
+           );
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX",
+           HAL_GetDEVID(), HAL_GetREVID(),
+           HAL_GetHalVersion(),
+           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+           );
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
     char *buf = statsBuffer;
     strcpy(buf, "Task");
     buf += strlen(buf);
