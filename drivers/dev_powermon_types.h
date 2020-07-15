@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
+#include "dev_pm_sensors_types.h"
 
 #include "dev_pot.h"
 
@@ -28,38 +29,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    RAMP_NONE = 0,
-    RAMP_UP   = 1,
-    RAMP_DOWN = 2,
-} RampState;
-
-typedef struct {
-    SensorIndex index;
-    DeviceStatus deviceStatus;
-    SensorStatus sensorStatus;
-    RampState rampState;
-    uint32_t lastStatusUpdatedTick;
-    uint16_t busAddress;
-    bool isOptional;
-    bool hasShunt;
-    double shuntVal;
-    double busNomVoltage;
-    double current_lsb;
-    uint16_t cal;
-    const char *label;
-    // measurements
-    double busVoltage;
-//    double shuntVoltage;
-    double current;
-    double power;
-    // calculated
-    double busVoltageMin;
-    double busVoltageMax;
-    double currentMin;
-    double currentMax;
-    double powerMax;
-} pm_sensor;
 
 typedef enum {
     PM_STATE_INIT,

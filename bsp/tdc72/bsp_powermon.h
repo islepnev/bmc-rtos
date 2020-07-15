@@ -22,7 +22,8 @@
 extern "C" {
 #endif
 
-#include "dev_pm_sensors_types.h"
+#include "dev_pm_sensors_config.h"
+#include "dev_powermon_types.h"
 
 struct pm_switches;
 
