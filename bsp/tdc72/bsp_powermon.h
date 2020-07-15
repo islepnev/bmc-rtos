@@ -29,6 +29,7 @@ struct pm_switches;
 
 int monIsOn(const pm_switches *sw, SensorIndex index);
 void read_power_switches_state(pm_switches *sw_state);
+void write_power_switches(pm_switches *sw);
 void pm_read_pgood(pm_pgoods *pgood);
 bool get_all_pgood(const pm_pgoods *pgood);
 bool get_input_power_valid(const pm_sensors_arr sensors);

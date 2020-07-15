@@ -163,32 +163,20 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     // primary switches (required for monitors)
     pm->sw.switch_5v  = state_primary; // VME 5V and 3.3V
     pm->sw.switch_3v3 = state_primary;
-    write_gpio_pin(ON_5V_GPIO_Port,        ON_5V_Pin,        pm->sw.switch_5v);
+    write_power_switches(&pm->sw);
 
     // secondary switches
     bool turnon_1v5 = !pm->sw.switch_1v5 && state;
     pm->sw.switch_1v5 = state;
-    write_gpio_pin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      pm->sw.switch_1v5);
-    if (turnon_1v5)
+    write_power_switches(&pm->sw);
+        if (turnon_1v5)
         osDelay(10);
     pm->sw.switch_1v0 = state;
-    // bool turnon_tdc = !pm->sw.switch_tdc_a && state;
     pm->sw.switch_tdc_a = true; // state;
     pm->sw.switch_tdc_b = true; // state;
     pm->sw.switch_tdc_c = true; // state;
 
-    write_gpio_pin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      pm->sw.switch_3v3);
-    //    write_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, pm->sw.switch_1v0);
-    //    if (turnon_tdc)
-    //        osDelay(50);
-    //    write_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin, pm->sw.switch_tdc_a);
-    //    if (turnon_tdc)
-    //        osDelay(3);
-    //    write_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin, pm->sw.switch_tdc_b);
-    //    if (turnon_tdc)
-    //        osDelay(3);
-    //    write_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c);
-
+    write_power_switches(&pm->sw);
     read_power_switches_state(&pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
