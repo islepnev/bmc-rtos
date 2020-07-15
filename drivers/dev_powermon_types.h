@@ -50,6 +50,8 @@ typedef enum MonState {
     MON_STATE_ERROR = 3
 } MonState;
 
+typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
+
 typedef struct Dev_powermon {
     PmState pmState;
     MonState monState;
@@ -57,7 +59,7 @@ typedef struct Dev_powermon {
     int monErrors;
     int monCycle;
 //    DeviceStatus present;
-   pm_sensor sensors[POWERMON_SENSORS];
+   pm_sensors_arr sensors;
    bool vmePresent;
    pm_pgoods pgood;
    pm_switches sw;

@@ -25,6 +25,7 @@
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors.h"
+#include "bsp_powermon.h"
 #include "dev_powermon.h"
 #include "dev_common_types.h"
 #include "dev_powermon_types.h"
@@ -136,21 +137,21 @@ void task_powermon_run (void)
     }
     pmLoopCount++;
     bool vmePresent = pm_read_liveInsert(pm);
-    pm_read_pgood(pm);
-    const bool input_power_normal = get_input_power_normal(pm);
+    pm_read_pgood(&pm->pgood);
+    const bool input_power_normal = get_input_power_normal(pm->sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)
             log_put(LOG_NOTICE, "Input power normal");
         old_inut_power_normal = input_power_normal;
     }
-    const int input_power_critical = get_input_power_failed(pm);
+    const int input_power_critical = get_input_power_failed(pm->sensors);
     if (input_power_critical != old_inut_power_critical) {
         if (input_power_critical)
             log_put(LOG_WARNING, "Input power critical");
         old_inut_power_critical = input_power_critical;
     }
-    const int power_critical_ok = get_critical_power_valid(pm);
-    const int power_critical_failure = get_critical_power_failure(pm);
+    const int power_critical_ok = get_critical_power_valid(pm->sensors);
+    const int power_critical_failure = get_critical_power_failure(pm->sensors);
 
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
     if (THSET_STATE_2 == get_dev_thset()->state) {
@@ -270,7 +271,7 @@ void task_powermon_run (void)
         runMon(pm);
     }
 
-    update_system_powergood_pin(pm);
+    update_system_powergood_pin(pm->sensors);
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)
             ) {

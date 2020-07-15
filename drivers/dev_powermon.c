@@ -64,16 +64,6 @@ void struct_powermon_init(Dev_powermon *d)
     struct_pots_init(&d->pots);
 }
 
-static int readPowerGoodFpga(void)
-{
-    return read_gpio_pin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin);
-}
-
-static int readPowerGood1v5(void)
-{
-    return read_gpio_pin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin);
-}
-
 static int readLiveInsertPin(void)
 {
     bool state = read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
@@ -86,36 +76,10 @@ bool pm_read_liveInsert(Dev_powermon *pm)
     return pm->vmePresent;
 }
 
-void pm_read_pgood(Dev_powermon *pm)
-{
-    pm->pgood.fpga_core_pgood = readPowerGoodFpga();
-    pm->pgood.ltm_pgood = readPowerGood1v5();
-}
-
-bool get_all_pgood(const Dev_powermon *pm)
-{
-    return pm->pgood.fpga_core_pgood && pm->pgood.ltm_pgood;
-}
-
-bool get_input_power_valid(const Dev_powermon *pm)
-{
-    return pm_sensor_isValid(&pm->sensors[SENSOR_VME_5V]);
-}
-
-bool get_input_power_normal(const Dev_powermon *pm)
-{
-    return pm_sensor_isNormal(&pm->sensors[SENSOR_VME_5V]);
-}
-
-bool get_input_power_failed(const Dev_powermon *pm)
-{
-    return SENSOR_CRITICAL == pm_sensor_status(&pm->sensors[SENSOR_VME_5V]);
-}
-
-bool get_critical_power_valid(const Dev_powermon *pm)
+bool get_critical_power_valid(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &sensors[i];
         if (!sensor->isOptional)
             if (!pm_sensor_isValid(sensor))
                 return false;
@@ -123,10 +87,10 @@ bool get_critical_power_valid(const Dev_powermon *pm)
     return true;
 }
 
-bool get_critical_power_failure(const Dev_powermon *pm)
+bool get_critical_power_failure(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &sensors[i];
         if (!sensor->isOptional)
             if (pm_sensor_isCritical(sensor))
                 return true;
@@ -134,9 +98,9 @@ bool get_critical_power_failure(const Dev_powermon *pm)
     return false;
 }
 
-void update_system_powergood_pin(const Dev_powermon *pm)
+void update_system_powergood_pin(const pm_sensors_arr sensors)
 {
-    system_power_present = get_critical_power_valid(pm);
+    system_power_present = get_critical_power_valid(sensors);
     // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
 }
 
@@ -149,17 +113,6 @@ bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
            && l.switch_tdc_a == r.switch_tdc_a
            && l.switch_tdc_b == r.switch_tdc_b
            && l.switch_tdc_c == r.switch_tdc_c;
-}
-
-static void read_power_switches_state(Dev_powermon *pm)
-{
-    pm->sw_state.switch_1v0   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
-    pm->sw_state.switch_1v5   = read_gpio_pin(ON_1_5V_GPIO_Port, ON_1_5V_Pin);
-    pm->sw_state.switch_3v3   = read_gpio_pin(ON_3_3V_GPIO_Port, ON_3_3V_Pin);
-    pm->sw_state.switch_5v    = read_gpio_pin(ON_5V_GPIO_Port,   ON_5V_Pin);
-    pm->sw_state.switch_tdc_a = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
-    pm->sw_state.switch_tdc_b = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
-    pm->sw_state.switch_tdc_c = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
 }
 
 static bool check_power_switches(const Dev_powermon *pm)
@@ -236,7 +189,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     //        osDelay(3);
     //    write_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin, pm->sw.switch_tdc_c);
 
-    read_power_switches_state(pm);
+    read_power_switches_state(&pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
     return ok;
@@ -438,10 +391,10 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-bool get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const pm_sensors_arr sensors)
 {
-    SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
-    SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
+    SensorStatus status_1v0 = pm_sensor_status(&sensors[SENSOR_FPGA_CORE_1V0]);
+    SensorStatus status_1v8 = pm_sensor_status(&sensors[SENSOR_FPGA_1V8]);
     bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
     bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;

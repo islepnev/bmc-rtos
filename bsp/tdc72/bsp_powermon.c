@@ -22,6 +22,10 @@
 #include "dev_powermon_types.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors.h"
+#include "bsp_pin_defs.h"
+
+#include "gpio.h"
+#include "stm32f7xx_hal_gpio.h"
 
 int monIsOn(const pm_switches *sw, SensorIndex index)
 {
@@ -43,4 +47,51 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     case SENSOR_CLOCK_2V5: return sw->switch_3v3;
     }
     return 0;
+}
+
+void read_power_switches_state(pm_switches *sw)
+{
+    sw->switch_1v0   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
+    sw->switch_1v5   = read_gpio_pin(ON_1_5V_GPIO_Port, ON_1_5V_Pin);
+    sw->switch_3v3   = read_gpio_pin(ON_3_3V_GPIO_Port, ON_3_3V_Pin);
+    sw->switch_5v    = read_gpio_pin(ON_5V_GPIO_Port,   ON_5V_Pin);
+    sw->switch_tdc_a = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
+    sw->switch_tdc_b = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
+    sw->switch_tdc_c = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
+}
+
+static bool readPowerGoodFpga(void)
+{
+    return read_gpio_pin(FPGA_CORE_PGOOD_GPIO_Port, FPGA_CORE_PGOOD_Pin);
+}
+
+static bool readPowerGood1v5(void)
+{
+    return read_gpio_pin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin);
+}
+
+void pm_read_pgood(pm_pgoods *pgood)
+{
+    pgood->fpga_core_pgood = readPowerGoodFpga();
+    pgood->ltm_pgood = readPowerGood1v5();
+}
+
+bool get_all_pgood(const pm_pgoods *pgoods)
+{
+    return pgoods->fpga_core_pgood && pgoods->ltm_pgood;
+}
+
+bool get_input_power_valid(const pm_sensors_arr sensors)
+{
+    return pm_sensor_isValid(&sensors[SENSOR_VME_5V]);
+}
+
+bool get_input_power_normal(const pm_sensors_arr sensors)
+{
+    return pm_sensor_isNormal(&sensors[SENSOR_VME_5V]);
+}
+
+bool get_input_power_failed(const pm_sensors_arr sensors)
+{
+    return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VME_5V]);
 }
