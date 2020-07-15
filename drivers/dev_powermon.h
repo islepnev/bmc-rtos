@@ -40,8 +40,6 @@ bool get_critical_power_valid(const pm_sensors_arr sensors);
 bool get_fpga_core_power_present(const pm_sensors_arr sensors);
 bool get_critical_power_failure(const pm_sensors_arr sensors);
 void update_system_powergood_pin(const pm_sensors_arr sensors);
-double pm_get_power_w(const Dev_powermon *pm);
-double pm_get_power_max_w(const Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

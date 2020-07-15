@@ -14,34 +14,16 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef BSP_POWERMON_TYPES_H
-#define BSP_POWERMON_TYPES_H
 
-#include <stdbool.h>
+#include "bsp_powermon_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_3v3;
-    bool switch_1v5;
-    bool switch_1v0;
-    bool switch_tdc_a;
-    bool switch_tdc_b;
-    bool switch_tdc_c;
-} pm_switches;
-
-typedef struct pm_pgoods {
-   bool fpga_core_pgood;
-   bool ltm_pgood;
-} pm_pgoods;
-
-bool pm_switches_isEqual(const pm_switches l, const pm_switches r);
-
-#ifdef __cplusplus
+bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
+{
+    return l.switch_1v0 == r.switch_1v0
+           && l.switch_1v5 == r.switch_1v5
+           && l.switch_3v3 == r.switch_3v3
+           && l.switch_5v == r.switch_5v
+           && l.switch_tdc_a == r.switch_tdc_a
+           && l.switch_tdc_b == r.switch_tdc_b
+           && l.switch_tdc_c == r.switch_tdc_c;
 }
-#endif
-
-#endif // BSP_POWERMON_TYPES_H

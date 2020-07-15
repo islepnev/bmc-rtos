@@ -49,6 +49,23 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     return 0;
 }
 
+bool readLiveInsertPin(void)
+{
+    bool state = read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    return (false == state);
+}
+
+void init_power_switches(pm_switches *sw)
+{
+    sw->switch_5v = 1;
+    sw->switch_3v3 = 1;
+    sw->switch_1v5 = 1;
+    sw->switch_1v0 = 1;
+    sw->switch_tdc_a = 1;
+    sw->switch_tdc_b = 1;
+    sw->switch_tdc_c = 1;
+}
+
 void read_power_switches_state(pm_switches *sw_state)
 {
     sw_state->switch_1v0   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
@@ -69,6 +86,12 @@ void write_power_switches(pm_switches *sw)
     write_gpio_pin(ON_TDC_A_GPIO_Port,     ON_TDC_A_Pin,     sw->switch_tdc_a);
     write_gpio_pin(ON_TDC_B_GPIO_Port,     ON_TDC_B_Pin,     sw->switch_tdc_b);
     write_gpio_pin(ON_TDC_C_GPIO_Port,     ON_TDC_C_Pin,     sw->switch_tdc_c);
+}
+
+void init_pgood(pm_pgoods *pgood)
+{
+    pgood->fpga_core_pgood = 0;
+    pgood->ltm_pgood = 0;
 }
 
 static bool readPowerGoodFpga(void)
@@ -106,3 +129,22 @@ bool get_input_power_failed(const pm_sensors_arr sensors)
 {
     return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VME_5V]);
 }
+
+double pm_get_power_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_5V]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_3V3]);
+    return mw;
+}
+
+double pm_get_power_max_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += pm->sensors[SENSOR_5VPC].powerMax;
+    mw += pm->sensors[SENSOR_VME_5V].powerMax;
+    mw += pm->sensors[SENSOR_VME_3V3].powerMax;
+    return mw;
+}
+

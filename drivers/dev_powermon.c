@@ -17,7 +17,6 @@
 
 #include "dev_powermon.h"
 
-#include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
@@ -26,16 +25,12 @@
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_pot.h"
-#include "display.h"
 #include "error_handler.h"
 #include "logbuffer.h"
 #include "powermon_i2c_driver.h"
 
 #include "cmsis_os.h"
 #include "gpio.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_i2c.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
@@ -55,19 +50,9 @@ void struct_powermon_init(Dev_powermon *d)
     struct_powermon_sensors_init(d);
 //    d->present = DEVICE_UNKNOWN;
     d->vmePresent = 0;
-    d->pgood.fpga_core_pgood = 0;
-    d->pgood.ltm_pgood = 0;
-    d->sw.switch_5v = 1;
-    d->sw.switch_3v3 = 1;
-    d->sw.switch_1v5 = 1;
-    d->sw.switch_1v0 = 1;
+    init_pgood(&d->pgood);
+    init_power_switches(&d->sw);
     struct_pots_init(&d->pots);
-}
-
-static int readLiveInsertPin(void)
-{
-    bool state = read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
-    return (false == state);
 }
 
 bool pm_read_liveInsert(Dev_powermon *pm)
@@ -102,17 +87,6 @@ void update_system_powergood_pin(const pm_sensors_arr sensors)
 {
     system_power_present = get_critical_power_valid(sensors);
     // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
-}
-
-bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
-{
-    return l.switch_1v0 == r.switch_1v0
-           && l.switch_1v5 == r.switch_1v5
-           && l.switch_3v3 == r.switch_3v3
-           && l.switch_5v == r.switch_5v
-           && l.switch_tdc_a == r.switch_tdc_a
-           && l.switch_tdc_b == r.switch_tdc_b
-           && l.switch_tdc_c == r.switch_tdc_c;
 }
 
 static bool check_power_switches(const Dev_powermon *pm)
@@ -177,6 +151,8 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     pm->sw.switch_tdc_c = true; // state;
 
     write_power_switches(&pm->sw);
+    if (state)
+        osDelay(1); // allow 20 us for charge with pullups
     read_power_switches_state(&pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
@@ -349,34 +325,6 @@ MonState runMon(Dev_powermon *pm)
         pm_setStateStartTick(pm);
     }
     return pm->monState;
-}
-
-static double get_sensor_power_w(const pm_sensor *d)
-{
-    SensorStatus sensor_status = pm_sensor_status(d);
-    int sensor_present = ((sensor_status == SENSOR_NORMAL) || (sensor_status == SENSOR_WARNING));
-    if (sensor_present)
-        return d->busVoltage * d->current;
-    else
-        return 0;
-}
-
-double pm_get_power_w(const Dev_powermon *pm)
-{
-    double mw = 0;
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_5V]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_3V3]);
-    return mw;
-}
-
-double pm_get_power_max_w(const Dev_powermon *pm)
-{
-    double mw = 0;
-    mw += pm->sensors[SENSOR_5VPC].powerMax;
-    mw += pm->sensors[SENSOR_VME_5V].powerMax;
-    mw += pm->sensors[SENSOR_VME_3V3].powerMax;
-    return mw;
 }
 
 bool get_fpga_core_power_present(const pm_sensors_arr sensors)
