@@ -22,7 +22,7 @@
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_types.h"
-
+#include "bsp_powermon_types.h"
 #include "dev_pot.h"
 
 #ifdef __cplusplus
@@ -42,21 +42,6 @@ typedef enum {
     PM_STATE_OVERHEAT,
     PM_STATE_ERROR
 } PmState;
-
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_3v3;
-    bool switch_1v5;
-    bool switch_1v0;
-    bool switch_tdc_a;
-    bool switch_tdc_b;
-    bool switch_tdc_c;
-} pm_switches;
-
-typedef struct pm_pgoods {
-   bool fpga_core_pgood;
-   bool ltm_pgood;
-} pm_pgoods;
 
 typedef enum MonState {
     MON_STATE_INIT = 0,

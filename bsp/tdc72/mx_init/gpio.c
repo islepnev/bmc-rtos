@@ -149,6 +149,15 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+  // PCB_VER_A* (not implemented in TDC72 <= 4.2)
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Pin = PCB_VER_A0_Pin;
+  HAL_GPIO_Init(PCB_VER_A0_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pin = PCB_VER_A1_Pin;
+  HAL_GPIO_Init(PCB_VER_A1_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = MON_SMB_ALERT_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

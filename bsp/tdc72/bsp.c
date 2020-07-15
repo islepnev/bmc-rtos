@@ -23,12 +23,20 @@
 
 #include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
+
 #include "i2c.h"
 #include "bus/i2c_driver.h"
 #include "spi.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pot.h"
 #include "logbuffer.h"
+
+uint32_t detect_pcb_version(void)
+{
+    bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
+    bool a1 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin));
+    return a1 * 2 + a0;
+}
 
 board_version_t board_version = PCB_4_1;
 void update_board_version(int powermon_count, int pots_count)

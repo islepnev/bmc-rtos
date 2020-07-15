@@ -52,6 +52,7 @@ typedef enum {
 // run-time detected board version (see i2c supply sensors)
 extern board_version_t board_version;
 
+uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count, int pots_count);
 bool fpga_done_pin_present(void);
 
