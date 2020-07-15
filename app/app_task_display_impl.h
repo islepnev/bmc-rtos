@@ -17,7 +17,15 @@
 #ifndef APP_TASK_DISPLAY_IMPL_H
 #define APP_TASK_DISPLAY_IMPL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void display_task_run(void);
 void display_task_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_DISPLAY_IMPL_H
