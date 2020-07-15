@@ -103,7 +103,7 @@ static int32_t spi_driver_wait_sem(struct __SPI_HandleTypeDef *hspi, uint32_t mi
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);
     if (sem) {
-        osStatus result = osSemaphoreWait(sem, millisec);
+        int32_t result = osSemaphoreWait(sem, millisec);
         if (result != osOK) {
             debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
         }
@@ -119,7 +119,7 @@ void spi_driver_release_sem(struct __SPI_HandleTypeDef *hspi)
 {
     SemaphoreHandle_t sem = sem_by_hspi(hspi);
     if (sem) {
-        osStatus result = osSemaphoreRelease(sem);
+        int32_t result = osSemaphoreRelease(sem);
         if (result != osOK) {
             debug_printf("%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
         }
@@ -164,7 +164,7 @@ HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *tx
                      (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return ret;
     }
-    osStatus status = spi_driver_wait_sem(hspi, millisec);
+    int32_t status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
         debug_printf("%s: SPI%d timeout\n", __func__, hspi_index(hspi));
         return HAL_TIMEOUT;
@@ -183,7 +183,7 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
                      (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return ret;
     }
-    osStatus status = spi_driver_wait_sem(hspi, millisec);
+    int32_t status = spi_driver_wait_sem(hspi, millisec);
     if (status != osOK) {
         debug_printf("%s: SPI%d timeout\n", __func__, hspi_index(hspi));
         return HAL_TIMEOUT;

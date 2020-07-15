@@ -38,7 +38,7 @@ uint32_t freertos_get_cpu_load_percent(void)
     if (idleTaskHandle == NULL)
         return 0;
     uxArraySize = uxTaskGetNumberOfTasks();
-    pxTaskStatusArray = pvPortMalloc(uxArraySize * sizeof( TaskStatus_t ));
+    pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof( TaskStatus_t ));
 
     if (pxTaskStatusArray == NULL)
         return 0;

@@ -60,7 +60,7 @@ static uint32_t stateTicks(void)
 
 static void struct_fpga_init(Dev_fpga *d)
 {
-    Dev_fpga zz = {0};
+    Dev_fpga zz = {};
     *d = zz;
     d->present = DEVICE_UNKNOWN;
 }
@@ -137,13 +137,14 @@ void fpga_task_run(void)
                 log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
         }
-
-        uint32_t detect_timeout = DETECT_DELAY_TICKS;
-        if (! fpga_done_pin_present())
-            detect_timeout += LOAD_DELAY_TICKS;
-        if (stateTicks() > detect_timeout) {
-            log_put(LOG_ERR, "FPGA detect timeout");
-            state = FPGA_STATE_ERROR;
+        {
+            uint32_t detect_timeout = DETECT_DELAY_TICKS;
+            if (! fpga_done_pin_present())
+                detect_timeout += LOAD_DELAY_TICKS;
+            if (stateTicks() > detect_timeout) {
+                log_put(LOG_ERR, "FPGA detect timeout");
+                state = FPGA_STATE_ERROR;
+            }
         }
         break;
     case FPGA_STATE_RUN:
