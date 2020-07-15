@@ -38,6 +38,9 @@
 #include "bsp_pin_defs.h"
 #include "rtos/app_tasks.h"
 #include "rtos/app_task_init.h"
+#include "bus/i2c_driver.h"
+#include "bus/spi_driver.h"
+#include "led_gpio_hal.h"
 
 /* USER CODE END Includes */
 
@@ -98,35 +101,42 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-//  MX_FMC_Init();
+  led_all_set_state(true);
+  //  MX_FMC_Init();
+
+  i2c_driver_init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_I2C4_Init();
-//  MX_QUADSPI_Init();
-//  MX_SDMMC1_SD_Init();
+
+  //  MX_QUADSPI_Init();
+  //  MX_SDMMC1_SD_Init();
+  spi_driver_init();
   MX_SPI2_Init();
   MX_SPI5_Init();
+
   MX_TIM2_Init();
   MX_USART1_UART_Init(); // front-panel usb
   MX_USART2_UART_Init(); // mezzanine usb
-//  MX_USART6_UART_Init();
+  //  MX_USART6_UART_Init();
+
   MX_ADC1_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
-    app_task_init();
-    create_tasks();
+  app_task_init();
+  create_tasks();
+  led_all_set_state(false);
 
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-//  MX_FREERTOS_Init();
+  // MX_FREERTOS_Init();
 
   /* Start scheduler */
   osKernelStart();

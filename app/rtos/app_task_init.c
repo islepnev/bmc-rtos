@@ -85,9 +85,6 @@ void app_task_init(void)
 {
     Devices *dev = getDevices();
     dev->pcb_ver = detect_pcb_version();
-    led_all_set_state(true);
-    i2c_driver_init();
-    spi_driver_init();
     initialize_serial_console_hardware();
     log_put(LOG_NOTICE, "Initializing");
 //    debug_print(ANSI_CLEARTERM ANSI_GOHOME ANSI_CLEAR ANSI_SHOW_CURSOR "\nInitializing\n");
@@ -96,5 +93,4 @@ void app_task_init(void)
     // required for console I/O
 //    debug_print("Waiting for threads to start\n");
     commands_init();
-    led_all_set_state(false);
 }
