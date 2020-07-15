@@ -22,7 +22,7 @@
 #include "bsp_ad9545.h"
 #include "display.h"
 
-static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, int channel)
+static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, PllChannel_TypeDef channel)
 {
     const DPLL_Status *dpll_status = &status->dpll[channel];
     uint64_t ftw = dpll_status->ftw_history;
@@ -32,7 +32,7 @@ static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, int channel)
     return twdelta/norm;
 }
 
-static ProfileRefSource_TypeDef pll_get_current_ref(const AD9545_Status *status, int channel)
+static ProfileRefSource_TypeDef pll_get_current_ref(const AD9545_Status *status, PllChannel_TypeDef channel)
 {
     //    int active = d->status.dpll[channel].operation.b.active;
     //    if (!active)
@@ -42,7 +42,7 @@ static ProfileRefSource_TypeDef pll_get_current_ref(const AD9545_Status *status,
         return PROFILE_REF_SOURCE_INVALID;
     Pll_DPLL_Setup_TypeDef dpll = {0};
     init_DPLL_Setup(&dpll, channel);
-    return dpll.profile[active_profile].Profile_Ref_Source;
+    return (ProfileRefSource_TypeDef)dpll.profile[active_profile].Profile_Ref_Source;
 }
 
 static void pllPrintRefStatusBits(Ref_Status_REG_Type r)
@@ -224,9 +224,9 @@ void ad9545_brief_status(const AD9545_Status *status)
         pllPrintRefStatusBits(status->ref[REFB]);
         printf("%s\n", ANSI_CLEAR_EOL);
         for (int channel=0; channel<DPLL_COUNT; channel++) {
-            int64_t ppb0 = pll_ftw_rel_ppb(status, channel);
+            int64_t ppb0 = pll_ftw_rel_ppb(status, (PllChannel_TypeDef)channel);
             const char *ref0str = "";
-            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(status, channel);
+            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(status, (PllChannel_TypeDef)channel);
             if (ref0 != PROFILE_REF_SOURCE_INVALID)
                 ref0str = pllProfileRefSourceStr(ref0);
             bool locked = (channel == DPLL1) ? status->sysclk.b.pll1_locked : status->sysclk.b.pll0_locked;

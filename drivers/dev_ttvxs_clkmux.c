@@ -25,7 +25,7 @@
 
 void dev_ttvxs_clkmux_init(Dev_ttvxs_clkmux *d)
 {
-    Dev_ttvxs_clkmux zz = {0};
+    Dev_ttvxs_clkmux zz = {};
     *d = zz;
 }
 
