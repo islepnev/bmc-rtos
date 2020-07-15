@@ -29,7 +29,6 @@
 extern "C" {
 #endif
 
-
 #define hi2c_ad9545 hi2c4
 #define hi2c_sensors hi2c2
 #define hi2c_sfpiic hi2c2

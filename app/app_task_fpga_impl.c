@@ -82,7 +82,7 @@ void fpga_task_run(void)
         d->initb = 1;
         d->done = 1;
     }
-   int fpga_core_power_present = get_fpga_core_power_present(get_dev_powermon_const());
+   int fpga_core_power_present = get_fpga_core_power_present(&get_dev_powermon_const()->sensors);
     int fpga_power_present = enable_power && fpga_core_power_present;
     int fpga_enable = fpga_power_present && d->initb;
 //    int fpga_loading = fpga_power_present && d->initb && !d->done;

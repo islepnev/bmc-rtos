@@ -22,6 +22,10 @@
 #include "dev_powermon_types.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors.h"
+#include "bsp_pin_defs.h"
+
+#include "gpio.h"
+#include "stm32f7xx_hal_gpio.h"
 
 int monIsOn(const pm_switches *sw, SensorIndex index)
 {
@@ -44,4 +48,80 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     case SENSOR_MCB_3V3: return 1;
     }
     return 0;
+}
+
+void read_power_switches_state(pm_switches *sw_state)
+{
+    sw_state->switch_1v0_core = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
+    sw_state->switch_1v0_mgt = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
+    sw_state->switch_1v2_mgt = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
+    sw_state->switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
+    sw_state->switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
+    sw_state->switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
+    sw_state->switch_5v = sw_state->switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+}
+
+static int read_pgood_1v0_core(void)
+{
+    return read_gpio_pin(PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin);
+}
+
+static int read_pgood_1v0_mgt(void)
+{
+    return read_gpio_pin(PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin);
+}
+
+static int read_pgood_1v2_mgt(void)
+{
+    return read_gpio_pin(PGOOD_1V2_MGT_GPIO_Port, PGOOD_1V2_MGT_Pin);
+}
+
+static int read_pgood_2v5(void)
+{
+    return read_gpio_pin(PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin);
+}
+
+static int read_pgood_3v3(void)
+{
+    return read_gpio_pin(PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin);
+}
+
+static int read_pgood_3v3_fmc(void)
+{
+    return read_gpio_pin(PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin);
+}
+
+void pm_read_pgood(pm_pgoods *pgood)
+{
+    pgood->pgood_1v0_core = read_pgood_1v0_core();
+    pgood->pgood_1v0_mgt  = read_pgood_1v0_mgt();
+    pgood->pgood_1v2_mgt  = read_pgood_1v2_mgt();
+    pgood->pgood_2v5      = read_pgood_2v5();
+    pgood->pgood_3v3      = read_pgood_3v3();
+    pgood->pgood_3v3_fmc  = read_pgood_3v3_fmc();
+}
+
+bool get_all_pgood(const pm_pgoods *pgood)
+{
+    return pgood->pgood_1v0_core
+           && pgood->pgood_1v0_mgt
+           && pgood->pgood_1v2_mgt
+           && pgood->pgood_2v5
+           && pgood->pgood_3v3
+           && pgood->pgood_3v3_fmc;
+}
+
+bool get_input_power_valid(const pm_sensors_arr sensors)
+{
+    return pm_sensor_isValid(&sensors[SENSOR_VXS_5V]);
+}
+
+bool get_input_power_normal(const pm_sensors_arr sensors)
+{
+    return pm_sensor_isNormal(&sensors[SENSOR_VXS_5V]);
+}
+
+bool get_input_power_failed(const pm_sensors_arr sensors)
+{
+    return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VXS_5V]);
 }

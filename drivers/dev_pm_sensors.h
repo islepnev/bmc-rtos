@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-#include "dev_powermon_types.h"
+#include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors_config.h"
 
 void struct_pm_sensor_clear_minmax(pm_sensor *d);

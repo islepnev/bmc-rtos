@@ -69,36 +69,6 @@ void struct_powermon_init(Dev_powermon *d)
     d->sw.switch_5v_fmc = 1;
 }
 
-static int read_pgood_1v0_core(void)
-{
-    return read_gpio_pin(PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin);
-}
-
-static int read_pgood_1v0_mgt(void)
-{
-    return read_gpio_pin(PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin);
-}
-
-static int read_pgood_1v2_mgt(void)
-{
-    return read_gpio_pin(PGOOD_1V2_MGT_GPIO_Port, PGOOD_1V2_MGT_Pin);
-}
-
-static int read_pgood_2v5(void)
-{
-    return read_gpio_pin(PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin);
-}
-
-static int read_pgood_3v3(void)
-{
-    return read_gpio_pin(PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin);
-}
-
-static int read_pgood_3v3_fmc(void)
-{
-    return read_gpio_pin(PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin);
-}
-
 static int readLiveInsertPin(void)
 {
     bool state = true; // TODO: read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
@@ -111,45 +81,10 @@ bool pm_read_liveInsert(Dev_powermon *pm)
     return pm->vmePresent;
 }
 
-void pm_read_pgood(Dev_powermon *pm)
-{
-    pm->pgood.pgood_1v0_core = read_pgood_1v0_core();
-    pm->pgood.pgood_1v0_mgt  = read_pgood_1v0_mgt();
-    pm->pgood.pgood_1v2_mgt  = read_pgood_1v2_mgt();
-    pm->pgood.pgood_2v5      = read_pgood_2v5();
-    pm->pgood.pgood_3v3      = read_pgood_3v3();
-    pm->pgood.pgood_3v3_fmc  = read_pgood_3v3_fmc();
-}
-
-bool get_all_pgood(const Dev_powermon *pm)
-{
-    return pm->pgood.pgood_1v0_core
-            && pm->pgood.pgood_1v0_mgt
-            && pm->pgood.pgood_1v2_mgt
-            && pm->pgood.pgood_2v5
-            && pm->pgood.pgood_3v3
-            && pm->pgood.pgood_3v3_fmc;
-}
-
-bool get_input_power_valid(const Dev_powermon *pm)
-{
-    return pm_sensor_isValid(&pm->sensors[SENSOR_VXS_5V]);
-}
-
-bool get_input_power_normal(const Dev_powermon *pm)
-{
-    return pm_sensor_isNormal(&pm->sensors[SENSOR_VXS_5V]);
-}
-
-bool get_input_power_failed(const Dev_powermon *pm)
-{
-    return SENSOR_CRITICAL == pm_sensor_status(&pm->sensors[SENSOR_VXS_5V]);
-}
-
-bool get_critical_power_valid(const Dev_powermon *pm)
+bool get_critical_power_valid(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &sensors[i];
         if (!sensor->isOptional)
             if (!pm_sensor_isValid(sensor))
                 return false;
@@ -157,10 +92,10 @@ bool get_critical_power_valid(const Dev_powermon *pm)
     return true;
 }
 
-bool get_critical_power_failure(const Dev_powermon *pm)
+bool get_critical_power_failure(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &sensors[i];
         if (!sensor->isOptional)
             if (pm_sensor_isCritical(sensor))
                 return true;
@@ -170,7 +105,7 @@ bool get_critical_power_failure(const Dev_powermon *pm)
 
 void update_system_powergood_pin(const Dev_powermon *pm)
 {
-    system_power_present = get_critical_power_valid(pm);
+    system_power_present = get_critical_power_valid(pm->sensors);
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
 }
 
@@ -183,17 +118,6 @@ bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
            && l.switch_1v0_core == r.switch_1v0_core
            && l.switch_1v0_mgt == r.switch_1v0_mgt
            && l.switch_1v2_mgt == r.switch_1v2_mgt;
-}
-
-static void read_power_switches_state(Dev_powermon *pm)
-{
-    pm->sw_state.switch_1v0_core = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
-    pm->sw_state.switch_1v0_mgt = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
-    pm->sw_state.switch_1v2_mgt = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
-    pm->sw_state.switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
-    pm->sw_state.switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
-    pm->sw_state.switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    pm->sw_state.switch_5v = pm->sw.switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
 }
 
 static bool check_power_switches(const Dev_powermon *pm)
@@ -251,7 +175,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 //    pm->sw_state
-    read_power_switches_state(pm);
+    read_power_switches_state(&pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
     return ok;
@@ -393,10 +317,10 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
-bool get_fpga_core_power_present(const Dev_powermon *pm)
+bool get_fpga_core_power_present(const pm_sensors_arr sensors)
 {
-    SensorStatus status_1v0 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_CORE_1V0]);
-    SensorStatus status_1v8 = pm_sensor_status(&pm->sensors[SENSOR_FPGA_1V8]);
+    SensorStatus status_1v0 = pm_sensor_status(&sensors[SENSOR_FPGA_CORE_1V0]);
+    SensorStatus status_1v8 = pm_sensor_status(&sensors[SENSOR_FPGA_1V8]);
     bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
     bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;
