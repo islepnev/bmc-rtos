@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,21 +14,36 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef BSP_POWERMON_TYPES_H
+#define BSP_POWERMON_TYPES_H
 
-#ifndef BSP_DISPLAY_H
-#define BSP_DISPLAY_H
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "bsp_powermon_types.h"
+typedef struct pm_switches {
+    bool switch_5v;
+    bool switch_5v_fmc;
+    bool switch_3v3;
+    bool switch_2v5;
+    bool switch_1v0_core;
+    bool switch_1v0_mgt;
+    bool switch_1v2_mgt; // added in TTVXS v1.1
+} pm_switches;
 
-void print_pm_switches(const pm_switches sw);
-void pm_pgood_print(const pm_pgoods pgood);
+typedef struct pm_pgoods {
+   bool pgood_3v3;
+   bool pgood_2v5;
+   bool pgood_1v0_core;
+   bool pgood_1v0_mgt;
+   bool pgood_1v2_mgt;
+   bool pgood_3v3_fmc;
+} pm_pgoods;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* BSP_DISPLAY_H */
+#endif // BSP_POWERMON_TYPES_H

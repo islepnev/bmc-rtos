@@ -22,6 +22,7 @@
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_types.h"
+#include "bsp_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,25 +41,6 @@ typedef enum {
     PM_STATE_OVERHEAT,
     PM_STATE_ERROR
 } PmState;
-
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_5v_fmc;
-    bool switch_3v3;
-    bool switch_2v5;
-    bool switch_1v0_core;
-    bool switch_1v0_mgt;
-    bool switch_1v2_mgt; // added in TTVXS v1.1
-} pm_switches;
-
-typedef struct pm_pgoods {
-   bool pgood_3v3;
-   bool pgood_2v5;
-   bool pgood_1v0_core;
-   bool pgood_1v0_mgt;
-   bool pgood_1v2_mgt;
-   bool pgood_3v3_fmc;
-} pm_pgoods;
 
 typedef enum MonState {
     MON_STATE_INIT = 0,

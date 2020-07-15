@@ -309,8 +309,8 @@ static void print_powermon(const Dev_powermon *pm)
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
     } else {
-        print_pm_switches(&pm->sw_state);
-        pm_pgood_print(pm);
+        print_pm_switches(pm->sw_state);
+        pm_pgood_print(pm->pgood);
         printf("%s\n", ANSI_CLEAR_EOL);
     }
 }
