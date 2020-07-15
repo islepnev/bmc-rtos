@@ -237,8 +237,8 @@ static void print_powermon(const Dev_powermon *pm)
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
     } else {
-        print_pm_switches(&pm->sw_state);
-        pm_pgood_print(pm);
+        print_pm_switches(pm->sw_state);
+        pm_pgood_print(pm->pgood);
         print_pm_pots(&pm->pots);
         printf("%s\n", ANSI_CLEAR_EOL);
     }
@@ -361,7 +361,7 @@ static void display_pot(const Dev_powermon *d)
         const Dev_ad5141 *p = &d->pots.pot[i];
         const pm_sensor *sensor = &d->sensors[p->sensorIndex];
         const int isOn = monIsOn(&d->sw_state, p->sensorIndex);
-        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel(static_cast<PotIndex>(i)));
+        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);
         else

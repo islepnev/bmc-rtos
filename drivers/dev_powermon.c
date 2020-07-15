@@ -42,7 +42,7 @@ static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 void struct_powermon_sensors_init(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], static_cast<SensorIndex>(i));
+        struct_pm_sensor_init(&d->sensors[i], (SensorIndex)(i));
     }
 }
 
@@ -140,7 +140,7 @@ void update_system_powergood_pin(const Dev_powermon *pm)
     // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
 }
 
-bool pm_switches_isEqual(const pm_switches &l, const pm_switches &r)
+bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
 {
     return l.switch_1v0 == r.switch_1v0
            && l.switch_1v5 == r.switch_1v5

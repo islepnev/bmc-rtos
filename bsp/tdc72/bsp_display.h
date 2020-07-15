@@ -18,10 +18,17 @@
 #ifndef BSP_DISPLAY_H
 #define BSP_DISPLAY_H
 
-struct pm_switches;
-struct Dev_powermon;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void print_pm_switches(const pm_switches *sw);
-void pm_pgood_print(const Dev_powermon *pm);
+#include "bsp_powermon_types.h"
+
+void print_pm_switches(const pm_switches sw);
+void pm_pgood_print(const pm_pgoods pgood);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BSP_DISPLAY_H */
