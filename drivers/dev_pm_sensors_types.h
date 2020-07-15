@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -18,13 +18,47 @@
 #define DEV_PM_SENSORS_TYPES_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "dev_common_types.h"
-#include "dev_powermon_types.h"
+#include "dev_pm_sensors_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum {
+    RAMP_NONE = 0,
+    RAMP_UP   = 1,
+    RAMP_DOWN = 2,
+    } RampState;
+
+typedef struct {
+    SensorIndex index;
+    DeviceStatus deviceStatus;
+    SensorStatus sensorStatus;
+    RampState rampState;
+    uint32_t lastStatusUpdatedTick;
+    uint16_t busAddress;
+    bool isOptional;
+    bool hasShunt;
+    double shuntVal;
+    double busNomVoltage;
+    double current_lsb;
+    uint16_t cal;
+    const char *label;
+    // measurements
+    double busVoltage;
+    //    double shuntVoltage;
+    double current;
+    double power;
+    // calculated
+    double busVoltageMin;
+    double busVoltageMax;
+    double currentMin;
+    double currentMax;
+    double powerMax;
+} pm_sensor;
 
 bool pm_sensor_isValid(const pm_sensor *d);
 bool pm_sensor_isNormal(const pm_sensor *d);
