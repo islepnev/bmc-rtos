@@ -50,6 +50,23 @@ int monIsOn(const pm_switches *sw, SensorIndex index)
     return 0;
 }
 
+bool readLiveInsertPin(void)
+{
+    bool state = true; // TODO: read_gpio_pin(VME_DET_B_GPIO_Port, VME_DET_B_Pin);
+    return (false == state);
+}
+
+void init_power_switches(pm_switches *sw)
+{
+    sw->switch_5v = 1;
+    sw->switch_3v3 = 1;
+    sw->switch_2v5 = 1;
+    sw->switch_1v0_core = 1;
+    sw->switch_1v0_mgt = 1;
+    sw->switch_1v2_mgt = 1;
+    sw->switch_5v_fmc = 1;
+}
+
 void read_power_switches_state(pm_switches *sw_state)
 {
     sw_state->switch_1v0_core = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
@@ -70,6 +87,16 @@ void write_power_switches(pm_switches *sw)
     write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw->switch_3v3);
     write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   sw->switch_5v_fmc);
     write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw->switch_5v);
+}
+
+void init_pgood(pm_pgoods *pgood)
+{
+    pgood->pgood_1v0_core = 0;
+    pgood->pgood_1v0_mgt = 0;
+    pgood->pgood_1v2_mgt = 0;
+    pgood->pgood_2v5 = 0;
+    pgood->pgood_3v3 = 0;
+    pgood->pgood_3v3_fmc = 0;
 }
 
 static int read_pgood_1v0_core(void)
@@ -136,3 +163,22 @@ bool get_input_power_failed(const pm_sensors_arr sensors)
 {
     return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VXS_5V]);
 }
+
+double pm_get_power_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_VXS_5V]);
+    mw += get_sensor_power_w(&pm->sensors[SENSOR_MCB_4V5]);
+    return mw;
+}
+
+double pm_get_power_max_w(const Dev_powermon *pm)
+{
+    double mw = 0;
+    mw += pm->sensors[SENSOR_5VPC].powerMax;
+    mw += pm->sensors[SENSOR_VXS_5V].powerMax;
+    mw += pm->sensors[SENSOR_MCB_4V5].powerMax;
+    return mw;
+}
+

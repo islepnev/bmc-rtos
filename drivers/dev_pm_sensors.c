@@ -222,3 +222,13 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
     return d->deviceStatus;
 }
+
+double get_sensor_power_w(const pm_sensor *d)
+{
+    SensorStatus sensor_status = pm_sensor_status(d);
+    int sensor_present = ((sensor_status == SENSOR_NORMAL) || (sensor_status == SENSOR_WARNING));
+    if (sensor_present)
+        return d->busVoltage * d->current;
+    else
+        return 0;
+}

@@ -14,38 +14,16 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef BSP_POWERMON_TYPES_H
-#define BSP_POWERMON_TYPES_H
 
-#include <stdbool.h>
+#include "bsp_powermon_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_5v_fmc;
-    bool switch_3v3;
-    bool switch_2v5;
-    bool switch_1v0_core;
-    bool switch_1v0_mgt;
-    bool switch_1v2_mgt; // added in TTVXS v1.1
-} pm_switches;
-
-typedef struct pm_pgoods {
-   bool pgood_3v3;
-   bool pgood_2v5;
-   bool pgood_1v0_core;
-   bool pgood_1v0_mgt;
-   bool pgood_1v2_mgt;
-   bool pgood_3v3_fmc;
-} pm_pgoods;
-
-bool pm_switches_isEqual(const pm_switches l, const pm_switches r);
-
-#ifdef __cplusplus
+bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
+{
+    return l.switch_5v == r.switch_5v
+           && l.switch_5v_fmc == r.switch_5v_fmc
+           && l.switch_3v3 == r.switch_3v3
+           && l.switch_2v5 == r.switch_2v5
+           && l.switch_1v0_core == r.switch_1v0_core
+           && l.switch_1v0_mgt == r.switch_1v0_mgt
+           && l.switch_1v2_mgt == r.switch_1v2_mgt;
 }
-#endif
-
-#endif // BSP_POWERMON_TYPES_H

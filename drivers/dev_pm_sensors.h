@@ -20,6 +20,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors_config.h"
 
@@ -29,5 +33,10 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index);
 uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d);
 DeviceStatus pm_sensor_detect(pm_sensor *d);
 DeviceStatus pm_sensor_read(pm_sensor *d);
+double get_sensor_power_w(const pm_sensor *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_PM_SENSORS_H
