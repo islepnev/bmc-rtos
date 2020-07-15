@@ -113,14 +113,16 @@ thset_state_t thermal_shutdown_check(Dev_thset *d)
             d->state = THSET_STATE_0;
             break;
         }
-        uint32_t period = osKernelSysTick() - thermal_shutdown_start_tick;
-        if (period >= thermal_shutdown_min_period_ticks) {
-            log_put(LOG_CRIT, "Temperature critical, shutdown");
-            for (int i=0; i < DEV_THERM_COUNT; i++) {
-                int16_t temp = d->th[i].rawTemp;
-                log_printf(LOG_CRIT, "Temperature sensor [%d]: %d", i, temp / 32);
+        {
+            uint32_t period = osKernelSysTick() - thermal_shutdown_start_tick;
+            if (period >= thermal_shutdown_min_period_ticks) {
+                log_put(LOG_CRIT, "Temperature critical, shutdown");
+                for (int i=0; i < DEV_THERM_COUNT; i++) {
+                    int16_t temp = d->th[i].rawTemp;
+                    log_printf(LOG_CRIT, "Temperature sensor [%d]: %d", i, temp / 32);
+                }
+                d->state = THSET_STATE_2;
             }
-            d->state = THSET_STATE_2;
         }
         break;
     case THSET_STATE_2:
