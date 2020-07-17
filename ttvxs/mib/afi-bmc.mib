@@ -1,0 +1,596 @@
+AFI-BMC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, Unsigned32
+         FROM SNMPv2-SMI
+    enterprises
+        FROM SNMPv2-SMI
+    DisplayString, DateAndTime, TEXTUAL-CONVENTION,
+    TruthValue
+        FROM SNMPv2-TC;
+
+jinr MODULE-IDENTITY
+    LAST-UPDATED "201904100000Z"
+    ORGANIZATION "JINR"
+    CONTACT-INFO
+         "email:    islepnev@jinr.ru"
+    DESCRIPTION
+        "The MIB module for baseboard management controller system monitor support"
+    REVISION      "201904100000Z"
+    DESCRIPTION
+         "The initial version of this MIB module"
+    ::= { enterprises 53776 }
+
+Decimals ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-1"
+    STATUS current
+    DESCRIPTION "Represent integer 32-bit number as 1/10th"
+    SYNTAX     Integer32
+
+Hundredths ::= TEXTUAL-CONVENTION
+     DISPLAY-HINT "d-2"
+     STATUS current
+     DESCRIPTION "Represent integer 32-bit number as 1/100th"
+     SYNTAX     Integer32
+
+Thousandths ::= TEXTUAL-CONVENTION
+     DISPLAY-HINT "d-3"
+     STATUS current
+     DESCRIPTION "Represent integer 32-bit number as 1/1000th"
+     SYNTAX     Integer32
+
+DeviceId ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "x"
+    STATUS       current
+    DESCRIPTION
+            "Represents media- or physical-level addresses."
+    SYNTAX       Unsigned32
+
+Integer32Hex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "x"
+    STATUS       current
+    DESCRIPTION
+            "Represents Integer32 as hex."
+    SYNTAX       Integer32
+
+SystemStatusTC ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "The current status of the BMC"
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+
+IpmiSensorTypeTC ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "Sensor type enum"
+    SYNTAX  INTEGER   {
+        discrete(1),
+        temperature(2),
+        supplyVoltage(3),
+        supplyCurrent(4)
+    }
+
+IpmiSensorStatusTC ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+            "Sensor status enum"
+    SYNTAX  INTEGER   {
+       unknown(0),
+       normal(1),
+       warning(2),
+       critical(3)
+    }
+
+afi                 OBJECT IDENTIFIER ::= { jinr 120 }
+
+-- BMC
+
+bmc                 OBJECT IDENTIFIER ::= { afi 1 }
+
+bmcStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the BMC"
+    ::= { bmc 1 }
+
+-- System
+
+system              OBJECT IDENTIFIER ::= { bmc 2 }
+
+systemStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the BMC system"
+    ::= { system 1 }
+
+systemFirmwareName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "shows the firmware name of BMC"
+    ::= { system  2 }
+
+systemFirmwareVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "shows the firmware version of BMC"
+    ::= { system  3 }
+
+systemDateTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Current system date and time of day, UTC"
+    ::= { system  4 }
+
+systemPowerSwitch OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the BMC system"
+    ::= { system 5 }
+
+systemTemperature OBJECT-TYPE
+        SYNTAX  Hundredths
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The current board temperature in degrees Celsius"
+        ::= { system 6 }
+
+systemVXSPowerEnable OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of VXS PEN signal"
+    ::= { system 7 }
+
+systemSDCardPresent OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the SD card"
+    ::= { system 8 }
+
+-- Supply monitor
+
+supply              OBJECT IDENTIFIER ::= { bmc 3 }
+
+supplyStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of system monitor"
+    ::= { supply 1 }
+
+supplySensorCount OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of sensors"
+    ::= { supply 2 }
+
+supplySensors             OBJECT IDENTIFIER ::= { supply 3 }
+
+sensorsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A table of power supply sensors."
+    ::= { supplySensors 1 }
+
+sensorsEntry OBJECT-TYPE
+    SYNTAX  SensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { sensorsIndex }
+    ::= { sensorsTable 1 }
+
+SensorsEntry ::=
+    SEQUENCE {
+        sensorsIndex           Integer32,
+        sensorsBusAddress      Integer32,
+        sensorsName            DisplayString,
+        sensorsOptional        TruthValue,
+        sensorsStatus          INTEGER,
+        sensorsVoltageNom      Thousandths,
+        sensorsVoltage         Thousandths,
+        sensorsHasShunt        TruthValue,
+        sensorsCurrent         Thousandths,
+        sensorsCurrentMax      Thousandths
+    }
+
+sensorsIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "The persistent index of the sensor"
+    ::= { sensorsEntry 1 }
+
+sensorsBusAddress OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "I2C bus address of the sensor"
+    ::= { sensorsEntry 2 }
+
+sensorsName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the sensor"
+    ::= { sensorsEntry 3 }
+
+sensorsOptional OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "True if sensor is optional"
+    ::= { sensorsEntry 4 }
+
+sensorsStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of the sensor"
+    ::= { sensorsEntry 5 }
+
+sensorsVoltageNom OBJECT-TYPE
+    SYNTAX  Thousandths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The nominal voltage in mV"
+    ::= { sensorsEntry 6 }
+
+sensorsVoltage OBJECT-TYPE
+    SYNTAX  Thousandths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The voltage in mV"
+    ::= { sensorsEntry 7 }
+
+sensorsHasShunt OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "True if sensor has current shunt"
+    ::= { sensorsEntry 8 }
+
+sensorsCurrent OBJECT-TYPE
+    SYNTAX  Thousandths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The supply current in mA"
+    ::= { sensorsEntry 9 }
+
+sensorsCurrentMax OBJECT-TYPE
+        SYNTAX  Thousandths
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The maximum supply current in mA"
+        ::= { sensorsEntry 10 }
+
+-- FPGA
+DeviceIdStr ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "1x:"
+    STATUS       current
+    DESCRIPTION
+            "Represents media- or physical-level addresses."
+    SYNTAX       OCTET STRING
+
+fpga                OBJECT IDENTIFIER ::= { bmc 4 }
+
+fpgaStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of system FPGA"
+    ::= { fpga 1 }
+
+fpgaDeviceId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System FPGA device ID code"
+    ::= { fpga 2 }
+
+fpgaDeviceIdStr OBJECT-TYPE
+    SYNTAX      DeviceIdStr
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System FPGA device ID code"
+    ::= { fpga 3 }
+
+fpgaVersion OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System FPGA version number"
+    ::= { fpga 4 }
+
+fpgaRevision OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System FPGA revision number"
+    ::= { fpga 5 }
+
+-- TTVXS subsystem
+
+ttvxs               OBJECT IDENTIFIER ::= { bmc 5 }
+
+pll                 OBJECT IDENTIFIER ::= { ttvxs 1 }
+
+pllStatus OBJECT-TYPE
+    SYNTAX  INTEGER   {
+        unknown(0),
+        normal(1),
+        warning(2),
+        critical(3)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current status of system PLL"
+    ::= { pll 1 }
+
+sfp                 OBJECT IDENTIFIER ::= { ttvxs 2 }
+
+sfpTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SfpEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A table of sfp."
+    ::= { sfp 1 }
+
+sfpEntry OBJECT-TYPE
+    SYNTAX  SfpEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { sfpIndex }
+    ::= { sfpTable 1 }
+
+SfpEntry ::=
+    SEQUENCE {
+        sfpIndex          INTEGER,
+        sfpName        DisplayString
+    }
+
+sfpIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances of
+            the columnar objects in the sfp table"
+    ::= { sfpEntry 1 }
+
+sfpName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the sensor"
+    ::= { sfpEntry 2 }
+
+-- Payload board
+
+ipmiBoard                 OBJECT IDENTIFIER ::= { bmc 6 }
+
+ipmiBoardTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IpmiBoardEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A table of payload boards."
+    ::= { ipmiBoard 1 }
+
+ipmiBoardEntry OBJECT-TYPE
+    SYNTAX  IpmiBoardEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { ipmiBoardIndex }
+    ::= { ipmiBoardTable 1 }
+
+IpmiBoardEntry ::=
+    SEQUENCE {
+        ipmiBoardIndex      Integer32,
+        ipmiBoardSlot       Integer32,
+        ipmiBoardPresent    TruthValue,
+        ipmiBoardStatus     SystemStatusTC,
+        ipmiBoardId         DeviceId,
+        ipmiBoardName       DisplayString
+    }
+
+ipmiBoardIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "A unique value for each board contained by the chassis."
+    ::= { ipmiBoardEntry 1 }
+
+ipmiBoardSlot OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "A chassis slot occupied by the board."
+    ::= { ipmiBoardEntry 2 }
+
+ipmiBoardPresent OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "True if board has been discovered"
+    ::= { ipmiBoardEntry 3 }
+
+ipmiBoardStatus OBJECT-TYPE
+    SYNTAX         SystemStatusTC
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "Current status of the board."
+    ::= { ipmiBoardEntry 4 }
+
+ipmiBoardId OBJECT-TYPE
+    SYNTAX         DeviceId
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "Board's assigned device ID."
+    ::= { ipmiBoardEntry 5 }
+
+ipmiBoardName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the board"
+    ::= { ipmiBoardEntry 6 }
+
+-- IPMI Sensor Table
+
+ipmiSensorTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpmiSensorEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table of sensors for payload
+        ipmiBoard contained by chassis."
+    ::= { ipmiBoard 2 }
+
+ipmiSensorEntry OBJECT-TYPE
+    SYNTAX     IpmiSensorEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "A (conceptual) entry for one partition.  The
+        ipmiBoardIndex in the index represents the entry in the
+        ipmiBoardTable that corresponds to the
+        ipmiSensorEntry.
+
+        As an example of how objects in this table are named,
+        an instance of the ipmiSensorName object might be
+        named ipmiSensorName.3.1"
+    INDEX { ipmiBoardIndex, ipmiSensorIndex }
+    ::= { ipmiSensorTable 1 }
+
+IpmiSensorEntry ::=
+    SEQUENCE {
+        ipmiSensorIndex       Integer32,
+        ipmiSensorName        DisplayString,
+        ipmiSensorType        IpmiSensorTypeTC,
+        ipmiSensorStatus      IpmiSensorStatusTC,
+        ipmiSensorValue       Thousandths
+    }
+
+ipmiSensorIndex OBJECT-TYPE
+    SYNTAX         Integer32 (1..100)
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances of
+            the columnar objects in the sensors table"
+    ::= { ipmiSensorEntry 1 }
+
+ipmiSensorName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The name of the sensor"
+    ::= { ipmiSensorEntry 2 }
+
+ipmiSensorType OBJECT-TYPE
+    SYNTAX  IpmiSensorTypeTC
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Sensor type"
+    ::= { ipmiSensorEntry 3 }
+
+ipmiSensorStatus OBJECT-TYPE
+    SYNTAX  IpmiSensorStatusTC
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Sensor status"
+    ::= { ipmiSensorEntry 4 }
+
+ipmiSensorValue OBJECT-TYPE
+    SYNTAX  Thousandths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Sensor value"
+    ::= { ipmiSensorEntry 5 }
+
+END

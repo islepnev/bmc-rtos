@@ -1,0 +1,15 @@
+.cproject
+.mxproject
+.project
+.settings/
+Drivers/
+Inc/
+LWIP/
+Middlewares/
+STM32F769NI_FLASH.ld
+Src/
+TrueSTUDIO/
+startup/
+*.elf.launch
+*.pdf
+*.txt
