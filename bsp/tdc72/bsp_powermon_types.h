@@ -23,20 +23,28 @@
 extern "C" {
 #endif
 
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_3v3;
-    bool switch_1v5;
-    bool switch_1v0;
-    bool switch_tdc_a;
-    bool switch_tdc_b;
-    bool switch_tdc_c;
-} pm_switches;
+typedef enum PowerSwitchIndex {
+    PSW_5V,
+    PSW_3V3,
+    PSW_1V5,
+    PSW_1V0,
+    PSW_TDC_A,
+    PSW_TDC_B,
+    PSW_TDC_C
+} PowerSwitchIndex;
 
-typedef struct pm_pgoods {
-   bool fpga_core_pgood;
-   bool ltm_pgood;
-} pm_pgoods;
+#define POWER_SWITCH_COUNT 7
+const char *psw_label(PowerSwitchIndex index);
+typedef bool pm_switches[POWER_SWITCH_COUNT];
+
+typedef enum PowerGoodIndex {
+    PGOOD_1V5,
+    PGOOD_1V0,
+} PowerGoodIndex;
+
+#define POWER_GOOD_COUNT 2
+const char *pgood_label(PowerGoodIndex index);
+typedef bool pm_pgoods[POWER_GOOD_COUNT];
 
 bool pm_switches_isEqual(const pm_switches l, const pm_switches r);
 

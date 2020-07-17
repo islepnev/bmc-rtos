@@ -22,11 +22,6 @@
 extern "C" {
 #endif
 
-#include "bsp_powermon_types.h"
-
-void print_pm_switches(const pm_switches sw);
-void pm_pgood_print(const pm_pgoods pgood);
-
 #ifdef __cplusplus
 }
 #endif

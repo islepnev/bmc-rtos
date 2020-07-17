@@ -159,7 +159,7 @@ void task_powermon_run (void)
     }
     pmLoopCount++;
     bool vmePresent = pm_read_liveInsert(pm);
-    pm_read_pgood(&pm->pgood);
+    pm_read_pgood(pm->pgood);
     const bool input_power_normal = get_input_power_normal(pm->sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)

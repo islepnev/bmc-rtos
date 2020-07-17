@@ -19,11 +19,31 @@
 
 bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
 {
-    return l.switch_1v0 == r.switch_1v0
-           && l.switch_1v5 == r.switch_1v5
-           && l.switch_3v3 == r.switch_3v3
-           && l.switch_5v == r.switch_5v
-           && l.switch_tdc_a == r.switch_tdc_a
-           && l.switch_tdc_b == r.switch_tdc_b
-           && l.switch_tdc_c == r.switch_tdc_c;
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        if (l[i] != r[i])
+            return false;
+    return true;
+}
+
+const char *psw_label(PowerSwitchIndex index)
+{
+    switch(index) {
+    case PSW_5V:       return "5V";
+    case PSW_3V3:      return "3V3";
+    case PSW_1V5:      return "1V5";
+    case PSW_1V0:  return "1V0";
+    case PSW_TDC_A:  return "TDC_A";
+    case PSW_TDC_B:  return "TDC_B";
+    case PSW_TDC_C:  return "TDC_C";
+    }
+    return "???";
+}
+
+const char *pgood_label(PowerGoodIndex index)
+{
+    switch(index) {
+    case PGOOD_1V5:       return "1V5";
+    case PGOOD_1V0:  return "1V0_CORE";
+    }
+    return "???";
 }

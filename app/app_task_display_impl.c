@@ -131,7 +131,7 @@ void monPrintValues(const Dev_powermon *d)
     pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(&d->sw, (SensorIndex)i));
+            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, (SensorIndex)i));
             printf("%s\n", ANSI_CLEAR_EOL);
         }
     }
@@ -228,6 +228,26 @@ static void print_header(void)
                ANSI_BGR_BLUE);
     }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+}
+
+static void print_pm_switches(const pm_switches sw)
+{
+    printf("Switch: ");
+    for (int i=0; i<POWER_SWITCH_COUNT; i++) {
+        printf("%s %s   ", psw_label(i), sw[i] ? STR_ON : STR_OFF);
+    }
+    printf("%s\n", ANSI_CLEAR_EOL);
+}
+
+static void pm_pgood_print(const pm_pgoods pgood)
+{
+    //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
+    //    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("Power good: ");
+    for (int i=0; i<POWER_GOOD_COUNT; i++) {
+        printf("%s %s   ", pgood_label(i), pgood[i] ? STR_ON : STR_OFF);
+    }
+    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_powermon(const Dev_powermon *pm)
@@ -367,7 +387,7 @@ static void display_pot(const Devices * dev)
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         const Dev_ad5141 *p = &dev->pots.pot[i];
         const pm_sensor *sensor = &dev->pm.sensors[p->sensorIndex];
-        const int isOn = monIsOn(&dev->pm.sw_state, p->sensorIndex);
+        const int isOn = monIsOn(dev->pm.sw_state, p->sensorIndex);
         printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);

@@ -27,24 +27,24 @@
 #include "gpio.h"
 #include "stm32f7xx_hal_gpio.h"
 
-int monIsOn(const pm_switches *sw, SensorIndex index)
+int monIsOn(const pm_switches sw, SensorIndex index)
 {
     switch(index) {
-    case SENSOR_1V5: return sw->switch_1v5;
-    case SENSOR_5V: return sw->switch_5v;
+    case SENSOR_1V5: return sw[PSW_1V5];
+    case SENSOR_5V: return sw[PSW_5V];
     case SENSOR_5VPC: return 1;
     case SENSOR_VME_5V: return 1;
-    case SENSOR_3V3: return sw->switch_3v3;
+    case SENSOR_3V3: return sw[PSW_3V3];
     case SENSOR_VME_3V3: return 1;
     case SENSOR_VMCU: return 1;
-    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0;
-    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0;
-    case SENSOR_FPGA_MGT_1V2: return sw->switch_1v0;
-    case SENSOR_FPGA_1V8: return sw->switch_3v3;
-    case SENSOR_TDC_A: return sw->switch_3v3;
-    case SENSOR_TDC_B: return sw->switch_3v3;
-    case SENSOR_TDC_C: return sw->switch_3v3;
-    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
+    case SENSOR_FPGA_CORE_1V0: return sw[PSW_1V0];
+    case SENSOR_FPGA_MGT_1V0: return sw[PSW_1V0];
+    case SENSOR_FPGA_MGT_1V2: return sw[PSW_1V0];
+    case SENSOR_FPGA_1V8: return sw[PSW_3V3];
+    case SENSOR_TDC_A: return sw[PSW_3V3];
+    case SENSOR_TDC_B: return sw[PSW_3V3];
+    case SENSOR_TDC_C: return sw[PSW_3V3];
+    case SENSOR_CLOCK_2V5: return sw[PSW_3V3];
     }
     return 0;
 }
@@ -55,43 +55,38 @@ bool readLiveInsertPin(void)
     return (false == state);
 }
 
-void init_power_switches(pm_switches *sw)
+void init_power_switches(pm_switches sw)
 {
-    sw->switch_5v = 1;
-    sw->switch_3v3 = 1;
-    sw->switch_1v5 = 1;
-    sw->switch_1v0 = 1;
-    sw->switch_tdc_a = 1;
-    sw->switch_tdc_b = 1;
-    sw->switch_tdc_c = 1;
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        sw[i] = true;
 }
 
-void read_power_switches_state(pm_switches *sw_state)
+void read_power_switches_state(pm_switches sw_state)
 {
-    sw_state->switch_1v0   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
-    sw_state->switch_1v5   = read_gpio_pin(ON_1_5V_GPIO_Port, ON_1_5V_Pin);
-    sw_state->switch_3v3   = read_gpio_pin(ON_3_3V_GPIO_Port, ON_3_3V_Pin);
-    sw_state->switch_5v    = read_gpio_pin(ON_5V_GPIO_Port,   ON_5V_Pin);
-    sw_state->switch_tdc_a = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
-    sw_state->switch_tdc_b = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
-    sw_state->switch_tdc_c = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
+    sw_state[PSW_1V0]   = read_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin);
+    sw_state[PSW_1V5]   = read_gpio_pin(ON_1_5V_GPIO_Port, ON_1_5V_Pin);
+    sw_state[PSW_3V3]   = read_gpio_pin(ON_3_3V_GPIO_Port, ON_3_3V_Pin);
+    sw_state[PSW_5V]    = read_gpio_pin(ON_5V_GPIO_Port,   ON_5V_Pin);
+    sw_state[PSW_TDC_A] = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
+    sw_state[PSW_TDC_B] = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
+    sw_state[PSW_TDC_C] = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
 }
 
-void write_power_switches(pm_switches *sw)
+void write_power_switches(pm_switches sw)
 {
-    write_gpio_pin(ON_5V_GPIO_Port,        ON_5V_Pin,        sw->switch_5v);
-    write_gpio_pin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      sw->switch_1v5);
-    write_gpio_pin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      sw->switch_3v3);
-    write_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, sw->switch_1v0);
-    write_gpio_pin(ON_TDC_A_GPIO_Port,     ON_TDC_A_Pin,     sw->switch_tdc_a);
-    write_gpio_pin(ON_TDC_B_GPIO_Port,     ON_TDC_B_Pin,     sw->switch_tdc_b);
-    write_gpio_pin(ON_TDC_C_GPIO_Port,     ON_TDC_C_Pin,     sw->switch_tdc_c);
+    write_gpio_pin(ON_5V_GPIO_Port,        ON_5V_Pin,        sw[PSW_5V]);
+    write_gpio_pin(ON_1_5V_GPIO_Port,      ON_1_5V_Pin,      sw[PSW_1V5]);
+    write_gpio_pin(ON_3_3V_GPIO_Port,      ON_3_3V_Pin,      sw[PSW_3V3]);
+    write_gpio_pin(ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin, sw[PSW_1V0]);
+    write_gpio_pin(ON_TDC_A_GPIO_Port,     ON_TDC_A_Pin,     sw[PSW_TDC_A]);
+    write_gpio_pin(ON_TDC_B_GPIO_Port,     ON_TDC_B_Pin,     sw[PSW_TDC_B]);
+    write_gpio_pin(ON_TDC_C_GPIO_Port,     ON_TDC_C_Pin,     sw[PSW_TDC_C]);
 }
 
-void init_pgood(pm_pgoods *pgood)
+void init_pgood(pm_pgoods pgood)
 {
-    pgood->fpga_core_pgood = 0;
-    pgood->ltm_pgood = 0;
+    for (int i=0; i<POWER_GOOD_COUNT; i++)
+        pgood[i] = false;
 }
 
 static bool readPowerGoodFpga(void)
@@ -104,15 +99,18 @@ static bool readPowerGood1v5(void)
     return read_gpio_pin(LTM_PGOOD_GPIO_Port, LTM_PGOOD_Pin);
 }
 
-void pm_read_pgood(pm_pgoods *pgood)
+void pm_read_pgood(pm_pgoods pgood)
 {
-    pgood->fpga_core_pgood = readPowerGoodFpga();
-    pgood->ltm_pgood = readPowerGood1v5();
+    pgood[PGOOD_1V0] = readPowerGoodFpga();
+    pgood[PGOOD_1V5]= readPowerGood1v5();
 }
 
-bool get_all_pgood(const pm_pgoods *pgoods)
+bool get_all_pgood(const pm_pgoods pgood)
 {
-    return pgoods->fpga_core_pgood && pgoods->ltm_pgood;
+    for (int i=0; i<POWER_GOOD_COUNT; i++)
+        if (!pgood[i])
+            return false;
+    return true;
 }
 
 bool get_input_power_valid(const pm_sensors_arr sensors)
