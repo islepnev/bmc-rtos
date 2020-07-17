@@ -20,6 +20,7 @@
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
+#include "bsp_powermon_types.h"
 #include "bsp_powermon.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
@@ -47,8 +48,8 @@ void struct_powermon_init(Dev_powermon *d)
     struct_powermon_sensors_init(d);
 //    d->present = DEVICE_UNKNOWN;
     d->vmePresent = 0;
-    init_pgood(&d->pgood);
-    init_power_switches(&d->sw);
+    init_pgood(d->pgood);
+    init_power_switches(d->sw);
 }
 
 bool pm_read_liveInsert(Dev_powermon *pm)
@@ -82,31 +83,13 @@ bool get_critical_power_failure(const pm_sensors_arr sensors)
 static bool check_power_switches(const Dev_powermon *pm)
 {
     bool ret = true;
-    if (pm->sw_state.switch_5v != pm->sw.switch_5v) {
-        log_printf(LOG_CRIT, "5V switch failure: stuck %s", pm->sw_state.switch_5v ? "high" : "low");
-        ret = false;
+    for (int i=0; i<POWER_SWITCH_COUNT; i++) {
+        if (pm->sw_state[i] != pm->sw[i]) {
+            log_printf(LOG_CRIT, "%s switch failure: stuck %s",
+                       psw_label(i), pm->sw_state[i] ? "high" : "low");
+            ret = false;
+        }
     }
-    if (pm->sw_state.switch_3v3 != pm->sw.switch_3v3) {
-        log_printf(LOG_CRIT, "3.3V switch failure: stuck %s", pm->sw_state.switch_3v3 ? "high" : "low");
-        ret = false;
-    }
-    if (pm->sw_state.switch_2v5 != pm->sw.switch_2v5) {
-        log_printf(LOG_CRIT, "2.5V switch failure: stuck %s", pm->sw_state.switch_2v5 ? "high" : "low");
-        ret = false;
-    }
-    if (pm->sw_state.switch_1v0_core != pm->sw.switch_1v0_core) {
-        log_printf(LOG_CRIT, "1.0V-core switch failure: stuck %s", pm->sw_state.switch_1v0_core ? "high" : "low");
-        ret = false;
-    }
-    if (pm->sw_state.switch_1v0_mgt != pm->sw.switch_1v0_mgt) {
-        log_printf(LOG_CRIT, "1.0V-MGT switch failure: stuck %s", pm->sw_state.switch_1v0_mgt ? "high" : "low");
-        ret = false;
-    }
-    if (pm->sw_state.switch_5v_fmc != pm->sw.switch_5v_fmc) {
-        log_printf(LOG_CRIT, "5V-FMC switch failure: stuck %s", pm->sw_state.switch_5v_fmc ? "high" : "low");
-        ret = false;
-    }
-
     return ret;
 }
 
@@ -117,17 +100,13 @@ bool update_power_switches(Dev_powermon *pm, bool state)
         log_put(LOG_NOTICE, "Switching ON");
     else
         log_put(LOG_NOTICE, "Switching OFF");
-    pm->sw.switch_1v0_core = state;
-    pm->sw.switch_1v0_mgt = state;
-    pm->sw.switch_1v2_mgt = state;
-    pm->sw.switch_2v5 = state;
-    pm->sw.switch_3v3 = state;
-    pm->sw.switch_5v_fmc = state;
-    pm->sw.switch_5v = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
-    write_power_switches(&pm->sw);
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        pm->sw[i] = state;
+    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
+    write_power_switches(pm->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
-    read_power_switches_state(&pm->sw_state);
+    read_power_switches_state(pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
     return ok;

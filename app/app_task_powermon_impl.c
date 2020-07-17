@@ -159,7 +159,7 @@ void task_powermon_run (void)
     }
     pmLoopCount++;
     bool vmePresent = pm_read_liveInsert(pm);
-    pm_read_pgood(&pm->pgood);
+    pm_read_pgood(pm->pgood);
     const bool input_power_normal = get_input_power_normal(pm->sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)
@@ -295,6 +295,7 @@ void task_powermon_run (void)
         runMon(pm);
     }
 
+    system_power_present = get_critical_power_valid(pm->sensors);
     bsp_update_system_powergood_pin(system_power_present);
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)

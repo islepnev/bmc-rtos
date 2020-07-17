@@ -19,11 +19,35 @@
 
 bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
 {
-    return l.switch_5v == r.switch_5v
-           && l.switch_5v_fmc == r.switch_5v_fmc
-           && l.switch_3v3 == r.switch_3v3
-           && l.switch_2v5 == r.switch_2v5
-           && l.switch_1v0_core == r.switch_1v0_core
-           && l.switch_1v0_mgt == r.switch_1v0_mgt
-           && l.switch_1v2_mgt == r.switch_1v2_mgt;
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        if (l[i] != r[i])
+            return false;
+    return true;
+}
+
+const char *psw_label(PowerSwitchIndex index)
+{
+    switch(index) {
+    case PSW_5V:       return "5V";
+    case PSW_2V5:      return "2V5";
+    case PSW_3V3:      return "3V3";
+    case PSW_5V_FMC:   return "5V_FMC";
+    case PSW_1V0_MGT:  return "1V0_MGT";
+    case PSW_1V2_MGT:  return "1V2_MGT";
+    case PSW_1V0_CORE: return "1V0_CORE";
+    }
+    return "???";
+}
+
+const char *pgood_label(PowerGoodIndex index)
+{
+    switch(index) {
+    case PGOOD_3V3:       return "3V3";
+    case PGOOD_2V5:       return "2V5";
+    case PGOOD_1V0_CORE:  return "1V0_CORE";
+    case PGOOD_1V0_MGT:   return "1V0_MGT";
+    case PGOOD_1V2_MGT:   return "1V2_MGT";
+    case PGOOD_3V3_FMC:   return "3V3_FMC";
+    }
+    return "???";
 }

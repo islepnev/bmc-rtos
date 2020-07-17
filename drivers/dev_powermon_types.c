@@ -30,7 +30,7 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
         DeviceStatus deviceStatus = sensor->deviceStatus;
         if (deviceStatus != DEVICE_NORMAL)
             maxStatus = SENSOR_CRITICAL;
-        int isOn = monIsOn(&d->sw, (SensorIndex)i);
+        int isOn = monIsOn(d->sw, (SensorIndex)i);
         if (isOn) {
             SensorStatus status = pm_sensor_status(sensor);
             if (status > maxStatus)

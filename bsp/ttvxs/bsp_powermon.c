@@ -27,24 +27,24 @@
 #include "gpio.h"
 #include "stm32f7xx_hal_gpio.h"
 
-int monIsOn(const pm_switches *sw, SensorIndex index)
+int monIsOn(const pm_switches sw, SensorIndex index)
 {
     switch(index) {
     case SENSOR_VPC_3V3: return 1;
     case SENSOR_5VPC: return 1;
     case SENSOR_5V: return 1;
     case SENSOR_VXS_5V: return 1;
-    case SENSOR_2V5: return sw->switch_2v5;
-    case SENSOR_3V3: return sw->switch_3v3;
-    case SENSOR_FPGA_CORE_1V0: return sw->switch_1v0_core;
-    case SENSOR_FPGA_MGT_1V0: return sw->switch_1v0_mgt;
-    case SENSOR_FPGA_MGT_1V2: return sw->switch_1v2_mgt; // TTVXS v1.0: sw->switch_2v5;
+    case SENSOR_2V5: return sw[PSW_2V5];
+    case SENSOR_3V3: return sw[PSW_3V3];
+    case SENSOR_FPGA_CORE_1V0: return sw[PSW_1V0_CORE];
+    case SENSOR_FPGA_MGT_1V0: return sw[PSW_1V0_MGT];
+    case SENSOR_FPGA_MGT_1V2: return sw[PSW_1V2_MGT]; // TTVXS v1.0: sw->switch_2v5;
     case SENSOR_MCB_4V5: return 1;
-    case SENSOR_FPGA_1V8: return sw->switch_2v5;
-    case SENSOR_VADJ: return sw->switch_2v5;
-    case SENSOR_FMC_5V: return sw->switch_5v_fmc;
-    case SENSOR_FMC_12V: return sw->switch_5v_fmc;
-    case SENSOR_CLOCK_2V5: return sw->switch_3v3;
+    case SENSOR_FPGA_1V8: return sw[PSW_2V5];
+    case SENSOR_VADJ: return sw[PSW_2V5];
+    case SENSOR_FMC_5V: return sw[PSW_5V_FMC];
+    case SENSOR_FMC_12V: return sw[PSW_5V_FMC];
+    case SENSOR_CLOCK_2V5: return sw[PSW_3V3];
     case SENSOR_MCB_3V3: return 1;
     }
     return 0;
@@ -56,47 +56,38 @@ bool readLiveInsertPin(void)
     return (false == state);
 }
 
-void init_power_switches(pm_switches *sw)
+void init_power_switches(pm_switches sw)
 {
-    sw->switch_5v = 1;
-    sw->switch_3v3 = 1;
-    sw->switch_2v5 = 1;
-    sw->switch_1v0_core = 1;
-    sw->switch_1v0_mgt = 1;
-    sw->switch_1v2_mgt = 1;
-    sw->switch_5v_fmc = 1;
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        sw[i] = true;
 }
 
-void read_power_switches_state(pm_switches *sw_state)
+void read_power_switches_state(pm_switches sw_state)
 {
-    sw_state->switch_1v0_core = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
-    sw_state->switch_1v0_mgt = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
-    sw_state->switch_1v2_mgt = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
-    sw_state->switch_2v5 = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
-    sw_state->switch_3v3 = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
-    sw_state->switch_5v_fmc = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    sw_state->switch_5v = sw_state->switch_5v; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    sw_state[PSW_1V0_CORE] = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
+    sw_state[PSW_1V0_MGT]  = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
+    sw_state[PSW_1V2_MGT]  = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
+    sw_state[PSW_2V5]      = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
+    sw_state[PSW_3V3]      = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
+    sw_state[PSW_5V_FMC]   = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
+    sw_state[PSW_5V]       = true; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
 }
 
-void write_power_switches(pm_switches *sw)
+void write_power_switches(pm_switches sw)
 {
-    write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, sw->switch_1v0_core);
-    write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  sw->switch_1v0_mgt);
-    write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  sw->switch_1v2_mgt);
-    write_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      sw->switch_2v5);
-    write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw->switch_3v3);
-    write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   sw->switch_5v_fmc);
-    write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw->switch_5v);
+    write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, sw[PSW_1V0_CORE]);
+    write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  sw[PSW_1V0_MGT]);
+    write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  sw[PSW_1V2_MGT]);
+    write_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      sw[PSW_2V5]);
+    write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw[PSW_3V3]);
+    write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   sw[PSW_5V_FMC]);
+    write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw[PSW_5V]);
 }
 
-void init_pgood(pm_pgoods *pgood)
+void init_pgood(pm_pgoods pgood)
 {
-    pgood->pgood_1v0_core = 0;
-    pgood->pgood_1v0_mgt = 0;
-    pgood->pgood_1v2_mgt = 0;
-    pgood->pgood_2v5 = 0;
-    pgood->pgood_3v3 = 0;
-    pgood->pgood_3v3_fmc = 0;
+    for (int i=0; i<POWER_GOOD_COUNT; i++)
+        pgood[i] = false;
 }
 
 static int read_pgood_1v0_core(void)
@@ -129,24 +120,22 @@ static int read_pgood_3v3_fmc(void)
     return read_gpio_pin(PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin);
 }
 
-void pm_read_pgood(pm_pgoods *pgood)
+void pm_read_pgood(pm_pgoods pgood)
 {
-    pgood->pgood_1v0_core = read_pgood_1v0_core();
-    pgood->pgood_1v0_mgt  = read_pgood_1v0_mgt();
-    pgood->pgood_1v2_mgt  = read_pgood_1v2_mgt();
-    pgood->pgood_2v5      = read_pgood_2v5();
-    pgood->pgood_3v3      = read_pgood_3v3();
-    pgood->pgood_3v3_fmc  = read_pgood_3v3_fmc();
+    pgood[PGOOD_1V0_CORE] = read_pgood_1v0_core();
+    pgood[PGOOD_1V0_MGT]  = read_pgood_1v0_mgt();
+    pgood[PGOOD_1V2_MGT]  = read_pgood_1v2_mgt();
+    pgood[PGOOD_2V5]      = read_pgood_2v5();
+    pgood[PGOOD_3V3]      = read_pgood_3v3();
+    pgood[PGOOD_3V3_FMC]  = read_pgood_3v3_fmc();
 }
 
-bool get_all_pgood(const pm_pgoods *pgood)
+bool get_all_pgood(const pm_pgoods pgood)
 {
-    return pgood->pgood_1v0_core
-           && pgood->pgood_1v0_mgt
-           && pgood->pgood_1v2_mgt
-           && pgood->pgood_2v5
-           && pgood->pgood_3v3
-           && pgood->pgood_3v3_fmc;
+    for (int i=0; i<POWER_GOOD_COUNT; i++)
+        if (!pgood[i])
+            return false;
+    return true;
 }
 
 bool get_input_power_valid(const pm_sensors_arr sensors)

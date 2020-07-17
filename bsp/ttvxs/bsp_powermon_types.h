@@ -23,24 +23,32 @@
 extern "C" {
 #endif
 
-typedef struct pm_switches {
-    bool switch_5v;
-    bool switch_5v_fmc;
-    bool switch_3v3;
-    bool switch_2v5;
-    bool switch_1v0_core;
-    bool switch_1v0_mgt;
-    bool switch_1v2_mgt; // added in TTVXS v1.1
-} pm_switches;
+typedef enum PowerSwitchIndex {
+    PSW_5V,
+    PSW_5V_FMC,
+    PSW_3V3,
+    PSW_2V5,
+    PSW_1V0_CORE,
+    PSW_1V0_MGT,
+    PSW_1V2_MGT
+} PowerSwitchIndex;
 
-typedef struct pm_pgoods {
-   bool pgood_3v3;
-   bool pgood_2v5;
-   bool pgood_1v0_core;
-   bool pgood_1v0_mgt;
-   bool pgood_1v2_mgt;
-   bool pgood_3v3_fmc;
-} pm_pgoods;
+#define POWER_SWITCH_COUNT 7
+const char *psw_label(PowerSwitchIndex index);
+typedef bool pm_switches[POWER_SWITCH_COUNT];
+
+typedef enum PowerGoodIndex {
+    PGOOD_3V3,
+    PGOOD_2V5,
+    PGOOD_1V0_CORE,
+    PGOOD_1V0_MGT,
+    PGOOD_1V2_MGT,
+    PGOOD_3V3_FMC
+} PowerGoodIndex;
+
+#define POWER_GOOD_COUNT 6
+const char *pgood_label(PowerGoodIndex index);
+typedef bool pm_pgoods[POWER_GOOD_COUNT];
 
 bool pm_switches_isEqual(const pm_switches l, const pm_switches r);
 
