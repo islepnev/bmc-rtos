@@ -4,7 +4,7 @@ if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
-SET(MY_TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+SET(MY_TOP_DIR ../..)
 SET(MY_EXT_DIR ${MY_TOP_DIR}/external)
 SET(MY_LIB_DIR ${MY_TOP_DIR})
 
@@ -49,6 +49,13 @@ SET(STM32HAL_SOURCES ${STM32HAL_SOURCES} ${HAL_LL_EXTRA_SOURCES})
 SET(MY_SRC_DIR ${MY_TOP_DIR}/app/${BOARD}/src)
 
 add_compile_definitions(USE_FULL_LL_DRIVER)
+
+include_directories(
+    ${MY_SRC_DIR}/config
+    ${MY_SRC_DIR}
+    ${MY_LIB_DIR}/common
+    ${MY_LIB_DIR}/drivers
+)
 
 ### lwIP
 SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
@@ -159,7 +166,20 @@ file(GLOB_RECURSE DRIVERS
     ${MY_LIB_DIR}/drivers/rtc_util.h
 )
 
+add_library(CMSIS STATIC ${CMSIS_SOURCES})
+TARGET_INCLUDE_DIRECTORIES(CMSIS PRIVATE
+    ${CMSIS_INCLUDE_DIRS}
+)
+STM32_SET_TARGET_PROPERTIES(CMSIS)
+
+add_library(STM32HAL STATIC ${STM32HAL_SOURCES})
+TARGET_INCLUDE_DIRECTORIES(STM32HAL PUBLIC
+    ${CMSIS_INCLUDE_DIRS}
+    ${STM32HAL_INCLUDE_DIR}
+)
+STM32_SET_TARGET_PROPERTIES(STM32HAL)
 file(GLOB_RECURSE USER_SOURCES
+   ${MY_SRC_DIR}/config/*.*
    ${MY_LIB_DIR}/common/*.c
    ${DRIVERS}
    ${DEV}
@@ -186,16 +206,26 @@ SET(PROJECT_SOURCES
     ${USER_INCLUDES}
 )
 
-file(GLOB_RECURSE FREERTOS_SOURCES
+file(GLOB_RECURSE FreeRTOS_SRCS
+    ${FREERTOS_DIR}/include/*.h
     ${FREERTOS_DIR}/tasks.c
     ${FREERTOS_DIR}/timers.c
     ${FREERTOS_DIR}/queue.c
     ${FREERTOS_DIR}/list.c
-    ${FREERTOS_DIR}/CMSIS_RTOS/cmsis_os.c
-    ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1/port.c
+    ${FREERTOS_DIR}/CMSIS_RTOS/cmsis_os.*
+    ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1/*.c
     ${FREERTOS_DIR}/portable/MemMang/heap_4.c
     ${FREERTOS_DIR}/event_groups.c
 
+)
+add_library(FreeRTOS STATIC ${FreeRTOS_SRCS})
+include_directories(
+    ${FREERTOS_DIR}/CMSIS_RTOS
+    ${FREERTOS_DIR}/include
+    ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1
+)
+target_include_directories(FreeRTOS PRIVATE
+    ${CMSIS_COMMON_INCLUDE_DIR}
 )
 
 set(DATA_FILE
@@ -209,14 +239,24 @@ set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
 SET(ELF ${CMAKE_PROJECT_NAME}.elf)
 ADD_EXECUTABLE(${ELF}
-    ${CMSIS_SOURCES}
-    ${STM32HAL_SOURCES}
-    ${FREERTOS_SOURCES}
     ${LWIP_SOURCES}
     ${PROJECT_SOURCES}
     ${DATA_FILE}
 )
-TARGET_LINK_LIBRARIES(${ELF})
+TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
+    ${STM32HAL_INCLUDE_DIR}
+   ${MY_LIB_DIR}/drivers
+   ${MY_LIB_DIR}/dev/fpga
+   ${MY_LIB_DIR}/drivers/ina226
+   ${MY_LIB_DIR}/dev/powermon
+   ${MY_LIB_DIR}/common
+   ${MY_SRC_DIR}
+   ${MY_SRC_DIR}/bsp
+   ${MY_SRC_DIR}/bsp/mx_init
+   ${MY_SRC_DIR}/tasks
+   ${MY_SRC_DIR}/rtos
+)
+TARGET_LINK_LIBRARIES(${ELF} FreeRTOS CMSIS STM32HAL)
 STM32_SET_TARGET_PROPERTIES(${ELF})
 STM32_ADD_HEX_BIN_TARGETS(${ELF})
 STM32_ADD_DUMP_TARGET(${ELF})
@@ -231,7 +271,7 @@ SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdo
 option(BUILD_DOC "Build documentation" ON)
 
 # check if Doxygen is installed
-find_package(Doxygen)
+find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
 if (DOXYGEN_FOUND)
     # set input and output files
     set(DOXYGEN_IN ${MY_TOP_DIR}/doc/Doxyfile.in)

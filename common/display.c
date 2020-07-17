@@ -32,15 +32,3 @@ char *deviceStatusResultStr(DeviceStatus status)
         return "???";
     }
 }
-
-void devPrintStatus(const Devices *d)
-{
-    printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
-//    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
-//    printf("%s\n", ANSI_CLEAR_EOL);
-}
