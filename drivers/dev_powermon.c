@@ -216,6 +216,9 @@ uint32_t getMonStateTicks(const Dev_powermon *pm)
     return osKernelSysTick() - pm->stateStartTick;
 }
 
+int old_num_detected = 0;
+int stable_detect_count = 0;
+
 MonState runMon(Dev_powermon *pm)
 {
     pm->monCycle++;
@@ -226,31 +229,25 @@ MonState runMon(Dev_powermon *pm)
         pm->monState = MON_STATE_DETECT;
         break;
     case MON_STATE_DETECT: {
-        powermon_i2c_reset_master();
-        int num_detected = monDetect(pm);
-        update_board_version(num_detected);
-        if (board_version == PCB_4_2) {
-            if (num_detected == POWERMON_SENSORS_PCB_4_2) {
-                log_put(LOG_INFO, "PCB 4.2 sensors detected");
-                pm->monState = MON_STATE_READ;
-                break;
-            }
-        }
-        if (board_version == PCB_4_1) {
-            if (num_detected == POWERMON_SENSORS_PCB_4_1) {
-                log_put(LOG_INFO, "PCB 4.1 sensors detected");
-                pm->monState = MON_STATE_READ;
-                break;
-            }
-        }
-
+        const int num_detected = monDetect(pm);
         if (num_detected == 0) {
             pm->monState = MON_STATE_INIT;
             break;
         }
+        if (num_detected > 0 && (old_num_detected == num_detected))
+            stable_detect_count++;
+        else
+            stable_detect_count = 0;
+        old_num_detected = num_detected;
+        if (stable_detect_count >= 2) {
+            update_board_version(num_detected);
+            log_printf(LOG_INFO, "%d sensors detected", num_detected);
+            pm->monState = MON_STATE_READ;
+            break;
+        }
 
         if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
-            log_printf(LOG_ERR, "Sensor detect timeout, %d of %d found", num_detected, POWERMON_SENSORS);
+            log_printf(LOG_ERR, "Sensor detect timeout, %d sensors found", num_detected);
             pm->monState = MON_STATE_READ;
         }
         break;

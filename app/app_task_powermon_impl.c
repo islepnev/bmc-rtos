@@ -35,7 +35,7 @@
 #include "bsp.h"
 
 static const int TEST_RESTART = 0; // debug only
-static const uint32_t INIT_TIMEOUT_TICKS = 500;
+static const uint32_t INIT_TIMEOUT_TICKS = 3000;
 static const uint32_t RAMP_TIMEOUT_TICKS = 3000;
 static const uint32_t POWERFAIL_DELAY_TICKS = 3000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
@@ -61,7 +61,53 @@ static void clearOldSensorStatus(void)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
-static void log_sensor_status_change(const Dev_powermon *pm)
+static void log_sensor_status(const pm_sensor *sensor)
+{
+    const SensorStatus status = pm_sensor_status(sensor);
+    enum { size = 50 };
+    static char str[size];
+    const double volt = sensor->busVoltage;
+    const int volt_int = volt;
+    int volt_frac = 1000 * (volt - volt_int);
+    if (volt_frac < 0) volt_frac = -volt_frac;
+    double curr = sensor->current;
+    int neg = (curr < 0);
+    if (neg) curr = -curr;
+    const int curr_int = curr;
+    int curr_frac = 1000 * (curr - curr_int);
+    if (sensor->sensorStatus != SENSOR_UNKNOWN)
+        snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
+                 sensor->label,
+                 sensor_status_text(status),
+                 volt_int,
+                 volt_frac,
+                 neg?"-":"",
+                 curr_int,
+                 curr_frac
+                 );
+    else
+        snprintf(str, size, "%s %s",
+                 sensor->label,
+                 sensor_status_text(status)
+                 );
+    switch(status) {
+    case SENSOR_UNKNOWN:
+        log_put(LOG_WARNING, str);
+        break;
+    case SENSOR_CRITICAL:
+        log_put(LOG_ERR, str);
+        break;
+    case SENSOR_WARNING:
+        log_put(LOG_WARNING, str);
+        break;
+    case SENSOR_NORMAL:
+        if (pm_sensor_get_sensorStatus_Duration(sensor) >= log_sensor_status_duration_ticks)
+            log_put(LOG_INFO, str);
+        break;
+    }
+}
+
+static void log_sensors_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &pm->sensors[i];
@@ -69,43 +115,19 @@ static void log_sensor_status_change(const Dev_powermon *pm)
             continue;
         SensorStatus status = pm_sensor_status(sensor);
         if (status != oldSensorStatus[i]) {
-            enum { size = 50 };
-            static char str[size];
-            const double volt = sensor->busVoltage;
-            const int volt_int = volt;
-            int volt_frac = 1000 * (volt - volt_int);
-            if (volt_frac < 0) volt_frac = -volt_frac;
-            double curr = sensor->current;
-            int neg = (curr < 0);
-            if (neg) curr = -curr;
-            const int curr_int = curr;
-            int curr_frac = 1000 * (curr - curr_int);
-            snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
-                     sensor->label,
-                     sensor_status_text(status),
-                     volt_int,
-                     volt_frac,
-                     neg?"-":"",
-                     curr_int,
-                     curr_frac
-                     );
-            switch(status) {
-            case SENSOR_UNKNOWN:
-                log_put(LOG_WARNING, str);
-                break;
-            case SENSOR_CRITICAL:
-                log_put(LOG_ERR, str);
-                break;
-            case SENSOR_WARNING:
-                log_put(LOG_WARNING, str);
-                break;
-            case SENSOR_NORMAL:
-                if (pm_sensor_get_sensorStatus_Duration(sensor) >= log_sensor_status_duration_ticks)
-                    log_put(LOG_INFO, str);
-                break;
-            }
+            log_sensor_status(sensor);
             oldSensorStatus[i] = status;
         }
+    }
+}
+
+static void log_critical_sensors(const Dev_powermon *pm)
+{
+    for (int i=0; i<POWERMON_SENSORS; i++) {
+        const pm_sensor *sensor = &pm->sensors[i];
+        if (sensor->isOptional)
+            continue;
+        log_sensor_status(sensor);
     }
 }
 
@@ -146,8 +168,10 @@ void task_powermon_run (void)
     }
     const int input_power_critical = get_input_power_failed(pm->sensors);
     if (input_power_critical != old_inut_power_critical) {
-        if (input_power_critical)
+        if (input_power_critical) {
+            log_critical_sensors(pm);
             log_put(LOG_WARNING, "Input power critical");
+        }
         old_inut_power_critical = input_power_critical;
     }
     const int power_critical_ok = get_critical_power_valid(pm->sensors);
@@ -172,7 +196,7 @@ void task_powermon_run (void)
             change_state(PM_STATE_OFF);
             break;
         }
-        if (input_power_normal || power_critical_ok) {
+        if (input_power_normal) {
             change_state(PM_STATE_RAMP);
             break;
         }
@@ -275,7 +299,7 @@ void task_powermon_run (void)
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)
             ) {
-        log_sensor_status_change(pm);
+        log_sensors_change(pm);
     } else {
         clearOldSensorStatus();
     }
