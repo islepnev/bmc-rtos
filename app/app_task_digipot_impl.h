@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include "dev_common_types.h"
-#include "dev_pot.h"
+#include "dev_digipot.h"
 
 #ifdef __cplusplus
 extern "C" {

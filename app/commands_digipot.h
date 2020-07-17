@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,28 +14,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_DIGIPOT_H
-#define DEV_DIGIPOT_H
 
-#include <stdint.h>
-#include "bsp_digipot.h"
-#include "dev_digipot_types.h"
+#ifndef COMMANDS_DIGIPOT_H
+#define COMMANDS_DIGIPOT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void digipot_screen_handle_key(const char ch);
+//void pot_debug(void);
 
-extern int pot_screen_selected;
-
-int pot_detect(Dev_digipots *d);
-void pot_read_rdac_all(Dev_digipots *d);
-void dev_ad5141_reset(Dev_ad5141 *d);
-void dev_ad5141_inc(Dev_ad5141 *d);
-void dev_ad5141_dec(Dev_ad5141 *d);
-void dev_ad5141_write(Dev_ad5141 *d);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEV_DIGIPOT_H
+#endif // COMMANDS_DIGIPOT_H

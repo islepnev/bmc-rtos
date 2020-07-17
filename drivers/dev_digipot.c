@@ -1,7 +1,7 @@
 /*
 **    Digital Potentiometers
 **
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "dev_pot.h"
+
+#include "dev_digipot.h"
 
 #include <stdio.h>
 
@@ -57,7 +58,7 @@ static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
     return d->deviceStatus;
 }
 
-int pot_detect(Dev_digipots *d)
+int digipot_detect(Dev_digipots *d)
 {
     int count = 0;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
@@ -73,7 +74,7 @@ int pot_detect(Dev_digipots *d)
     return count;
 }
 
-void pot_read_rdac_all(Dev_digipots *d)
+void digipot_read_rdac_all(Dev_digipots *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {

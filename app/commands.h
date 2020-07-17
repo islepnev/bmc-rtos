@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,24 +14,25 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
 #include "cmsis_os.h"
 
 typedef enum {
-    COMMAND_POTS_RESET = 1,
-    COMMAND_POTS_INC,
-    COMMAND_POTS_DEC,
-    COMMAND_POTS_WRITE
+    COMMAND_DIGIPOTS_RESET = 1,
+    COMMAND_DIGIPOTS_INC,
+    COMMAND_DIGIPOTS_DEC,
+    COMMAND_DIGIPOTS_WRITE
 } command_id_t;
 
 typedef struct {
     command_id_t command_id;
     uint8_t arg;
-} CommandPots;
+} CommandDigipots;
 
-osMailQId mq_cmd_pots_id;
+osMailQId mq_cmd_digipots_id;
 
 void commands_init(void);
 

@@ -24,7 +24,7 @@
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "debug_helpers.h"
-#include "commands_pot.h"
+#include "commands_digipot.h"
 
 // print callback for microrl library
 static void print (const char * str)
@@ -46,9 +46,9 @@ void cycle_display_mode(void)
         display_mode = DISPLAY_LOG;
         break;
     case DISPLAY_LOG:
-        display_mode = DISPLAY_POT;
+        display_mode = DISPLAY_DIGIPOT;
         break;
-    case DISPLAY_POT:
+    case DISPLAY_DIGIPOT:
         display_mode = DISPLAY_PLL_DETAIL;
         break;
     case DISPLAY_PLL_DETAIL:
@@ -67,8 +67,8 @@ void cycle_display_mode(void)
 
 static void screen_handle_key(char ch)
 {
-    if (DISPLAY_POT == display_mode) {
-        pot_screen_handle_key(ch);
+    if (DISPLAY_DIGIPOT == display_mode) {
+        digipot_screen_handle_key(ch);
     }
 }
 

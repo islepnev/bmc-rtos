@@ -27,7 +27,7 @@ extern "C" {
 typedef enum {
     DISPLAY_SUMMARY,
     DISPLAY_LOG,
-    DISPLAY_POT,
+    DISPLAY_DIGIPOT,
     DISPLAY_PLL_DETAIL,
     DISPLAY_TASKS,
     DISPLAY_NONE,

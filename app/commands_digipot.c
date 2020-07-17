@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,12 +14,13 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "commands_pot.h"
+
+#include "commands_digipot.h"
 
 #include <string.h>
 
 #include "commands.h"
-#include "dev_pot.h"
+#include "dev_digipot.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 
@@ -41,7 +42,7 @@ static void clear_keybuf(void)
     keybuf_len = 0;
 }
 
-//void pot_debug(void)
+//void digipot_debug(void)
 //{
 //    printf("\n");
 //    printf("'");
@@ -51,66 +52,66 @@ static void clear_keybuf(void)
 //    printf("%s\n", ANSI_CLEAR_EOL);
 //}
 
-int pot_screen_selected = 0;
+int digipot_screen_selected = 0;
 
-static void pot_action_down(void)
+static void digipot_action_down(void)
 {
-    if (pot_screen_selected+1 < DEV_DIGIPOT_COUNT)
-        pot_screen_selected++;
+    if (digipot_screen_selected+1 < DEV_DIGIPOT_COUNT)
+        digipot_screen_selected++;
     else
-        pot_screen_selected = 0;
+        digipot_screen_selected = 0;
     schedule_display_refresh();
 }
 
-static void pot_action_up(void)
+static void digipot_action_up(void)
 {
-    if (pot_screen_selected > 0)
-        pot_screen_selected--;
+    if (digipot_screen_selected > 0)
+        digipot_screen_selected--;
     else
-        pot_screen_selected = DEV_DIGIPOT_COUNT-1;
+        digipot_screen_selected = DEV_DIGIPOT_COUNT-1;
     schedule_display_refresh();
 }
 
-static void pot_send_command(command_id_t id, uint32_t arg)
+static void digipot_send_command(command_id_t id, uint32_t arg)
 {
-    CommandPots *cmd = osMailAlloc(mq_cmd_pots_id, osWaitForever);
+    CommandDigipots *cmd = osMailAlloc(mq_cmd_digipots_id, osWaitForever);
     if (!cmd) {
         goto err;
     }
     cmd->command_id = id;
     cmd->arg = arg;
-    if (osOK != osMailPut(mq_cmd_pots_id, cmd))
+    if (osOK != osMailPut(mq_cmd_digipots_id, cmd))
         goto err;
     return;
 err:
     log_printf(LOG_WARNING, "pot command ignored: %d, %lu", id, arg);
 }
 
-static void pot_action_reset(void)
+static void digipot_action_reset(void)
 {
-    pot_send_command(COMMAND_POTS_RESET, pot_screen_selected);
+    digipot_send_command(COMMAND_DIGIPOTS_RESET, digipot_screen_selected);
     schedule_display_refresh();
 }
 
-static void pot_action_write(void)
+static void digipot_action_write(void)
 {
-    pot_send_command(COMMAND_POTS_WRITE, pot_screen_selected);
+    digipot_send_command(COMMAND_DIGIPOTS_WRITE, digipot_screen_selected);
     schedule_display_refresh();
 }
 
-static void pot_action_plus(void)
+static void digipot_action_plus(void)
 {
-    pot_send_command(COMMAND_POTS_DEC, pot_screen_selected);
+    digipot_send_command(COMMAND_DIGIPOTS_DEC, digipot_screen_selected);
     schedule_display_refresh();
 }
 
-static void pot_action_minus(void)
+static void digipot_action_minus(void)
 {
-    pot_send_command(COMMAND_POTS_INC, pot_screen_selected);
+    digipot_send_command(COMMAND_DIGIPOTS_INC, digipot_screen_selected);
     schedule_display_refresh();
 }
 
-void pot_screen_handle_key(const char ch)
+void digipot_screen_handle_key(const char ch)
 {
     if (keybuf_len == 0 && ch == '\x1B') {
         put_keybuf(ch);
@@ -125,22 +126,22 @@ void pot_screen_handle_key(const char ch)
     put_keybuf(ch);
     schedule_display_refresh();
     if (0 == strncmp(keybuf, "\x1B[A", 3) || ch == 'u' || ch == 'U') {
-        pot_action_up();
+        digipot_action_up();
     }
     if (0 == strncmp(keybuf, "\x1B[B", 3) || ch == 'd' || ch == 'D') {
-        pot_action_down();
+        digipot_action_down();
     }
     if (ch == '0') {
-        pot_action_reset();
+        digipot_action_reset();
     }
     if (ch == 'w' || ch == 'W') {
-        pot_action_write();
+        digipot_action_write();
     }
     if (ch == '+') {
-        pot_action_plus();
+        digipot_action_plus();
     }
     if (ch == '-') {
-        pot_action_minus();
+        digipot_action_minus();
     }
     clear_keybuf();
 }

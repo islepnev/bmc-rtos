@@ -14,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "app_task_digipot_impl.h"
 
 #include <stdint.h>
@@ -21,7 +22,7 @@
 
 #include "cmsis_os.h"
 
-#include "dev_pot.h"
+#include "dev_digipot.h"
 #include "bsp_digipot.h"
 #include "dev_common_types.h"
 #include "logbuffer.h"
@@ -32,22 +33,22 @@
 
 #include "cmsis_os.h"
 
-void pot_command_process(Dev_digipots *d, const CommandPots *cmd)
+void digipot_process_command(Dev_digipots *d, const CommandDigipots *cmd)
 {
     if (!cmd || cmd->arg >= DEV_DIGIPOT_COUNT)
         return;
     Dev_ad5141 *p = &d->pot[cmd->arg];
     switch (cmd->command_id) {
-    case COMMAND_POTS_RESET:
+    case COMMAND_DIGIPOTS_RESET:
         dev_ad5141_reset(p);
         break;
-    case COMMAND_POTS_INC:
+    case COMMAND_DIGIPOTS_INC:
         dev_ad5141_inc(p);
         break;
-    case COMMAND_POTS_DEC:
+    case COMMAND_DIGIPOTS_DEC:
         dev_ad5141_dec(p);
         break;
-    case COMMAND_POTS_WRITE:
+    case COMMAND_DIGIPOTS_WRITE:
         dev_ad5141_write(p);
         break;
     default:
@@ -57,20 +58,20 @@ void pot_command_process(Dev_digipots *d, const CommandPots *cmd)
 
 static const int POT_MAX_MAIL_BATCH = 10;
 
-void pot_check_mail(Dev_digipots *d)
+void digipot_check_mail(Dev_digipots *d)
 {
-    if (!mq_cmd_pots_id)
+    if (!mq_cmd_digipots_id)
         Error_Handler();
     for (int i=0; i<POT_MAX_MAIL_BATCH; i++) {
-        osEvent event = osMailGet(mq_cmd_pots_id, 0);
+        osEvent event = osMailGet(mq_cmd_digipots_id, 0);
         if (osEventMail != event.status) {
             return;
         }
-        CommandPots *mail = (CommandPots *) event.value.p;
+        CommandDigipots *mail = (CommandDigipots *) event.value.p;
         if (!mail)
             Error_Handler();
-        pot_command_process(d, mail);
-        osMailFree(mq_cmd_pots_id, mail);
+        digipot_process_command(d, mail);
+        osMailFree(mq_cmd_digipots_id, mail);
     }
 }
 
@@ -102,7 +103,7 @@ void task_digipot_run(void)
         break;
     }
     case STATE_DETECT: {
-        int pots_detected = pot_detect(d);
+        int pots_detected = digipot_detect(d);
         if (pots_detected > 0)
             state = STATE_RUN;
         else
@@ -110,8 +111,8 @@ void task_digipot_run(void)
         break;
     }
     case STATE_RUN:
-        pot_read_rdac_all(d);
-        pot_check_mail(d);
+        digipot_read_rdac_all(d);
+        digipot_check_mail(d);
         break;
 
     case STATE_ERROR:

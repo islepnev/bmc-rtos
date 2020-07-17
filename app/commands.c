@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,14 +14,15 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "commands.h"
 #include "error_handler.h"
 
-osMailQDef(mq_cmd_pots, 10, CommandPots); // Declare a mail queue, size 10
+osMailQDef(mq_cmd_digipots, 10, CommandDigipots); // Declare a mail queue, size 10
 
 void commands_init(void)
 {
-    mq_cmd_pots_id = osMailCreate(osMailQ(mq_cmd_pots), NULL);
-    if (!mq_cmd_pots_id)
+    mq_cmd_digipots_id = osMailCreate(osMailQ(mq_cmd_digipots), NULL);
+    if (!mq_cmd_digipots_id)
         Error_Handler();
 }

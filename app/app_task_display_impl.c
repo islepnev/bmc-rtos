@@ -32,7 +32,7 @@
 #include "dev_fpga_types.h"
 #include "dev_mcu.h"
 #include "dev_pm_sensors_types.h"
-#include "dev_pot.h"
+#include "dev_digipot.h"
 #include "dev_powermon.h"
 #include "dev_powermon_types.h"
 #include "dev_thset.h"
@@ -368,7 +368,7 @@ static void display_pot(const Devices * dev)
         const Dev_ad5141 *p = &dev->pots.pot[i];
         const pm_sensor *sensor = &dev->pm.sensors[p->sensorIndex];
         const int isOn = monIsOn(&dev->pm.sw_state, p->sensorIndex);
-        printf(" %s %s  ", (i == pot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
+        printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);
         else
@@ -454,7 +454,7 @@ void display_task_run(void)
     int need_clear_screen =
             display_mode == DISPLAY_NONE
             || display_mode == DISPLAY_LOG
-            || display_mode == DISPLAY_POT
+            || display_mode == DISPLAY_DIGIPOT
             || display_mode == DISPLAY_TASKS;
 
     if (need_clear_screen) {
@@ -486,7 +486,7 @@ void display_task_run(void)
     case DISPLAY_LOG:
         display_log();
         break;
-    case DISPLAY_POT:
+    case DISPLAY_DIGIPOT:
         display_pot(d);
         break;
     case DISPLAY_PLL_DETAIL:
