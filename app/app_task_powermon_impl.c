@@ -295,7 +295,7 @@ void task_powermon_run (void)
         runMon(pm);
     }
 
-    update_system_powergood_pin(pm->sensors);
+    bsp_update_system_powergood_pin(system_power_present);
     if ((pm->pmState == PM_STATE_RAMP)
             || (pm->pmState == PM_STATE_RUN)
             ) {

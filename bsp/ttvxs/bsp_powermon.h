@@ -46,6 +46,8 @@ bool get_input_power_failed(const pm_sensors_arr sensors);
 double pm_get_power_w(const Dev_powermon *pm);
 double pm_get_power_max_w(const Dev_powermon *pm);
 
+void bsp_update_system_powergood_pin(bool power_good);
+
 #ifdef __cplusplus
 }
 #endif

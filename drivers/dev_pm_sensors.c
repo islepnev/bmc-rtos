@@ -41,6 +41,7 @@ void struct_pm_sensor_clear_minmax(pm_sensor *d)
 
 void struct_pm_sensor_clear_measurements(pm_sensor *d)
 {
+    d->sensorStatus = SENSOR_UNKNOWN;
     d->busVoltage = 0;
     d->current = 0;
     d->power = 0;
@@ -50,7 +51,7 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
     d->index = index;
     d->deviceStatus = DEVICE_UNKNOWN;
-    d->sensorStatus = SENSOR_CRITICAL;
+    d->sensorStatus = SENSOR_UNKNOWN;
     d->rampState = RAMP_NONE;
     d->lastStatusUpdatedTick = 0;
     d->busAddress = sensorBusAddress(index);
@@ -169,6 +170,28 @@ DeviceStatus pm_sensor_detect(pm_sensor *d)
     return d->deviceStatus;
 }
 
+SensorStatus pm_sensor_compute_status(const pm_sensor *d)
+{
+    if (d->deviceStatus != DEVICE_NORMAL) {
+        return SENSOR_UNKNOWN;
+    }
+
+    double V = d->busVoltage;
+    double VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
+    double VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
+    double VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
+    double VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
+    int VNorm = (V > VMinWarn) && (V < VMaxWarn);
+    int VWarn = (V > VMinCrit) && (V < VMaxCrit);
+    if (VNorm && VWarn) {
+        return SENSOR_NORMAL;
+    }
+    if (VWarn) {
+        return SENSOR_WARNING;
+    }
+    return SENSOR_CRITICAL;
+}
+
 #define INA226_USE_INTERNAL_CALC 0
 
 DeviceStatus pm_sensor_read(pm_sensor *d)
@@ -206,20 +229,20 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
             return d->deviceStatus;
         }
     }
-    const double readVoltage  = (int16_t)rawVoltage * 1.25e-3f;
+    const double readVoltage  = (int16_t)rawVoltage * 1.25e-3;
     pm_sensor_set_readVoltage(d, readVoltage);
 #if INA226_USE_INTERNAL_CALC
     pm_sensor_set_readCurrent(d, d->current_lsb * (int16_t)rawCurrent);
     pm_sensor_set_readPower(d, (int16_t)rawPower * d->current_lsb * 25.0);
 #else
-    const double shuntVoltage = (int16_t)rawShuntVoltage * 2.5e-6f;
+    const double shuntVoltage = (int16_t)rawShuntVoltage * 2.5e-6;
     double readCurrent = 0;
     if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
         readCurrent = shuntVoltage / d->shuntVal;
     pm_sensor_set_readCurrent(d, readCurrent);
     pm_sensor_set_readPower(d, readCurrent * readVoltage);
 #endif
-    pm_sensor_set_sensorStatus(d, pm_sensor_status(d));
+    pm_sensor_set_sensorStatus(d, pm_sensor_compute_status(d));
     return d->deviceStatus;
 }
 
