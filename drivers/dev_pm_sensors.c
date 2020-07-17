@@ -127,7 +127,7 @@ typedef union {
 } configreg_t;
 
 // default value 0x4127
-static configreg_t default_configreg()
+static configreg_t default_configreg(void)
 {
     configreg_t r;
     r.bit.mode = 7;     // 7: Shunt and Bus, Continuous

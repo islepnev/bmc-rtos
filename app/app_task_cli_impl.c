@@ -66,10 +66,6 @@ void cycle_display_mode(void)
 
 static void screen_handle_key(char ch)
 {
-    switch (display_mode) {
-    default:
-        break;
-    }
 }
 
 void cliTask(void const *arg)
