@@ -23,7 +23,9 @@
 #include "dev_pm_sensors_types.h"
 #include "dev_pm_sensors.h"
 #include "bsp_pin_defs.h"
+#include "logbuffer.h"
 
+#include "cmsis_os.h"
 #include "gpio.h"
 #include "stm32f7xx_hal_gpio.h"
 
@@ -176,3 +178,17 @@ void bsp_update_system_powergood_pin(bool power_good)
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }
 
+void switch_power(Dev_powermon *pm, bool state)
+{
+    // int pcb_ver = get_mcb_pcb_ver();
+    if (state)
+        log_put(LOG_NOTICE, "Switching ON");
+    else
+        log_put(LOG_NOTICE, "Switching OFF");
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        pm->sw[i] = state;
+    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
+    write_power_switches(pm->sw);
+    if (state)
+        osDelay(1); // allow 20 us for charge with pullups
+}

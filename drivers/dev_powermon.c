@@ -95,17 +95,11 @@ static bool check_power_switches(const Dev_powermon *pm)
 
 bool update_power_switches(Dev_powermon *pm, bool state)
 {
-    // int pcb_ver = get_mcb_pcb_ver();
     if (state)
         log_put(LOG_NOTICE, "Switching ON");
     else
         log_put(LOG_NOTICE, "Switching OFF");
-    for (int i=0; i<POWER_SWITCH_COUNT; i++)
-        pm->sw[i] = state;
-    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
-    write_power_switches(pm->sw);
-    if (state)
-        osDelay(1); // allow 20 us for charge with pullups
+    switch_power(pm, state);
     read_power_switches_state(pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);

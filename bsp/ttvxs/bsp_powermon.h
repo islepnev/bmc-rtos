@@ -48,6 +48,8 @@ double pm_get_power_max_w(const Dev_powermon *pm);
 
 void bsp_update_system_powergood_pin(bool power_good);
 
+void switch_power(Dev_powermon *pm, bool state);
+
 #ifdef __cplusplus
 }
 #endif
