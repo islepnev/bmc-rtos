@@ -148,3 +148,8 @@ double pm_get_power_max_w(const Dev_powermon *pm)
     return mw;
 }
 
+void bsp_update_system_powergood_pin(bool power_good)
+{
+    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
+}
+

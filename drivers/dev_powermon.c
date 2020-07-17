@@ -79,12 +79,6 @@ bool get_critical_power_failure(const pm_sensors_arr sensors)
     return false;
 }
 
-void update_system_powergood_pin(const pm_sensors_arr sensors)
-{
-    system_power_present = get_critical_power_valid(sensors);
-    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, system_power_present);
-}
-
 static bool check_power_switches(const Dev_powermon *pm)
 {
     bool ret = true;
