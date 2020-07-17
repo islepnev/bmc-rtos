@@ -24,6 +24,7 @@
 #include "dev_pm_sensors.h"
 #include "bsp_pin_defs.h"
 
+#include "cmsis_os.h"
 #include "gpio.h"
 #include "stm32f7xx_hal_gpio.h"
 
@@ -151,3 +152,30 @@ void bsp_update_system_powergood_pin(bool power_good)
     // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }
 
+void switch_power(Dev_powermon *pm, bool state)
+{
+    // turn off only when failed
+    //    bool state = state_primary;
+
+    bool state_primary = (pm->pmState != PM_STATE_PWRFAIL) && (pm->pmState != PM_STATE_OFF) && (pm->pmState != PM_STATE_OVERHEAT);
+
+    // primary switches (required for monitors)
+    pm->sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
+    pm->sw[PSW_3V3] = state_primary;
+    write_power_switches(pm->sw);
+
+    // secondary switches
+    bool turnon_1v5 = !pm->sw[PSW_1V5] && state;
+    pm->sw[PSW_1V5] = state;
+    write_power_switches(pm->sw);
+    if (turnon_1v5)
+        osDelay(10);
+    pm->sw[PSW_1V0] = state;
+    pm->sw[PSW_TDC_A] = true; // state;
+    pm->sw[PSW_TDC_B] = true; // state;
+    pm->sw[PSW_TDC_C] = true; // state;
+
+    write_power_switches(pm->sw);
+    if (state)
+        osDelay(1); // allow 20 us for charge with pullups
+}

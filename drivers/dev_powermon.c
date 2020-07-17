@@ -95,34 +95,11 @@ static bool check_power_switches(const Dev_powermon *pm)
 
 bool update_power_switches(Dev_powermon *pm, bool state)
 {
-    // turn off only when failed
-    bool state_primary = (pm->pmState != PM_STATE_PWRFAIL) && (pm->pmState != PM_STATE_OFF) && (pm->pmState != PM_STATE_OVERHEAT);
-//    bool state = state_primary;
-
     if (state)
         log_put(LOG_NOTICE, "Switching ON");
     else
         log_put(LOG_NOTICE, "Switching OFF");
-
-    // primary switches (required for monitors)
-    pm->sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
-    pm->sw[PSW_3V3] = state_primary;
-    write_power_switches(pm->sw);
-
-    // secondary switches
-    bool turnon_1v5 = !pm->sw[PSW_1V5] && state;
-    pm->sw[PSW_1V5] = state;
-    write_power_switches(pm->sw);
-        if (turnon_1v5)
-        osDelay(10);
-    pm->sw[PSW_1V0] = state;
-    pm->sw[PSW_TDC_A] = true; // state;
-    pm->sw[PSW_TDC_B] = true; // state;
-    pm->sw[PSW_TDC_C] = true; // state;
-
-    write_power_switches(pm->sw);
-    if (state)
-        osDelay(1); // allow 20 us for charge with pullups
+    switch_power(pm, state);
     read_power_switches_state(pm->sw_state);
     bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
     check_power_switches(pm);
