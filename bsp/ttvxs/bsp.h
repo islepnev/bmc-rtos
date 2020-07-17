@@ -48,6 +48,7 @@ extern "C" {
 #define DEV_THERM_COUNT 1
 
 uint32_t detect_pcb_version(void);
+void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
 
 #ifdef __cplusplus

@@ -37,6 +37,11 @@ uint32_t detect_pcb_version(void)
     return a1 * 2 + a0;
 }
 
+void update_board_version(int powermon_count)
+{
+    // do nothing
+}
+
 /*
 void fpga_enable_interface(bool enable)
 {
