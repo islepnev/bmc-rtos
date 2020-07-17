@@ -15,47 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TDC72VHL v4 board specific definitions
-
-#ifndef BSP_H
-#define BSP_H
-
-#include <stdint.h>
-#include <stdbool.h>
-
-#define LED_HEARTBEAT LED_INT_GREEN
+#ifndef BSP_DIGIPOT_H
+#define BSP_DIGIPOT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define hi2c_ad9545 hi2c2
-#define hi2c_sensors hi2c4
-#define hi2c_sfpiic hi2c4
-
-#define fpga_spi hspi1
-#define therm_spi hspi4
-
-#define ad9545_deviceAddr 0x4A
-#define hi2c_eeprom_cfg hi2c2
-#define eeprom_cfg_deviceAddr 0x50
-
-#define DEV_THERM_COUNT 4
+enum {DEV_DIGIPOT_COUNT = 3};
 
 typedef enum {
-    PCB_4_1 = 0,
-    PCB_4_2 = 1
-} board_version_t;
+    POT_TDC_A,
+    POT_TDC_B,
+    POT_TDC_C
+} PotIndex;
 
-// run-time detected board version (see i2c supply sensors)
-extern board_version_t board_version;
-
-uint32_t detect_pcb_version(void);
-void update_board_version(int powermon_count);
-bool fpga_done_pin_present(void);
+const char *potLabel(PotIndex index);
+int potBusAddress(PotIndex index);
+int potSensorIndex(PotIndex index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BSP_H
+#endif // BSP_DIGIPOT_H

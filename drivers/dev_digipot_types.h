@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,27 +15,34 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BSP_POT_H
-#define BSP_POT_H
+#ifndef DEV_DIGIPOT_TYPES_H
+#define DEV_DIGIPOT_TYPES_H
+
+#include <stdint.h>
+#include "bsp_digipot.h"
+#include "dev_common_types.h"
+#include "dev_pm_sensors_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {DEV_POT_COUNT = 3};
+typedef struct Dev_ad5141 {
+    PotIndex index;
+    SensorIndex sensorIndex;
+    uint8_t busAddress;
+    DeviceStatus deviceStatus;
+    uint8_t value;
+} Dev_ad5141;
 
-typedef enum {
-    POT_TDC_A,
-    POT_TDC_B,
-    POT_TDC_C
-} PotIndex;
+typedef struct Dev_digipots {
+    Dev_ad5141 pot[DEV_DIGIPOT_COUNT];
+} Dev_digipots;
 
-const char *potLabel(PotIndex index);
-int potBusAddress(PotIndex index);
-int potSensorIndex(PotIndex index);
+void struct_pots_init(Dev_digipots *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BSP_POT_H
+#endif // DEV_DIGIPOT_TYPES_H

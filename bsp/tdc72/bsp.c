@@ -25,10 +25,7 @@
 #include "stm32f7xx_hal_gpio.h"
 
 #include "i2c.h"
-#include "bus/i2c_driver.h"
-#include "spi.h"
 #include "dev_pm_sensors_config.h"
-#include "dev_pot.h"
 #include "logbuffer.h"
 
 uint32_t detect_pcb_version(void)
@@ -39,15 +36,11 @@ uint32_t detect_pcb_version(void)
 }
 
 board_version_t board_version = PCB_4_1;
-void update_board_version(int powermon_count, int pots_count)
+void update_board_version(int powermon_count)
 {
-    if ((pots_count == 0) && (powermon_count <= POWERMON_SENSORS_PCB_4_1))
+    if (powermon_count <= POWERMON_SENSORS_PCB_4_1)
         board_version = PCB_4_1;
-    if ((pots_count > 0) && (powermon_count > POWERMON_SENSORS_PCB_4_1))
-        board_version = PCB_4_2;
-    if (pots_count == DEV_POT_COUNT)
-        board_version = PCB_4_2;
-    if (powermon_count == POWERMON_SENSORS_PCB_4_2)
+    else
         board_version = PCB_4_2;
 }
 

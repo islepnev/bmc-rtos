@@ -24,6 +24,7 @@
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
 //#include "dev_vxsiic_types.h"
+#include "dev_digipot_types.h"
 #include "dev_powermon_types.h"
 #include "dev_leds_types.h"
 
@@ -35,6 +36,7 @@ typedef struct Devices {
     Dev_at24c eeprom_config;
     Dev_ad9545 pll;
     Dev_powermon pm;
+    Dev_digipots pots;
     uint32_t pcb_ver;
 } Devices;
 

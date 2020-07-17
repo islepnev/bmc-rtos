@@ -23,18 +23,6 @@
 #include "ad5141_i2c_hal.h"
 #include "powermon_i2c_driver.h"
 
-void struct_pots_init(Dev_pots *d)
-{
-    for (int i=0; i<DEV_POT_COUNT; i++) {
-        Dev_ad5141 zz = {0};
-        d->pot[i] = zz;
-        d->pot[i].index = i;
-        d->pot[i].deviceStatus = DEVICE_UNKNOWN;
-        d->pot[i].sensorIndex = potSensorIndex(i);
-        d->pot[i].busAddress = potBusAddress(i);
-    }
-}
-
 void dev_ad5141_reset(Dev_ad5141 *d)
 {
     if (d->deviceStatus == DEVICE_NORMAL)
@@ -69,10 +57,10 @@ static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
     return d->deviceStatus;
 }
 
-int pot_detect(Dev_pots *d)
+int pot_detect(Dev_digipots *d)
 {
     int count = 0;
-    for (int i=0; i<DEV_POT_COUNT; i++) {
+    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         powermon_i2c_reset_master();
         DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
@@ -85,10 +73,10 @@ int pot_detect(Dev_pots *d)
     return count;
 }
 
-void pot_read_rdac_all(Dev_pots *d)
+void pot_read_rdac_all(Dev_digipots *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    for (int i=0; i<DEV_POT_COUNT; i++) {
+    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 *p = &d->pot[i];
         if (p->deviceStatus != DEVICE_NORMAL)
             continue;

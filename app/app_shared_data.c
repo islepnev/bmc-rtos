@@ -70,6 +70,11 @@ Dev_at24c *get_dev_eeprom_config(void)
 {
     return &dev.eeprom_config;
 }
+
+Dev_digipots *get_dev_digipots(void)
+{
+    return &dev.pots;
+}
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

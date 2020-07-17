@@ -23,7 +23,6 @@
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_types.h"
 #include "bsp_powermon_types.h"
-#include "dev_pot.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,7 +63,6 @@ typedef struct Dev_powermon {
    pm_pgoods pgood;
    pm_switches sw;
    pm_switches sw_state;
-   Dev_pots pots;
 } Dev_powermon;
 
 SensorStatus pm_sensors_getStatus(const Dev_powermon *d);

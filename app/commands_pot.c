@@ -55,7 +55,7 @@ int pot_screen_selected = 0;
 
 static void pot_action_down(void)
 {
-    if (pot_screen_selected+1 < DEV_POT_COUNT)
+    if (pot_screen_selected+1 < DEV_DIGIPOT_COUNT)
         pot_screen_selected++;
     else
         pot_screen_selected = 0;
@@ -67,7 +67,7 @@ static void pot_action_up(void)
     if (pot_screen_selected > 0)
         pot_screen_selected--;
     else
-        pot_screen_selected = DEV_POT_COUNT-1;
+        pot_screen_selected = DEV_DIGIPOT_COUNT-1;
     schedule_display_refresh();
 }
 

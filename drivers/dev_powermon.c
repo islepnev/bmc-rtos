@@ -21,11 +21,8 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bsp_powermon.h"
-#include "commands.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
-#include "dev_pot.h"
-#include "error_handler.h"
 #include "logbuffer.h"
 #include "powermon_i2c_driver.h"
 
@@ -52,7 +49,6 @@ void struct_powermon_init(Dev_powermon *d)
     d->vmePresent = 0;
     init_pgood(&d->pgood);
     init_power_switches(&d->sw);
-    struct_pots_init(&d->pots);
 }
 
 bool pm_read_liveInsert(Dev_powermon *pm)
@@ -220,48 +216,6 @@ uint32_t getMonStateTicks(const Dev_powermon *pm)
     return osKernelSysTick() - pm->stateStartTick;
 }
 
-void pot_command_process(Dev_pots *d, const CommandPots *cmd)
-{
-    if (!cmd || cmd->arg >= DEV_POT_COUNT)
-        return;
-    Dev_ad5141 *p = &d->pot[cmd->arg];
-    switch (cmd->command_id) {
-    case COMMAND_POTS_RESET:
-        dev_ad5141_reset(p);
-        break;
-    case COMMAND_POTS_INC:
-        dev_ad5141_inc(p);
-        break;
-    case COMMAND_POTS_DEC:
-        dev_ad5141_dec(p);
-        break;
-    case COMMAND_POTS_WRITE:
-        dev_ad5141_write(p);
-        break;
-    default:
-        break;
-    }
-}
-
-static const int POT_MAX_MAIL_BATCH = 10;
-
-void pot_check_mail(Dev_pots *d)
-{
-    if (!mq_cmd_pots_id)
-        Error_Handler();
-    for (int i=0; i<POT_MAX_MAIL_BATCH; i++) {
-        osEvent event = osMailGet(mq_cmd_pots_id, 0);
-        if (osEventMail != event.status) {
-            return;
-        }
-        CommandPots *mail = (CommandPots *) event.value.p;
-        if (!mail)
-            Error_Handler();
-        pot_command_process(d, mail);
-        osMailFree(mq_cmd_pots_id, mail);
-    }
-}
-
 MonState runMon(Dev_powermon *pm)
 {
     pm->monCycle++;
@@ -273,19 +227,17 @@ MonState runMon(Dev_powermon *pm)
         break;
     case MON_STATE_DETECT: {
         powermon_i2c_reset_master();
-        int pots_detected = pot_detect(&pm->pots);
-        powermon_i2c_reset_master();
         int num_detected = monDetect(pm);
-        update_board_version(num_detected, pots_detected);
+        update_board_version(num_detected);
         if (board_version == PCB_4_2) {
-            if ((num_detected == POWERMON_SENSORS_PCB_4_2) && (pots_detected == DEV_POT_COUNT)) {
-                log_put(LOG_INFO, "PCB 4.2 sensors and digipots detected");
+            if (num_detected == POWERMON_SENSORS_PCB_4_2) {
+                log_put(LOG_INFO, "PCB 4.2 sensors detected");
                 pm->monState = MON_STATE_READ;
                 break;
             }
         }
         if (board_version == PCB_4_1) {
-            if ((num_detected == POWERMON_SENSORS_PCB_4_1) && (pots_detected == 0)) {
+            if (num_detected == POWERMON_SENSORS_PCB_4_1) {
                 log_put(LOG_INFO, "PCB 4.1 sensors detected");
                 pm->monState = MON_STATE_READ;
                 break;
@@ -304,10 +256,6 @@ MonState runMon(Dev_powermon *pm)
         break;
     }
     case MON_STATE_READ:
-        if (board_version >= PCB_4_2) {
-            pot_read_rdac_all(&pm->pots);
-            pot_check_mail(&pm->pots);
-        }
         if (monReadValues(pm) == 0)
             pm->monState = MON_STATE_READ;
         else

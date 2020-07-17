@@ -1,7 +1,7 @@
 /*
 **    Digital Potentiometers
 **
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -17,36 +17,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_pot.h"
-#include <stdio.h>
-#include "dev_pm_sensors_config.h"
+#include "dev_digipot_types.h"
 
-const char *potLabel(PotIndex index)
-{
-    switch (index) {
-    case POT_TDC_A: return "TDC_A";
-    case POT_TDC_B: return "TDC_B";
-    case POT_TDC_C: return "TDC_C";
-    }
-    return 0;
-}
+#include "bsp_digipot.h"
 
-int potBusAddress(PotIndex index)
+void struct_pots_init(Dev_digipots *d)
 {
-    switch (index) {
-    case POT_TDC_A: return 0x20;
-    case POT_TDC_B: return 0x23;
-    case POT_TDC_C: return 0x2C;
+    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
+        Dev_ad5141 zz = {0};
+        d->pot[i] = zz;
+        d->pot[i].index = i;
+        d->pot[i].deviceStatus = DEVICE_UNKNOWN;
+        d->pot[i].sensorIndex = potSensorIndex(i);
+        d->pot[i].busAddress = potBusAddress(i);
     }
-    return 0;
-}
-
-int potSensorIndex(PotIndex index)
-{
-    switch (index) {
-    case POT_TDC_A: return SENSOR_TDC_A;
-    case POT_TDC_B: return SENSOR_TDC_B;
-    case POT_TDC_C: return SENSOR_TDC_C;
-    }
-    return 0;
 }

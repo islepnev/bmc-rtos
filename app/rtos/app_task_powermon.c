@@ -23,6 +23,7 @@
 #include "app_shared_data.h"
 #include "app_tasks.h"
 #include "app_task_sfpiic_impl.h"
+#include "app_task_digipot_impl.h"
 #include "app_task_powermon_impl.h"
 #include "ipmi_sensors.h"
 #include "debug_helpers.h"
@@ -40,6 +41,7 @@ static void start_task_powermon( void const *arg)
     while (1)
     {
         task_sfpiic_run();
+        task_digipot_run();
         task_powermon_run();
         sync_ipmi_sensors();
 
