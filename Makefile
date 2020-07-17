@@ -9,50 +9,56 @@ ifneq ($(TOOLCHAIN_PREFIX),)
     CMAKE_ARGS := -DTOOLCHAIN_PREFIX=$(TOOLCHAIN_PREFIX)
 endif
 
-all: ./build/Makefile
-	@ $(MAKE) -C build
 
-./build/Makefile:
-	@  ($(MKDIR) build > /dev/null)
-	@  (cd build > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ..)
+all: ./build-tdc72/Makefile ./build-ttvxs/Makefile
+	@ $(MAKE) -C build-tdc72
+	@ $(MAKE) -C build-ttvxs
 
-distclean:
-	@  ($(MKDIR) build > /dev/null)
-	@  (cd build > /dev/null 2>&1 && cmake $(CMAKE_ARGS) .. > /dev/null 2>&1)
-	@- $(MAKE) --silent -C build clean || true
-	@- $(RM) ./build/Makefile
-	@- $(RM) ./build/src
-	@- $(RM) ./build/test
-	@- $(RM) ./build/CMake*
-	@- $(RM) ./build/cmake.*
-	@- $(RM) ./build/*.cmake
-	@- $(RM) ./build/*.txt
-	@- $(RM) ./build/*.ld
+./build-tdc72/Makefile:
+	@  ($(MKDIR) build-tdc72 > /dev/null)
+	@  (cd build-tdc72 > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/tdc72)
 
-flash:
-	openocd -f interface/stlink-v2.cfg -f target/stm32f7x.cfg -c "program build/tdc72vxs4_rtos.elf verify reset exit"
+./build-ttvxs/Makefile:
+	@  ($(MKDIR) build-ttvxs > /dev/null)
+	@  (cd build-ttvxs > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/ttvxs)
 
-SRC_DIRS := app common drivers FreeRTOS Inc Src STM32Cube cubemx
+#distclean:
+#	@  ($(MKDIR) build > /dev/null)
+#	@  (cd build > /dev/null 2>&1 && cmake $(CMAKE_ARGS) $(CMAKELISTS) > /dev/null 2>&1)
+#	@- $(MAKE) --silent -C build clean || true
+#	@- $(RM) ./build/Makefile
+#	@- $(RM) ./build/src
+#	@- $(RM) ./build/test
+#	@- $(RM) ./build/CMake*
+#	@- $(RM) ./build/cmake.*
+#	@- $(RM) ./build/*.cmake
+#	@- $(RM) ./build/*.txt
+#	@- $(RM) ./build/*.ld
 
-import-cubemx:
-	rm -f Inc/*.h Src/*.c
-	cp -fp cubemx/Core/Inc/*.h Inc/
-	cp -fp cubemx/Core/Src/*.c Src/
-	cp -fp cubemx/Core/Src/system_stm32f7xx.c STM32Cube/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/
-	rm -f  Src/system_stm32f7xx.c Src/syscalls.c
-	sed -i -e '/RCC_OscInitStruct.PLL.PLLQ/a\' -e '  RCC_OscInitStruct.PLL.PLLR = 2;' Src/main.c
-	rm -rf FreeRTOS
-	cp -rp cubemx/Middlewares/Third_Party/FreeRTOS ./
+#flash:
+#	openocd -f interface/stlink-v2.cfg -f target/stm32f7x.cfg -c "program build/tdc72vxs4_rtos.elf verify reset exit"
 
-export-cubemx:
-	cp -fp Inc/*.h cubemx/Core/Inc/
-	cp -fp Src/*.c cubemx/Core/Src/
+#SRC_DIRS := app common drivers FreeRTOS Inc Src STM32Cube cubemx
 
-format:
-	@find $(SRC_DIRS) -iname '*.h' -o -iname '*.c' -o -iname '*.s' | while read f; do \
-	    dos2unix -q $$f; \
-	    sed -i -e 's/[ \t]*$$//' $$f; \
-	done
+#import-cubemx:
+#	rm -f Inc/*.h Src/*.c
+#	cp -fp cubemx/Core/Inc/*.h Inc/
+#	cp -fp cubemx/Core/Src/*.c Src/
+#	cp -fp cubemx/Core/Src/system_stm32f7xx.c STM32Cube/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/
+#	rm -f  Src/system_stm32f7xx.c Src/syscalls.c
+#	sed -i -e '/RCC_OscInitStruct.PLL.PLLQ/a\' -e '  RCC_OscInitStruct.PLL.PLLR = 2;' Src/main.c
+#	rm -rf FreeRTOS
+#	cp -rp cubemx/Middlewares/Third_Party/FreeRTOS ./
+
+#export-cubemx:
+#	cp -fp Inc/*.h cubemx/Core/Inc/
+#	cp -fp Src/*.c cubemx/Core/Src/
+
+#format:
+#	@find $(SRC_DIRS) -iname '*.h' -o -iname '*.c' -o -iname '*.s' | while read f; do \
+#	    dos2unix -q $$f; \
+#	    sed -i -e 's/[ \t]*$$//' $$f; \
+#	done
 
 #ifeq ($(findstring distclean,$(MAKECMDGOALS)),)
 #    $(MAKECMDGOALS): ./build/Makefile

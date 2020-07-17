@@ -4,8 +4,12 @@
 .settings/
 Drivers/
 Inc/
+LWIP/
 Middlewares/
 STM32F769NI_FLASH.ld
 Src/
+TrueSTUDIO/
 startup/
-tdc72xvs4-rtos.elf.launch
+*.elf.launch
+*.pdf
+*.txt

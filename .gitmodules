@@ -1,3 +1,6 @@
+[submodule "external/lwip"]
+	path = external/lwip
+	url = git@afi-git.jinr.ru:islepnev/lwip.git
 [submodule "external/FreeRTOS"]
 	path = external/FreeRTOS
 	url = git@afi-git.jinr.ru:soft/FreeRTOS.git
