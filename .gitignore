@@ -55,3 +55,4 @@ CMakeLists.txt.user
 CMakeLists.txt.user.*
 build_id
 */build-*/
+build-*
