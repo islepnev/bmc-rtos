@@ -67,12 +67,8 @@ void cycle_display_mode(void)
 
 static void screen_handle_key(char ch)
 {
-    switch (display_mode) {
-    case DISPLAY_POT:
+    if (DISPLAY_POT == display_mode) {
         pot_screen_handle_key(ch);
-        break;
-    default:
-        break;
     }
 }
 

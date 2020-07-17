@@ -75,7 +75,6 @@ void pot_check_mail(Dev_digipots *d)
 }
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
-static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 typedef enum {
     STATE_INIT,
