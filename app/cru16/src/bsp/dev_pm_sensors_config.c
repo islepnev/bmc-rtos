@@ -52,7 +52,7 @@ double monShuntVal(SensorIndex index)
     case SENSOR_5V:            return 0; // no shunt
     case SENSOR_VXS_5V:        return 0.004;
     case SENSOR_2V5:           return 0.002;
-    case SENSOR_3V3:           return 0.002;
+    case SENSOR_3V3:           return 0.004;
     case SENSOR_FPGA_CORE_1V0: return 0.002;
     case SENSOR_FPGA_MGT_1V0:  return 0.002;
     case SENSOR_FPGA_MGT_1V2:  return 0.002;
