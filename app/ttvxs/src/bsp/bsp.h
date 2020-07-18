@@ -47,6 +47,8 @@ extern "C" {
 
 #define DEV_THERM_COUNT 1
 
+#define AUXPLL_AD9516_OUT7_ENABLE 0
+
 uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
