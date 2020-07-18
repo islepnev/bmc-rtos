@@ -344,10 +344,10 @@ err:
 OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
 {
     // output drivers
-    ad9516_write1(0x140, 0x42); // OUT6, Enable, LVDS
+    ad9516_write1(0x140, AUXPLL_AD9516_OUT6_ENABLE ? 0x42 : 0x43); // OUT6
     ad9516_write1(0x141, AUXPLL_AD9516_OUT7_ENABLE ? 0x42 : 0x43); // OUT7
     ad9516_write1(0x142, 0x42); // OUT8, Enable, LVDS
-    ad9516_write1(0x143, 0x42); // OUT9, Enable, LVDS
+    ad9516_write1(0x143, AUXPLL_AD9516_OUT9_ENABLE ? 0x42 : 0x43); // OUT9
 
     // output dividers
     ad9516_write1(0x199, 0);

@@ -47,7 +47,9 @@ extern "C" {
 
 #define DEV_THERM_COUNT 1
 
+#define AUXPLL_AD9516_OUT6_ENABLE 1
 #define AUXPLL_AD9516_OUT7_ENABLE 0
+#define AUXPLL_AD9516_OUT9_ENABLE 1
 
 uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
