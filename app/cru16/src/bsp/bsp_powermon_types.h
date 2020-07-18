@@ -27,7 +27,7 @@ typedef enum PowerSwitchIndex {
     PSW_5V,
     PSW_5V_FMC,
     PSW_3V3,
-    PSW_2V5,
+    PSW_1V5,
     PSW_1V0_CORE,
     PSW_1V0_MGT,
     PSW_1V2_MGT
@@ -39,7 +39,7 @@ typedef bool pm_switches[POWER_SWITCH_COUNT];
 
 typedef enum PowerGoodIndex {
     PGOOD_3V3,
-    PGOOD_2V5,
+    PGOOD_1V5,
     PGOOD_1V0_CORE,
     PGOOD_1V0_MGT,
     PGOOD_1V2_MGT,
