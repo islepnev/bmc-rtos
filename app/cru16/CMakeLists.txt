@@ -100,7 +100,7 @@ INCLUDE_DIRECTORIES(
    ${MY_SRC_DIR}/tasks
    ${MY_SRC_DIR}/rtos
     ${MY_LIB_DIR}/dev/ttvxs_auxpll
-    ${MY_LIB_DIR}/dev/ttvxs_clkmux
+    ${MY_LIB_DIR}/dev/cru16_clkmux
     ${MY_LIB_DIR}/dev/ttvxs_vxsiic
 )
 
@@ -108,7 +108,7 @@ file(GLOB_RECURSE DEV
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
     ${MY_LIB_DIR}/dev/ttvxs_auxpll/*
-    ${MY_LIB_DIR}/dev/ttvxs_clkmux/*
+    ${MY_LIB_DIR}/dev/cru16_clkmux/*
     ${MY_LIB_DIR}/dev/ttvxs_vxsiic/*
 )
 
