@@ -1,0 +1,212 @@
+#SET(TOOLCHAIN_PREFIX ~/gcc-arm-none-eabi-8-2018-q4-major)
+
+if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+endif()
+
+SET(FREERTOS_DIR FreeRTOS)
+
+SET(STM32_CHIP STM32F769NIH)
+SET(STM32Cube_DIR STM32Cube)
+SET(CMAKE_MODULE_PATH cmake)
+SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
+
+SET(STM32_MIN_HEAP_SIZE 0x20000)
+SET(STM32_MIN_STACK_SIZE 0x200)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
+cmake_policy(SET CMP0048 NEW)
+
+PROJECT(ttvxs_rtos VERSION 1.8 LANGUAGES C CXX)
+set (CMAKE_CXX_STANDARD 11)
+#SET(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+
+# uncomment to build for old TTVXS v1.0
+#add_compile_definitions(TTVXS_1_0)
+
+ENABLE_LANGUAGE(ASM)
+
+FIND_PACKAGE(CMSIS REQUIRED)
+FIND_PACKAGE(STM32HAL COMPONENTS adc dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
+
+SET(HAL_LL_COMPONENTS ${HAL_LL_COMPONENTS} gpio usart)
+file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
+   STM32Cube/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.c
+)
+
+SET(STM32HAL_SOURCES ${STM32HAL_SOURCES} ${HAL_LL_EXTRA_SOURCES})
+
+add_compile_definitions(USE_FULL_LL_DRIVER)
+
+### lwIP
+SET(LWIP_DIR external/lwip)
+SET(LWIP_CONTRIB_DIR external/lwip/contrib)
+add_compile_definitions(LWIP_DEBUG)
+include(${LWIP_DIR}/src/Filelists.cmake)
+include(${LWIP_CONTRIB_DIR}/Filelists.cmake)
+SET(LWIP_SOURCES
+   ${lwipcore_SRCS}
+   ${lwipcore4_SRCS}
+   ${lwipapi_SRCS}
+   ${lwipnetif_SRCS}
+   ${lwiphttp_SRCS}
+   ${lwipsntp_SRCS}
+   ${lwipsnmp_SRCS}
+   ${lwipiperf_SRCS}
+#   ${lwipcontribexamples_SRCS}
+   system/OS/sys_arch.c
+)
+SET(LWIP_INCLUDE_DIRS
+   ${LWIP_DIR}/src/include
+   ${LWIP_CONTRIB_DIR}
+)
+
+INCLUDE_DIRECTORIES(
+    ${CMSIS_INCLUDE_DIRS}
+    ${STM32HAL_INCLUDE_DIR}
+   ${FREERTOS_DIR}/Source/CMSIS_RTOS
+   ${FREERTOS_DIR}/Source/include
+   ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1
+   ${LWIP_INCLUDE_DIRS}
+   Inc
+   Src
+   drivers
+   common
+   app
+   bsp
+   eth
+   system
+)
+
+file(GLOB_RECURSE USER_SOURCES
+   Src/*.c
+   Src/*.cpp
+   common/*.c
+   drivers/*.c
+   drivers/*.cpp
+   app/*.c
+   app/*.cpp
+   eth/app_ethernet.c
+#   eth/app_httpd_main.c
+   eth/ethernetif.c
+   eth/httpserver-netconn.c
+)
+file(GLOB_RECURSE USER_INCLUDES
+   Inc/*.h
+   Src/*.h
+   common/*.h
+   drivers/*.h
+   app/*.h
+   bsp/*.h
+)
+
+SET(PROJECT_SOURCES
+    ${USER_SOURCES}
+    ${USER_INCLUDES}
+)
+
+file(GLOB_RECURSE FREERTOS_SOURCES
+    ${FREERTOS_DIR}/Source/tasks.c
+    ${FREERTOS_DIR}/Source/timers.c
+    ${FREERTOS_DIR}/Source/queue.c
+    ${FREERTOS_DIR}/Source/list.c
+    ${FREERTOS_DIR}/Source/CMSIS_RTOS/cmsis_os.c
+    ${FREERTOS_DIR}/Source/portable/GCC/ARM_CM7/r0p1/port.c
+    ${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c
+    ${FREERTOS_DIR}/Source/event_groups.c
+
+)
+
+set(DATA_FILE
+   doc/Doxyfile.in
+   mib/afi-bmc.mib
+   README.md
+   app/version.h.in
+)
+
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
+SET(ELF ${CMAKE_PROJECT_NAME}.elf)
+ADD_EXECUTABLE(${ELF}
+    ${CMSIS_SOURCES}
+    ${STM32HAL_SOURCES}
+    ${FREERTOS_SOURCES}
+    ${LWIP_SOURCES}
+    ${PROJECT_SOURCES}
+    ${DATA_FILE}
+)
+TARGET_LINK_LIBRARIES(${ELF})
+STM32_SET_TARGET_PROPERTIES(${ELF})
+STM32_ADD_HEX_BIN_TARGETS(${ELF})
+STM32_ADD_DUMP_TARGET(${ELF})
+STM32_PRINT_SIZE_OF_TARGETS(${ELF})
+
+# Stack Smashing Protection
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fstack-protector-all -fstack-usage -Wstack-usage=250")
+# Extra warnings
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused -Wno-unused-parameter")
+
+# first we can indicate the documentation build as an option and set it to ON by default
+option(BUILD_DOC "Build documentation" ON)
+
+# check if Doxygen is installed
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doc_doxygen
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
+
+find_package (Git)
+if (GIT_FOUND)
+      message("git found: ${GIT_EXECUTABLE} in version ${GIT_VERSION_STRING}")
+endif (GIT_FOUND)
+
+# Get the current working branch
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# Get the latest commit description
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} describe --always --tags --long --dirty
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_DESCR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/app/version.h.in
+  ${CMAKE_SOURCE_DIR}/app/version.h
+)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/build_id.in
+  ${CMAKE_SOURCE_DIR}/build_id
+)
+list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/app/version.h)
+
+add_custom_command(TARGET ${ELF} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ELF}> ${CMAKE_PROJECT_NAME}-${GIT_DESCR}.elf
+)
