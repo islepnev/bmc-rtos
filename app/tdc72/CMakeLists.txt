@@ -94,9 +94,7 @@ file(GLOB_RECURSE Drivers_SRCS
     ${MY_LIB_DIR}/drivers/dev_leds_types.h
     ${MY_LIB_DIR}/drivers/dev_mcu.c
     ${MY_LIB_DIR}/drivers/dev_mcu.h
-    ${MY_LIB_DIR}/drivers/dev_sfpiic.c
-    ${MY_LIB_DIR}/drivers/dev_sfpiic.h
-    ${MY_LIB_DIR}/drivers/dev_sfpiic_types.h
+    ${MY_LIB_DIR}/drivers/dev_sfpiic*
     ${MY_LIB_DIR}/drivers/dev_thset.c
     ${MY_LIB_DIR}/drivers/dev_thset.h
     ${MY_LIB_DIR}/drivers/dev_thset_types.h

@@ -57,7 +57,7 @@ void task_sfpiic_run(void)
         break;
     }
     case SFPIIC_STATE_RUN:
-        if (DEVICE_NORMAL != dev_sfpiic_read(d)) {
+        if (DEVICE_NORMAL != dev_sfpiic_update(d)) {
             state = SFPIIC_STATE_ERROR;
             break;
         }
