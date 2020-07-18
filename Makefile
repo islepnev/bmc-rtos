@@ -10,13 +10,18 @@ ifneq ($(TOOLCHAIN_PREFIX),)
 endif
 
 
-all: ./build-tdc72/Makefile ./build-ttvxs/Makefile
+all: ./build-tdc72/Makefile ./build-cru16/Makefile ./build-ttvxs/Makefile
 	@ $(MAKE) -C build-tdc72
+	@ $(MAKE) -C build-cru16
 	@ $(MAKE) -C build-ttvxs
 
 ./build-tdc72/Makefile:
 	@  ($(MKDIR) build-tdc72 > /dev/null)
 	@  (cd build-tdc72 > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/tdc72)
+
+./build-cru16/Makefile:
+	@  ($(MKDIR) build-cru16 > /dev/null)
+	@  (cd build-cru16 > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/cru16)
 
 ./build-ttvxs/Makefile:
 	@  ($(MKDIR) build-ttvxs > /dev/null)
