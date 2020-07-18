@@ -17,6 +17,14 @@
 #ifndef BSP_AD9545_H
 #define BSP_AD9545_H
 
+#define PLL_REF_PERIOD_NS_TTVXS 24
+#define PLL_REF_PERIOD_NS_CRU16 8
+#define PLL_REF_PERIOD_NS PLL_REF_PERIOD_NS_CRU16
+
+#define PLL_REF_DIV_TTVXS 209
+#define PLL_REF_DIV_CRU16 (209*3)
+#define PLL_REF_DIV PLL_REF_DIV_CRU16
+
 #include "ad9545/ad9545_setup_regs.h"
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
