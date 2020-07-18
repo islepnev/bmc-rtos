@@ -35,6 +35,7 @@
 #include "dev_pm_sensors_types.h"
 #include "dev_powermon.h"
 #include "dev_powermon_types.h"
+#include "dev_sfpiic_print.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
@@ -570,6 +571,7 @@ void display_task_run(void)
             display_mode == DISPLAY_NONE
             || display_mode == DISPLAY_LOG
             || display_mode == DISPLAY_TASKS
+            || display_mode == DISPLAY_SFP_DETAIL
             || display_mode == DISPLAY_BOARDS;
     if (need_clear_screen) {
         if (old_display_mode != display_mode) {
@@ -606,6 +608,9 @@ void display_task_run(void)
         break;
     case DISPLAY_BOARDS:
         display_boards(d);
+        break;
+    case DISPLAY_SFP_DETAIL:
+        sfpPrintStatus(&d->sfpiic);
         break;
     case DISPLAY_TASKS:
         display_tasks();
