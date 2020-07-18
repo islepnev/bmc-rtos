@@ -1,3 +1,0 @@
-[submodule "external/lwip"]
-	path = external/lwip
-	url = git@afi-git.jinr.ru:islepnev/lwip.git
