@@ -27,8 +27,9 @@ extern "C" {
 
 struct Dev_sfpiic;
 
+void dev_sfpiic_init(struct Dev_sfpiic *d);
 DeviceStatus dev_sfpiic_detect(struct Dev_sfpiic *d);
-DeviceStatus dev_sfpiic_read(struct Dev_sfpiic *d);
+DeviceStatus dev_sfpiic_update(struct Dev_sfpiic *d);
 
 #ifdef __cplusplus
 }

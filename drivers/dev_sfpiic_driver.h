@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-extern struct __I2C_HandleTypeDef * const hi2c_sfpiic;
 enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
 //enum { SFP_I2C_ADDRESS = 0x51 };
 //enum { SFP_I2C_ADDRESS = 0x56 };

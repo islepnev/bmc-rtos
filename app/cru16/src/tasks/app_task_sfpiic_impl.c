@@ -46,6 +46,12 @@ static void struct_sfpiic_init(Dev_sfpiic *d)
     d->present = DEVICE_UNKNOWN;
 }
 
+void task_sfpiic_init(void)
+{
+    Dev_sfpiic *d = get_dev_sfpiic();
+    dev_sfpiic_init(d);
+}
+
 void task_sfpiic_run(void)
 {
     Dev_sfpiic *d = get_dev_sfpiic();
@@ -57,7 +63,7 @@ void task_sfpiic_run(void)
         break;
     }
     case SFPIIC_STATE_RUN:
-        if (DEVICE_NORMAL != dev_sfpiic_read(d)) {
+        if (DEVICE_NORMAL != dev_sfpiic_update(d)) {
             state = SFPIIC_STATE_ERROR;
             break;
         }
@@ -78,6 +84,7 @@ void task_sfpiic_run(void)
         break;
     }
     if (old_state != state) {
+        old_state = state;
         stateStartTick = osKernelSysTick();
     }
 }
