@@ -51,27 +51,29 @@ include_directories(
     ${MY_SRC_DIR}/config
     ${MY_SRC_DIR}
     ${MY_LIB_DIR}/common
-    ${MY_LIB_DIR}/drivers
+    ${MY_LIB_DIR}/system/init
 )
-file(GLOB_RECURSE BSP_SRCS
-    ${MY_SRC_DIR}/bsp/*.c
-    ${MY_SRC_DIR}/bsp/*.h
-    ${MY_SRC_DIR}/bsp/mx_init/*.c
-    ${MY_SRC_DIR}/bsp/mx_init/*.h
-)
-#add_library(BSP STATIC ${BSP_SRCS})
-#TARGET_INCLUDE_DIRECTORIES(BSP PRIVATE
-#    ${CMSIS_INCLUDE_DIRS}
-#    ${STM32HAL_INCLUDE_DIR}
-#    ${MY_SRC_DIR}/bsp
-#    ${MY_SRC_DIR}/bsp/mx_init
-#)
-#STM32_SET_TARGET_PROPERTIES(BSP)
 
+file(GLOB_RECURSE BSP_SRCS
+    ${MY_SRC_DIR}/bsp/*.*
+    ${MY_SRC_DIR}/bsp/mx_init/*.*
+    ${MY_LIB_DIR}/system/init/*.*
+)
+
+set(Dev_INC_DIRS
+    ${MY_LIB_DIR}/dev/digipot
+    ${MY_LIB_DIR}/dev/fpga
+    ${MY_LIB_DIR}/dev/powermon
+)
 file(GLOB_RECURSE Dev_SRCS
     ${MY_LIB_DIR}/dev/digipot/*
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
+)
+
+set(Drivers_INC_DIRS
+    ${MY_LIB_DIR}/drivers
+    ${MY_LIB_DIR}/drivers/ina226
 )
 
 file(GLOB_RECURSE Drivers_SRCS
@@ -115,18 +117,16 @@ file(GLOB_RECURSE Drivers_SRCS
 )
 
 add_library(hwlib STATIC ${BSP_SRCS} ${Dev_SRCS} ${Drivers_SRCS})
-target_include_directories(hwlib PRIVATE
-#    ${MY_LIB_DIR}/drivers
-    ${MY_LIB_DIR}/dev/digipot
-    ${MY_LIB_DIR}/dev/fpga
-    ${MY_LIB_DIR}/drivers/ina226
-    ${MY_LIB_DIR}/dev/powermon
+target_include_directories(hwlib PUBLIC
+    ${Dev_INC_DIRS}
+    ${Drivers_INC_DIRS}
 )
 TARGET_INCLUDE_DIRECTORIES(hwlib PRIVATE
     ${CMSIS_INCLUDE_DIRS}
     ${STM32HAL_INCLUDE_DIR}
     ${MY_SRC_DIR}/bsp
     ${MY_SRC_DIR}/bsp/mx_init
+    ${MY_LIB_DIR}/init
 #    ${MY_LIB_DIR}/drivers
 )
 STM32_SET_TARGET_PROPERTIES(hwlib)
@@ -146,22 +146,13 @@ STM32_SET_TARGET_PROPERTIES(STM32HAL)
 
 file(GLOB_RECURSE USER_SOURCES
     ${MY_SRC_DIR}/config/*.*
-    ${MY_LIB_DIR}/common/*.c
-#   ${Drivers_SRCS}
-#   ${DEV}
-   ${MY_SRC_DIR}/*.c
-#   ${MY_SRC_DIR}/bsp/*.c
-#   ${MY_SRC_DIR}/bsp/mx_init/*.c
-)
-file(GLOB_RECURSE USER_INCLUDES
-   ${MY_LIB_DIR}/common/*.h
-   ${MY_SRC_DIR}/*.h
-   ${HAL_LL_EXTRA_INCLUDES}
+    ${MY_LIB_DIR}/common/*.*
+    ${MY_SRC_DIR}/*.*
+    ${HAL_LL_EXTRA_INCLUDES}
 )
 
 SET(PROJECT_SOURCES
     ${USER_SOURCES}
-    ${USER_INCLUDES}
 )
 
 file(GLOB_RECURSE FreeRTOS_SRCS
@@ -182,18 +173,13 @@ include_directories(
     ${FREERTOS_DIR}/include
     ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1
 )
-#target_include_directories(FreeRTOS PUBLIC
-#    ${FREERTOS_DIR}/CMSIS_RTOS
-#    ${FREERTOS_DIR}/include
-#    ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1
-#)
 target_include_directories(FreeRTOS PRIVATE
     ${CMSIS_COMMON_INCLUDE_DIR}
 )
 
-#add_dependencies(Drivers FreeRTOS)
 set(DATA_FILE
    ${MY_TOP_DIR}/doc/Doxyfile.in
+   ${MY_TOP_DIR}/mib/afi-bmc.mib
    ${MY_TOP_DIR}/README.md
    ${MY_SRC_DIR}/version.h.in
 )
@@ -205,15 +191,8 @@ ADD_EXECUTABLE(${ELF}
     ${PROJECT_SOURCES}
     ${DATA_FILE}
 )
-#add_dependencies(${ELF} STM32HAL)
-
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${STM32HAL_INCLUDE_DIR}
-   ${MY_LIB_DIR}/drivers
-   ${MY_LIB_DIR}/dev/digipot
-   ${MY_LIB_DIR}/dev/fpga
-   ${MY_LIB_DIR}/drivers/ina226
-   ${MY_LIB_DIR}/dev/powermon
    ${MY_LIB_DIR}/common
    ${MY_SRC_DIR}
    ${MY_SRC_DIR}/bsp
@@ -222,7 +201,12 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
    ${MY_SRC_DIR}/rtos
 )
 
-TARGET_LINK_LIBRARIES(${ELF} hwlib FreeRTOS CMSIS STM32HAL)
+TARGET_LINK_LIBRARIES(${ELF}
+    hwlib
+    FreeRTOS
+    CMSIS
+    STM32HAL
+)
 STM32_SET_TARGET_PROPERTIES(${ELF})
 STM32_ADD_HEX_BIN_TARGETS(${ELF})
 STM32_ADD_DUMP_TARGET(${ELF})
@@ -231,7 +215,7 @@ STM32_PRINT_SIZE_OF_TARGETS(${ELF})
 # Stack Smashing Protection
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fstack-protector-all -fstack-usage -Wstack-usage=250")
 # Extra warnings
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused-parameter")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused -Wno-unused-parameter")
 
 include(${MY_TOP_DIR}/cmake/Doxygen.cmake)
 include(${MY_TOP_DIR}/cmake/git_version.cmake)

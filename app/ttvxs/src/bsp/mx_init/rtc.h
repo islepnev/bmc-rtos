@@ -24,7 +24,6 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-//#include "main.h"
 
 /* USER CODE BEGIN Includes */
 #include "stm32f7xx_hal_rtc.h"

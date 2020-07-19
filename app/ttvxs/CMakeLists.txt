@@ -50,13 +50,6 @@ SET(MY_SRC_DIR ${MY_TOP_DIR}/app/${BOARD}/src)
 
 add_compile_definitions(USE_FULL_LL_DRIVER)
 
-include_directories(
-    ${MY_SRC_DIR}/config
-    ${MY_SRC_DIR}
-    ${MY_LIB_DIR}/common
-    ${MY_LIB_DIR}/drivers
-)
-
 ### lwIP
 SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
 add_compile_definitions(LWIP_DEBUG)
@@ -71,40 +64,40 @@ SET(LWIP_SOURCES
    ${lwipsnmp_SRCS}
    ${MY_LIB_DIR}/system/OS/sys_arch.c
 )
-include_directories(
-    ${LWIP_DIR}/src/include
-)
 
 add_library(lwip STATIC ${LWIP_SOURCES})
 STM32_SET_TARGET_PROPERTIES(lwip)
+target_include_directories(lwip PRIVATE
+    ${LWIP_DIR}/src/include
+)
 
-INCLUDE_DIRECTORIES(
-    ${CMSIS_INCLUDE_DIRS}
-    ${STM32HAL_INCLUDE_DIR}
-   ${FREERTOS_DIR}/CMSIS_RTOS
-   ${FREERTOS_DIR}/include
-   ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1
-   ${LWIP_INCLUDE_DIRS}
-   ${MY_LIB_DIR}/drivers
-   ${MY_LIB_DIR}/dev/digipot
-   ${MY_LIB_DIR}/dev/fpga
-   ${MY_LIB_DIR}/drivers/ina226
-    ${MY_LIB_DIR}/drivers/mcp23017
-   ${MY_LIB_DIR}/dev/powermon
-   ${MY_LIB_DIR}/common
-   ${MY_LIB_DIR}/eth
-   ${MY_LIB_DIR}/system
-   ${MY_SRC_DIR}
-   ${MY_SRC_DIR}/bsp
-   ${MY_SRC_DIR}/bsp/mx_init
-   ${MY_SRC_DIR}/tasks
-   ${MY_SRC_DIR}/rtos
+include_directories(
+    ${MY_SRC_DIR}/config
+    ${MY_LIB_DIR}/eth
+    ${MY_LIB_DIR}/system
+)
+
+include_directories(
+    ${MY_SRC_DIR}/config
+    ${MY_SRC_DIR}
+    ${MY_LIB_DIR}/common
+    ${MY_LIB_DIR}/system/init
+)
+
+file(GLOB_RECURSE BSP_SRCS
+    ${MY_SRC_DIR}/bsp/*.*
+    ${MY_SRC_DIR}/bsp/mx_init/*.*
+    ${MY_LIB_DIR}/system/init/*.*
+)
+
+set(Dev_INC_DIRS
+    ${MY_LIB_DIR}/dev/fpga
+    ${MY_LIB_DIR}/dev/powermon
     ${MY_LIB_DIR}/dev/ttvxs_auxpll
     ${MY_LIB_DIR}/dev/ttvxs_clkmux
     ${MY_LIB_DIR}/dev/ttvxs_vxsiic
 )
-
-file(GLOB_RECURSE DEV
+file(GLOB_RECURSE Dev_SRCS
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
     ${MY_LIB_DIR}/dev/ttvxs_auxpll/*
@@ -112,7 +105,13 @@ file(GLOB_RECURSE DEV
     ${MY_LIB_DIR}/dev/ttvxs_vxsiic/*
 )
 
-file(GLOB_RECURSE DRIVERS
+set(Drivers_INC_DIRS
+    ${MY_LIB_DIR}/drivers
+    ${MY_LIB_DIR}/drivers/ina226
+    ${MY_LIB_DIR}/drivers/mcp23017
+)
+
+file(GLOB_RECURSE Drivers_SRCS
     ${MY_LIB_DIR}/drivers/ad9516/*.c
     ${MY_LIB_DIR}/drivers/ad9516/*.h
     ${MY_LIB_DIR}/drivers/ad9545/*.c
@@ -162,6 +161,21 @@ file(GLOB_RECURSE DRIVERS
     ${MY_LIB_DIR}/drivers/rtc_util.h
 )
 
+add_library(hwlib STATIC ${BSP_SRCS} ${Dev_SRCS} ${Drivers_SRCS})
+target_include_directories(hwlib PUBLIC
+    ${Dev_INC_DIRS}
+    ${Drivers_INC_DIRS}
+)
+TARGET_INCLUDE_DIRECTORIES(hwlib PRIVATE
+    ${CMSIS_INCLUDE_DIRS}
+    ${STM32HAL_INCLUDE_DIR}
+    ${MY_SRC_DIR}/bsp
+    ${MY_SRC_DIR}/bsp/mx_init
+    ${MY_LIB_DIR}/init
+#    ${MY_LIB_DIR}/drivers
+)
+STM32_SET_TARGET_PROPERTIES(hwlib)
+
 add_library(CMSIS STATIC ${CMSIS_SOURCES})
 TARGET_INCLUDE_DIRECTORIES(CMSIS PRIVATE
     ${CMSIS_INCLUDE_DIRS}
@@ -174,32 +188,17 @@ TARGET_INCLUDE_DIRECTORIES(STM32HAL PUBLIC
     ${STM32HAL_INCLUDE_DIR}
 )
 STM32_SET_TARGET_PROPERTIES(STM32HAL)
+
 file(GLOB_RECURSE USER_SOURCES
-   ${MY_SRC_DIR}/config/*.*
-   ${MY_LIB_DIR}/common/*.c
-   ${DRIVERS}
-   ${DEV}
-   ${MY_SRC_DIR}/*.c
-   ${MY_SRC_DIR}/bsp/*.c
-   ${MY_SRC_DIR}/bsp/*.cpp
-   ${MY_SRC_DIR}/bsp/mx_init/*.c
-   ${MY_LIB_DIR}/eth/app_ethernet.c
-   ${MY_LIB_DIR}/eth/ethernetif.c
-   ${MY_LIB_DIR}/eth/httpserver-netconn.c
-)
-file(GLOB_RECURSE USER_INCLUDES
-   ${MY_LIB_DIR}/common/*.h
-   ${MY_LIB_DIR}/eth/*.h
-   ${MY_LIB_DIR}/system/*.h
-   ${MY_SRC_DIR}/*.h
-   ${MY_SRC_DIR}/bsp/*.h
-   ${MY_SRC_DIR}/bsp/mx_init/*.h
-   ${HAL_LL_EXTRA_INCLUDES}
+    ${MY_SRC_DIR}/config/*.*
+    ${MY_LIB_DIR}/common/*.*
+    ${MY_SRC_DIR}/*.*
+    ${MY_LIB_DIR}/eth/*.*
+    ${HAL_LL_EXTRA_INCLUDES}
 )
 
 SET(PROJECT_SOURCES
     ${USER_SOURCES}
-    ${USER_INCLUDES}
 )
 
 file(GLOB_RECURSE FreeRTOS_SRCS
@@ -212,8 +211,8 @@ file(GLOB_RECURSE FreeRTOS_SRCS
     ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1/*.c
     ${FREERTOS_DIR}/portable/MemMang/heap_4.c
     ${FREERTOS_DIR}/event_groups.c
-
 )
+
 add_library(FreeRTOS STATIC ${FreeRTOS_SRCS})
 include_directories(
     ${FREERTOS_DIR}/CMSIS_RTOS
@@ -240,10 +239,7 @@ ADD_EXECUTABLE(${ELF}
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${STM32HAL_INCLUDE_DIR}
-   ${MY_LIB_DIR}/drivers
-   ${MY_LIB_DIR}/dev/fpga
-   ${MY_LIB_DIR}/drivers/ina226
-   ${MY_LIB_DIR}/dev/powermon
+    ${LWIP_DIR}/src/include
    ${MY_LIB_DIR}/common
    ${MY_SRC_DIR}
    ${MY_SRC_DIR}/bsp
@@ -251,7 +247,14 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
    ${MY_SRC_DIR}/tasks
    ${MY_SRC_DIR}/rtos
 )
-TARGET_LINK_LIBRARIES(${ELF} lwip FreeRTOS CMSIS STM32HAL)
+
+TARGET_LINK_LIBRARIES(${ELF}
+    hwlib
+    lwip
+    FreeRTOS
+    CMSIS
+    STM32HAL
+)
 STM32_SET_TARGET_PROPERTIES(${ELF})
 STM32_ADD_HEX_BIN_TARGETS(${ELF})
 STM32_ADD_DUMP_TARGET(${ELF})
@@ -262,6 +265,7 @@ SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fstack-protector-all -fstack-usage -Wstack
 # Extra warnings
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused -Wno-unused-parameter")
 
+include(${MY_TOP_DIR}/cmake/Doxygen.cmake)
 include(${MY_TOP_DIR}/cmake/git_version.cmake)
 
 configure_file(
@@ -272,7 +276,6 @@ configure_file(
   ${MY_TOP_DIR}/build_id.in
   ${MY_TOP_DIR}/build_id
 )
-
 list(APPEND SOURCES ${MY_SRC_DIR}/version.h)
 
 add_custom_command(TARGET ${ELF} POST_BUILD

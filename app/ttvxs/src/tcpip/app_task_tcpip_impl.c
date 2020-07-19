@@ -1,7 +1,6 @@
 
 #include "app_task_tcpip_impl.h"
 
-#include "main.h"
 #include "cmsis_os.h"
 #include "ethernetif.h"
 #include "lwip/netif.h"

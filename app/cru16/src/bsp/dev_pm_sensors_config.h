@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TTVXS board specific definitions
+// CRU16 board specific definitions
 
 #ifndef DEV_PM_SENSORS_CONFIG_H
 #define DEV_PM_SENSORS_CONFIG_H

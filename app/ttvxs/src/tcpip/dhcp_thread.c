@@ -1,6 +1,5 @@
 
 #include "lwip/opt.h"
-#include "main.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "dhcp_thread.h"
@@ -11,7 +10,7 @@
 
 #ifdef USE_DHCP
 #define MAX_DHCP_TRIES  4
-__IO uint8_t DHCP_state = DHCP_START;
+volatile uint8_t DHCP_state = DHCP_START;
 #endif
 
 #ifdef USE_DHCP
