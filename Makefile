@@ -10,37 +10,22 @@ ifneq ($(TOOLCHAIN_PREFIX),)
 endif
 
 TOPTARGETS := all clean
-SUBDIRS = build-tdc72 build-cru16 build-ttvxs
+BOARDS = tdc72 cru16 ttvxs
+#SUBDIRS = build-tdc72 build-cru16 build-ttvxs
 
-$(TOPTARGETS): $(SUBDIRS)
-$(SUBDIRS): Makefile
-	$(MAKE) -C $@ $(MAKECMDGOALS)
+$(TOPTARGETS): $(BOARDS)
+$(BOARDS):
+	$(MKDIR) build-$@
+	(cd build-$@ && cmake $(CMAKE_ARGS) ../app/$@)
+	$(MAKE) -C build-$@ $(MAKECMDGOALS)
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS)
-
-#all: build-tdc72/Makefile build-cru16/Makefile build-ttvxs/Makefile
-#	@ $(MAKE) -C build-tdc72
-#	@ $(MAKE) -C build-cru16
-#	@ $(MAKE) -C build-ttvxs
+.PHONY: $(TOPTARGETS) $(BOARDS)
 
 .PHONY: cmake
 
-cmake: build-tdc72/Makefile build-cru16/Makefile build-ttvxs/Makefile
-
-.PHONY: build-tdc72/Makefile
-build-tdc72/Makefile:
-	@  ($(MKDIR) build-tdc72 > /dev/null)
-	@  (cd build-tdc72 > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/tdc72)
-
-.PHONY: build-cru16/Makefile
-build-cru16/Makefile:
-	@  ($(MKDIR) build-cru16 > /dev/null)
-	@  (cd build-cru16 > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/cru16)
-
-.PHONY: build-ttvxs/Makefile
-build-ttvxs/Makefile:
-	@  ($(MKDIR) build-ttvxs > /dev/null)
-	@  (cd build-ttvxs > /dev/null 2>&1 && cmake $(CMAKE_ARGS) ../app/ttvxs)
+cmake: $(BOARDS)
+	$(MKDIR) build-$@
+	(cd build-$@ && cmake $(CMAKE_ARGS) ../app/$@)
 
 #distclean:
 #	@  ($(MKDIR) build > /dev/null)
