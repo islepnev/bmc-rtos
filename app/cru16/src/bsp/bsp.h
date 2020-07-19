@@ -15,13 +15,13 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TTVXS board specific definitions
-
 #ifndef BSP_H
 #define BSP_H
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#define BOARD_CRU16 1
 
 #define LED_HEARTBEAT LED_INT_GREEN
 

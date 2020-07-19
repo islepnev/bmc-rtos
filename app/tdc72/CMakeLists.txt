@@ -24,7 +24,6 @@ cmake_policy(SET CMP0048 NEW)
 # use one of: cru16, tdc64, tdc72, ttvxs
 set(BOARD "tdc72" CACHE STRING "PCB variant")
 set_property(CACHE BOARD PROPERTY STRINGS cru16 tdc64 tdc72 ttvxs)
-message(STATUS "BOARD=${BOARD}")
 
 PROJECT(${BOARD}_rtos VERSION 1.17 LANGUAGES C CXX)
 set (CMAKE_CXX_STANDARD 11)

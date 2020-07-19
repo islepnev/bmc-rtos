@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BSP_AD9545_H
-#define BSP_AD9545_H
+#ifndef BOARD_CONFIG_AD9545_H
+#define BOARD_CONFIG_AD9545_H
 
 #include "bsp.h"
 
@@ -42,4 +42,4 @@
 #error "BOARD variant not defined"
 #endif
 
-#endif // BSP_AD9545_H
+#endif // BOARD_CONFIG_AD9545_H

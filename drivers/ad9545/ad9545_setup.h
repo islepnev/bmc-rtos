@@ -14,8 +14,8 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef BSP_AD9545_H
-#define BSP_AD9545_H
+#ifndef AD9545_SETUP_H
+#define AD9545_SETUP_H
 
 #include "ad9545/ad9545_setup_regs.h"
 
@@ -30,4 +30,4 @@ void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d);
 void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d);
 void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d);
 
-#endif // BSP_AD9545_H
+#endif // AD9545_SETUP_H

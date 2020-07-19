@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,20 +14,32 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef BSP_AD9545_H
 #define BSP_AD9545_H
 
-#include "ad9545/ad9545_setup_regs.h"
+#include "bsp.h"
 
-void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
-void init_PllRefSetup(PllRefSetup_TypeDef *d);
-//void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d);
-//void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d);
-uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel);
-ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel);
-void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel);
-void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d);
-void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d);
-void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d);
+#ifdef BOARD_CRU16
+#define PLL_REF_PERIOD_NS   8
+#define PLL_REF_DIV       625
+#define PLL_DIST_DIV_0     10
+#define PLL_DIST_DIV_1     13
+
+#elif BOARD_TDC72
+#define PLL_REF_PERIOD_NS  24
+#define PLL_REF_DIV       209
+#define PLL_DIST_DIV_0     30
+#define PLL_DIST_DIV_1     39
+
+#elif BOARD_TTVXS
+#define PLL_REF_PERIOD_NS  24
+#define PLL_REF_DIV       209
+#define PLL_DIST_DIV_0     30
+#define PLL_DIST_DIV_1     39
+
+#else
+#error "BOARD variant not defined"
+#endif
 
 #endif // BSP_AD9545_H

@@ -22,7 +22,7 @@
 #include "i2c.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "bsp_ad9545.h"
+#include "ad9545_setup.h"
 #include "ad9545_i2c_hal.h"
 #include "ad9545_regs.h"
 #include "ad9545_status_regs.h"
