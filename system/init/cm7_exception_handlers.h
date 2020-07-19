@@ -1,6 +1,7 @@
 /*
+**    Cortex M-7 Exception Handlers
 **
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -16,23 +17,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef GPIO_H
-#define GPIO_H
+#ifndef CM7_EXCEPTION_HANDLERS_H
+#define CM7_EXCEPTION_HANDLERS_H
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-#include <stdbool.h>
-#include "stm32f7xx_hal_gpio.h"
-
-void MX_GPIO_Init(void);
-
-void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state);
-bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin);
+void NMI_Handler(void);
+void HardFault_Handler(void);
+void MemManage_Handler(void);
+void BusFault_Handler(void);
+void UsageFault_Handler(void);
+void DebugMon_Handler(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GPIO_H */
+#endif // CM7_EXCEPTION_HANDLERS_H

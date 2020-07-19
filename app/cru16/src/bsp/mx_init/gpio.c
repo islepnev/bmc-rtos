@@ -1,5 +1,5 @@
 /*
-**    TTVXS GPIO init
+**    CRU16 GPIO init
 **
 **    Copyright 2019 Ilja Slepnev
 **

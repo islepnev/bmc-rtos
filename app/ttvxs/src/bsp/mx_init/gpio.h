@@ -1,5 +1,4 @@
 /*
-**    TTVXS GPIO init
 **
 **    Copyright 2019 Ilja Slepnev
 **

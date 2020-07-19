@@ -17,19 +17,21 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
-/* USER CODE BEGIN 0 */
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal_uart.h"
 #include "stm32f7xx_ll_usart.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_bus.h"
+
 #include "bsp_pin_defs.h"
+#include "error_handler.h"
 
 enum {ENABLE_FPGA_UART = 0};
-/* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
-
-/* USART2 init function */
 
 void MX_USART2_UART_Init(void)
 {
@@ -50,7 +52,6 @@ void MX_USART2_UART_Init(void)
   }
 
 }
-/* USART3 init function */
 
 void MX_USART3_UART_Init(void)
 {
@@ -125,9 +126,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(uartHandle->Instance==USART2)
   {
-  /* USER CODE BEGIN USART2_MspInit 0 */
-
-  /* USER CODE END USART2_MspInit 0 */
     /* USART2 clock enable */
     __HAL_RCC_USART2_CLK_ENABLE();
 
@@ -148,9 +146,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     }
 
-  /* USER CODE BEGIN USART2_MspInit 1 */
-
-  /* USER CODE END USART2_MspInit 1 */
   }
 }
 
@@ -159,9 +154,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
   if(uartHandle->Instance==USART2)
   {
-  /* USER CODE BEGIN USART2_MspDeInit 0 */
-
-  /* USER CODE END USART2_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART2_CLK_DISABLE();
 
@@ -173,14 +165,5 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, FPGA_UART_RTS_Pin|FPGA_UART_CTS_Pin|FPGA_UART_TX_Pin|FPGA_UART_RX_Pin);
 
-  /* USER CODE BEGIN USART2_MspDeInit 1 */
-
-  /* USER CODE END USART2_MspDeInit 1 */
   }
 }
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

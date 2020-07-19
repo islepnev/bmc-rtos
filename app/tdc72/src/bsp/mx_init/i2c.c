@@ -21,10 +21,15 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
+#include "bsp_pin_defs.h"
+#include "error_handler.h"
 #include "stm32f7xx_hal_cortex.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
-#include "bsp_pin_defs.h"
+#include "stm32f7xx_hal_smbus.h"
+#include "stm32f7xx_ll_bus.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_i2c.h"
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c1;

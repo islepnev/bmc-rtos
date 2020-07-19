@@ -24,9 +24,10 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_i2c.h"
 
 /* USER CODE END Includes */
 
