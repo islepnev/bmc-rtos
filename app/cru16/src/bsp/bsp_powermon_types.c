@@ -31,7 +31,7 @@ const char *psw_label(PowerSwitchIndex index)
     case PSW_5V:       return "5V";
     case PSW_1V5:      return "1V5";
     case PSW_3V3:      return "3V3";
-    case PSW_5V_FMC:   return "5V_FMC";
+    case PSW_2V5_CLK:   return "2V5_CLK";
     case PSW_1V0_MGT:  return "1V0_MGT";
     case PSW_1V2_MGT:  return "1V2_MGT";
     case PSW_1V0_CORE: return "1V0_CORE";
@@ -42,12 +42,11 @@ const char *psw_label(PowerSwitchIndex index)
 const char *pgood_label(PowerGoodIndex index)
 {
     switch(index) {
-    case PGOOD_3V3:       return "3V3";
     case PGOOD_1V5:       return "1V5";
     case PGOOD_1V0_CORE:  return "1V0_CORE";
     case PGOOD_1V0_MGT:   return "1V0_MGT";
     case PGOOD_1V2_MGT:   return "1V2_MGT";
-    case PGOOD_3V3_FMC:   return "3V3_FMC";
+    case PGOOD_VTT:       return "VTT";
     }
     return "???";
 }

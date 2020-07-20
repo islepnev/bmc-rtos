@@ -39,11 +39,7 @@ extern "C" {
 #define eeprom_cfg_deviceAddr 0x50
 
 #define fpga_spi hspi5
-#ifdef TTVXS_1_0
-#define therm_spi hspi2
-#else
 #define ad9516_spi hspi2
-#endif
 
 #define DEV_THERM_COUNT 1
 

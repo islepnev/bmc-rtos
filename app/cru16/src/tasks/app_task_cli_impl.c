@@ -45,9 +45,6 @@ void cycle_display_mode(void)
         display_mode = DISPLAY_LOG;
         break;
     case DISPLAY_LOG:
-        display_mode = DISPLAY_BOARDS;
-        break;
-    case DISPLAY_BOARDS:
         display_mode = DISPLAY_PLL_DETAIL;
         break;
     case DISPLAY_PLL_DETAIL:

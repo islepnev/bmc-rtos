@@ -71,9 +71,9 @@ void MX_GPIO_Init(void)
       {ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin},
       {ON_1V0_MGT_GPIO_Port, ON_1V0_MGT_Pin},
       {ON_1V2_MGT_GPIO_Port, ON_1V2_MGT_Pin},
-      {ON_2V5_GPIO_Port, ON_2V5_Pin},
+      {ON_1V5_GPIO_Port, ON_1V5_Pin},
       {ON_3V3_GPIO_Port, ON_3V3_Pin},
-      {ON_FMC_5V_GPIO_Port, ON_FMC_5V_Pin},
+      {ON_2V5_CLK_GPIO_Port, ON_2V5_CLK_Pin},
       {ON_5V_VXS_GPIO_Port, ON_5V_VXS_Pin}
   };
   for (int i=0; i<7; i++) {
@@ -142,9 +142,9 @@ void MX_GPIO_Init(void)
       {PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin},
       {PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin},
       {PGOOD_1V2_MGT_GPIO_Port,PGOOD_1V2_MGT_Pin },
-      {PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin},
-      {PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin},
-      {PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin},
+      {PGOOD_1V5_GPIO_Port, PGOOD_1V5_Pin},
+      {ON_3V3_CLK_GPIO_Port, ON_3V3_CLK_Pin},
+      {ON_1V8_FPGA_GPIO_Port, ON_1V8_FPGA_Pin},
       {PEN_B_GPIO_Port, PEN_B_Pin}
   };
   for (int i=0; i<7; i++) {
@@ -230,10 +230,10 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(RESET_BUTTON_B_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = FMC_PRSNT_M2C_L_Pin;
+  GPIO_InitStruct.Pin = PGOOD_VTT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(FMC_PRSNT_M2C_L_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(PGOOD_VTT_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = SMB_Alert_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -250,8 +250,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FPGA_DONE_GPIO_Port, &GPIO_InitStruct);
 
-#ifdef TTVXS_1_0
-#else
   GPIO_InitStruct.Pin = SPI2_NSS_Pin;
   // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD; // OD;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // OD;
@@ -259,5 +257,4 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
-#endif
 }

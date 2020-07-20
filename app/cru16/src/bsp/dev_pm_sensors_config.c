@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TTVXS board specific functions
+// CRU16 board specific functions
 
 #include "dev_pm_sensors_config.h"
 

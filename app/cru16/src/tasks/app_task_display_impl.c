@@ -89,8 +89,8 @@ static void devPrintStatus(const struct Devices *d)
 {
     printf("SFP I2C mux:    %s", deviceStatusResultStr(d->sfpiic.present));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiic), deviceStatusResultStr(d->vxsiic.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
+//    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiic), deviceStatusResultStr(d->vxsiic.present));
+//    printf("%s\n", ANSI_CLEAR_EOL);
     printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.present));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -571,8 +571,8 @@ void display_task_run(void)
             display_mode == DISPLAY_NONE
             || display_mode == DISPLAY_LOG
             || display_mode == DISPLAY_TASKS
-            || display_mode == DISPLAY_SFP_DETAIL
-            || display_mode == DISPLAY_BOARDS;
+            || display_mode == DISPLAY_SFP_DETAIL;
+//            || display_mode == DISPLAY_BOARDS;
     if (need_clear_screen) {
         if (old_display_mode != display_mode) {
             printf(ANSI_CLEARTERM);
@@ -606,9 +606,9 @@ void display_task_run(void)
         display_pll_detail(d);
         display_auxpll_detail(d);
         break;
-    case DISPLAY_BOARDS:
-        display_boards(d);
-        break;
+//    case DISPLAY_BOARDS:
+//        display_boards(d);
+//        break;
     case DISPLAY_SFP_DETAIL:
         sfpPrintStatus(&d->sfpiic);
         break;

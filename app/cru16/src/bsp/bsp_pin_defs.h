@@ -1,23 +1,8 @@
-#ifdef TTVXS_1_0
-#define ADT_CS_B_GPIO_Port GPIOI
-#define ADT_CS_B_Pin GPIO_PIN_0
-#define ADT_DIN_GPIO_Port GPIOI
-#define ADT_DIN_Pin GPIO_PIN_3
-#define ADT_DOUT_GPIO_Port GPIOI
-#define ADT_DOUT_Pin GPIO_PIN_2
-#define ADT_SCLK_GPIO_Port GPIOI
-#define ADT_SCLK_Pin GPIO_PIN_1
-#define CAN_RXD_GPIO_Port GPIOB
-#define CAN_RXD_Pin GPIO_PIN_12
-#define CAN_TXD_GPIO_Port GPIOB
-#define CAN_TXD_Pin GPIO_PIN_13
-#else
 #define SPI2_GPIO_Port GPIOI
 #define SPI2_NSS_Pin GPIO_PIN_0
 #define SPI2_SCLK_Pin GPIO_PIN_1
 #define SPI2_SDO_Pin GPIO_PIN_2
 #define SPI2_SDIO_Pin GPIO_PIN_3
-#endif
 #define CONFIG_IIC_SCL_GPIO_Port GPIOH
 #define CONFIG_IIC_SCL_Pin GPIO_PIN_7
 #define CONFIG_IIC_SDA_GPIO_Port GPIOH
@@ -100,8 +85,6 @@
 #define FMC_NBL1_Pin GPIO_PIN_1
 #define FMC_PG_C2M_GPIO_Port GPIOH
 #define FMC_PG_C2M_Pin GPIO_PIN_10
-#define FMC_PRSNT_M2C_L_GPIO_Port GPIOH
-#define FMC_PRSNT_M2C_L_Pin GPIO_PIN_9
 #define FMC_SDCKE0_GPIO_Port GPIOC
 #define FMC_SDCKE0_Pin GPIO_PIN_3
 #define FMC_SDCLK_GPIO_Port GPIOG
@@ -162,14 +145,14 @@
 #define ON_1V0_MGT_Pin GPIO_PIN_4
 #define ON_1V2_MGT_GPIO_Port GPIOI
 #define ON_1V2_MGT_Pin GPIO_PIN_14
-#define ON_2V5_GPIO_Port GPIOI
-#define ON_2V5_Pin GPIO_PIN_7
+#define ON_1V5_GPIO_Port GPIOI
+#define ON_1V5_Pin GPIO_PIN_7
 #define ON_3V3_GPIO_Port GPIOI
 #define ON_3V3_Pin GPIO_PIN_12
 #define ON_5V_VXS_GPIO_Port GPIOE
 #define ON_5V_VXS_Pin GPIO_PIN_6
-#define ON_FMC_5V_GPIO_Port GPIOI
-#define ON_FMC_5V_Pin GPIO_PIN_5
+#define ON_2V5_CLK_GPIO_Port GPIOI
+#define ON_2V5_CLK_Pin GPIO_PIN_5
 #define OSC_25M_GPIO_Port GPIOH
 #define OSC_25M_Pin GPIO_PIN_0
 #define PEN_B_GPIO_Port GPIOI
@@ -184,12 +167,14 @@
 #define PGOOD_1V0_MGT_Pin GPIO_PIN_5
 #define PGOOD_1V2_MGT_GPIO_Port GPIOH
 #define PGOOD_1V2_MGT_Pin GPIO_PIN_2
-#define PGOOD_2V5_GPIO_Port GPIOI
-#define PGOOD_2V5_Pin GPIO_PIN_9
-#define PGOOD_3V3_GPIO_Port GPIOI
-#define PGOOD_3V3_Pin GPIO_PIN_11
-#define PGOOD_FMC_3P3VAUX_GPIO_Port GPIOB
-#define PGOOD_FMC_3P3VAUX_Pin GPIO_PIN_15
+#define PGOOD_1V5_GPIO_Port GPIOI
+#define PGOOD_1V5_Pin GPIO_PIN_9
+#define PGOOD_VTT_GPIO_Port GPIOH
+#define PGOOD_VTT_Pin GPIO_PIN_9
+#define ON_3V3_CLK_GPIO_Port GPIOI
+#define ON_3V3_CLK_Pin GPIO_PIN_11
+#define ON_1V8_FPGA_GPIO_Port GPIOB
+#define ON_1V8_FPGA_Pin GPIO_PIN_15
 #define PGOOD_PWR_GPIO_Port GPIOJ
 #define PGOOD_PWR_Pin GPIO_PIN_5
 #define PLL_M0_GPIO_Port GPIOK

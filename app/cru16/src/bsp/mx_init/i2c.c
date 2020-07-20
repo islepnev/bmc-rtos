@@ -1,5 +1,5 @@
 /*
-**    TTVXS I2C Init/Deinit
+**    CRU16 I2C Init/Deinit
 **
 **    Copyright 2019 Ilja Slepnev
 **

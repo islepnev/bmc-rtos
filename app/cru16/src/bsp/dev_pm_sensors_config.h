@@ -28,11 +28,11 @@ enum {POWERMON_SENSORS = 14};
 #define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
-    SENSOR_5VPC, // new in TTVXS v1.1
+    SENSOR_5VPC,
     SENSOR_VME_3V3,
     SENSOR_VME_5V,
-    SENSOR_MCB_4V5, // new in TTVXS v1.1
-    SENSOR_MCB_3V3, // new in TTVXS v1.1
+    SENSOR_MCB_4V5,
+    SENSOR_MCB_3V3,
     SENSOR_5V,
     SENSOR_1V5,
     SENSOR_3V3,

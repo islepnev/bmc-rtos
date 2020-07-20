@@ -35,7 +35,7 @@ const char *page_title(uri_path_t p)
     case URI_PATH_LOG:
         return "Message Log";
     case URI_PATH_TASKS:
-        return "TTVXS tasks";
+        return "RTOS Tasks";
     case URI_PATH_ERROR:
         return "Error";
     default:

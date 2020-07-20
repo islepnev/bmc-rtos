@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TTVXS board specific functions
+// CRU16 board specific functions
 
 #include "bsp_powermon.h"
 #include "dev_pm_sensors_config.h"
@@ -34,17 +34,17 @@ int monIsOn(const pm_switches sw, SensorIndex index)
     switch(index) {
     case SENSOR_VME_3V3: return 1;
     case SENSOR_5VPC: return 1;
-    case SENSOR_5V: return 1;
+    case SENSOR_5V: return sw[PSW_5V];
     case SENSOR_VME_5V: return 1;
-    case SENSOR_1V5: return sw[PSW_1V5];
+    case SENSOR_1V5: return sw[PSW_5V] && sw[PSW_1V5];
     case SENSOR_3V3: return sw[PSW_3V3];
-    case SENSOR_FPGA_CORE_1V0: return sw[PSW_1V0_CORE];
-    case SENSOR_FPGA_MGT_1V0: return sw[PSW_1V0_MGT];
-    case SENSOR_FPGA_MGT_1V2: return sw[PSW_1V2_MGT];
+    case SENSOR_FPGA_CORE_1V0: return sw[PSW_5V] && sw[PSW_1V0_CORE];
+    case SENSOR_FPGA_MGT_1V0: return sw[PSW_5V] && sw[PSW_1V0_MGT];
+    case SENSOR_FPGA_MGT_1V2: return sw[PSW_5V] && sw[PSW_1V2_MGT];
     case SENSOR_MCB_4V5: return 1;
-    case SENSOR_FPGA_1V8: return sw[PSW_1V5];
+    case SENSOR_FPGA_1V8: return sw[PSW_3V3];
     case SENSOR_CLK_2V5: return sw[PSW_3V3];
-    case SENSOR_CLK_3V3: return sw[PSW_3V3];
+    case SENSOR_CLK_3V3: return sw[PSW_5V];
     case SENSOR_MCB_3V3: return 1;
     }
     return 0;
@@ -67,10 +67,10 @@ void read_power_switches_state(pm_switches sw_state)
     sw_state[PSW_1V0_CORE] = read_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin);
     sw_state[PSW_1V0_MGT]  = read_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin);
     sw_state[PSW_1V2_MGT]  = read_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin);
-    sw_state[PSW_1V5]      = read_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin);
+    sw_state[PSW_1V5]      = read_gpio_pin(ON_1V5_GPIO_Port,      ON_1V5_Pin);
     sw_state[PSW_3V3]      = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
-    sw_state[PSW_5V_FMC]   = read_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin);
-    sw_state[PSW_5V]       = true; // read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    sw_state[PSW_2V5_CLK]  = read_gpio_pin(ON_2V5_CLK_GPIO_Port,  ON_2V5_CLK_Pin);
+    sw_state[PSW_5V]       = read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
 }
 
 void write_power_switches(pm_switches sw)
@@ -78,9 +78,9 @@ void write_power_switches(pm_switches sw)
     write_gpio_pin(ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin, sw[PSW_1V0_CORE]);
     write_gpio_pin(ON_1V0_MGT_GPIO_Port,  ON_1V0_MGT_Pin,  sw[PSW_1V0_MGT]);
     write_gpio_pin(ON_1V2_MGT_GPIO_Port,  ON_1V2_MGT_Pin,  sw[PSW_1V2_MGT]);
-    write_gpio_pin(ON_2V5_GPIO_Port,      ON_2V5_Pin,      sw[PSW_1V5]);
+    write_gpio_pin(ON_1V5_GPIO_Port,      ON_1V5_Pin,      sw[PSW_1V5]);
     write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw[PSW_3V3]);
-    write_gpio_pin(ON_FMC_5V_GPIO_Port,   ON_FMC_5V_Pin,   sw[PSW_5V_FMC]);
+    write_gpio_pin(ON_2V5_CLK_GPIO_Port,  ON_2V5_CLK_Pin,  sw[PSW_2V5_CLK]);
     write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw[PSW_5V]);
 }
 
@@ -107,17 +107,12 @@ static int read_pgood_1v2_mgt(void)
 
 static int read_pgood_1v5(void)
 {
-    return read_gpio_pin(PGOOD_2V5_GPIO_Port, PGOOD_2V5_Pin);
+    return read_gpio_pin(PGOOD_1V5_GPIO_Port, PGOOD_1V5_Pin);
 }
 
-static int read_pgood_3v3(void)
+static int read_pgood_vtt(void)
 {
-    return read_gpio_pin(PGOOD_3V3_GPIO_Port, PGOOD_3V3_Pin);
-}
-
-static int read_pgood_3v3_fmc(void)
-{
-    return read_gpio_pin(PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin);
+    return read_gpio_pin(PGOOD_VTT_GPIO_Port, PGOOD_VTT_Pin);
 }
 
 void pm_read_pgood(pm_pgoods pgood)
@@ -126,8 +121,7 @@ void pm_read_pgood(pm_pgoods pgood)
     pgood[PGOOD_1V0_MGT]  = read_pgood_1v0_mgt();
     pgood[PGOOD_1V2_MGT]  = read_pgood_1v2_mgt();
     pgood[PGOOD_1V5]      = read_pgood_1v5();
-    pgood[PGOOD_3V3]      = read_pgood_3v3();
-    pgood[PGOOD_3V3_FMC]  = read_pgood_3v3_fmc();
+    pgood[PGOOD_VTT]      = read_pgood_vtt();
 }
 
 bool get_all_pgood(const pm_pgoods pgood)
@@ -185,7 +179,10 @@ void switch_power(Dev_powermon *pm, bool state)
         log_put(LOG_NOTICE, "Switching OFF");
     for (int i=0; i<POWER_SWITCH_COUNT; i++)
         pm->sw[i] = state;
-    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
+//    pm->sw[PSW_3V3] = 1;
+//    pm->sw[PSW_5V] = 1;
+//    pm->sw[PSW_2V5_CLK] = 1;
+
     write_power_switches(pm->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
