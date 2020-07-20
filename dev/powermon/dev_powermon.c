@@ -131,12 +131,15 @@ void monClearMeasurements(Dev_powermon *d)
 int monDetect(Dev_powermon *d)
 {
     int count = 0;
+    int errors = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
+        if (errors > 2) break;
         powermon_i2c_reset_master();
         DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
+            errors++;
             powermon_i2c_reset_master();
         }
     }
