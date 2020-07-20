@@ -18,17 +18,26 @@
 #ifndef BSP_DIGIPOT_H
 #define BSP_DIGIPOT_H
 
+#include "bsp.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {DEV_DIGIPOT_COUNT = 3};
-
 typedef enum {
     POT_TDC_A,
     POT_TDC_B,
-    POT_TDC_C
+    POT_TDC_C,
+    POT_TDC_D
 } PotIndex;
+
+#ifdef BOARD_TDC64
+enum {DEV_DIGIPOT_COUNT = 4};
+#endif
+
+#ifdef BOARD_TDC72
+enum {DEV_DIGIPOT_COUNT = 3};
+#endif
 
 const char *potLabel(PotIndex index);
 int potBusAddress(PotIndex index);

@@ -35,8 +35,8 @@ static bool set_csb(int state)
     if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
         return true;
     GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, write);
-    GPIO_PinState read = HAL_GPIO_ReadPin(SPI2_GPIO_Port, SPI2_NSS_Pin);
+    HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
+    GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
     if (write != read)
         Error_Handler();
     return write == read;

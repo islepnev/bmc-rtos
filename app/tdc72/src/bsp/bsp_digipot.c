@@ -27,6 +27,7 @@ const char *potLabel(PotIndex index)
     case POT_TDC_A: return "TDC_A";
     case POT_TDC_B: return "TDC_B";
     case POT_TDC_C: return "TDC_C";
+    case POT_TDC_D: return "TDC_D";
     }
     return 0;
 }
@@ -37,6 +38,7 @@ int potBusAddress(PotIndex index)
     case POT_TDC_A: return 0x20;
     case POT_TDC_B: return 0x23;
     case POT_TDC_C: return 0x2C;
+    case POT_TDC_D: return 0x2F;
     }
     return 0;
 }
@@ -47,6 +49,7 @@ int potSensorIndex(PotIndex index)
     case POT_TDC_A: return SENSOR_TDC_A;
     case POT_TDC_B: return SENSOR_TDC_B;
     case POT_TDC_C: return SENSOR_TDC_C;
+    case POT_TDC_D: return SENSOR_TDC_D;
     }
     return 0;
 }

@@ -26,6 +26,12 @@
 #define PLL_DIST_DIV_0     10
 #define PLL_DIST_DIV_1     13
 
+#elif BOARD_TDC64
+#define PLL_REF_PERIOD_NS  24
+#define PLL_REF_DIV       209
+#define PLL_DIST_DIV_0     30
+#define PLL_DIST_DIV_1     39
+
 #elif BOARD_TDC72
 #define PLL_REF_PERIOD_NS  24
 #define PLL_REF_DIV       209

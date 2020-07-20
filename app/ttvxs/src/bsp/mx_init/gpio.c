@@ -252,12 +252,12 @@ void MX_GPIO_Init(void)
 
 #ifdef TTVXS_1_0
 #else
-  GPIO_InitStruct.Pin = SPI2_NSS_Pin;
+  GPIO_InitStruct.Pin = AD9516_CS_Pin;
   // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD; // OD;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP; // 4.7k pullup on PCB
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_Init(AD9516_CS_GPIO_Port, &GPIO_InitStruct);
 #endif
 }

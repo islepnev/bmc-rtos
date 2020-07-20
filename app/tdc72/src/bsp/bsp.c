@@ -35,7 +35,10 @@ uint32_t detect_pcb_version(void)
     return a1 * 2 + a0;
 }
 
+#ifdef BOARD_TDC72
+
 board_version_t board_version = PCB_4_1;
+
 void update_board_version(int powermon_count)
 {
     if (powermon_count <= POWERMON_SENSORS_PCB_4_1)
@@ -48,3 +51,17 @@ bool fpga_done_pin_present(void)
 {
     return board_version >= PCB_4_2;
 }
+
+#else
+
+void update_board_version(int powermon_count)
+{
+    // nothing
+}
+
+bool fpga_done_pin_present(void)
+{
+    return true;
+}
+
+#endif

@@ -60,17 +60,25 @@ void MX_SPI4_Init(void)
     hspi4.Instance = SPI4;
     hspi4.Init.Mode = SPI_MODE_MASTER;
     hspi4.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi4.Init.DataSize = SPI_DATASIZE_16BIT;
     hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
     hspi4.Init.NSS = SPI_NSS_SOFT;
-    hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
     hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     hspi4.Init.CRCPolynomial = 7;
     hspi4.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
     hspi4.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+#ifdef BOARD_TDC64
+    // AD9516-4
+    hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+#endif
+#ifdef BOARD_TDC72
+    // ADT7301
+    hspi4.Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+#endif
     if (HAL_SPI_Init(&hspi4) != HAL_OK) {
         Error_Handler();
     }
@@ -104,7 +112,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     else if(spiHandle->Instance==SPI4) {
         __HAL_RCC_SPI4_CLK_ENABLE();
         __HAL_RCC_GPIOE_CLK_ENABLE();
-        GPIO_InitStruct.Pin = ADT_DIN_Pin|ADT_SCLK_Pin|ADT_DOUT_Pin;
+        GPIO_InitStruct.Pin = SPI4_DIN_Pin|SPI4_SCLK_Pin|SPI4_DOUT_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -125,7 +133,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     }
     else if (spiHandle->Instance==SPI4) {
         __HAL_RCC_SPI4_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOE, ADT_DIN_Pin|ADT_SCLK_Pin|ADT_DOUT_Pin);
+        HAL_GPIO_DeInit(GPIOE, SPI4_DIN_Pin|SPI4_SCLK_Pin|SPI4_DOUT_Pin);
         HAL_NVIC_DisableIRQ(SPI4_IRQn);
     }
 }

@@ -30,10 +30,11 @@ typedef enum PowerSwitchIndex {
     PSW_1V0,
     PSW_TDC_A,
     PSW_TDC_B,
-    PSW_TDC_C
+    PSW_TDC_C,
+    PSW_TDC_D,
 } PowerSwitchIndex;
 
-#define POWER_SWITCH_COUNT 7
+#define POWER_SWITCH_COUNT 8
 const char *psw_label(PowerSwitchIndex index);
 typedef bool pm_switches[POWER_SWITCH_COUNT];
 

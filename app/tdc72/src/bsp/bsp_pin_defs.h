@@ -1,3 +1,17 @@
+#ifndef BSP_PIN_DEFS_H
+#define BSP_PIN_DEFS_H
+
+#include "bsp.h"
+
+// BOARD_TDC64
+#define AD9516_CS_GPIO_Port GPIOE
+#define AD9516_CS_Pin GPIO_PIN_11
+#define AD9516_LD_GPIO_Port GPIOE
+#define AD9516_LD_Pin GPIO_PIN_7    // pll lock detect
+#define AD9516_ST_GPIO_Port GPIOE
+#define AD9516_ST_Pin GPIO_PIN_10   // pll status
+//
+// BOARD_TDC72
 #define ADT_CS_B0_GPIO_Port GPIOE
 #define ADT_CS_B0_Pin GPIO_PIN_11
 #define ADT_CS_B1_GPIO_Port GPIOE
@@ -6,12 +20,13 @@
 #define ADT_CS_B2_Pin GPIO_PIN_10
 #define ADT_CS_B3_GPIO_Port GPIOE
 #define ADT_CS_B3_Pin GPIO_PIN_15
-#define ADT_DIN_GPIO_Port GPIOE
-#define ADT_DIN_Pin GPIO_PIN_14
-#define ADT_DOUT_GPIO_Port GPIOE
-#define ADT_DOUT_Pin GPIO_PIN_13
-#define ADT_SCLK_GPIO_Port GPIOE
-#define ADT_SCLK_Pin GPIO_PIN_12
+//
+#define SPI4_DIN_GPIO_Port GPIOE
+#define SPI4_DIN_Pin GPIO_PIN_14
+#define SPI4_DOUT_GPIO_Port GPIOE
+#define SPI4_DOUT_Pin GPIO_PIN_13
+#define SPI4_SCLK_GPIO_Port GPIOE
+#define SPI4_SCLK_Pin GPIO_PIN_12
 #define CONFIG_IIC_SCL_GPIO_Port GPIOF
 #define CONFIG_IIC_SCL_Pin GPIO_PIN_1
 #define CONFIG_IIC_SDA_GPIO_Port GPIOF
@@ -66,12 +81,26 @@
 #define ON_3_3V_Pin GPIO_PIN_1
 #define ON_5V_GPIO_Port GPIOJ
 #define ON_5V_Pin GPIO_PIN_2
+#ifdef BOARD_TDC64
+#define ON_TDC_A_GPIO_Port GPIOA
+#define ON_TDC_A_Pin GPIO_PIN_9
+#define ON_TDC_B_GPIO_Port GPIOA
+#define ON_TDC_B_Pin GPIO_PIN_10
+#define ON_TDC_C_GPIO_Port GPIOA
+#define ON_TDC_C_Pin GPIO_PIN_11
+#define ON_TDC_D_GPIO_Port GPIOA
+#define ON_TDC_D_Pin GPIO_PIN_12
+#endif
+#ifdef BOARD_TDC72
 #define ON_TDC_A_GPIO_Port GPIOA
 #define ON_TDC_A_Pin GPIO_PIN_10
 #define ON_TDC_B_GPIO_Port GPIOA
 #define ON_TDC_B_Pin GPIO_PIN_11
 #define ON_TDC_C_GPIO_Port GPIOA
 #define ON_TDC_C_Pin GPIO_PIN_12
+#define ON_TDC_D_GPIO_Port GPIOA
+#define ON_TDC_D_Pin GPIO_PIN_9  // NC
+#endif
 #define PA_SCL_GPIO_Port GPIOA
 #define PA_SCL_Pin GPIO_PIN_8
 #define PA_SDA_GPIO_Port GPIOC
@@ -108,3 +137,5 @@
 #define TTY_TX_Pin GPIO_PIN_10
 #define VME_DET_B_GPIO_Port GPIOF
 #define VME_DET_B_Pin GPIO_PIN_3
+
+#endif // BSP_PIN_DEFS_H

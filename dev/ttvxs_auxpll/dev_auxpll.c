@@ -24,7 +24,6 @@
 #include "spi.h"
 #include "bsp.h"
 #include "ad9516/ad9516_spi_hal.h"
-#include "ad9516/ad9516_setup.h"
 #include "ad9516/ad9516_status.h"
 //#include "dev_auxpll_print.h"
 #include "dev_auxpll_types.h"

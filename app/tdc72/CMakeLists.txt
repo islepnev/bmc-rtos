@@ -63,11 +63,13 @@ set(Dev_INC_DIRS
     ${MY_LIB_DIR}/dev/digipot
     ${MY_LIB_DIR}/dev/fpga
     ${MY_LIB_DIR}/dev/powermon
+    ${MY_LIB_DIR}/dev/ttvxs_auxpll
 )
 file(GLOB_RECURSE Dev_SRCS
     ${MY_LIB_DIR}/dev/digipot/*
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
+    ${MY_LIB_DIR}/dev/ttvxs_auxpll/*
 )
 
 set(Drivers_INC_DIRS
@@ -76,6 +78,8 @@ set(Drivers_INC_DIRS
 )
 
 file(GLOB_RECURSE Drivers_SRCS
+    ${MY_LIB_DIR}/drivers/ad9516/*.c
+    ${MY_LIB_DIR}/drivers/ad9516/*.h
     ${MY_LIB_DIR}/drivers/ad9545/*.c
     ${MY_LIB_DIR}/drivers/ad9545/*.h
     ${MY_LIB_DIR}/drivers/bus/*.c

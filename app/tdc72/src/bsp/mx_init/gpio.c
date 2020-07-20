@@ -58,17 +58,18 @@ void MX_GPIO_Init(void)
   // PCB R37.5 should NOT be mounted
 
   // ON_* (open drain, default = 1)
-  static const pin_def_t on_pins[7] = {
+  static const pin_def_t on_pins[8] = {
       {ON_5V_GPIO_Port, ON_5V_Pin},
       {ON_1_5V_GPIO_Port, ON_1_5V_Pin},
       {ON_3_3V_GPIO_Port, ON_3_3V_Pin},
       {ON_1_0V_1_2V_GPIO_Port, ON_1_0V_1_2V_Pin},
       {ON_TDC_A_GPIO_Port, ON_TDC_A_Pin},
       {ON_TDC_B_GPIO_Port, ON_TDC_B_Pin},
-      {ON_TDC_C_GPIO_Port, ON_TDC_C_Pin}
+      {ON_TDC_C_GPIO_Port, ON_TDC_C_Pin},
+      {ON_TDC_D_GPIO_Port, ON_TDC_D_Pin} // not connected on TDC72
   };
 
-  for (int i=0; i<7; i++) {
+  for (int i=0; i<8; i++) {
       HAL_GPIO_WritePin(on_pins[i].GPIOx, on_pins[i].pin, GPIO_PIN_SET);
       GPIO_InitStruct.Pin = on_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // PCB 4.1 has no pullups?
@@ -76,11 +77,6 @@ void MX_GPIO_Init(void)
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
       HAL_GPIO_Init(on_pins[i].GPIOx, &GPIO_InitStruct);
   }
-
-  HAL_GPIO_WritePin(ADT_CS_B0_GPIO_Port, ADT_CS_B0_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(ADT_CS_B1_GPIO_Port, ADT_CS_B1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(ADT_CS_B2_GPIO_Port, ADT_CS_B2_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(ADT_CS_B3_GPIO_Port, ADT_CS_B3_Pin, GPIO_PIN_SET);
 
   // MON_SMB_SW_RST_B
   GPIO_InitStruct.Pin = MON_SMB_SW_RST_B_Pin;
@@ -141,13 +137,19 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(SYSTEM_RDY_GPIO_Port, SYSTEM_RDY_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(SYSTEM_RDY_GPIO_Port, &GPIO_InitStruct);
 
+#ifdef BOARD_TDC72
   // ADT_CS_B*
+  HAL_GPIO_WritePin(ADT_CS_B0_GPIO_Port, ADT_CS_B0_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ADT_CS_B1_GPIO_Port, ADT_CS_B1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ADT_CS_B2_GPIO_Port, ADT_CS_B2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ADT_CS_B3_GPIO_Port, ADT_CS_B3_Pin, GPIO_PIN_SET);
   // 4.7 kΩ pull-up on PCB
   GPIO_InitStruct.Pin = ADT_CS_B0_Pin|ADT_CS_B1_Pin|ADT_CS_B2_Pin|ADT_CS_B3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  #endif
 
   // PCB_VER_A* (not implemented in TDC72 <= 4.2)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -179,4 +181,22 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_WritePin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(FPGA_INIT_B_GPIO_Port, &GPIO_InitStruct);
+
+#ifdef BOARD_TDC64
+  HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, GPIO_PIN_SET);
+  GPIO_InitStruct.Pin = AD9516_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP; // 4.7k pullup on PCB
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(AD9516_CS_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Pin = AD9516_LD_Pin;
+  HAL_GPIO_Init(AD9516_LD_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = AD9516_ST_Pin;
+  HAL_GPIO_Init(AD9516_ST_GPIO_Port, &GPIO_InitStruct);
+#endif
 }

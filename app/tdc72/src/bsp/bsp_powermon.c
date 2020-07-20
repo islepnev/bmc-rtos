@@ -45,6 +45,7 @@ int monIsOn(const pm_switches sw, SensorIndex index)
     case SENSOR_TDC_A: return sw[PSW_3V3];
     case SENSOR_TDC_B: return sw[PSW_3V3];
     case SENSOR_TDC_C: return sw[PSW_3V3];
+    case SENSOR_TDC_D: return sw[PSW_3V3];
     case SENSOR_CLOCK_2V5: return sw[PSW_3V3];
     }
     return 0;
@@ -71,6 +72,7 @@ void read_power_switches_state(pm_switches sw_state)
     sw_state[PSW_TDC_A] = read_gpio_pin(ON_TDC_A_GPIO_Port, ON_TDC_A_Pin);
     sw_state[PSW_TDC_B] = read_gpio_pin(ON_TDC_B_GPIO_Port, ON_TDC_B_Pin);
     sw_state[PSW_TDC_C] = read_gpio_pin(ON_TDC_C_GPIO_Port, ON_TDC_C_Pin);
+    sw_state[PSW_TDC_D] = read_gpio_pin(ON_TDC_D_GPIO_Port, ON_TDC_D_Pin);
 }
 
 void write_power_switches(pm_switches sw)
@@ -82,6 +84,7 @@ void write_power_switches(pm_switches sw)
     write_gpio_pin(ON_TDC_A_GPIO_Port,     ON_TDC_A_Pin,     sw[PSW_TDC_A]);
     write_gpio_pin(ON_TDC_B_GPIO_Port,     ON_TDC_B_Pin,     sw[PSW_TDC_B]);
     write_gpio_pin(ON_TDC_C_GPIO_Port,     ON_TDC_C_Pin,     sw[PSW_TDC_C]);
+    write_gpio_pin(ON_TDC_D_GPIO_Port,     ON_TDC_D_Pin,     sw[PSW_TDC_D]);
 }
 
 void init_pgood(pm_pgoods pgood)
@@ -174,6 +177,7 @@ void switch_power(Dev_powermon *pm, bool state)
     pm->sw[PSW_TDC_A] = true; // state;
     pm->sw[PSW_TDC_B] = true; // state;
     pm->sw[PSW_TDC_C] = true; // state;
+    pm->sw[PSW_TDC_D] = true; // state;
 
     write_power_switches(pm->sw);
     if (state)

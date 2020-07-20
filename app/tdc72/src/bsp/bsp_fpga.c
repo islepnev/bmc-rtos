@@ -44,5 +44,11 @@ bool fpgaWriteSensors(const struct Dev_powermon *d)
         return false;
     if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].current * 1000)))
         return false;
+#ifdef TDC64
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_D].busVoltage * 1000)))
+        return false;
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_D].current * 1000)))
+    return false;
+#endif
     return true;
 }

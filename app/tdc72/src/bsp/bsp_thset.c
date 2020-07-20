@@ -21,6 +21,8 @@
 #include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
 
+#ifdef BOARD_TDC72
+
 static const int SPI_TIMEOUT_MS = 10;
 
 /**
@@ -70,4 +72,4 @@ HAL_StatusTypeDef adt7301_read_temp(int source, int16_t *data)
     }
     return ret;
 }
-
+#endif

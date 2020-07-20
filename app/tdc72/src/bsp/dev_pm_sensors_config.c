@@ -36,6 +36,7 @@ int monIsOptional(SensorIndex index)
     case SENSOR_TDC_A:         return 1;
     case SENSOR_TDC_B:         return 1;
     case SENSOR_TDC_C:         return 1;
+    case SENSOR_TDC_D:         return 1;
     case SENSOR_CLOCK_2V5:     return 0;
     }
     return 0;
@@ -58,6 +59,7 @@ double monShuntVal(SensorIndex index)
     case SENSOR_TDC_A:         return 0.002;
     case SENSOR_TDC_B:         return 0.002;
     case SENSOR_TDC_C:         return 0.002;
+    case SENSOR_TDC_D:         return 0.002;
     case SENSOR_CLOCK_2V5:     return 0.002;
     }
     return 0;
@@ -80,6 +82,7 @@ double monVoltageMarginWarn(SensorIndex index)
     case SENSOR_TDC_A:         return 0.1;
     case SENSOR_TDC_B:         return 0.1;
     case SENSOR_TDC_C:         return 0.1;
+    case SENSOR_TDC_D:         return 0.1;
     case SENSOR_CLOCK_2V5:     return 0.03;
     }
     return 0;
@@ -102,6 +105,7 @@ double monVoltageMarginCrit(SensorIndex index)
     case SENSOR_TDC_A:         return 0.15;
     case SENSOR_TDC_B:         return 0.15;
     case SENSOR_TDC_C:         return 0.15;
+    case SENSOR_TDC_D:         return 0.15;
     case SENSOR_CLOCK_2V5:     return 0.05;
     }
     return 0;
@@ -124,6 +128,7 @@ double monVoltageNom(SensorIndex index)
     case SENSOR_TDC_A:         return 2.5;
     case SENSOR_TDC_B:         return 2.5;
     case SENSOR_TDC_C:         return 2.5;
+    case SENSOR_TDC_D:         return 2.5;
     case SENSOR_CLOCK_2V5:     return 2.5;
     }
     return 0;
@@ -144,9 +149,10 @@ int sensorBusAddress(SensorIndex index)
     case SENSOR_VMCU:          return 0x49;
     case SENSOR_FPGA_1V8:      return 0x4A;
     case SENSOR_TDC_A:         return 0x4B;
-    case SENSOR_TDC_B:         return 0x4C;
-    case SENSOR_TDC_C:         return 0x4D;
+    case SENSOR_TDC_B:         return 0x4C; // maybe 0x4D
+    case SENSOR_TDC_C:         return 0x4D; // maybe 0x4C
     case SENSOR_CLOCK_2V5:     return 0x4E;
+    case SENSOR_TDC_D:         return 0x4F;
     }
     return 0;
 }
@@ -168,6 +174,7 @@ const char *monLabel(SensorIndex index)
     case SENSOR_TDC_A:         return  "TDC-A 2.5"; // U, 2 mOhm
     case SENSOR_TDC_B:         return  "TDC-B 2.5"; // U, 2 mOhm
     case SENSOR_TDC_C:         return  "TDC-C 2.5"; // U, 2 mOhm
+    case SENSOR_TDC_D:         return  "TDC-D 2.5"; // U, 2 mOhm
     case SENSOR_CLOCK_2V5:     return  "Clock 2.5"; // U, 2 mOhm
     }
     return "???";

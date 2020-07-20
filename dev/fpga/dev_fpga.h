@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 struct Dev_fpga;
-struct Dev_thset;
 struct Dev_ad9545;
+struct Dev_thset;
 struct Devices;
 struct Dev_powermon;
 

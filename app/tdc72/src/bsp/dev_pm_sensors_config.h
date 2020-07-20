@@ -20,13 +20,21 @@
 #ifndef DEV_PM_SENSORS_CONFIG_H
 #define DEV_PM_SENSORS_CONFIG_H
 
+#include "bsp.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef BOARD_TDC64
+enum {POWERMON_SENSORS = 16};
+#endif
+#ifdef BOARD_TDC72
 enum {POWERMON_SENSORS_PCB_4_1 = 13};
 enum {POWERMON_SENSORS_PCB_4_2 = 15};
 enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_4_2};
+#endif
+
 #define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
@@ -44,7 +52,8 @@ typedef enum {
     SENSOR_TDC_A,
     SENSOR_TDC_B,
     SENSOR_TDC_C,
-    SENSOR_CLOCK_2V5
+    SENSOR_CLOCK_2V5,
+    SENSOR_TDC_D
 } SensorIndex;
 
 int monIsOptional(SensorIndex index);
