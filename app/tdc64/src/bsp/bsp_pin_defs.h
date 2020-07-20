@@ -1,6 +1,10 @@
 #ifdef TDC64
-#define AD9516_CS_B_GPIO_Port GPIOI
-#define AD9516_CS_B_Pin GPIO_PIN_0
+#define AD9516_CS_GPIO_Port GPIOE
+#define AD9516_CS_Pin GPIO_PIN_11
+#define AD9516_LD_GPIO_Port GPIOE
+#define AD9516_LD_Pin GPIO_PIN_7    // pll lock detect
+#define AD9516_ST_GPIO_Port GPIOE
+#define AD9516_ST_Pin GPIO_PIN_10   // pll status
 #endif
 #define ADT_CS_B0_GPIO_Port GPIOE
 #define ADT_CS_B0_Pin GPIO_PIN_11

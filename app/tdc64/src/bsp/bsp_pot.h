@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-enum {DEV_POT_COUNT = 3};
+enum {DEV_POT_COUNT = 4};
 
 typedef enum {
     POT_TDC_A,
