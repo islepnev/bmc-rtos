@@ -152,6 +152,9 @@ HAL_StatusTypeDef i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t Dev
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_I2C_Master_Receive_IT(hi2c, DevAddress, pData, Size);
     if (ret != HAL_OK) {
+        if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
+            return HAL_TIMEOUT; // no acknowledge or timeout
+        }
         debug_printf("%s (%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
     }
     int32_t status = i2c_driver_wait_sem(hi2c, millisec);
@@ -167,6 +170,9 @@ HAL_StatusTypeDef i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t De
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_I2C_Master_Transmit_IT(hi2c, DevAddress, pData, Size);
     if (ret != HAL_OK) {
+        if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
+            return HAL_TIMEOUT; // no acknowledge or timeout
+        }
         debug_printf("%s(%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
     }
     int32_t status = i2c_driver_wait_sem(hi2c, millisec);
@@ -182,14 +188,12 @@ HAL_StatusTypeDef i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t
     HAL_StatusTypeDef ret;
     ret = HAL_I2C_Mem_Read_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
     if (ret != HAL_OK) {
-        if (hi2c->ErrorCode & HAL_I2C_ERROR_AF) {
-            // no acknowledge, empty slot
-            return HAL_TIMEOUT;
-        } else {
-            debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
-                         __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
-            return ret;
+        if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
+            return HAL_TIMEOUT; // no acknowledge or timeout
         }
+        debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
+                     __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
+        return ret;
     }
     int32_t status = i2c_driver_wait_sem(hi2c, millisec);
     if (status != osOK) {
@@ -204,14 +208,13 @@ HAL_StatusTypeDef i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_
     HAL_StatusTypeDef ret;
     ret = HAL_I2C_Mem_Write_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
     if (ret != HAL_OK) {
-        if (hi2c->ErrorCode & HAL_I2C_ERROR_AF) {
-            // no acknowledge, empty slot
-            return HAL_TIMEOUT;
-        } else {
-            debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
-                         __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
-            return ret;
+        if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
+            return HAL_TIMEOUT; // no acknowledge or timeout
         }
+        debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
+                     __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
+        return ret;
+
     }
     int32_t status = i2c_driver_wait_sem(hi2c, millisec);
     if (status != osOK) {
