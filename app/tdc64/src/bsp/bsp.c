@@ -15,28 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BSP_POT_H
-#define BSP_POT_H
+// TDC64VHLE board specific functions
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "bsp.h"
+#include "bsp_pin_defs.h"
+#include "stm32f7xx_hal_gpio.h"
 
-enum {DEV_POT_COUNT = 4};
+#include "i2c.h"
+#include "dev_pm_sensors_config.h"
+#include "logbuffer.h"
 
-typedef enum {
-    POT_TDC_A,
-    POT_TDC_B,
-    POT_TDC_C,
-    POT_TDC_D
-} PotIndex;
-
-const char *potLabel(PotIndex index);
-int potBusAddress(PotIndex index);
-int potSensorIndex(PotIndex index);
-
-#ifdef __cplusplus
+uint32_t detect_pcb_version(void)
+{
+    bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
+    bool a1 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin));
+    return a1 * 2 + a0;
 }
-#endif
 
-#endif // BSP_POT_H

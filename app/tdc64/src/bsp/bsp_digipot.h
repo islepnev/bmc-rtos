@@ -14,39 +14,29 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_AUXPLL_TYPES_H
-#define DEV_AUXPLL_TYPES_H
 
-#include <stdint.h>
-#include "dev_common_types.h"
-#include "ad9516_status.h"
+#ifndef BSP_DIGIPOT_H
+#define BSP_DIGIPOT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+enum {DEV_DIGIPOT_COUNT = 4};
+
 typedef enum {
-    AUXPLL_STATE_INIT,
-    AUXPLL_STATE_RESET,
-    AUXPLL_STATE_SETUP_SYSCLK,
-    AUXPLL_STATE_SYSCLK_WAITLOCK,
-    AUXPLL_STATE_SETUP,
-    AUXPLL_STATE_RUN,
-    AUXPLL_STATE_ERROR,
-    AUXPLL_STATE_FATAL
-} AuxPllState;
+    POT_TDC_A,
+    POT_TDC_B,
+    POT_TDC_C,
+    POT_TDC_D
+} PotIndex;
 
-typedef struct Dev_auxpll {
-    DeviceStatus present;
-    AD9516_Status status;
-    AuxPllState fsm_state;
-    uint32_t recoveryCount;
-} Dev_auxpll;
-
-SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll);
+const char *potLabel(PotIndex index);
+int potBusAddress(PotIndex index);
+int potSensorIndex(PotIndex index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_AUXPLL_TYPES_H
+#endif // BSP_DIGIPOT_H

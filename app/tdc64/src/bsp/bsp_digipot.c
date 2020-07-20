@@ -17,7 +17,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_pot.h"
+#include "bsp_digipot.h"
 #include <stdio.h>
 #include "dev_pm_sensors_config.h"
 

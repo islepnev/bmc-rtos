@@ -14,10 +14,37 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef ERROR_HANDLER_IMPL_H
-#define ERROR_HANDLER_IMPL_H
 
-void led_show_error(void);
-void led_blink_error(void);
+#ifndef BSP_H
+#define BSP_H
 
-#endif // ERROR_HANDLER_IMPL_H
+#include <stdint.h>
+#include <stdbool.h>
+
+#define BOARD_TDC64 1
+
+#define LED_HEARTBEAT LED_INT_GREEN
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define hi2c_ad9545 hi2c2
+#define hi2c_sensors hi2c4
+#define hi2c_sfpiic hi2c4
+
+#define fpga_spi hspi1
+#define therm_spi hspi4
+#define ad9516_spi hspi4
+
+#define AUXPLL_AD9516_OUT6_ENABLE 1
+#define AUXPLL_AD9516_OUT7_ENABLE 1
+#define AUXPLL_AD9516_OUT9_ENABLE 1
+
+uint32_t detect_pcb_version(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BSP_H
