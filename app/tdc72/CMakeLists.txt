@@ -60,12 +60,16 @@ file(GLOB_RECURSE BSP_SRCS
 )
 
 set(Dev_INC_DIRS
+    ${MY_LIB_DIR}/dev/ad9516
+    ${MY_LIB_DIR}/dev/ad9545
     ${MY_LIB_DIR}/dev/digipot
     ${MY_LIB_DIR}/dev/fpga
     ${MY_LIB_DIR}/dev/powermon
     ${MY_LIB_DIR}/dev/ttvxs_auxpll
 )
 file(GLOB_RECURSE Dev_SRCS
+    ${MY_LIB_DIR}/dev/ad9516/*
+    ${MY_LIB_DIR}/dev/ad9545/*
     ${MY_LIB_DIR}/dev/digipot/*
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*

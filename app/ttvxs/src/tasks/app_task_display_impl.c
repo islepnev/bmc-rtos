@@ -28,6 +28,7 @@
 #include "bsp_display.h"
 #include "bsp_powermon.h"
 #include "debug_helpers.h"
+#include "dev_ad9545_print.h"
 #include "dev_auxpll_print.h"
 #include "dev_common_types.h"
 #include "dev_fpga_types.h"
@@ -77,16 +78,6 @@ static const char *auxpllStateStr(AuxPllState state)
     case AUXPLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
     default: return "?";
     }
-}
-
-void auxpllPrint(const Dev_auxpll *d)
-{
-    printf("PLL AD9516:   %s %s",
-           auxpllStateStr(d->fsm_state),
-           sensor_status_ansi_str(get_auxpll_sensor_status(d)));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("  ");
-    auxpllPrintStatus(d);
 }
 
 static void print_log_entry(uint32_t index)
@@ -271,11 +262,7 @@ static void print_fpga(const Dev_fpga *fpga)
 static void print_pll(const Dev_ad9545 *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
-    printf("PLL AD9545:      %s %s",
-           dev_ad9545_state_str(pll->fsm_state),
-           sensor_status_ansi_str(get_pll_sensor_status(pll)));
-    print_clear_eol();
-    ad9545_brief_status(&pll->status);
+    dev_ad9545_print_box(pll);
 }
 
 static void print_auxpll(const Dev_auxpll *pll)

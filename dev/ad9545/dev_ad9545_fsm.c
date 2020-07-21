@@ -15,35 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_pll_impl.h"
+#include "dev_ad9545_fsm.h"
 #include <string.h>
-#include "cmsis_os.h"
-#include "app_shared_data.h"
-#include "bsp.h"
-#include "gpio.h"
-#include "dev_ad9545.h"
 #include "ad9545/ad9545.h"
-#include "ad9545/ad9545_i2c_hal.h"
+#include "app_shared_data.h"
+#include "cmsis_os.h"
+#include "dev_ad9545.h"
 #include "logbuffer.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
 {
     return osKernelSysTick() - stateStartTick;
-}
-
-void pll_clear_status(Dev_ad9545 *d)
-{
-    memset(&d->status.misc, 0, sizeof(d->status.misc));
-    memset(&d->status.ref, 0, sizeof(d->status.ref));
-    memset(&d->status.dpll, 0, sizeof(d->status.dpll));
-}
-
-void pll_task_init(void)
-{
-    Dev_ad9545 *d = get_dev_pll();
-    init_ad9545_setup(&d->setup);
-    ad9545_gpio_init();
 }
 
 /*
@@ -53,14 +36,14 @@ void pll_task_init(void)
 4. Configure the output drivers
 5. Configure the status pins (optional)
 */
-void pll_task_run(void)
+void dev_ad9545_run(void)
 {
     Dev_ad9545 *d = get_dev_pll();
     if (!enable_power || !system_power_present) {
         if (d->fsm_state != PLL_STATE_INIT) {
             d->fsm_state = PLL_STATE_INIT;
             d->present = DEVICE_UNKNOWN;
-            pll_clear_status(d);
+            pll_ad9545_clear_status(d);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
         }
         return;
@@ -167,7 +150,7 @@ void pll_task_run(void)
             d->fsm_state = PLL_STATE_ERROR;
         }
     } else {
-        pll_clear_status(d);
+        pll_ad9545_clear_status(d);
     }
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {

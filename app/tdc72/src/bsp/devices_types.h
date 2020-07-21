@@ -22,6 +22,7 @@
 #include "dev_fpga_types.h"
 #include "dev_auxpll.h"
 #include "dev_ad9545.h"
+#include "dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
 //#include "dev_vxsiic_types.h"
@@ -30,15 +31,13 @@
 #include "dev_leds_types.h"
 
 typedef struct Devices {
-#ifdef BOARD_TDC64
-    Dev_auxpll auxpll;
-#endif
     Dev_thset thset;
     Dev_fpga fpga;
     Dev_sfpiic sfpiic;
     Dev_at24c eeprom_vxspb;
     Dev_at24c eeprom_config;
     Dev_ad9545 pll;
+    Dev_auxpll auxpll;
     Dev_powermon pm;
     Dev_digipots pots;
     uint32_t pcb_ver;

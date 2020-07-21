@@ -15,6 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "bsp.h"
 #include "bsp_fpga.h"
 
 #include "fpga_spi_hal.h"
@@ -44,7 +45,7 @@ bool fpgaWriteSensors(const struct Dev_powermon *d)
         return false;
     if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VME_3V3].current * 1000)))
         return false;
-#ifdef TDC64
+#ifdef BOARD_TDC64
     if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_D].busVoltage * 1000)))
         return false;
     if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_TDC_D].current * 1000)))

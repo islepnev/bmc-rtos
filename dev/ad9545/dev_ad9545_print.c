@@ -15,28 +15,16 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_ad9545.h"
+#include "dev_ad9545_print.h"
 
 #include <stdio.h>
 
+#include "dev_ad9545.h"
 #include "ad9545/ad9545_print.h"
 #include "ansi_escape_codes.h"
+#include "display.h"
 
-SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll)
-{
-    if (DEVICE_NORMAL != pll->present)
-        return SENSOR_UNKNOWN;
-    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
-        return SENSOR_CRITICAL;
-    if (!pll->status.dpll[0].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    if (!pll->status.dpll[1].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-
-}
-
-const char *dev_ad9545_state_str(ad9545_state_t state)
+static const char *dev_ad9545_state_str(ad9545_state_t state)
 {
     switch(state) {
     case PLL_STATE_INIT:    return "INIT";
@@ -56,4 +44,14 @@ void dev_ad9545_verbose_status(const Dev_ad9545 *d)
     printf("AD9545 device FSM state: %s\n", dev_ad9545_state_str(d->fsm_state));
     ad9545_verbose_status(&d->status);
     printf("\n");
+}
+
+void dev_ad9545_print_box(const Dev_ad9545 *d)
+{
+    printf("PLL AD9545:      %s %s",
+           dev_ad9545_state_str(d->fsm_state),
+           sensor_status_ansi_str(get_pll_sensor_status(d)));
+    print_clear_eol();
+    ad9545_brief_status(&d->status);
+
 }

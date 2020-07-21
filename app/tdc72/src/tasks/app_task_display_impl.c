@@ -27,6 +27,8 @@
 #include "bsp_display.h"
 #include "bsp_powermon.h"
 #include "debug_helpers.h"
+#include "dev_ad9545_print.h"
+#include "dev_auxpll_print.h"
 #include "dev_eeprom.h"
 #include "dev_common_types.h"
 #include "dev_fpga_types.h"
@@ -110,7 +112,9 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_PLL_H 5
-#define DISPLAY_LOG_Y (1 + DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#define DISPLAY_AUXPLL_Y (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#define DISPLAY_AUXPLL_H 2
+#define DISPLAY_LOG_Y (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
 #define DISPLAY_LOG_H 5
 #define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
@@ -249,11 +253,13 @@ static void print_fpga(const Dev_fpga *fpga)
 static void print_pll(const Dev_ad9545 *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
-    printf("PLL AD9545:      %s %s",
-           dev_ad9545_state_str(pll->fsm_state),
-           sensor_status_ansi_str(get_pll_sensor_status(pll)));
-    print_clear_eol();
-    ad9545_brief_status(&pll->status);
+    dev_ad9545_print_box(pll);
+}
+
+static void print_auxpll(const Dev_auxpll *pll)
+{
+    print_goto(DISPLAY_AUXPLL_Y, 1);
+    auxpllPrint(pll);
 }
 
 static void print_log_lines(int count)
@@ -331,6 +337,7 @@ static void display_summary(const Devices * dev)
     print_main(dev);
     print_fpga(&dev->fpga);
     print_pll(&dev->pll);
+    print_auxpll(&dev->auxpll);
     print_log_messages();
 }
 

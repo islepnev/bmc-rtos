@@ -14,19 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#ifndef APP_TASK_PLL_IMPL_H
-#define APP_TASK_PLL_IMPL_H
+#ifndef DEV_AUXPLL_PRINT_H
+#define DEV_AUXPLL_PRINT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pll_task_init(void);
-void pll_task_run(void);
+struct Dev_auxpll;
+void auxpllPrintStatus(const struct Dev_auxpll *d);
+void auxpllPrint(const struct Dev_auxpll *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_PLL_IMPL_H
+#endif // DEV_AUXPLL_PRINT_H

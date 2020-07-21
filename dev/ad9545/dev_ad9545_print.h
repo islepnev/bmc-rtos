@@ -15,18 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_PLL_IMPL_H
-#define APP_TASK_PLL_IMPL_H
+#ifndef DEV_AD9545_PRINT_H
+#define DEV_AD9545_PRINT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pll_task_init(void);
-void pll_task_run(void);
+struct Dev_ad9545;
+void dev_ad9545_verbose_status(const struct Dev_ad9545 *d);
+void dev_ad9545_print_box(const struct Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_PLL_IMPL_H
+#endif // DEV_AD9545_PRINT_H

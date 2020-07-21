@@ -14,19 +14,35 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_AUXPLL_PRINT_H
-#define DEV_AUXPLL_PRINT_H
+#ifndef DEV_AD9545_TYPES_H
+#define DEV_AD9545_TYPES_H
 
-#include "dev_auxpll_types.h"
+#include <stdint.h>
+#include "dev_ad9545_fsm.h"
+#include "dev_common_types.h"
+#include "ad9545/ad9545_setup_regs.h"
+#include "ad9545/ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void auxpllPrintStatus(const Dev_auxpll *d);
+
+typedef struct Dev_ad9545 {
+    DeviceStatus present;
+    ad9545_setup_t setup;
+    AD9545_Status status;
+    ad9545_state_t fsm_state;
+    uint32_t recoveryCount;
+} Dev_ad9545;
+
+SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll);
+
+void dev_ad9545_init(void);
+void pll_ad9545_clear_status(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_AUXPLL_PRINT_H
+#endif // DEV_AD9545_TYPES_H

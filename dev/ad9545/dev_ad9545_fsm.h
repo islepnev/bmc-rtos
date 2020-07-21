@@ -15,18 +15,28 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_PLL_IMPL_H
-#define APP_TASK_PLL_IMPL_H
+#ifndef DEV_AD9545_FSM_H
+#define DEV_AD9545_FSM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pll_task_init(void);
-void pll_task_run(void);
+typedef enum {
+    PLL_STATE_INIT,
+    PLL_STATE_RESET,
+    PLL_STATE_SETUP_SYSCLK,
+    PLL_STATE_SYSCLK_WAITLOCK,
+    PLL_STATE_SETUP,
+    PLL_STATE_RUN,
+    PLL_STATE_ERROR,
+    PLL_STATE_FATAL
+} ad9545_state_t;
+
+void dev_ad9545_run(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_PLL_IMPL_H
+#endif // DEV_AD9545_FSM_H

@@ -22,7 +22,8 @@
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "app_task_eeprom_config_impl.h"
-#include "app_task_pll_impl.h"
+#include "dev_ad9545.h"
+#include "dev_ad9545_fsm.h"
 #include "debug_helpers.h"
 
 osThreadId pllThreadId = NULL;
@@ -33,10 +34,10 @@ static void pllTask(void const *arg)
 {
     (void) arg;
     // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    pll_task_init();
+    dev_ad9545_init();
     while(1) {
         task_eeprom_config_run();
-        pll_task_run();
+        dev_ad9545_run();
         osDelay(pllTaskLoopDelay);
     }
 }
