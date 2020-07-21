@@ -20,8 +20,6 @@
 #include "devices_types.h"
 #include "dev_thset.h"
 
-enum { FPGA_DEVICE_ID = 0xD0};
-
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
@@ -49,14 +47,17 @@ SensorStatus getMiscStatus(const Devices *d)
 
 SensorStatus getFpgaStatus(const Dev_fpga *d)
 {
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->id != FPGA_DEVICE_ID)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
+    return get_fpga_sensor_status(d);
 }
 
-SensorStatus getPllStatus(const struct Dev_ad9545 *d)
+int getPllLockState(const Dev_ad9545 *d)
+{
+    return d->status.sysclk.b.stable
+            && d->status.sysclk.b.pll0_locked
+            && d->status.sysclk.b.pll1_locked;
+}
+
+SensorStatus getPllStatus(const Dev_ad9545 *d)
 {
     if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
         return SENSOR_CRITICAL;
@@ -64,10 +65,7 @@ SensorStatus getPllStatus(const struct Dev_ad9545 *d)
         return SENSOR_CRITICAL;
     if (!d->status.sysclk.b.locked)
         return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.stable ||
-            !d->status.sysclk.b.pll0_locked ||
-            !d->status.sysclk.b.pll1_locked
-            )
+    if (!getPllLockState(d))
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }

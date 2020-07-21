@@ -46,11 +46,7 @@ SensorStatus getMiscStatus(const Devices *d)
 
 SensorStatus getFpgaStatus(const Dev_fpga *d)
 {
-    if (d->present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-//    if (d->id != FPGA_DEVICE_ID)
-//        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
+    return get_fpga_sensor_status(d);
 }
 
 int getPllLockState(const Dev_ad9545 *d)
