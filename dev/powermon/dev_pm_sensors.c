@@ -17,7 +17,7 @@
 
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
-#include "ina226_i2c_hal.h"
+#include "ina226/ina226_i2c_hal.h"
 #include "i2c.h"
 
 #include "ansi_escape_codes.h"

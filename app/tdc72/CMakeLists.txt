@@ -42,20 +42,26 @@ file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
 
 SET(STM32HAL_SOURCES ${STM32HAL_SOURCES} ${HAL_LL_EXTRA_SOURCES})
 
-SET(MY_SRC_DIR ${MY_TOP_DIR}/app/${BOARD}/src)
+SET(MY_SRC_DIR ${MY_TOP_DIR}/src)
+SET(BSP_DIR ${MY_TOP_DIR}/app/${BOARD}/src)
 
 add_compile_definitions(USE_FULL_LL_DRIVER)
 
-include_directories(
-    ${MY_SRC_DIR}/config
-    ${MY_SRC_DIR}
-    ${MY_LIB_DIR}/common
-    ${MY_LIB_DIR}/system/init
+set(CONFIG_INC_DIRS
+    ${BSP_DIR}/config
+)
+include_directories(${CONFIG_INC_DIRS})
+
+set(BSP_INC_DIRS
+    ${BSP_DIR}
+    ${BSP_DIR}/config
+    ${BSP_DIR}/bsp
+    ${BSP_DIR}/bsp/mx_init
 )
 
 file(GLOB_RECURSE BSP_SRCS
-    ${MY_SRC_DIR}/bsp/*.*
-    ${MY_SRC_DIR}/bsp/mx_init/*.*
+    ${BSP_DIR}/bsp/*.*
+    ${BSP_DIR}/bsp/mx_init/*.*
     ${MY_LIB_DIR}/system/init/*.*
 )
 
@@ -67,6 +73,7 @@ set(Dev_INC_DIRS
     ${MY_LIB_DIR}/dev/powermon
     ${MY_LIB_DIR}/dev/ttvxs_auxpll
 )
+
 file(GLOB_RECURSE Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9516/*
     ${MY_LIB_DIR}/dev/ad9545/*
@@ -123,20 +130,28 @@ file(GLOB_RECURSE Drivers_SRCS
     ${MY_LIB_DIR}/drivers/powermon_i2c_driver.h
 )
 
-add_library(hwlib STATIC ${BSP_SRCS} ${Dev_SRCS} ${Drivers_SRCS})
-target_include_directories(hwlib PUBLIC
-    ${Dev_INC_DIRS}
-    ${Drivers_INC_DIRS}
-)
-TARGET_INCLUDE_DIRECTORIES(hwlib PRIVATE
-    ${CMSIS_INCLUDE_DIRS}
-    ${STM32HAL_INCLUDE_DIR}
-    ${MY_SRC_DIR}/bsp
-    ${MY_SRC_DIR}/bsp/mx_init
-    ${MY_LIB_DIR}/init
+#add_library(hwlib STATIC ${BSP_SRCS} ${Dev_SRCS} ${Drivers_SRCS})
+#target_include_directories(hwlib PUBLIC
+#    ${Dev_INC_DIRS}
+#    ${Drivers_INC_DIRS}
+#)
+#TARGET_INCLUDE_DIRECTORIES(hwlib PRIVATE
+#    ${CMSIS_INCLUDE_DIRS}
+#    ${STM32HAL_INCLUDE_DIR}
+#    ${BSP_DIR}/bsp
+#    ${BSP_DIR}/bsp/mx_init
+#    ${MY_LIB_DIR}/init
+##    ${MY_LIB_DIR}/drivers
+#)
+#STM32_SET_TARGET_PROPERTIES(hwlib)
+
+include_directories(
+#    ${MY_LIB_DIR}/common
+#    ${MY_LIB_DIR}/system/init
 #    ${MY_LIB_DIR}/drivers
+#    ${BSP_INC_DIRS}
+#    ${MY_SRC_DIR}
 )
-STM32_SET_TARGET_PROPERTIES(hwlib)
 
 add_library(CMSIS STATIC ${CMSIS_SOURCES})
 TARGET_INCLUDE_DIRECTORIES(CMSIS PRIVATE
@@ -150,17 +165,6 @@ TARGET_INCLUDE_DIRECTORIES(STM32HAL PUBLIC
     ${STM32HAL_INCLUDE_DIR}
 )
 STM32_SET_TARGET_PROPERTIES(STM32HAL)
-
-file(GLOB_RECURSE USER_SOURCES
-    ${MY_SRC_DIR}/config/*.*
-    ${MY_LIB_DIR}/common/*.*
-    ${MY_SRC_DIR}/*.*
-    ${HAL_LL_EXTRA_INCLUDES}
-)
-
-SET(PROJECT_SOURCES
-    ${USER_SOURCES}
-)
 
 file(GLOB_RECURSE FreeRTOS_SRCS
     ${FREERTOS_DIR}/include/*.h
@@ -184,11 +188,41 @@ target_include_directories(FreeRTOS PRIVATE
     ${CMSIS_COMMON_INCLUDE_DIR}
 )
 
+file(GLOB_RECURSE BmcApp_SRCS
+    ${HAL_LL_EXTRA_INCLUDES}
+    ${BSP_SRCS}
+    ${Dev_SRCS}
+    ${Drivers_SRCS}
+    ${BSP_DIR}/config/*.*
+    ${MY_LIB_DIR}/common/*.*
+    ${BSP_DIR}/*.*
+    ${MY_SRC_DIR}/*.*
+    ${MY_SRC_DIR}/rtos/*.*
+    ${MY_SRC_DIR}/tasks/*.*
+)
+
+#add_library(BmcApp STATIC ${BmcApp_SRCS})
+#TARGET_INCLUDE_DIRECTORIES(BmcApp PRIVATE
+#    ${CMSIS_INCLUDE_DIRS}
+#    ${STM32HAL_INCLUDE_DIR}
+#    ${Dev_INC_DIRS}
+#    ${MY_SRC_DIR}
+#    ${MY_SRC_DIR}/rtos
+#    ${BSP_DIR}/rtos
+#    ${MY_SRC_DIR}/tasks
+#    ${BSP_DIR}/tasks
+#)
+#STM32_SET_TARGET_PROPERTIES(BmcApp)
+
+file(GLOB_RECURSE PROJECT_SOURCES
+    ${BmcApp_SRCS}
+    ${MY_LIB_DIR}/system/init/*.*
+)
 set(DATA_FILE
    ${MY_TOP_DIR}/doc/Doxyfile.in
    ${MY_TOP_DIR}/mib/afi-bmc.mib
    ${MY_TOP_DIR}/README.md
-   ${MY_SRC_DIR}/version.h.in
+   ${BSP_DIR}/version.h.in
 )
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -200,16 +234,19 @@ ADD_EXECUTABLE(${ELF}
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${STM32HAL_INCLUDE_DIR}
-   ${MY_LIB_DIR}/common
-   ${MY_SRC_DIR}
-   ${MY_SRC_DIR}/bsp
-   ${MY_SRC_DIR}/bsp/mx_init
-   ${MY_SRC_DIR}/tasks
-   ${MY_SRC_DIR}/rtos
+    ${MY_LIB_DIR}/common
+    ${BSP_DIR}
+    ${BSP_DIR}/bsp
+    ${BSP_DIR}/bsp/mx_init
+    ${BSP_DIR}/tasks
+    ${BSP_DIR}/rtos
+    ${MY_SRC_DIR}
+    ${Dev_INC_DIRS}
+    ${Drivers_INC_DIRS}
+    ${MY_LIB_DIR}/system/init
 )
 
 TARGET_LINK_LIBRARIES(${ELF}
-    hwlib
     FreeRTOS
     CMSIS
     STM32HAL
@@ -228,14 +265,14 @@ include(${MY_TOP_DIR}/cmake/Doxygen.cmake)
 include(${MY_TOP_DIR}/cmake/git_version.cmake)
 
 configure_file(
-  ${MY_SRC_DIR}/version.h.in
-  ${MY_SRC_DIR}/version.h
+  ${BSP_DIR}/version.h.in
+  ${BSP_DIR}/version.h
 )
 configure_file(
   ${MY_TOP_DIR}/build_id.in
   ${MY_TOP_DIR}/build_id
 )
-list(APPEND SOURCES ${MY_SRC_DIR}/version.h)
+list(APPEND SOURCES ${BSP_DIR}/version.h)
 
 add_custom_command(TARGET ${ELF} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ELF}> ${CMAKE_PROJECT_NAME}-${GIT_DESCR}.elf

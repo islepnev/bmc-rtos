@@ -16,6 +16,7 @@
 //
 
 #include "app_tasks.h"
+#include "bsp.h"
 #include "app_task_heartbeat.h"
 #include "app_task_powermon.h"
 #include "app_task_main.h"
@@ -25,7 +26,9 @@
 #include "app_task_auxpll.h"
 #include "app_task_fpga.h"
 #include "app_task_vxsiic.h"
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
+#endif
 
 void create_tasks(void)
 {
@@ -37,6 +40,8 @@ void create_tasks(void)
     create_task_pll();
     create_task_auxpll();
     create_task_fpga();
-    // create_task_vxsiic();
+    create_task_vxsiic();
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     create_task_tcpip();
+#endif
 }

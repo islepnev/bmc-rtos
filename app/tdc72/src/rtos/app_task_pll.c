@@ -20,14 +20,14 @@
 #include <stdint.h>
 
 #include "cmsis_os.h"
-#include "app_tasks.h"
+//#include "app_tasks.h"
 #include "app_task_eeprom_config_impl.h"
 #include "dev_ad9545.h"
 #include "dev_ad9545_fsm.h"
 #include "debug_helpers.h"
 
 osThreadId pllThreadId = NULL;
-enum { pllThreadStackSize = threadStackSize };
+enum { pllThreadStackSize = 400 };
 static const uint32_t pllTaskLoopDelay = 30;
 
 static void pllTask(void const *arg)

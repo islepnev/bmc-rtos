@@ -15,35 +15,37 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_auxpll.h"
-
-#include <stdint.h>
+#include "app_task_vxsiic.h"
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
-#include "app_task_auxpll_impl.h"
+#include "app_task_vxsiic_impl.h"
 #include "debug_helpers.h"
 
-osThreadId auxpllThreadId = NULL;
-enum { auxpllThreadStackSize = threadStackSize };
-static const uint32_t auxpllTaskLoopDelay = 10;
+osThreadId vxsiicThreadId = NULL;
+enum { vxsiicThreadStackSize = 1000 };
+static const uint32_t vxsiicTaskLoopDelay = 10;
 
-static void auxpllTask(void const *arg)
+static void start_thread_vxsiic( void const *arg)
 {
     (void) arg;
+
     // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    while(1) {
-        auxpll_task_run();
-        osDelay(auxpllTaskLoopDelay);
+    task_vxsiic_init();
+
+    while (1)
+    {
+        task_vxsiic_run();
+        osDelay(vxsiicTaskLoopDelay);
     }
 }
 
-osThreadDef(auxpll, auxpllTask, osPriorityNormal,      1, auxpllThreadStackSize);
+osThreadDef(vxsiic, start_thread_vxsiic,    osPriorityNormal, 1, vxsiicThreadStackSize);
 
-void create_task_auxpll(void)
+void create_task_vxsiic(void)
 {
-    auxpllThreadId = osThreadCreate(osThread (auxpll), NULL);
-    if (auxpllThreadId == NULL) {
-        debug_print("Failed to create auxpll thread\n");
+    vxsiicThreadId = osThreadCreate(osThread (vxsiic), NULL);
+    if (vxsiicThreadId == NULL) {
+        debug_print("Failed to create vxsiic thread\n");
     }
 }
