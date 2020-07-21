@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -23,12 +23,19 @@
 #endif
 
 #include "bsp.h"
+#ifdef BOARD_CRU16
+#define APP_NAME_STR "CRU16 BMC"
+#endif
 #ifdef BOARD_TDC64
 #define APP_NAME_STR "TDC64VHLE BMC"
 #endif
 #ifdef BOARD_TDC72
 #define APP_NAME_STR "TDC72VXS4 BMC"
 #endif
+#ifdef BOARD_TTVXS
+#define APP_NAME_STR "TTVXS BMC"
+#endif
+
 #define VERSION_MAJOR_NUM @PROJECT_VERSION_MAJOR@
 #define VERSION_MINOR_NUM @PROJECT_VERSION_MINOR@
 #define GIT_BRANCH @GIT_BRANCH@

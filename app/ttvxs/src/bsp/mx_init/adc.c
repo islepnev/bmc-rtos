@@ -19,6 +19,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "adc.h"
+#include "stm32f7xx_hal_rcc.h"
+#include "error_handler.h"
 
 /* USER CODE BEGIN 0 */
 

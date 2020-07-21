@@ -24,7 +24,8 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_adc.h"
 
 /* USER CODE BEGIN Includes */
 

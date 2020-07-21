@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include "stm32f7xx_ll_usart.h"
+#include "stm32f7xx_hal.h"
 
 extern TIM_HandleTypeDef htim1;
 extern I2C_HandleTypeDef hi2c1;

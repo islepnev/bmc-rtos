@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 //#define BOARD_TDC72 1
-#define BOARD_TDC64 1
+//#define BOARD_TDC64 1
 
 #define LED_HEARTBEAT LED_INT_GREEN
 
