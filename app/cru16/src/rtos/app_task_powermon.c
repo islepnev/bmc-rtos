@@ -24,6 +24,7 @@
 #include "app_tasks.h"
 #include "app_task_sfpiic_impl.h"
 #include "app_task_powermon_impl.h"
+#include "bsp.h"
 #include "debug_helpers.h"
 
 osThreadId powermonThreadId = NULL;
@@ -38,7 +39,8 @@ static void start_task_powermon( void const *arg)
 
     while (1)
     {
-        task_sfpiic_run();
+        bsp_smbus_reset();
+//        task_sfpiic_run();
         task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {

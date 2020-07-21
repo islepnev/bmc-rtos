@@ -35,6 +35,7 @@ const char *psw_label(PowerSwitchIndex index)
     case PSW_TDC_A:  return "TDC_A";
     case PSW_TDC_B:  return "TDC_B";
     case PSW_TDC_C:  return "TDC_C";
+    case PSW_TDC_D:  return "TDC_D";
     }
     return "???";
 }

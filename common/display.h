@@ -23,7 +23,7 @@
 #include "dev_common_types.h"
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 #define ANSI_COL_RESULTS ANSI_CLEAR_EOL ANSI_COL40
@@ -39,6 +39,11 @@
 #define STR_RESULT_WARNING ANSI_COL_RESULTS ANSI_YELLOW "WARNING"  ANSI_CLEAR
 #define STR_RESULT_CRIT    ANSI_COL_RESULTS ANSI_RED    "CRITICAL" ANSI_CLEAR
 #define STR_RESULT_FAIL    ANSI_COL_RESULTS ANSI_RED    "FAIL"     ANSI_CLEAR
+
+void print_clear_eol(void);
+void print_clearbox(int line1, int height);
+void print_goto(int line, int col);
+
 
 char *deviceStatusResultStr(DeviceStatus status);
 

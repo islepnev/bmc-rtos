@@ -22,8 +22,6 @@
 extern "C" {
 #endif
 
-void bsp_sfpiic_reset(void);
-
 #ifdef __cplusplus
 }
 #endif

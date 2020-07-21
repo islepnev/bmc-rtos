@@ -33,7 +33,7 @@ typedef enum {
     RAMP_DOWN = 2,
     } RampState;
 
-typedef struct {
+typedef struct pm_sensor {
     SensorIndex index;
     DeviceStatus deviceStatus;
     SensorStatus sensorStatus;

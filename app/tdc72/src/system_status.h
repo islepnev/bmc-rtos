@@ -45,7 +45,7 @@ int getPllLockState(const Dev_ad9545 *d);
 SensorStatus getPllStatus(const Dev_ad9545 *d);
 SensorStatus pollVxsiicStatus(Devices *dev);
 DeviceStatus getDeviceStatus(const Devices *d);
-SensorStatus getSystemStatus(const Devices *dev);
+SensorStatus getSystemStatus(void);
 encoded_system_status_t encode_system_status(const Devices *dev);
 
 #ifdef __cplusplus

@@ -80,10 +80,10 @@ void MX_GPIO_Init(void)
 
   // MON_SMB_SW_RST_B
   GPIO_InitStruct.Pin = MON_SMB_SW_RST_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port, MON_SMB_SW_RST_B_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port, MON_SMB_SW_RST_B_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(MON_SMB_SW_RST_B_GPIO_Port, &GPIO_InitStruct);
 
   // LEDs, turn on by default

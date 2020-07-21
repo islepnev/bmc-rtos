@@ -16,11 +16,4 @@
 */
 
 #include "bsp_sfpiic.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "bsp_pin_defs.h"
 
-void bsp_sfpiic_reset(void)
-{
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  GPIO_PIN_SET);
-}

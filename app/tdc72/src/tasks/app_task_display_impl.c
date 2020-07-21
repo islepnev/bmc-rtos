@@ -35,12 +35,14 @@
 #include "dev_digipot.h"
 #include "dev_powermon.h"
 #include "dev_powermon_types.h"
+#include "dev_powermon_display.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
 #include "display.h"
 #include "logbuffer.h"
 #include "logentry.h"
+#include "system_status.h"
 #include "version.h"
 
 #include "rtos/freertos_stats.h"
@@ -50,23 +52,6 @@
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
-
-static const char *pmStateStr(PmState state)
-{
-    switch(state) {
-    case PM_STATE_INIT:    return "INIT";
-    case PM_STATE_WAITINPUT: return "WAIT-INPUT";
-    case PM_STATE_STANDBY: return "STANDBY";
-    case PM_STATE_RAMP:    return ANSI_YELLOW "RAMP"    ANSI_CLEAR;
-    case PM_STATE_RUN:     return ANSI_GREEN  "RUN"     ANSI_CLEAR;
-    case PM_STATE_OFF:     return ANSI_GRAY   "OFF"     ANSI_CLEAR;
-    case PM_STATE_PWRFAIL: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
-    case PM_STATE_FAILWAIT: return ANSI_RED    "POWER SUPPLY FAILURE" ANSI_CLEAR;
-    case PM_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case PM_STATE_OVERHEAT: return ANSI_RED    "OVERHEAT" ANSI_CLEAR;
-    default: return "?";
-    }
-}
 
 static void print_pm_pots(const Dev_digipots *d)
 {
@@ -88,54 +73,6 @@ static void print_pm_pots(const Dev_digipots *d)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void pm_sensor_print_header(void)
-{
-    printf("%10s %6s %6s %6s %5s", "sensor ", "  V  ", "  A  ", " A max ", "  W  ");
-    printf(ANSI_CLEAR_EOL "\n");
-}
-
-static void pm_sensor_print_values(const pm_sensor *d, int isOn)
-{
-    SensorStatus sensorStatus = pm_sensor_status(d);
-    int offvoltage = !isOn && (d->busVoltage > 0.1);
-    const char *color = "";
-    switch (sensorStatus) {
-    case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
-    case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
-    case SENSOR_WARNING:  color = ANSI_YELLOW; break;
-    case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
-    }
-    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
-    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-        int backfeed = (d->current < -0.010);
-        printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
-    } else {
-        printf("         ");
-    }
-    //        double sensorStateDuration = pm_sensor_get_sensorStatus_Duration(d) / getTickFreqHz();
-}
-
-static void pm_sensor_print(const pm_sensor *d, int isOn)
-{
-    printf("%10s", d->label);
-    if (d->deviceStatus == DEVICE_NORMAL) {
-        pm_sensor_print_values(d, isOn);
-        printf(" %s", isOn ? sensor_status_ansi_str(d->sensorStatus) : STR_RESULT_OFF);
-    } else {
-        printf(" %s", STR_RESULT_UNKNOWN);
-    }
-}
-
-void monPrintValues(const Dev_powermon *d)
-{
-    pm_sensor_print_header();
-    {
-        for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, (SensorIndex)i));
-            printf("%s\n", ANSI_CLEAR_EOL);
-        }
-    }
-}
 
 static void print_log_entry(uint32_t index)
 {
@@ -159,12 +96,16 @@ static void print_log_entry(uint32_t index)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-#define DISPLAY_POWERMON_Y 2
-#define DISPLAY_POWERMON_H 4
-#define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
-#define DISPLAY_SENSORS_H 18
-#define DISPLAY_MAIN_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
-#define DISPLAY_MAIN_H 4
+#define DISPLAY_SYS_STATUS_Y 2
+#define DISPLAY_SYS_STATUS_H 1
+#define DISPLAY_POWERMON_Y (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H)
+#define DISPLAY_POTS_H 1
+#define DISPLAY_POTS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
+#define DISPLAY_SENSORS_Y (0 + DISPLAY_POTS_Y + DISPLAY_POTS_H)
+#define DISPLAY_TEMP_H 1
+#define DISPLAY_TEMP_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
+#define DISPLAY_MAIN_Y (0 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y)
+#define DISPLAY_MAIN_H 3
 #define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
@@ -179,17 +120,6 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_PLL_DETAIL_H 25
 
 #define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
-
-static void print_goto(int line, int col)
-{
-    printf("\x1B[%d;%dH", line, col);
-}
-
-static void print_clearbox(int line1, int height)
-{
-    for(int i=line1; i<line1+height; i++)
-        printf("\x1B[%d;H\x1B[K", i);
-}
 
 static void print_uptime_str(void)
 {
@@ -230,45 +160,25 @@ static void print_header(void)
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
-static void print_pm_switches(const pm_switches sw)
+void print_system_status(const Devices *dev)
 {
-    printf("Switch: ");
-    for (int i=0; i<POWER_SWITCH_COUNT; i++) {
-        printf("%s %s   ", psw_label(i), sw[i] ? STR_ON : STR_OFF);
-    }
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
+    print_goto(DISPLAY_SYS_STATUS_Y, 1);
+    const SensorStatus systemStatus = getSystemStatus();
+    printf("System status: %s",
+           sensor_status_ansi_str(systemStatus));
+    print_clear_eol();
 
-static void pm_pgood_print(const pm_pgoods pgood)
-{
-    //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
-    //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("Power good: ");
-    for (int i=0; i<POWER_GOOD_COUNT; i++) {
-        printf("%s %s   ", pgood_label(i), pgood[i] ? STR_ON : STR_OFF);
-    }
-    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_powermon(const Dev_powermon *pm)
 {
-    const PmState pmState = pm->pmState;
-//    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
     print_goto(DISPLAY_POWERMON_Y, 1);
-    printf("Powermon state: %s", pmStateStr(pmState));
-    printf("%s\n", ANSI_CLEAR_EOL);
-    if (pmState == PM_STATE_INIT) {
-        print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
-    } else {
-        print_pm_switches(pm->sw_state);
-        pm_pgood_print(pm->pgood);
-    }
+    print_powermon_box(pm);
 }
 
 static void print_digipots(const Dev_digipots *p)
 {
     print_pm_pots(p);
-    printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_sensors(const Dev_powermon *pm)
@@ -278,18 +188,13 @@ static void print_sensors(const Dev_powermon *pm)
         print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
     } else {
         print_goto(DISPLAY_SENSORS_Y, 1);
-        SensorStatus sensorStatus = pm_sensors_getStatus(pm);
-        printf("Power supplies: %4.1f W, %4.1f W max %s\n",
-               pm_get_power_w(pm),
-               pm_get_power_max_w(pm),
-               sensor_status_ansi_str(sensorStatus));
-        monPrintValues(pm);
+        print_sensors_box(pm);
     }
 }
 
 static void print_thset(const Dev_thset *d)
 {
-    print_goto(DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H - 1, 1);
+    print_goto(DISPLAY_TEMP_Y, 1);
     printf("Temp: ");
     for (int i=0; i<DEV_THERM_COUNT; i++) {
         if (d->th[i].valid)
@@ -300,19 +205,19 @@ static void print_thset(const Dev_thset *d)
     }
     const SensorStatus status = dev_thset_thermStatus(d);
     printf("%s", sensor_status_ansi_str(status));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
 }
 
 static void devPrintStatus(const Devices *d)
 {
     printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
     printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
     printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
     //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
-    //    printf("%s\n", ANSI_CLEAR_EOL);
+    //    print_clear_eol();
 }
 
 static void print_main(const Devices *dev)
@@ -320,7 +225,7 @@ static void print_main(const Devices *dev)
     print_goto(DISPLAY_MAIN_Y, 1);
 //    if (getMainState() == MAIN_STATE_RUN) {
 //        printf("Main state:     %s", mainStateStr(getMainState()));
-        printf("%s\n", ANSI_CLEAR_EOL);
+//        print_clear_eol();
         devPrintStatus(dev);
 //        printf("%s\n", ANSI_CLEAR_EOL);
 //    } else {
@@ -337,8 +242,8 @@ static void print_fpga(const Dev_fpga *fpga)
         printf(ANSI_YELLOW "loading" ANSI_CLEAR);
     if (fpga->done)
         printf("%04X", fpga->id);
-    printf(sensor_status_ansi_str(get_fpga_sensor_status(fpga)));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("%s", sensor_status_ansi_str(get_fpga_sensor_status(fpga)));
+    print_clear_eol();
 }
 
 static void print_pll(const Dev_ad9545 *pll)
@@ -347,7 +252,7 @@ static void print_pll(const Dev_ad9545 *pll)
     printf("PLL AD9545:      %s %s",
            dev_ad9545_state_str(pll->fsm_state),
            sensor_status_ansi_str(get_pll_sensor_status(pll)));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
     ad9545_brief_status(&pll->status);
 }
 
@@ -369,7 +274,7 @@ static void print_log_lines(int count)
             print_log_entry(i);
     }
     for (uint32_t i=log_count; i<max_count; i++)
-        printf("%s\n", ANSI_CLEAR_EOL);
+        print_clear_eol();
 }
 
 static void print_log_messages(void)
@@ -416,6 +321,7 @@ static int old_enable_stats_display = 0;
 
 static void display_summary(const Devices * dev)
 {
+    print_system_status(dev);
     print_powermon(&dev->pm);
     print_digipots(&dev->pots);
     if (enable_stats_display) {

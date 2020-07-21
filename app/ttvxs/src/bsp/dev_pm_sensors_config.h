@@ -20,6 +20,8 @@
 #ifndef DEV_PM_SENSORS_CONFIG_H
 #define DEV_PM_SENSORS_CONFIG_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,7 +56,7 @@ typedef enum {
 
 extern const SensorIndex input_power_sensor;
 
-int monIsOptional(SensorIndex index);
+bool monIsOptional(SensorIndex index);
 double monShuntVal(SensorIndex index);
 double monVoltageMarginWarn(SensorIndex index);
 double monVoltageMarginCrit(SensorIndex index);

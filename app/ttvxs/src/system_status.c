@@ -16,6 +16,7 @@
 */
 
 #include "system_status.h"
+#include "app_shared_data.h"
 #include "devices_types.h"
 #include "dev_thset.h"
 
@@ -71,8 +72,9 @@ SensorStatus getPllStatus(const struct Dev_ad9545 *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getSystemStatus(const Devices *d)
+SensorStatus getSystemStatus(void)
 {
+    const Devices *d = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus(&d->pm);
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
     const SensorStatus miscStatus = getMiscStatus(d);

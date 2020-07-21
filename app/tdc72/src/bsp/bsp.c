@@ -25,6 +25,7 @@
 #include "stm32f7xx_hal_gpio.h"
 
 #include "i2c.h"
+#include "gpio.h"
 #include "dev_pm_sensors_config.h"
 #include "logbuffer.h"
 
@@ -63,5 +64,10 @@ bool fpga_done_pin_present(void)
 {
     return true;
 }
-
 #endif
+
+void bsp_smbus_reset(void)
+{
+    write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  0);
+    write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  1);
+}

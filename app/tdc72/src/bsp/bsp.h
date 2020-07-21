@@ -69,6 +69,7 @@ typedef enum {
 uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
+void bsp_smbus_reset(void);
 
 #ifdef __cplusplus
 }

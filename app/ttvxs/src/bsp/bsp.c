@@ -24,6 +24,7 @@
 #include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_ll_gpio.h"
+#include "gpio.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
 #include "spi.h"
@@ -64,4 +65,10 @@ void fpga_enable_interface(bool enable)
 bool fpga_done_pin_present(void)
 {
     return true;
+}
+
+void bsp_smbus_reset(void)
+{
+    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  0);
+    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  1);
 }

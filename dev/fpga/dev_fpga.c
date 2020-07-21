@@ -165,7 +165,7 @@ bool fpgaWriteSystemStatus(const Devices *d)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
-    data = getSystemStatus(d);
+    data = getSystemStatus();
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data);
     if (HAL_OK != ret)
         return false;

@@ -5,7 +5,7 @@
 const char *sensor_status_ansi_str(SensorStatus state)
 {
     switch(state) {
-    case SENSOR_UNKNOWN:  return STR_RESULT_WARNING;
+    case SENSOR_UNKNOWN:  return STR_RESULT_UNKNOWN;
     case SENSOR_NORMAL:   return STR_RESULT_NORMAL;
     case SENSOR_WARNING:  return STR_RESULT_WARNING;
     case SENSOR_CRITICAL: return STR_RESULT_CRIT;

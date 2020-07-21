@@ -21,7 +21,7 @@
 
 const SensorIndex input_power_sensor = SENSOR_VME_5V;
 
-int monIsOptional(SensorIndex index)
+bool monIsOptional(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 1;

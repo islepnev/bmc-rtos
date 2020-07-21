@@ -16,6 +16,7 @@
 */
 
 #include "system_status.h"
+#include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_vxsiic_impl.h"
 #include "dev_fpga.h"
@@ -36,9 +37,9 @@ DeviceStatus getDeviceStatus(const Devices *d)
 
 SensorStatus getMiscStatus(const Devices *d)
 {
-    if (d->sfpiic.present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (d->eeprom_config.present != DEVICE_NORMAL)
+    if (d->sfpiic.present == DEVICE_FAIL)
+        return SENSOR_WARNING;
+    if (d->eeprom_config.present == DEVICE_FAIL)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }
@@ -86,7 +87,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
 {
     encoded_system_status_t code;
     code.w = 0;
-    code.b.system = getSystemStatus(dev) & 0xF;
+    code.b.system = getSystemStatus() & 0xF;
     code.b.pm =  getPowermonStatus(&dev->pm) & 0xF;
     code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
@@ -95,8 +96,9 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     return code;
 }
 
-SensorStatus getSystemStatus(const Devices *dev)
+SensorStatus getSystemStatus()
 {
+    const Devices *dev = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
     const SensorStatus miscStatus = getMiscStatus(dev);

@@ -110,7 +110,7 @@ void task_main_run(void)
     // read other signals
     getDevices()->pen_b = HAL_GPIO_ReadPin(PEN_B_GPIO_Port, PEN_B_Pin);
 
-    const SensorStatus systemStatus = getSystemStatus(getDevicesConst());
+    const SensorStatus systemStatus = getSystemStatus();
     led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);
     led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);
     led_set_state(LED_GREEN, systemStatus == SENSOR_NORMAL);

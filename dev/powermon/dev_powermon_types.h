@@ -28,7 +28,6 @@
 extern "C" {
 #endif
 
-
 typedef enum {
     PM_STATE_INIT,
     PM_STATE_WAITINPUT,

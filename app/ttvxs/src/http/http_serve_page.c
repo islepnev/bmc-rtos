@@ -101,7 +101,7 @@ int http_serve_index(struct http_server_t *server)
     strcat(buf, str);
     sprintf(str, "<br>\n");
     strcat(buf, str);
-    sprintf(str, "System status: %s<br>\n", sensor_status_html(getSystemStatus(getDevicesConst())));
+    sprintf(str, "System status: %s<br>\n", sensor_status_html(getSystemStatus()));
     strcat(buf, str);
     sprintf(str, "Powermon state: %s<br>\n", pm_state_html(getDevicesConst()->pm.pmState));
     strcat(buf, str);

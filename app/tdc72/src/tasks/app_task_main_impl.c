@@ -42,7 +42,7 @@ void task_main_run(void)
     const PmState pmState = get_dev_powermon_const()->pmState;
     enable_pll_run = (pmState == PM_STATE_RUN);
 
-    const SensorStatus systemStatus = getSystemStatus(getDevicesConst());
+    const SensorStatus systemStatus = getSystemStatus();
     led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);
     led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);
     led_set_state(LED_GREEN, systemStatus == SENSOR_NORMAL);

@@ -19,6 +19,7 @@
 
 #include "cmsis_os.h"
 
+#include "bsp_sfpiic.h"
 #include "dev_powermon.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
@@ -40,7 +41,8 @@ static void start_task_powermon( void const *arg)
 
     while (1)
     {
-        task_sfpiic_run();
+        bsp_smbus_reset();
+//        task_sfpiic_run();
         task_digipot_run();
         task_powermon_run();
         sync_ipmi_sensors();

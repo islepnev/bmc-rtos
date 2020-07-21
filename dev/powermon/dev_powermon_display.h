@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,4 +15,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "display.h"
+#ifndef DEV_POWERMON_DISPLAY_H
+#define DEV_POWERMON_DISPLAY_H
+
+#include "dev_common_types.h"
+#include "dev_pm_sensors_config.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define DISPLAY_POWERMON_H 3
+#define DISPLAY_SENSORS_H (POWERMON_SENSORS+2)
+
+struct pm_sensor;
+struct Dev_powermon;
+const char *sensor_status_str(SensorStatus status);
+void pm_sensor_print_header(void);
+void pm_sensor_print_values(const struct pm_sensor *d, bool isOn);
+void print_powermon_box(const struct Dev_powermon *pm);
+void print_sensors_box(const struct Dev_powermon *pm);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_POWERMON_DISPLAY_H
