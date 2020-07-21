@@ -56,6 +56,11 @@ Dev_ad9545* get_dev_pll(void)
     return &dev.pll;
 }
 
+Dev_auxpll* get_dev_auxpll(void)
+{
+    return &dev.auxpll;
+}
+
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;

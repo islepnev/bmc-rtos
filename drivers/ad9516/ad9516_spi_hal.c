@@ -17,14 +17,11 @@
 
 #include "ad9516_spi_hal.h"
 
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_gpio.h"
 #include "gpio.h"
 #include "spi.h"
 #include "bus/spi_driver.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "error_handler.h"
 #include "logbuffer.h"
 #include "cmsis_os.h"
 
@@ -35,10 +32,11 @@ static bool set_csb(int state)
     if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
         return true;
     GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
-    GPIO_PinState read = HAL_GPIO_ReadPin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
-    if (write != read)
-        Error_Handler();
+    write_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
+    GPIO_PinState read = read_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
+    if (write != read) {
+        log_printf(LOG_CRIT, "AD9516_CS_B stuck %s", read ? "high": "low");
+    }
     return write == read;
 }
 
