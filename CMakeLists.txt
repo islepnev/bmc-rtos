@@ -1,4 +1,4 @@
-SET(TOOLCHAIN_PREFIX ~/gcc-arm-none-eabi)
+#SET(TOOLCHAIN_PREFIX ~/gcc-arm-none-eabi)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
@@ -92,6 +92,37 @@ target_include_directories(FreeRTOS PRIVATE
     ${CMSIS_COMMON_INCLUDE_DIR}
 )
 
+
+### lwIP
+SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
+add_compile_definitions(LWIP_DEBUG)
+include(${LWIP_DIR}/src/Filelists.cmake)
+#include(${LWIP_CONTRIB_DIR}/Filelists.cmake)
+SET(LWIP_SOURCES
+   ${lwipcore_SRCS}
+   ${lwipcore4_SRCS}
+   ${lwipapi_SRCS}
+   ${lwipnetif_SRCS}
+   ${lwipsntp_SRCS}
+   ${lwipsnmp_SRCS}
+   ${MY_LIB_DIR}/system/OS/sys_arch.c
+)
+
+add_library(lwip STATIC ${LWIP_SOURCES})
+STM32_SET_TARGET_PROPERTIES(lwip)
+target_include_directories(lwip PRIVATE
+    ${LWIP_DIR}/src/include
+)
+TARGET_LINK_LIBRARIES(${ELF} lwip)
+
+# required for lwip
+include_directories(
+    ${MY_SRC_DIR}/config
+    ${MY_TOP_DIR}/system
+    ${MY_TOP_DIR}/common/log
+)
+
+
 #include(cmake/Doxygen.cmake)
 include(cmake/git_version.cmake)
 configure_file(
@@ -113,5 +144,7 @@ add_custom_target(data ALL SOURCES
 
 include(cmake/bmc_target.cmake)
 
+subdirs(app/tdc64)
 subdirs(app/tdc72)
 subdirs(app/ttvxs)
+subdirs(app/cru16)

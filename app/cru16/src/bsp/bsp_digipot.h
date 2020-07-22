@@ -15,17 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_VXSIIC_H
-#define APP_TASK_VXSIIC_H
+#ifndef BSP_DIGIPOT_H
+#define BSP_DIGIPOT_H
+
+#include "bsp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void create_task_vxsiic(void);
+typedef enum {
+    UNUSED
+} PotIndex;
+
+enum {DEV_DIGIPOT_COUNT = 0};
+
+const char *potLabel(PotIndex index);
+int potBusAddress(PotIndex index);
+int potSensorIndex(PotIndex index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_VXSIIC_H
+#endif // BSP_DIGIPOT_H

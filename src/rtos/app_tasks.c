@@ -38,7 +38,9 @@ void create_tasks(void)
     create_task_powermon();
     create_task_main();
     create_task_pll();
+#if defined(BOARD_TDC64)
     create_task_auxpll();
+#endif
     create_task_fpga();
     create_task_vxsiic();
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)

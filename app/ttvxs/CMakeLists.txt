@@ -1,12 +1,9 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-# use one of: cru16, tdc64, tdc72, ttvxs
-#set(BOARD "ttvxs" CACHE STRING "PCB variant")
-#set_property(CACHE BOARD PROPERTY STRINGS cru16 tdc64 tdc72 ttvxs)
 set(BOARD "ttvxs")
 
-SET(BSP_DIR ${MY_TOP_DIR}/app/${BOARD}/src)
+SET(BSP_DIR ${MY_TOP_DIR}/app/ttvxs/src)
 
 SET(ELF ${BOARD}_rtos.elf)
 
@@ -15,29 +12,6 @@ BMC_TARGET_PRE(${ELF})
 subdirs(${MY_LIB_DIR}/dev)
 subdirs(${MY_LIB_DIR}/drivers)
 subdirs(${MY_SRC_DIR})
-
-
-### lwIP
-SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
-add_compile_definitions(LWIP_DEBUG)
-include(${LWIP_DIR}/src/Filelists.cmake)
-#include(${LWIP_CONTRIB_DIR}/Filelists.cmake)
-SET(LWIP_SOURCES
-   ${lwipcore_SRCS}
-   ${lwipcore4_SRCS}
-   ${lwipapi_SRCS}
-   ${lwipnetif_SRCS}
-   ${lwipsntp_SRCS}
-   ${lwipsnmp_SRCS}
-   ${MY_LIB_DIR}/system/OS/sys_arch.c
-)
-
-add_library(lwip STATIC ${LWIP_SOURCES})
-STM32_SET_TARGET_PROPERTIES(lwip)
-target_include_directories(lwip PUBLIC
-    ${LWIP_DIR}/src/include
-)
-TARGET_LINK_LIBRARIES(${ELF} lwip)
 
 set(BSP_INC_DIRS
     ${BSP_DIR}
@@ -53,23 +27,12 @@ include_directories(
     ${MY_LIB_DIR}/eth
 )
 
-
-
 file(GLOB_RECURSE BSP_SRCS
     ${BSP_DIR}/bsp/*.*
     ${BSP_DIR}/bsp/mx_init/*.*
     ${MY_LIB_DIR}/system/init/*.*
 )
 
-#set(Dev_INC_DIRS
-#    ${MY_LIB_DIR}/dev/ad9516
-#    ${MY_LIB_DIR}/dev/ad9545
-#    ${MY_LIB_DIR}/dev/fpga
-#    ${MY_LIB_DIR}/dev/powermon
-#    ${MY_LIB_DIR}/dev/ttvxs_auxpll
-#    ${MY_LIB_DIR}/dev/ttvxs_clkmux
-#    ${MY_LIB_DIR}/dev/ttvxs_vxsiic
-#)
 file(GLOB_RECURSE Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9516/*
     ${MY_LIB_DIR}/dev/ad9545/*
@@ -82,8 +45,6 @@ file(GLOB_RECURSE Dev_SRCS
 
 set(Drivers_INC_DIRS
     ${MY_LIB_DIR}/drivers
-#    ${MY_LIB_DIR}/drivers/ina226
-#    ${MY_LIB_DIR}/drivers/mcp23017
 )
 
 file(GLOB_RECURSE Drivers_SRCS
@@ -158,7 +119,6 @@ target_sources(${ELF} PRIVATE
     ${PROJECT_SOURCES}
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
-#    ${STM32HAL_INCLUDE_DIR}
     ${LWIP_DIR}/src/include
     ${MY_LIB_DIR}/common
     ${BSP_DIR}

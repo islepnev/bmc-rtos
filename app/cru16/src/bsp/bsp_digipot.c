@@ -1,4 +1,6 @@
 /*
+**    Digital Potentiometers
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,9 +17,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_AUXPLL_IMPL_H
-#define APP_TASK_AUXPLL_IMPL_H
+#include "bsp_digipot.h"
 
-void auxpll_task_run(void);
+const char *potLabel(PotIndex index)
+{
+    return "";
+}
 
-#endif // APP_TASK_AUXPLL_IMPL_H
+int potBusAddress(PotIndex index)
+{
+    return 0;
+}
+
+int potSensorIndex(PotIndex index)
+{
+    return 0;
+}

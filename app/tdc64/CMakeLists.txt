@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-set(BOARD "tdc72")
+set(BOARD "tdc64")
 
 SET(BSP_DIR ${MY_TOP_DIR}/app/tdc/src)
 
