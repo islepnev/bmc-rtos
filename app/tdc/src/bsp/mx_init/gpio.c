@@ -51,7 +51,9 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOJ_CLK_ENABLE();
+  __HAL_RCC_GPIOK_CLK_ENABLE();
 
   // ON_5V (always on)
   // PCB R35.5 should be mounted 10kΩ
@@ -86,42 +88,22 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port, MON_SMB_SW_RST_B_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(MON_SMB_SW_RST_B_GPIO_Port, &GPIO_InitStruct);
 
-  // LEDs, turn on by default
-  HAL_GPIO_WritePin(LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin,     GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin,    GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_RED_B_GPIO_Port,       LED_RED_B_Pin,       GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_ERROR_B_GPIO_Port,     LED_ERROR_B_Pin,     GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin, GPIO_PIN_RESET);
-
-  GPIO_InitStruct.Pin = LED_GREEN_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GREEN_B_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LED_YELLOW_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_YELLOW_B_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LED_RED_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_RED_B_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LED_ERROR_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_ERROR_B_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LED_HEARTBEAT_B_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_HEARTBEAT_B_GPIO_Port, &GPIO_InitStruct);
+  static const pin_def_t led_pins[5] = {
+      {LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin},
+      {LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin},
+      {LED_RED_B_GPIO_Port,       LED_RED_B_Pin},
+      {LED_ERROR_B_GPIO_Port,     LED_ERROR_B_Pin},
+      {LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin}
+  };
+  for (int i=0; i<5; i++) {
+      // LEDs, turn on by default
+      HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
+      GPIO_InitStruct.Pin = led_pins[i].pin;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      HAL_GPIO_Init(led_pins[i].GPIOx, &GPIO_InitStruct);
+  }
 
   /*Configure GPIO pins : PFPin PFPin */
   GPIO_InitStruct.Pin = VME_DET_B_Pin|LTM_PGOOD_Pin;

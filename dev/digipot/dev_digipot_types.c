@@ -32,3 +32,12 @@ void struct_pots_init(Dev_digipots *d)
         d->pot[i].busAddress = potBusAddress(i);
     }
 }
+
+SensorStatus get_digipot_sensor_status(const Dev_digipots *d)
+{
+    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
+        if (d->pot[i].deviceStatus != DEVICE_NORMAL)
+            return SENSOR_CRITICAL;
+    }
+    return SENSOR_NORMAL;
+}

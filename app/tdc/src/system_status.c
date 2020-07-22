@@ -100,6 +100,8 @@ SensorStatus getSystemStatus()
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
     const SensorStatus pllStatus = getPllStatus(&dev->pll);
+    const SensorStatus ad9516Status = get_auxpll_sensor_status(&dev->auxpll);
+    const SensorStatus digipotStatus = get_digipot_sensor_status(&dev->pots);
 //    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
@@ -112,6 +114,13 @@ SensorStatus getSystemStatus()
         systemStatus = fpgaStatus;
     if (pllStatus > systemStatus)
         systemStatus = pllStatus;
+    if (digipotStatus > systemStatus)
+        systemStatus = digipotStatus;
+#ifdef BOARD_TDC64
+    if (ad9516Status > systemStatus)
+        systemStatus = ad9516Status;
+#endif
+
 //    if (vxsiicStatus > systemStatus)
 //        systemStatus = vxsiicStatus;
     return systemStatus;

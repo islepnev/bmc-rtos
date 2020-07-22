@@ -40,6 +40,7 @@ typedef struct Dev_digipots {
 } Dev_digipots;
 
 void struct_pots_init(Dev_digipots *d);
+SensorStatus get_digipot_sensor_status(const Dev_digipots *d);
 
 #ifdef __cplusplus
 }

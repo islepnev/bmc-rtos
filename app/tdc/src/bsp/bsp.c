@@ -15,24 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TDC72VHL v4 board specific functions
+// TDC board specific functions
 
 #include "bsp.h"
 
 #include <stdbool.h>
 
 #include "bsp_pin_defs.h"
-#include "stm32f7xx_hal_gpio.h"
-
-#include "i2c.h"
-#include "gpio.h"
 #include "dev_pm_sensors_config.h"
-#include "logbuffer.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "log/logbuffer.h"
 
 uint32_t detect_pcb_version(void)
 {
-    bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
-    bool a1 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin));
+    bool a0 = read_gpio_pin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin);
+    bool a1 = read_gpio_pin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin);
     return a1 * 2 + a0;
 }
 
