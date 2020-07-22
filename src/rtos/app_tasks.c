@@ -23,9 +23,15 @@
 #include "app_task_display.h"
 #include "app_task_cli.h"
 #include "app_task_pll.h"
+#if !defined(BOARD_TDC72)
 #include "app_task_auxpll.h"
+#endif
 #include "app_task_fpga.h"
-#include "app_task_vxsiic.h"
+#if defined(BOARD_TTVXS)
+#include "app_task_vxsiicm.h"
+#else
+#include "app_task_vxsiics.h"
+#endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
 #endif
@@ -37,12 +43,19 @@ void create_tasks(void)
     create_task_cli();
     create_task_powermon();
     create_task_main();
+#if !defined(BOARD_TDC72)
+    create_task_auxpll();
+#endif
     create_task_pll();
 #if defined(BOARD_TDC64)
     create_task_auxpll();
 #endif
     create_task_fpga();
-    create_task_vxsiic();
+#if defined(BOARD_TTVXS)
+    create_task_vxsiicm();
+#else
+    create_task_vxsiics();
+#endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     create_task_tcpip();
 #endif

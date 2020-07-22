@@ -25,7 +25,6 @@ DeviceStatus getDeviceStatus(const Devices *d)
     DeviceStatus status = DEVICE_FAIL;
     if ((d->sfpiic.present == DEVICE_NORMAL)
             && (d->sfpiic.present == DEVICE_NORMAL)
-            && (d->vxsiic.present == DEVICE_NORMAL)
             && (d->eeprom_config.present == DEVICE_NORMAL)
             && (d->pll.present == DEVICE_NORMAL)
             && (d->fpga.present == DEVICE_NORMAL)
@@ -38,8 +37,6 @@ SensorStatus getMiscStatus(const Devices *d)
 {
     if (d->sfpiic.present != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
-    if (d->vxsiic.present != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
     if (d->eeprom_config.present != DEVICE_NORMAL)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
@@ -50,7 +47,7 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
     return get_fpga_sensor_status(d);
 }
 
-int getPllLockState(const Dev_ad9545 *d)
+bool getPllLockState(const Dev_ad9545 *d)
 {
     return d->status.sysclk.b.stable
             && d->status.sysclk.b.pll0_locked
@@ -68,6 +65,19 @@ SensorStatus getPllStatus(const Dev_ad9545 *d)
     if (!getPllLockState(d))
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
+}
+
+encoded_system_status_t encode_system_status(const Devices *dev)
+{
+    encoded_system_status_t code;
+    code.w = 0;
+    code.b.system = getSystemStatus() & 0xF;
+    code.b.pm =  getPowermonStatus(&dev->pm) & 0xF;
+    code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
+    code.b.misc = getMiscStatus(dev) & 0xF;
+    code.b.fpga = getFpgaStatus(&dev->fpga) & 0xF;
+    code.b.pll = getPllStatus(&dev->pll) & 0xF;
+    return code;
 }
 
 SensorStatus getSystemStatus(void)

@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "commands.h"
-#include "dev_digipot.h"
+#include "digipot/dev_digipot.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 

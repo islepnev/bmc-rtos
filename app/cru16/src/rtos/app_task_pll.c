@@ -23,8 +23,8 @@
 #include "app_tasks.h"
 #include "app_task_eeprom_config_impl.h"
 #include "app_task_clkmux_impl.h"
-#include "dev_ad9545.h"
-#include "dev_ad9545_fsm.h"
+#include "ad9545/dev_ad9545.h"
+#include "ad9545/dev_ad9545_fsm.h"
 #include "debug_helpers.h"
 
 osThreadId pllThreadId = NULL;

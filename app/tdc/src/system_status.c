@@ -18,8 +18,8 @@
 #include "system_status.h"
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "app_task_vxsiic_impl.h"
-#include "dev_fpga.h"
+#include "vxsiics/dev_vxsiics_stats.h"
+#include "fpga/dev_fpga.h"
 #include "dev_thset.h"
 
 DeviceStatus getDeviceStatus(const Devices *d)
@@ -72,10 +72,10 @@ SensorStatus getPllStatus(const Dev_ad9545 *d)
 SensorStatus pollVxsiicStatus(Devices *dev)
 {
     static vxsiic_i2c_stats_t vxsiic_i2c_stats_save = {0};
-    const vxsiic_i2c_stats_t * vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
-    uint32_t vxsiic_errors = vxsiic_i2c_stats->errors - vxsiic_i2c_stats_save.errors;
-    const SensorStatus vxsiicStatus = vxsiic_errors ? SENSOR_CRITICAL : (vxsiic_i2c_stats->errors) ? SENSOR_WARNING : SENSOR_NORMAL;
-    vxsiic_i2c_stats_save = *vxsiic_i2c_stats;
+//    const vxsiic_i2c_stats_t * vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
+    uint32_t vxsiic_errors = vxsiic_i2c_stats.errors - vxsiic_i2c_stats_save.errors;
+    const SensorStatus vxsiicStatus = vxsiic_errors ? SENSOR_CRITICAL : (vxsiic_i2c_stats.errors) ? SENSOR_WARNING : SENSOR_NORMAL;
+    vxsiic_i2c_stats_save = vxsiic_i2c_stats;
     return vxsiicStatus;
 }
 

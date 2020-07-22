@@ -17,17 +17,11 @@
 
 #include "app_task_main_impl.h"
 
-#include "dev_powermon_types.h"
-#include "debug_helpers.h"
-#include "logbuffer.h"
-#include "system_status.h"
-
 #include "app_shared_data.h"
-#include "led_gpio_hal.h"
-#include "bsp_pin_defs.h"
 #include "devices_types.h"
-#include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
+#include "led_gpio_hal.h"
+#include "powermon/dev_powermon_types.h"
+#include "system_status.h"
 
 static uint32_t mainloopCount = 0;
 

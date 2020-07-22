@@ -47,7 +47,6 @@ struct Dev_ttvxs_clkmux;
 struct Dev_ad9545;
 struct Dev_auxpll;
 struct Dev_thset;
-struct Dev_vxsiic;
 struct Dev_sfpiic;
 struct Dev_at24c;
 
@@ -62,7 +61,6 @@ struct Dev_ttvxs_clkmux *get_dev_clkmux(void);
 struct Dev_ad9545 *get_dev_pll(void);
 struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
-struct Dev_vxsiic *get_dev_vxsiic(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 struct Dev_at24c *get_dev_eeprom_config(void);
 

@@ -122,13 +122,14 @@ void MX_GPIO_Init(void)
 
   // LEDs
   static const pin_def_t led_pins[5] = {
-      {LED_RED_B_GPIO_Port, LED_RED_B_Pin},
-      {LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin},
-      {LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin},
-      {LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin},
+      {LED_RED_B_GPIO_Port,      LED_RED_B_Pin},
+      {LED_YELLOW_B_GPIO_Port,   LED_YELLOW_B_Pin},
+      {LED_GREEN_B_GPIO_Port,    LED_GREEN_B_Pin},
+      {LED_ERROR_B_GPIO_Port,    LED_ERROR_B_Pin},
       {LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin}
   };
   for (int i=0; i<5; i++) {
+      // LEDs, turn on by default
       HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = led_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;

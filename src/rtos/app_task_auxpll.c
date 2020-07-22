@@ -21,7 +21,7 @@
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
-#include "app_task_auxpll_impl.h"
+#include "ad9516/app_task_auxpll_impl.h"
 #include "debug_helpers.h"
 
 osThreadId auxpllThreadId = NULL;

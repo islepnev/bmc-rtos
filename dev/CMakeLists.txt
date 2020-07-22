@@ -1,5 +1,5 @@
 
-file(GLOB Dev_SRCS
+file(GLOB SRCS
     ad9516/*
     ad9545/*
     digipot/*
@@ -7,6 +7,8 @@ file(GLOB Dev_SRCS
     powermon/*
     ttvxs_auxpll/*
 )
+
+set_property(TARGET ${ELF} APPEND PROPERTY SOURCES ${SRCS})
 
 target_include_directories(${ELF} PRIVATE
 #    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -17,9 +19,14 @@ target_include_directories(${ELF} PRIVATE
     powermon
     ttvxs_auxpll
     ttvxs_clkmux
-    ttvxs_vxsiic
+    vxsiicm
+    vxsiics
 )
 
-target_sources(${ELF} PRIVATE
-    ${Dev_SRCS}
+target_include_directories(${ELF} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+#target_sources(${ELF} PRIVATE
+#    ${Dev_SRCS}
+#)

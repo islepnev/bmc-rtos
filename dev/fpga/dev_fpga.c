@@ -24,7 +24,7 @@
 #include "app_shared_data.h"
 #include "logbuffer.h"
 #include "dev_fpga_types.h"
-#include "dev_ad9545.h"
+#include "ad9545/dev_ad9545.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
 #include "system_status.h"

@@ -21,7 +21,7 @@
 #include "stm32f7xx_it.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "tasks/app_task_vxsiic_impl.h"
+#include "vxsiics/dev_vxsiics.h"
 
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_usart.h"

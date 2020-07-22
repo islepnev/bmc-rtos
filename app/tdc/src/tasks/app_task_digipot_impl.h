@@ -19,8 +19,6 @@
 #define APP_TASK_DIGIPOT_IMPL_H
 
 #include <stdint.h>
-#include "dev_common_types.h"
-#include "dev_digipot.h"
 
 #ifdef __cplusplus
 extern "C" {

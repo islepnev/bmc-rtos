@@ -19,15 +19,14 @@
 #define DEVICES_TYPES_H
 
 #include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_auxpll.h"
-#include "dev_ad9545.h"
-#include "dev_auxpll_types.h"
+#include "fpga/dev_fpga_types.h"
+#include "ad9516/dev_auxpll.h"
+#include "ad9545/dev_ad9545.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
-//#include "dev_vxsiic_types.h"
-#include "dev_digipot_types.h"
-#include "dev_powermon_types.h"
+#include "digipot/dev_digipot_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "dev_leds_types.h"
 
 typedef struct Devices {

@@ -28,16 +28,16 @@
 #include "bsp_display.h"
 #include "bsp_powermon.h"
 #include "debug_helpers.h"
-#include "dev_ad9545_print.h"
-#include "dev_auxpll_print.h"
+#include "ad9545/dev_ad9545_print.h"
+#include "ad9516/dev_auxpll_print.h"
 #include "dev_common_types.h"
-#include "dev_fpga_types.h"
+#include "fpga/dev_fpga_types.h"
 #include "dev_mcu.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_powermon.h"
-#include "dev_powermon_types.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_types.h"
 #include "dev_sfpiic_print.h"
-#include "dev_powermon_display.h"
+#include "powermon/dev_powermon_display.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
@@ -326,6 +326,7 @@ static void display_summary(const Devices * dev)
     print_log_messages();
 }
 
+#ifdef BOARD_TTVXS
 static void display_boards(const Devices * dev)
 {
     print_goto(2, 1);
@@ -359,6 +360,7 @@ static void display_boards(const Devices * dev)
     }
     print_clearbox(4+line, VXSIIC_SLOTS-line);
 }
+#endif
 
 static void display_tasks(void)
 {

@@ -77,9 +77,9 @@ Dev_thset *get_dev_thset(void)
     return &dev.thset;
 }
 
-Dev_vxsiic *get_dev_vxsiic(void)
+Dev_vxsiicm *get_dev_vxsiicm(void)
 {
-    return &dev.vxsiic;
+    return &dev.vxsiicm;
 }
 
 Dev_sfpiic *get_dev_sfpiic(void)

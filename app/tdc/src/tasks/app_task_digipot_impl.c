@@ -22,7 +22,7 @@
 
 #include "cmsis_os.h"
 
-#include "dev_digipot.h"
+#include "digipot/dev_digipot.h"
 #include "bsp_digipot.h"
 #include "dev_common_types.h"
 #include "logbuffer.h"

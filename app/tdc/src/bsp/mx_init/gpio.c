@@ -88,6 +88,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(MON_SMB_SW_RST_B_GPIO_Port, MON_SMB_SW_RST_B_Pin, GPIO_PIN_SET);
   HAL_GPIO_Init(MON_SMB_SW_RST_B_GPIO_Port, &GPIO_InitStruct);
 
+  // LEDs
   static const pin_def_t led_pins[5] = {
       {LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin},
       {LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin},

@@ -23,7 +23,7 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 #include "devices_types.h"
-#include "dev_powermon.h"
+#include "powermon/dev_powermon.h"
 #include "os_serial_tty.h"
 #include "ansi_escape_codes.h"
 #include "debug_helpers.h"

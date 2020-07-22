@@ -19,14 +19,14 @@
 #define DEVICES_TYPES_H
 
 #include "dev_eeprom_types.h"
-#include "dev_fpga_types.h"
-#include "dev_ttvxs_clkmux_types.h"
-#include "dev_ad9545.h"
-#include "dev_auxpll_types.h"
+#include "fpga/dev_fpga_types.h"
+#include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
+#include "ad9545/dev_ad9545.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
-#include "dev_vxsiic_types.h"
-#include "dev_powermon_types.h"
+#include "vxsiicm/dev_vxsiicm_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "dev_leds_types.h"
 
 typedef struct Dev_sdcard {
@@ -43,7 +43,7 @@ typedef struct Devices {
     Dev_fpga fpga;
     Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
-    Dev_vxsiic vxsiic;
+    Dev_vxsiicm vxsiicm;
     Dev_at24c eeprom_config;
     Dev_ad9545 pll;
     Dev_auxpll auxpll;

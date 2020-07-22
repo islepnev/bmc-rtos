@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include "bsp_digipot.h"
 #include "dev_common_types.h"
-#include "dev_pm_sensors_types.h"
+#include "powermon/dev_pm_sensors_types.h"
 
 #ifdef __cplusplus
 extern "C" {

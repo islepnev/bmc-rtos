@@ -17,9 +17,9 @@
 
 #include "ipmi_sensors.h"
 #include <string.h>
-#include "dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors.h"
 #include "dev_pm_sensors_config.h"
-#include "dev_powermon.h"
+#include "powermon/dev_powermon.h"
 #include "app_shared_data.h"
 #include "system_status.h"
 

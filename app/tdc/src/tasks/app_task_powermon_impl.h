@@ -19,15 +19,12 @@
 #define APP_TASK_POWERMON_IMPL_H
 
 #include <stdint.h>
-#include "dev_common_types.h"
-#include "dev_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern uint32_t pmLoopCount;
-//extern PmState pmState;
 
 void task_powermon_run (void);
 

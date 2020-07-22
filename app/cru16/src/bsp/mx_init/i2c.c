@@ -19,40 +19,65 @@
 
 #include "i2c.h"
 
+#include "bsp_pin_defs.h"
+#include "error_handler.h"
 #include "stm32f7xx_hal_cortex.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
-#include "bsp_pin_defs.h"
-#include "error_handler.h"
+#include "stm32f7xx_ll_bus.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_i2c.h"
 
 I2C_HandleTypeDef hi2c1; // VXS switches 0x71-0x73, VXSIIC
 I2C_HandleTypeDef hi2c2; // Power Monitors
 I2C_HandleTypeDef hi2c3; // EEPROM
 I2C_HandleTypeDef hi2c4; // PLL AD9545
 
-// I2C1: VXSIIC
+// I2C1: VXS PB, IO Exp, EEPROM 0x51
 void MX_I2C1_Init(void)
 {
-    hi2c1.Instance = I2C1;
-    hi2c1.Init.Timing = 0x00601957; // 400 kHz
-    //  hi2c1.Init.Timing = 0x0030081D; // 1 MHz
-    hi2c1.Init.OwnAddress1 = 0;
-    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c1.Init.OwnAddress2 = 0;
-    hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
-        Error_Handler();
-    }
-    //  HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C1);
+  LL_I2C_InitTypeDef I2C_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
+  /**I2C1 GPIO Configuration
+  PB9   ------> I2C1_SDA
+  PB8   ------> I2C1_SCL
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_8 | LL_GPIO_PIN_9;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_4;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
+
+  /* I2C1 interrupt Init */
+  NVIC_SetPriority(I2C1_EV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
+  NVIC_EnableIRQ(I2C1_EV_IRQn);
+  NVIC_SetPriority(I2C1_ER_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
+  NVIC_EnableIRQ(I2C1_ER_IRQn);
+
+  /** I2C Initialization
+  */
+  LL_I2C_EnableAutoEndMode(I2C1);
+  LL_I2C_SetOwnAddress2(I2C1, 0, LL_I2C_OWNADDRESS2_NOMASK);
+  LL_I2C_DisableOwnAddress2(I2C1);
+  LL_I2C_DisableGeneralCall(I2C1);
+  LL_I2C_EnableClockStretching(I2C1);
+  I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
+  I2C_InitStruct.Timing = 0x00601B5E;
+  I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_ENABLE;
+  I2C_InitStruct.DigitalFilter = 0;
+  I2C_InitStruct.OwnAddress1 = 102;
+  I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
+  I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
+  LL_I2C_Init(I2C1, &I2C_InitStruct);
+
 }
 
 // I2C2: Power Monitors

@@ -21,10 +21,10 @@
 #include "stm32f7xx_it.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include <stdio.h>
+#include "vxsiics/dev_vxsiics.h"
 
-#include "stm32f7xx_ll_usart.h"
 #include "stm32f7xx_hal.h"
+#include "stm32f7xx_ll_usart.h"
 
 extern TIM_HandleTypeDef htim1;
 extern I2C_HandleTypeDef hi2c1;
@@ -55,12 +55,12 @@ void TIM1_UP_TIM10_IRQHandler(void)
 
 void I2C1_EV_IRQHandler(void)
 {
-    HAL_I2C_EV_IRQHandler(&hi2c1);
+    i2c_event_interrupt_handler();
 }
 
 void I2C1_ER_IRQHandler(void)
 {
-    HAL_I2C_ER_IRQHandler(&hi2c1);
+    i2c_error_interrupt_handler();
 }
 
 void I2C2_EV_IRQHandler(void)

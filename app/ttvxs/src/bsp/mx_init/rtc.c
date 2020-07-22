@@ -22,6 +22,7 @@
 #include "main.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_rtc.h"
+#include "error_handler.h"
 
 /* USER CODE BEGIN 0 */
 

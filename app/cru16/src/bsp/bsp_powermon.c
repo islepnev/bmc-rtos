@@ -17,16 +17,15 @@
 
 // CRU16 board specific functions
 
-#include "bsp_powermon.h"
-#include "dev_pm_sensors_config.h"
-#include "dev_powermon_types.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_pm_sensors.h"
 #include "bsp_pin_defs.h"
-#include "logbuffer.h"
-
+#include "bsp_powermon.h"
 #include "cmsis_os.h"
+#include "dev_pm_sensors_config.h"
 #include "gpio.h"
+#include "logbuffer.h"
+#include "powermon/dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "stm32f7xx_hal_gpio.h"
 
 int monIsOn(const pm_switches sw, SensorIndex index)

@@ -19,7 +19,7 @@
 
 #include "fpga_spi_hal.h"
 #include "dev_pm_sensors_config.h"
-#include "dev_powermon_types.h"
+#include "powermon/dev_powermon_types.h"
 
 bool fpgaWriteSensors(const struct Dev_powermon *d)
 {

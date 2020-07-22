@@ -22,13 +22,13 @@
 
 #include "cmsis_os.h"
 
-#include "dev_pm_sensors_types.h"
+#include "powermon/dev_pm_sensors_types.h"
 #include "dev_pm_sensors_config.h"
-#include "dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors.h"
 #include "bsp_powermon.h"
-#include "dev_powermon.h"
+#include "powermon/dev_powermon.h"
 #include "dev_common_types.h"
-#include "dev_powermon_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "dev_thset.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
