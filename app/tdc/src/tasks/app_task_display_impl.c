@@ -111,7 +111,6 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
-#define DISPLAY_PLL_H 5
 #define DISPLAY_AUXPLL_Y (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H)
 #define DISPLAY_AUXPLL_H 2
 #define DISPLAY_LOG_Y (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
@@ -121,7 +120,6 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_TASKS_Y 2
 
 #define DISPLAY_PLL_DETAIL_Y 2
-#define DISPLAY_PLL_DETAIL_H 25
 
 #define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
 

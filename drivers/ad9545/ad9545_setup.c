@@ -21,7 +21,7 @@
 
 static const uint64_t SYSCLK_REF_FREQ_MILLIHZ = 38880000000ULL;
 static const uint8_t sysclk_fb_div = 31;
-static const uint32_t ref_r_divide = PLL_REF_DIV;
+//static const uint32_t ref_r_divide = PLL_REF_DIV;
 
 double sysclkVcoFreq(void)
 {
@@ -47,15 +47,15 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d)
 {
     // RefA
     d->REFA_Receiver_Settings = 0x01;
-    d->REFA_R_Divider = ref_r_divide;
-    d->REFA_Input_Period = PLL_REF_PERIOD_NS * 1000000000ULL; // attoseconds (1e-18 s) units
+    d->REFA_R_Divider = PLL_REFA_DIV;
+    d->REFA_Input_Period = PLL_REFA_PERIOD_NS * 1000000000ULL; // attoseconds (1e-18 s) units
     d->REFA_Offset_Limit = 100*1000; // ppb units
     d->REFA_Validation_Timer = 10; // milliseconds
     d->REFA_Jitter_Tolerance = 5; // nanoseconds
     // RefB
     d->REFB_Receiver_Settings = 0x01;
-    d->REFB_R_Divider = ref_r_divide;
-    d->REFB_Input_Period = 24 * 1000000000ULL;
+    d->REFB_R_Divider = PLL_REFB_DIV;
+    d->REFB_Input_Period = PLL_REFB_PERIOD_NS * 1000000000ULL;
     d->REFB_Offset_Limit = 100*1000; // ppb units
     d->REFB_Validation_Timer = 10; // milliseconds
     d->REFB_Jitter_Tolerance = 5; // nanoseconds
@@ -82,18 +82,6 @@ uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel)
         return get_dpll1_default_ftw();
     default:
         return 0;
-    }
-}
-
-ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel)
-{
-    switch (channel) {
-    case DPLL0:
-        return PROFILE_REF_SOURCE_A;
-    case DPLL1:
-        return PROFILE_REF_SOURCE_A;
-    default:
-        return PROFILE_REF_SOURCE_A;
     }
 }
 
@@ -124,15 +112,15 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->APLL_M_Divider = 8;
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
-    d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL0);
+    d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
     d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
-    d->profile[0].Loop_BW = 500u * 1000000; // microHertz
-    d->profile[0].Hitless_FB_Divider = ref_r_divide;
+    d->profile[0].Loop_BW = (uint32_t)DPLL0_BW_HZ * 1000000; // microHertz
+    d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
     Pll_OutputDividers_Setup_TypeDef outputDivSetup;
     init_Pll_OutputDividers_Setup(&outputDivSetup);
-    double FB_DIV = 2.0*PLL_REF_DIV * outputDivSetup.Distribution_Divider_0_A / d->APLL_M_Divider;
+    double FB_DIV = 2.0*PLL_REFA_DIV * outputDivSetup.Distribution_Divider_0_A / d->APLL_M_Divider;
     int a = 1;
     int b = 1;
     find_fraction(FB_DIV - trunc(FB_DIV), &a, &b);
@@ -154,15 +142,15 @@ static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
     d->APLL_M_Divider = 10;
     // Translation Profile 1.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
-    d->profile[0].Profile_Ref_Source = get_dpll_default_ref_source(DPLL1);
+    d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
     d->profile[0].ZD_Feedback_Path = PROFILE_INT_ZD_FEEDBACK_OUT1A;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
     d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;
-    d->profile[0].Loop_BW = 500 * 1000000UL; // microHertz
-    d->profile[0].Hitless_FB_Divider = ref_r_divide;
+    d->profile[0].Loop_BW = DPLL1_BW_HZ * 1000000UL; // microHertz
+    d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
     Pll_OutputDividers_Setup_TypeDef outputDivSetup;
     init_Pll_OutputDividers_Setup(&outputDivSetup);
-    double FB_DIV = 2.0 * PLL_REF_DIV * outputDivSetup.Distribution_Divider_1_A / d->APLL_M_Divider;
+    double FB_DIV = 2.0 * PLL_REFA_DIV * outputDivSetup.Distribution_Divider_1_A / d->APLL_M_Divider;
     int a = 1;
     int b = 1;
     find_fraction(FB_DIV - trunc(FB_DIV), &a, &b);

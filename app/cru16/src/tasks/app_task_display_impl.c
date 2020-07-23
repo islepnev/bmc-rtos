@@ -125,7 +125,6 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_TASKS_Y 2
 
 #define DISPLAY_PLL_DETAIL_Y 2
-#define DISPLAY_PLL_DETAIL_H 25
 #define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
 #define DISPLAY_AUXPLL_DETAIL_H 3
 
@@ -243,7 +242,7 @@ static void print_ttvxs_clkmux(const Dev_ttvxs_clkmux *clkmux)
 {
     print_goto(DISPLAY_CLKMUX_Y, 1);
     printf("CLKMUX");
-    printf(sensor_status_ansi_str(get_clkmux_sensor_status(clkmux)));
+    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status(clkmux)));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -404,6 +403,7 @@ static void display_auxpll_detail(const Devices * dev)
 {
     print_clearbox(DISPLAY_AUXPLL_DETAIL_Y, DISPLAY_AUXPLL_DETAIL_H);
     print_goto(DISPLAY_AUXPLL_DETAIL_Y, 1);
+    printf(" --- AD9516 Status ---\n");
     auxpllPrintStatus(&dev->auxpll);
 }
 

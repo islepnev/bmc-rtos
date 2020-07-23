@@ -41,7 +41,7 @@ file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9545/*
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
-    ${MY_LIB_DIR}/dev/ttvxs_clkmux/*
+    ${MY_LIB_DIR}/dev/cru16_clkmux/*
     ${MY_LIB_DIR}/dev/vxsiics/*
 )
 

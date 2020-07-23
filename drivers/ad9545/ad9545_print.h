@@ -17,7 +17,7 @@
 #ifndef DEV_PLL_PRINT_H
 #define DEV_PLL_PRINT_H
 
-//#include "dev_pll_types.h"
+#include "ad9545_setup.h"
 #include "ad9545_status_regs.h"
 
 #ifdef __cplusplus
@@ -26,6 +26,7 @@ extern "C" {
 
 //void pllPrintRefStatus(const Dev_ad9545 *d, PllRef_TypeDef ref_input);
 //void pllPrintDPLLChannelStatus(const Dev_ad9545 *d, PllChannel_TypeDef channel);
+void ad9545_verbose_setup(const ad9545_setup_t *setup);
 void ad9545_verbose_status(const AD9545_Status *status);
 void ad9545_brief_status(const AD9545_Status *status);
 

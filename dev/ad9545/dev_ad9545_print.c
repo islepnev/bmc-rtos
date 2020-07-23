@@ -41,6 +41,9 @@ static const char *dev_ad9545_state_str(ad9545_state_t state)
 
 void dev_ad9545_verbose_status(const Dev_ad9545 *d)
 {
+    printf(" --- AD9545 Setup ---\n");
+    ad9545_verbose_setup(&d->setup);
+    printf(" --- AD9545 Status ---\n");
     printf("AD9545 device FSM state: %s\n", dev_ad9545_state_str(d->fsm_state));
     ad9545_verbose_status(&d->status);
     printf("\n");

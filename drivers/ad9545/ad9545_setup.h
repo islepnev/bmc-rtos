@@ -24,7 +24,6 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d);
 //void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d);
 //void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d);
 uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel);
-ProfileRefSource_TypeDef get_dpll_default_ref_source(PllChannel_TypeDef channel);
 void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel);
 void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d);
 void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d);

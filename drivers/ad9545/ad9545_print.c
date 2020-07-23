@@ -177,6 +177,44 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_Ty
 //    default: return "unknown";
 //    }
 //}
+static void pllPrintDPLLChannelSetup(const Pll_DPLL_Setup_TypeDef *dpll, PllChannel_TypeDef channel)
+{
+
+    printf("DPLL%d profile[0] %s%s%s%s, FB %s%s FBdiv %u+%u/%u, BW %g Hz\n",
+           channel,
+           (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_A) ? "RefA" : "",
+           (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_B) ? "RefB" : "",
+           (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_DPLL0) ? "DPLL0" : "",
+           (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_DPLL1) ? "DPLL1" : "",
+           (dpll->profile[0].ZD_Feedback_Path == PROFILE_EXT_ZD_FEEDBACK_REFA) ? "RefA" : "",
+           (dpll->profile[0].ZD_Feedback_Path == PROFILE_EXT_ZD_FEEDBACK_REFB) ? "RefB" : "",
+           dpll->profile[0].Buildout_FB_Divider,
+           dpll->profile[0].Buildout_FB_Fraction,
+           dpll->profile[0].Buildout_FB_Modulus,
+           dpll->profile[0].Loop_BW / 1e6
+           );
+
+}
+
+void ad9545_verbose_setup(const ad9545_setup_t *setup)
+{
+    /*
+    Pll_OutputDrivers_Setup_TypeDef out_drivers;
+    Pll_OutputDividers_Setup_TypeDef out_dividers;
+    Pll_DPLLMode_Setup_TypeDef dpll_mode;
+    PllSysclkSetup_TypeDef sysclk;
+*/
+    printf("RefA: % 3g ns, Rdiv %u\n",
+           setup->ref.REFA_Input_Period * 1e-9,
+           setup->ref.REFA_R_Divider
+           );
+    printf("RefB: % 3g ns, Rdiv %u\n",
+           setup->ref.REFB_Input_Period * 1e-9,
+           setup->ref.REFB_R_Divider
+           );
+    pllPrintDPLLChannelSetup(&setup->dpll0, 0);
+    pllPrintDPLLChannelSetup(&setup->dpll1, 1);
+}
 
 void ad9545_verbose_status(const AD9545_Status *status)
 {

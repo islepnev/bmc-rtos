@@ -42,7 +42,8 @@ typedef union {
 
 typedef union {
     struct {
-        uint8_t pll_source_sel: 2;
+        uint8_t pll_bypass: 1;
+        uint8_t unused1: 1;
         uint8_t crsw_sin: 2;
         uint8_t crsw_sout: 2;
         uint8_t crsw_load: 1;
@@ -55,35 +56,35 @@ void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
-    data.bit.pll_source_sel = d->pll_source & 0x3;
+    data.bit.pll_bypass = 0;
     mcp23017_write(MCP23017_GPIOB, data.all);
 }
 
 enum {
-    CRSW1_IN_PLL0A = 0,
-    CRSW1_IN_PLL0B = 1,
-    CRSW1_IN_FMC = 2,
-    CRSW1_IN_AD9516_DIV3 = 3,
+    CRSW1_IN_VXS = 0,
+    // CRSW1_IN_UNCONNECTED = 1,
+    CRSW1_IN_AD9516 = 2,
+    CRSW1_IN_PLL0B_CRSWQ2 = 3,
 };
-
+/*
 enum {
     CRSW2_IN_PLL0C = 0,
     CRSW2_IN_PLL1B = 1,
     CRSW2_IN_FMC_GBT = 2,
     CRSW2_IN_AD9516 = 3,
 };
-
+*/
 void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
-    data.bit.pll_source_sel = 0;
+    data.bit.pll_bypass = 0;
     mcp23017_write(MCP23017_GPIOB, data.all);
     int crsw1_output_map[4] = {
-        2,
-        3,
-        2,
-        2
+        CRSW1_IN_AD9516,
+        CRSW1_IN_PLL0B_CRSWQ2,
+        CRSW1_IN_AD9516,
+        CRSW1_IN_AD9516 // Q3 unused
     };
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw1_output_map[i];
@@ -100,15 +101,16 @@ void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
     }
 }
 
+/*
 void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
     int crsw2_output_map[4] = {
-        2,
-        2,
-        2,
-        2
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516
     };
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw2_output_map[i];
@@ -124,6 +126,7 @@ void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
         mcp23017_write(MCP23017_GPIOA, data.all);
     }
 }
+*/
 
 DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
 {
@@ -163,6 +166,6 @@ DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
 {
     dev_clkmux_set_pll_source(d);
     dev_clkmux_set_crsw1(d);
-    dev_clkmux_set_crsw2(d);
+//    dev_clkmux_set_crsw2(d);
     return DEVICE_NORMAL;
 }

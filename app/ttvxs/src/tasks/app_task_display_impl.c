@@ -124,7 +124,6 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_TASKS_Y 2
 
 #define DISPLAY_PLL_DETAIL_Y 2
-#define DISPLAY_PLL_DETAIL_H 25
 #define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
 #define DISPLAY_AUXPLL_DETAIL_H 3
 

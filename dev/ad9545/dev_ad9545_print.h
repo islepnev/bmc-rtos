@@ -18,6 +18,9 @@
 #ifndef DEV_AD9545_PRINT_H
 #define DEV_AD9545_PRINT_H
 
+enum { DISPLAY_PLL_H = 5 };
+enum { DISPLAY_PLL_DETAIL_H = 31 };
+
 #ifdef __cplusplus
 extern "C" {
 #endif
