@@ -46,8 +46,12 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   uint32_t              uwPrescalerValue = 0;
   uint32_t              pFLatency;
 
+  if (TickPriority >= (1UL << __NVIC_PRIO_BITS))
+      return HAL_ERROR;
+
   /*Configure the TIM1 IRQ priority */
   HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, TickPriority ,0);
+  uwTickPrio = TickPriority;
 
   /* Enable the TIM1 global Interrupt */
   HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
