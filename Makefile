@@ -25,3 +25,9 @@ distclean:
 
 #flash:
 #	openocd -f interface/stlink-v2.cfg -f target/stm32f7x.cfg -c "program build/tdc72vxs4_rtos.elf verify reset exit"
+
+format:
+	@find cubemx -iname '*.h' -o -iname '*.c' -o -iname '*.s' | while read f; do \
+	    dos2unix -q $$f; \
+	    sed -i -e 's/[ \t]*$$//' $$f; \
+	done

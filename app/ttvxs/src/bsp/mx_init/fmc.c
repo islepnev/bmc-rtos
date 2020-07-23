@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -31,7 +31,7 @@ SDRAM_HandleTypeDef hsdram1;
 /* FMC initialization function */
 void MX_FMC_Init(void)
 {
-  FMC_SDRAM_TimingTypeDef SdramTiming;
+  FMC_SDRAM_TimingTypeDef SdramTiming = {0};
 
   /** Perform the SDRAM1 memory initialization sequence
   */
@@ -69,11 +69,12 @@ static void HAL_FMC_MspInit(void){
   /* USER CODE BEGIN FMC_MspInit 0 */
 
   /* USER CODE END FMC_MspInit 0 */
-  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (FMC_Initialized) {
     return;
   }
   FMC_Initialized = 1;
+
   /* Peripheral clock enable */
   __HAL_RCC_FMC_CLK_ENABLE();
 
