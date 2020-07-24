@@ -18,7 +18,7 @@
 #ifndef BSP_TTY_H
 #define BSP_TTY_H
 
-#define TTY_USART USART1 // Front panel RJ45
+#define TTY_USART USART1 // Front panel USB
 // #define TTY_USART USART2 // USB-RS232
 
 void bsp_tty_setup_uart(void);
