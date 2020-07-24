@@ -19,38 +19,18 @@
 
 #include "i2c_driver.h"
 
-#include "i2c.h"
-#include "debug_helpers.h"
+#include "bus_types.h"
 #include "cmsis_os.h"
+#include "debug_helpers.h"
 #include "error_handler.h"
+#include "i2c.h"
+#include "i2c_driver_util.h"
 
-osSemaphoreId i2c1_sem;
-osSemaphoreId i2c2_sem;
-osSemaphoreId i2c3_sem;
-osSemaphoreId i2c4_sem;
-osSemaphoreDef(i2c1_sem);
-osSemaphoreDef(i2c2_sem);
-osSemaphoreDef(i2c3_sem);
-osSemaphoreDef(i2c4_sem);
 
 void i2c_driver_init(void)
 {
-    // Create and take the semaphore
-    i2c1_sem = osSemaphoreCreate(osSemaphore(i2c1_sem), 1);
-    i2c2_sem = osSemaphoreCreate(osSemaphore(i2c2_sem), 1);
-    i2c3_sem = osSemaphoreCreate(osSemaphore(i2c3_sem), 1);
-    i2c4_sem = osSemaphoreCreate(osSemaphore(i2c4_sem), 1);
-    if (NULL == i2c1_sem
-            || NULL == i2c2_sem
-            || NULL == i2c3_sem
-            || NULL == i2c4_sem
-            ) {
+    if (! i2c_driver_util_init())
         Error_Handler();
-    }
-    osSemaphoreWait(i2c1_sem, osWaitForever);
-    osSemaphoreWait(i2c2_sem, osWaitForever);
-    osSemaphoreWait(i2c3_sem, osWaitForever);
-    osSemaphoreWait(i2c4_sem, osWaitForever);
 }
 
 void i2c_driver_reset(struct __I2C_HandleTypeDef *handle)
@@ -63,66 +43,24 @@ void i2c_driver_reset(struct __I2C_HandleTypeDef *handle)
     __HAL_I2C_ENABLE(handle);
 }
 
-static SemaphoreHandle_t sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
-{
-    if (hi2c == &hi2c1)
-        return i2c1_sem;
-    if (hi2c == &hi2c2)
-        return i2c2_sem;
-    if (hi2c == &hi2c3)
-        return i2c3_sem;
-    if (hi2c == &hi2c4)
-        return i2c4_sem;
-    return NULL;
-}
-
-int hi2c_index(struct __I2C_HandleTypeDef *hi2c)
-{
-    if (hi2c == &hi2c1)
-        return 1;
-    if (hi2c == &hi2c2)
-        return 2;
-    if (hi2c == &hi2c3)
-        return 3;
-    if (hi2c == &hi2c4)
-        return 4;
-    return 0;
-}
-
-static int32_t i2c_driver_wait_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
-{
-    SemaphoreHandle_t sem = sem_by_hi2c(hi2c);
-    if (sem)
-        return osSemaphoreWait(sem, millisec);
-    else
-        return -1;
-}
-
-void i2c_driver_release_sem(struct __I2C_HandleTypeDef *hi2c)
-{
-    SemaphoreHandle_t sem = sem_by_hi2c(hi2c);
-    if (sem)
-        osSemaphoreRelease(sem);
-}
-
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 void HAL_I2C_MasterRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 void HAL_I2C_MemTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
@@ -130,13 +68,13 @@ void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
     debug_printf("%s I2C%d error, code %d\n", __func__, hi2c_index(hi2c), hi2c->ErrorCode);
     // reinitialize I2C
     i2c_driver_reset(hi2c);
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
     debug_printf("%s I2C%d\n", __func__, hi2c_index(hi2c));
-    i2c_driver_release_sem(hi2c);
+    release_it_sem(hi2c);
 }
 
 HAL_StatusTypeDef i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, uint32_t Trials, uint32_t millisec)
@@ -157,7 +95,7 @@ HAL_StatusTypeDef i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t Dev
         }
         debug_printf("%s (%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
     }
-    int32_t status = i2c_driver_wait_sem(hi2c, millisec);
+    int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
         debug_printf("%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
         return HAL_TIMEOUT;
@@ -175,7 +113,7 @@ HAL_StatusTypeDef i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t De
         }
         debug_printf("%s(%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
     }
-    int32_t status = i2c_driver_wait_sem(hi2c, millisec);
+    int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
         debug_printf("%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
         return HAL_TIMEOUT;
@@ -195,7 +133,7 @@ HAL_StatusTypeDef i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t
                      __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
         return ret;
     }
-    int32_t status = i2c_driver_wait_sem(hi2c, millisec);
+    int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
         debug_printf("%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
         return HAL_TIMEOUT;
@@ -216,7 +154,7 @@ HAL_StatusTypeDef i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_
         return ret;
 
     }
-    int32_t status = i2c_driver_wait_sem(hi2c, millisec);
+    int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
         debug_printf("%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
         return HAL_TIMEOUT;

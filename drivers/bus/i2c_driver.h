@@ -28,7 +28,6 @@ extern "C" {
 
 struct __I2C_HandleTypeDef;
 
-int hi2c_index(struct __I2C_HandleTypeDef *hi2c);
 void i2c_driver_init(void);
 void i2c_driver_reset(struct __I2C_HandleTypeDef *handle);
 HAL_StatusTypeDef i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, uint32_t Trials, uint32_t millisec);

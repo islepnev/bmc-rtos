@@ -1,0 +1,150 @@
+/*
+**    Generic interrupt mode SPI driver
+**
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include "i2c_driver_util.h"
+
+#include "i2c.h"
+#include "debug_helpers.h"
+#include "cmsis_os.h"
+#include "error_handler.h"
+
+// interrupt wait semaphores
+osSemaphoreId i2c1_it_sem;
+osSemaphoreId i2c2_it_sem;
+osSemaphoreId i2c3_it_sem;
+osSemaphoreId i2c4_it_sem;
+
+// device semaphores
+osSemaphoreId i2c1_dev_sem;
+osSemaphoreId i2c2_dev_sem;
+osSemaphoreId i2c3_dev_sem;
+osSemaphoreId i2c4_dev_sem;
+
+osSemaphoreDef(i2c1_it_sem);
+osSemaphoreDef(i2c2_it_sem);
+osSemaphoreDef(i2c3_it_sem);
+osSemaphoreDef(i2c4_it_sem);
+osSemaphoreDef(i2c1_dev_sem);
+osSemaphoreDef(i2c2_dev_sem);
+osSemaphoreDef(i2c3_dev_sem);
+osSemaphoreDef(i2c4_dev_sem);
+
+bool i2c_driver_util_init(void)
+{
+    // Create and take the interrupt wait semaphore
+    i2c1_it_sem = osSemaphoreCreate(osSemaphore(i2c1_it_sem), 1);
+    i2c2_it_sem = osSemaphoreCreate(osSemaphore(i2c2_it_sem), 1);
+    i2c3_it_sem = osSemaphoreCreate(osSemaphore(i2c3_it_sem), 1);
+    i2c4_it_sem = osSemaphoreCreate(osSemaphore(i2c4_it_sem), 1);
+    if (NULL == i2c1_it_sem
+            || NULL == i2c2_it_sem
+            || NULL == i2c3_it_sem
+            || NULL == i2c4_it_sem
+            ) {
+        return false;
+    }
+    osSemaphoreWait(i2c1_it_sem, osWaitForever);
+    osSemaphoreWait(i2c2_it_sem, osWaitForever);
+    osSemaphoreWait(i2c3_it_sem, osWaitForever);
+    osSemaphoreWait(i2c4_it_sem, osWaitForever);
+
+    // create device semaphores
+    i2c1_dev_sem = osSemaphoreCreate(osSemaphore(i2c1_dev_sem), 1);
+    i2c2_dev_sem = osSemaphoreCreate(osSemaphore(i2c2_dev_sem), 1);
+    i2c3_dev_sem = osSemaphoreCreate(osSemaphore(i2c3_dev_sem), 1);
+    i2c4_dev_sem = osSemaphoreCreate(osSemaphore(i2c4_dev_sem), 1);
+    if (NULL == i2c1_dev_sem
+        || NULL == i2c2_dev_sem
+        || NULL == i2c3_dev_sem
+        || NULL == i2c4_dev_sem
+        ) {
+        return false;
+    }
+    return true;
+}
+
+SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
+{
+    if (hi2c == &hi2c1)
+        return i2c1_it_sem;
+    if (hi2c == &hi2c2)
+        return i2c2_it_sem;
+    if (hi2c == &hi2c3)
+        return i2c3_it_sem;
+    if (hi2c == &hi2c4)
+        return i2c4_it_sem;
+    return NULL;
+}
+
+SemaphoreHandle_t dev_sem_by_index(int index)
+{
+    switch (index) {
+    case 1: return i2c1_dev_sem;
+    case 2: return i2c2_dev_sem;
+    case 3: return i2c3_dev_sem;
+    case 4: return i2c4_dev_sem;
+    default: return NULL;
+    }
+    return NULL;
+}
+
+int hi2c_index(struct __I2C_HandleTypeDef *hi2c)
+{
+    if (hi2c == &hi2c1)
+        return 1;
+    if (hi2c == &hi2c2)
+        return 2;
+    if (hi2c == &hi2c3)
+        return 3;
+    if (hi2c == &hi2c4)
+        return 4;
+    return 0;
+}
+
+int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
+{
+    SemaphoreHandle_t sem = it_sem_by_hi2c(hi2c);
+    if (sem)
+        return osSemaphoreWait(sem, millisec);
+    else
+        return -1;
+}
+
+void release_it_sem(struct __I2C_HandleTypeDef *hi2c)
+{
+    SemaphoreHandle_t sem = it_sem_by_hi2c(hi2c);
+    if (sem)
+        osSemaphoreRelease(sem);
+}
+
+int32_t wait_dev_sem(int index, uint32_t millisec)
+{
+    SemaphoreHandle_t sem = dev_sem_by_index(index);
+    if (sem)
+        return osSemaphoreWait(sem, millisec);
+    else
+        return -1;
+}
+
+void release_dev_sem(int index)
+{
+    SemaphoreHandle_t sem = dev_sem_by_index(index);
+    if (sem)
+        osSemaphoreRelease(sem);
+}
