@@ -18,7 +18,6 @@
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
 #include "ina226/ina226_i2c_hal.h"
-#include "i2c.h"
 
 #include "ansi_escape_codes.h"
 #include "display.h"
@@ -140,16 +139,13 @@ static configreg_t default_configreg(void)
     return r;
 }
 
-static HAL_StatusTypeDef pm_sensor_write_conf(pm_sensor *d)
+static bool pm_sensor_write_conf(pm_sensor *d)
 {
     uint16_t deviceAddr = d->busAddress;
     uint16_t data;
     data = default_configreg().raw;
-    HAL_StatusTypeDef ret = ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data);
-    if (HAL_OK != ret)
-        return ret;
-    ret = ina226_i2c_Write(deviceAddr, INA226_REG_CAL, d->cal);
-    return ret;
+    return ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data)
+           && ina226_i2c_Write(deviceAddr, INA226_REG_CAL, d->cal);
 }
 
 DeviceStatus pm_sensor_detect(pm_sensor *d)
@@ -159,12 +155,12 @@ DeviceStatus pm_sensor_detect(pm_sensor *d)
     uint16_t manuf_id;
     uint16_t device_id;
     int detected =(
-                // (HAL_OK == ina226_i2c_Detect(deviceAddr))
-                (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id))
+                // ina226_i2c_Detect(deviceAddr)
+                ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id)
                 && (manuf_id == INA226_MANUFACTURER_ID)
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id))
+                && ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id)
                 && (device_id == INA226_DEVICE_ID)
-                && (HAL_OK == pm_sensor_write_conf(d))
+                && pm_sensor_write_conf(d)
             );
     pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
     return d->deviceStatus;
@@ -208,15 +204,15 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     int err = 0;
     while (1) {
         if (1
-//                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_MASK, &rawMask))
+//                && ina226_i2c_Read(deviceAddr, INA226_REG_MASK, &rawMask)
 //                && (rawMask & 0x0400)
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage))
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawShuntVoltage))
+                && ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage)
+                && ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawShuntVoltage)
 #if INA226_USE_INTERNAL_CALC
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CURRENT, &rawCurrent))
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_POWER, &rawPower))
+                && ina226_i2c_Read(deviceAddr, INA226_REG_CURRENT, &rawCurrent)
+                && ina226_i2c_Read(deviceAddr, INA226_REG_POWER, &rawPower)
 #endif
-                && (HAL_OK == ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw))
+                && ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw)
                 && (configreg.raw == default_configreg().raw)) {
             break;
         }

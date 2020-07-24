@@ -39,16 +39,6 @@ void vxsiic_reset_mux(void)
     HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  GPIO_PIN_SET);
 }
 
-//void debug_print_hal_error(const char *prefix, uint8_t i2c_address, uint32_t ret)
-//{
-//    if (ret == HAL_OK)
-//        return;
-//    if (vxsiic_hi2c->ErrorCode != HAL_I2C_ERROR_TIMEOUT)
-//        debug_printf("%s 0x%02X error, HAL code %d, I2C code %d\n", prefix, i2c_address, ret, vxsiic_hi2c->ErrorCode);
-//}
-
-//const char * vxs_mux_prefix = "VXS IIC mux";
-
 bool vxsiic_detect_mux(void)
 {
     for (int i=0; i<3; i++) {
@@ -79,11 +69,6 @@ bool vxsiic_get_pp_i2c_status(uint8_t pp)
         debug_printf("%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
         return false;
     }
-    //    uint32_t isr = hi2c->Instance->ISR;
-    //    debug_printf("ISR = %08X\n", isr);
-//    if (ret != HAL_OK) {
-//        debug_printf("%s (port %2d) failed\n", __func__, pp);
-//    }
     return true;
 }
 
@@ -100,23 +85,6 @@ void sprint_i2c_error(char *buf, size_t size, uint32_t code)
              (code &  HAL_I2C_ERROR_DMA_PARAM) ? " DMA_PARAM" : ""
                                                  );
 }
-
-//HAL_StatusTypeDef vxsiic_detect_pp_eeprom(uint8_t pp)
-//{
-//    HAL_StatusTypeDef ret;
-//    uint32_t Trials = 2;
-//    ret = HAL_I2C_IsDeviceReady(vxsiic_hi2c, PAYLOAD_BOARD_EEPROM_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
-//    if (ret != HAL_OK) {
-//        if (vxsiic_hi2c->ErrorCode == HAL_I2C_ERROR_TIMEOUT)
-//            return ret;
-//        enum {size = 100};
-//        char buf[size];
-//        sprint_i2c_error(buf, size, vxsiic_hi2c->ErrorCode);
-//        debug_printf("%s (port %2d) failed: %s\n", __func__, pp, buf);
-//        return ret;
-//    }
-//    return ret;
-//}
 
 bool vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data)
 {

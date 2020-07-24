@@ -18,7 +18,6 @@
 #ifndef DEV_EEPROM_H
 #define DEV_EEPROM_H
 
-#include <unistd.h>
 #include "dev_common_types.h"
 
 #ifdef __cplusplus

@@ -28,18 +28,18 @@ static void struct_at24c_init(Dev_at24c *d)
     d->present = DEVICE_UNKNOWN;
 }
 
-static HAL_StatusTypeDef at24c_detect(uint8_t address)
+static bool at24c_detect(uint8_t address)
 {
     uint32_t Trials = 10;
     return i2c_driver_detect(&hi2c_eeprom_cfg, address << 1, Trials, I2C_TIMEOUT_MS);
 }
 
-HAL_StatusTypeDef at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
+bool at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
 {
     enum {Size = 1};
     uint8_t pData[Size];
-    HAL_StatusTypeDef ret = i2c_driver_mem_read(&hi2c_eeprom_cfg, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
-    if (ret == HAL_OK) {
+    bool ret = i2c_driver_mem_read(&hi2c_eeprom_cfg, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
+    if (ret) {
         if (data) {
             *data = pData[0];
         }
@@ -50,12 +50,12 @@ HAL_StatusTypeDef at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
 DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 {
     struct_at24c_init(d);
-    if (HAL_OK == at24c_detect(eeprom_cfg_deviceAddr))
+    if (at24c_detect(eeprom_cfg_deviceAddr))
         d->present = DEVICE_NORMAL;
     else
         d->present = DEVICE_FAIL;
 //    uint8_t data = 0;
-//    if (HAL_OK == at24c_read(eeprom_Config_busAddress, 0, &data)) {
+//    if (at24c_read(eeprom_Config_busAddress, 0, &data)) {
 //        d->present = DEVICE_NORMAL;
 //    }
     return d->present;
@@ -64,7 +64,7 @@ DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
 DeviceStatus dev_eepromConfig_read(Dev_at24c *d)
 {
     uint8_t data = 0;
-    if (HAL_OK != at24c_read(eeprom_cfg_deviceAddr, 0, &data)) {
+    if (! at24c_read(eeprom_cfg_deviceAddr, 0, &data)) {
         d->present = DEVICE_FAIL;
     }
     return d->present;

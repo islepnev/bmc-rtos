@@ -17,16 +17,17 @@
 #ifndef POWERMON_I2C_DRIVER_H
 #define POWERMON_I2C_DRIVER_H
 
-#include "stm32f7xx_hal_def.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void powermon_i2c_reset_master(void);
-HAL_StatusTypeDef powermon_i2c_detect(uint16_t deviceAddr, uint32_t Trials);
-HAL_StatusTypeDef powermon_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef powermon_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+bool powermon_i2c_detect(uint16_t deviceAddr, uint32_t Trials);
+bool powermon_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+bool powermon_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
 
 #ifdef __cplusplus
 }

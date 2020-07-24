@@ -18,7 +18,6 @@
 #include "dev_ttvxs_clkmux.h"
 #include <string.h>
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
 
 #include "dev_ttvxs_clkmux_types.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
@@ -127,26 +126,26 @@ void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 
 DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
 {
-    if (HAL_OK != mcp23017_detect()) {
+    if (! mcp23017_detect()) {
         goto unknown;
     }
 //    uint8_t data = 0x55;
-//    if (HAL_OK != mcp23017_read(MCP23017_IODIRB, &data))
+//    if (! mcp23017_read(MCP23017_IODIRB, &data))
 //        goto err;
 //    if (data != 0xFF) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 1");
 //        goto err;
 //    }
-//    if (HAL_OK != mcp23017_read(MCP23017_IPOLA, &data))
+//    if (! mcp23017_read(MCP23017_IPOLA, &data))
 //        return DEVICE_FAIL;
 //    if (data != 0x00) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 2");
 //        goto err;
 //    }
     // set GPB1,GPB0
-    if (HAL_OK != mcp23017_write(MCP23017_IODIRA, 0x00)) // 0 = output
+    if (! mcp23017_write(MCP23017_IODIRA, 0x00)) // 0 = output
         goto err;
-    if (HAL_OK != mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
+    if (! mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
     d->present = DEVICE_NORMAL;

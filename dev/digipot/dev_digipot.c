@@ -50,7 +50,7 @@ void dev_ad5141_write(Dev_ad5141 *d)
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    int detected = (HAL_OK == ad5141_nop(d->busAddress));
+    int detected = ad5141_nop(d->busAddress);
     if (detected)
         d->deviceStatus = DEVICE_NORMAL;
     else
@@ -76,13 +76,11 @@ int digipot_detect(Dev_digipots *d)
 
 void digipot_read_rdac_all(Dev_digipots *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 *p = &d->pot[i];
         if (p->deviceStatus != DEVICE_NORMAL)
             continue;
-        ret = ad5141_read_rdac(p->busAddress, &p->value);
-        if (HAL_OK != ret)
+        if (! ad5141_read_rdac(p->busAddress, &p->value))
             break;
     }
 }

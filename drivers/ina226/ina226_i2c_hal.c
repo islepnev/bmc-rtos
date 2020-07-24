@@ -19,35 +19,29 @@
 #include "i2c.h"
 #include "powermon_i2c_driver.h"
 
-HAL_StatusTypeDef ina226_i2c_Detect(uint16_t deviceAddr)
+bool ina226_i2c_Detect(uint16_t deviceAddr)
 {
-    HAL_StatusTypeDef ret;
     uint32_t Trials = 2;
-    ret = powermon_i2c_detect(deviceAddr << 1, Trials);
-    return ret;
+    return powermon_i2c_detect(deviceAddr << 1, Trials);
 }
 
-HAL_StatusTypeDef ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data)
+bool ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data)
 {
-    HAL_StatusTypeDef ret;
     int Size = 2;
     uint8_t pData[Size];
-    ret = powermon_i2c_mem_read(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint16_t)pData[0] << 8) | pData[1];
-        }
+    if (! powermon_i2c_mem_read(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint16_t)pData[0] << 8) | pData[1];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data)
+bool ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data)
 {
-    HAL_StatusTypeDef ret;
     int Size = 2;
     uint8_t pData[Size];
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
-    ret = powermon_i2c_mem_write(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
-    return ret;
+    return powermon_i2c_mem_write(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
 }

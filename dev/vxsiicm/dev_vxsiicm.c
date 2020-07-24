@@ -20,7 +20,6 @@
 #include <string.h>
 #include <stdint.h>
 #include "app_shared_data.h"
-#include "stm32f7xx_hal_def.h"
 #include "dev_vxsiicm_types.h"
 #include "dev_vxsiic_pp.h"
 #include "vxsiic_iic_driver.h"
@@ -65,7 +64,7 @@ void dev_vxsiicm_init(void)
 DeviceStatus dev_vxsiicm_detect(Dev_vxsiicm *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    if (HAL_OK != vxsiic_detect_mux())
+    if (! vxsiic_detect_mux())
         status = DEVICE_FAIL;
     d->present = status;
     return d->present;
@@ -79,29 +78,24 @@ uint32_t make_test_data(uint32_t i)
 
 HAL_StatusTypeDef dev_vxsiic_test_pp_mcu_regs(Dev_vxsiicm *d, int pp)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     uint32_t addr = 0;
     uint32_t data = 0;
     int count = 2;
     for (int i=0; i<count; i++) {
         addr = 1+i;
         data = make_test_data(i);
-        ret = dev_vxsiic_write_pp_mcu_4(d, pp, addr, data);
-        if (HAL_OK != ret)
-            goto err;
+        if (! dev_vxsiic_write_pp_mcu_4(d, pp, addr, data))
+            return false;
     }
     for (int i=0; i<count; i++) {
         addr = 1+i;
-        ret = dev_vxsiic_read_pp_mcu_4(d, pp, addr, &data);
-        if (HAL_OK != ret)
-            goto err;
+        if (! dev_vxsiic_read_pp_mcu_4(d, pp, addr, &data))
+            return false;
         const uint32_t test_data = make_test_data(i);
         if (test_data != data) {
         }
     }
-    return ret;
-err:
-    return ret;
+    return true;
 }
 #endif
 

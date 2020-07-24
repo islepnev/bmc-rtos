@@ -48,7 +48,7 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
     uint8_t data = 0;
     bool ret = vxsiic_read_pp_ioexp(pp, addr, &data);
     d->status.slot[pp].pp_state.gpio_found = ret;
-//    if (HAL_OK == ret) {
+//    if (ret) {
 //        debug_printf("IOEXP at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, data);
 //    }
     vxsiic_slot_status_t *status = &d->status.slot[pp];

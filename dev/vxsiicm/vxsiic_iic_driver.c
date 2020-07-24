@@ -28,20 +28,20 @@ void vxsiic_reset_i2c_master(void)
 
 bool vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
 {
-    return HAL_OK == i2c_driver_read(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_read(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
 bool vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
 {
-    return HAL_OK == i2c_driver_write(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_write(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
 bool vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return HAL_OK == i2c_driver_mem_read(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_read(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
 bool vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return HAL_OK == i2c_driver_mem_write(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
