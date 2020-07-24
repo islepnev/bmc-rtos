@@ -17,17 +17,18 @@
 #ifndef VXSIIC_IIC_DRIVER_H
 #define VXSIIC_IIC_DRIVER_H
 
-#include "stm32f7xx_hal_def.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 void vxsiic_reset_i2c_master(void);
-HAL_StatusTypeDef vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
-HAL_StatusTypeDef vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+bool vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
+bool vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
+bool vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
+bool vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);
 
 #ifdef  __cplusplus
 }

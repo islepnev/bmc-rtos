@@ -49,20 +49,17 @@ void vxsiic_reset_mux(void)
 
 //const char * vxs_mux_prefix = "VXS IIC mux";
 
-HAL_StatusTypeDef vxsiic_detect_mux(void)
+bool vxsiic_detect_mux(void)
 {
-    HAL_StatusTypeDef ret;
     for (int i=0; i<3; i++) {
         vxsiic_reset_i2c_master();
         vxsiic_reset_mux();
         uint8_t i2c_address= PCA9548_BASE_I2C_ADDRESS + i;
         uint8_t data;
-        ret = vxsiic_read(i2c_address << 1, &data, 1);
-        if (ret != HAL_OK) {
-            return ret;
-        }
+        if (!vxsiic_read(i2c_address << 1, &data, 1))
+            return false;
     }
-    return ret;
+    return true;
 }
 
 bool vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
@@ -72,7 +69,7 @@ bool vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
     uint8_t data;
     data = 1 << channel; // enable channel
     uint8_t i2c_address = PCA9548_BASE_I2C_ADDRESS + subdevice;
-    return HAL_OK == vxsiic_write(i2c_address << 1, &data, 1);
+    return vxsiic_write(i2c_address << 1, &data, 1);
 }
 
 bool vxsiic_get_pp_i2c_status(uint8_t pp)
@@ -124,25 +121,24 @@ void sprint_i2c_error(char *buf, size_t size, uint32_t code)
 bool vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data)
 {
     uint8_t dev_address = (PAYLOAD_BOARD_EEPROM_I2C_ADDRESS << 1) | 1;
-    return HAL_OK == vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
+    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
 }
 
 bool vxsiic_read_pp_ioexp(uint8_t pp, uint8_t reg, uint8_t *data)
 {
     uint8_t dev_address = (PAYLOAD_BOARD_IOEXP_I2C_ADDRESS << 1) | 1;
-    return HAL_OK == vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
+    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
 }
 
 bool vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data)
 {
     enum {Size = 4};
     uint8_t dev_address = (PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1) | 1;
-    return HAL_OK == vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
 }
 
 bool vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     enum {Size = 4};
-    return HAL_OK == vxsiic_mem_write(PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_write(PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
 }
