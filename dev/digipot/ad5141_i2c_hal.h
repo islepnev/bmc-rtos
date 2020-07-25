@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+void ad5141_i2c_driver_reset(void);
 bool ad5141_nop(uint8_t deviceAddress);
 bool ad5141_reset(uint8_t deviceAddress);
 bool ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);

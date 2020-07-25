@@ -16,20 +16,23 @@
 */
 
 #include "ina226_i2c_hal.h"
+#include "bsp.h"
 #include "i2c.h"
-#include "powermon_i2c_driver.h"
+#include "bus/i2c_driver.h"
+
+static const int I2C_TIMEOUT_MS = 10;
 
 bool ina226_i2c_Detect(uint16_t deviceAddr)
 {
     uint32_t Trials = 2;
-    return powermon_i2c_detect(deviceAddr << 1, Trials);
+    return i2c_driver_detect(&hi2c_sensors, deviceAddr << 1, Trials, I2C_TIMEOUT_MS);
 }
 
 bool ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data)
 {
     int Size = 2;
     uint8_t pData[Size];
-    if (! powermon_i2c_mem_read(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size))
+    if (! i2c_driver_mem_read(&hi2c_sensors, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS))
         return false;
     if (data) {
         *data = ((uint16_t)pData[0] << 8) | pData[1];
@@ -43,5 +46,5 @@ bool ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data)
     uint8_t pData[Size];
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
-    return powermon_i2c_mem_write(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
+    return i2c_driver_mem_write(&hi2c_sensors, deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
 }

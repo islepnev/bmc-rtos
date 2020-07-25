@@ -22,7 +22,6 @@
 #include <stdio.h>
 
 #include "ad5141_i2c_hal.h"
-#include "powermon_i2c_driver.h"
 
 void dev_ad5141_reset(Dev_ad5141 *d)
 {
@@ -62,13 +61,13 @@ int digipot_detect(Dev_digipots *d)
 {
     int count = 0;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        powermon_i2c_reset_master();
+        ad5141_i2c_driver_reset();
         DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
             dev_ad5141_reset(&d->pot[i]);
             count++;
         } else {
-            powermon_i2c_reset_master();
+            ad5141_i2c_driver_reset();
         }
     }
     return count;

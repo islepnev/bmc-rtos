@@ -17,18 +17,24 @@
 #include "ad5141_i2c_hal.h"
 
 #include "bsp.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_i2c.h"
-#include "powermon_i2c_driver.h"
+#include "i2c.h"
+#include "bus/i2c_driver.h"
+
+static const int I2C_TIMEOUT_MS = 10;
+
+void ad5141_i2c_driver_reset(void)
+{
+    i2c_driver_reset(&hi2c_sensors);
+}
 
 static bool ad5141_write(uint8_t deviceAddress, uint8_t ctrl_addr, uint8_t data)
 {
-    return powermon_i2c_mem_write(deviceAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1);
+    return i2c_driver_mem_write(&hi2c_sensors, deviceAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1, I2C_TIMEOUT_MS);
 }
 
 static bool ad5141_read(uint8_t deviceAddress, uint16_t command, uint8_t *data)
 {
-    return powermon_i2c_mem_read(deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1);
+    return i2c_driver_mem_read(&hi2c_sensors, deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1, I2C_TIMEOUT_MS);
 }
 
 bool ad5141_nop(uint8_t deviceAddress)
