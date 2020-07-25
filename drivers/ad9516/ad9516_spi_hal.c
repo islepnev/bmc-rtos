@@ -31,9 +31,9 @@ static bool set_csb(int state)
 {
     if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
         return true;
-    GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
+    bool write = state;
     write_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
-    GPIO_PinState read = read_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
+    bool read = read_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
     if (write != read) {
         log_printf(LOG_CRIT, "AD9516_CS_B stuck %s", read ? "high": "low");
     }

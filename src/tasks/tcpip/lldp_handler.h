@@ -17,11 +17,19 @@
 #ifndef LLDP_HANDLER_H
 #define LLDP_HANDLER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct pbuf;
 struct netif;
 
 extern int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif);
 
 //#define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif) lwip_hook_unknown_eth_protocol((pbuf), (netif))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LLDP_HANDLER_H

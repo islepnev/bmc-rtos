@@ -86,7 +86,7 @@ static bool check_power_switches(const Dev_powermon *pm)
     for (int i=0; i<POWER_SWITCH_COUNT; i++) {
         if (pm->sw_state[i] != pm->sw[i]) {
             log_printf(LOG_CRIT, "%s switch failure: stuck %s",
-                       psw_label(i), pm->sw_state[i] ? "high" : "low");
+                       psw_label((PowerSwitchIndex)i), pm->sw_state[i] ? "high" : "low");
             ret = false;
         }
     }

@@ -212,8 +212,8 @@ void ad9545_verbose_setup(const ad9545_setup_t *setup)
            setup->ref.REFB_Input_Period * 1e-9,
            setup->ref.REFB_R_Divider
            );
-    pllPrintDPLLChannelSetup(&setup->dpll0, 0);
-    pllPrintDPLLChannelSetup(&setup->dpll1, 1);
+    pllPrintDPLLChannelSetup(&setup->dpll0, DPLL0);
+    pllPrintDPLLChannelSetup(&setup->dpll1, DPLL1);
 }
 
 void ad9545_verbose_status(const AD9545_Status *status)

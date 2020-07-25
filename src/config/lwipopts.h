@@ -45,6 +45,10 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,
  * use lwIP facilities.
@@ -248,6 +252,10 @@ struct pbuf;
 struct netif;
 extern int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif);
 #define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif) lwip_hook_unknown_eth_protocol(pbuf, netif)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LWIPOPTS_H__ */
 

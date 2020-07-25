@@ -49,7 +49,14 @@
 /* Ensure stdint is only used by the compiler, and not the assembler. */
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
     #include <stdint.h>
-    extern uint32_t SystemCoreClock;
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern uint32_t SystemCoreClock;
+#ifdef __cplusplus
+}
+#endif
+
 /* USER CODE BEGIN 0 */
 /* USER CODE END 0 */
 #endif

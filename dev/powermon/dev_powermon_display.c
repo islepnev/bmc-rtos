@@ -131,7 +131,7 @@ static void print_pm_switches(const pm_switches sw)
 {
     printf("Switch: ");
     for (int i=0; i<POWER_SWITCH_COUNT; i++) {
-        printf("%s %s   ", psw_label(i), sw[i] ? STR_ON : STR_OFF);
+        printf("%s %s   ", psw_label((PowerSwitchIndex)i), sw[i] ? STR_ON : STR_OFF);
     }
     print_clear_eol();
 }
@@ -142,7 +142,7 @@ static void pm_pgood_print(const pm_pgoods pgood)
     //    print_clear_eol();
     printf("Power good: ");
     for (int i=0; i<POWER_GOOD_COUNT; i++) {
-        printf("%s %s   ", pgood_label(i), pgood[i] ? STR_ON : STR_OFF);
+        printf("%s %s   ", pgood_label((PowerGoodIndex)i), pgood[i] ? STR_ON : STR_OFF);
     }
     print_clear_eol();
 }

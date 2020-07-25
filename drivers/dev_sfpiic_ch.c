@@ -88,7 +88,7 @@ static bool dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t 
 static bool dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
 {
     int16_t *temp = &d->status.sfp[ch].temp;
-    if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp))
+    if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, (uint16_t *)temp))
         return false;
     // log_printf(LOG_DEBUG, "Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
     return true;
