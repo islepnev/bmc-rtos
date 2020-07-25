@@ -147,7 +147,7 @@ int http_serve_page_footer(struct http_server_t *server)
 {
     static const char *buf =
             "<hr>\n"
-            "<small>"APP_NAME_STR " version " VERSION_STR"</small>\n"
+            "<small>" APP_NAME_STR " version " VERSION_STR"</small>\n"
             "</body>\n"
             "</html>\n";
     return http_server_write(server, buf);
