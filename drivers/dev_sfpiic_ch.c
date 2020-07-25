@@ -20,9 +20,6 @@
 
 #include <string.h>
 #include <stdint.h>
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_def.h"
-#include "stm32f7xx_hal_i2c.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_driver.h"
 #include "dev_sfpiic_types.h"
@@ -32,10 +29,10 @@
 #include "cmsis_os.h"
 #include "sff_8436.h"
 
-static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, HAL_StatusTypeDef ret)
+static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, bool state)
 {
     sfpiic_ch_status_t *status = &d->status.sfp[pp];
-    if (HAL_OK == ret) {
+    if (state) {
         status->iic_master_stats.ops++;
         status->ch_state = SFPIIC_CH_STATE_READY;
     } else {
@@ -49,20 +46,19 @@ static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
 {
     uint16_t reg = SFF_8436_TX_DISABLE_REG;
     uint8_t val = 1;
-    HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
-    if (HAL_OK != ret)
+    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
         return false;
-    if((val&0xF)==0)
+    if ((val&0xF)==0)
         return true;
 
     ++d->status.sfp[ch].tx_en_cnt;
     val &= ~0xF;
-    ret = sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
-    if (HAL_OK != ret)
+    if (! sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
         return false;
     val=1;
-    ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
-    if (HAL_OK == ret && (val&0xF) != 0) {
+    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
+        return false;
+    if ((val&0xF) != 0) {
         debug_printf("Failed to enable TX port at SFP #%d: reg[86]=0x%02X\n", ch, val);
         return false;
     }
@@ -73,22 +69,22 @@ static bool dev_sfpiic_ch_test(int ch)
 {
     uint16_t reg=0;
     uint8_t id=(uint8_t)-1;
-    HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &id, 1);
-    if (HAL_OK == ret)
-        debug_printf("Test val at SFP #%d: 0x%02X\n", ch, id);
-    return HAL_OK == ret;
+    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &id, 1))
+        return false;
+    debug_printf("Test val at SFP #%d: 0x%02X\n", ch, id);
+    return true;
 }
 
 static bool dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t *val)
 {
     uint8_t data[2];
-    HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, data, 2);
+    bool ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, data, 2);
     dev_sfpiic_update_ch_state(d, ch, ret);
-    if (HAL_OK == ret && val) {
+    if (ret && val) {
         *val = (uint16_t)(data[0]<<8)| data[1];
 //        debug_printf("Read 16-bit reg=%d at SFP #%d: %d\n", reg, ch, *val);
     }
-    return HAL_OK == ret;
+    return ret;
 }
 
 static bool dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
@@ -141,13 +137,13 @@ static bool dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
     reg = SFF_8436_VENDOR_SN_REG16; // Vendor SN (16 bytes) Serial number provided by vendor (ASCII)
     const size_t size = 16;
     char buf[16];
-    HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, (uint8_t *)&buf[0], size);
+    bool ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, (uint8_t *)&buf[0], size);
     dev_sfpiic_update_ch_state(d, ch, ret);
-    if (HAL_OK == ret) {
+    if (ret) {
         memcpy(d->status.sfp[ch].vendor_serial, buf, sizeof (buf));
 //        debug_printf("Vendor serial at SFP #%d: %s\n", ch, buf);
     }
-    return HAL_OK == ret;
+    return ret;
 }
 
 static bool dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
@@ -158,29 +154,19 @@ static bool dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
     uint16_t addr = SFP_MAIN_I2C_ADDRESS;
     bool is_qsfp = ch >= 3;
     uint16_t reg = is_qsfp ? SFF_8436_VENDOR_NAME_REG16 : 20; // FIXME: 20???
-    HAL_StatusTypeDef ret = sfpiic_mem_read(addr, reg, (uint8_t *)&buf[0], size);
+    bool ret = sfpiic_mem_read(addr, reg, (uint8_t *)&buf[0], size);
     dev_sfpiic_update_ch_state(d, ch, ret);
-    if (HAL_OK == ret) {
+    if (ret) {
         memcpy(d->status.sfp[ch].vendor_name, buf, sizeof (buf));
 //        debug_printf("Vendor name at SFP #%d: %s\n", ch, buf);
     }
-    return HAL_OK == ret;
+    return ret;
 }
 
 bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 {
     if (! sfpiic_get_ch_i2c_status(ch))
         return false;
-
-//    if(sfpiic_device_detect(0x50)==HAL_OK){
-//        debug_printf("Has device at 0x50\n");
-//    }
-//    if(sfpiic_device_detect(0x51)==HAL_OK){
-//        debug_printf("Has device at 0x51\n");
-//    }
-//    if(sfpiic_device_detect(0x56)==HAL_OK){
-//        debug_printf("Has device at 0x56\n");
-//    }
 
     if(ch<3) {
         // SFP channals

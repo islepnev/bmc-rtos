@@ -57,7 +57,7 @@ bool sfpiic_switch_set_channel(uint8_t channel)
 {
     assert_param(channel < 8);
     uint8_t data = (uint8_t)(1 << channel); // enable channel
-    return HAL_OK == sfpiic_write(&data, 1);
+    return sfpiic_write(&data, 1);
 }
 
 void sfpiic_I2C_MasterTxCpltCallback(void)
@@ -104,40 +104,41 @@ void sfpiic_init(void)
     }
 }
 
-HAL_StatusTypeDef sfpiic_read(uint8_t *pData, uint16_t Size)
+bool sfpiic_read(uint8_t *pData, uint16_t Size)
 {
     uint16_t addr = (PCA9548_BASE_I2C_ADDRESS<<1)|1;
     HAL_StatusTypeDef ret = HAL_I2C_Master_Receive(&hi2c_sfpiic, addr, pData, Size, SFPI2C_TIMEOUT_MS);
     if (ret != HAL_OK) {
         debug_printf("%s(%02X): i2c error %d, %d\n", __func__, addr, ret, hi2c_sfpiic.ErrorCode);
+        return false;
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef sfpiic_write(uint8_t *pData, uint16_t Size)
+bool sfpiic_write(uint8_t *pData, uint16_t Size)
 {
     uint16_t addr = PCA9548_BASE_I2C_ADDRESS<<1;
     HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c_sfpiic, addr, pData, Size, SFPI2C_TIMEOUT_MS);
     if (ret != HAL_OK) {
         debug_printf("%s(%02X): i2c error %d, %d\n", __func__, addr, ret, hi2c_sfpiic.ErrorCode);
+        return false;
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
+bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
     addr  = (uint16_t)((addr<<1)|1);
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
     if (ret != HAL_OK) {
         if (hi2c_sfpiic.ErrorCode & HAL_I2C_ERROR_AF) {
             // no acknowledge, empty slot
-            return HAL_TIMEOUT;
         } else {
             debug_printf("%s (dev_addr %02X, mem_addr 0x%04X): HAL code %d, I2C code %d\n", __func__, addr, MemAddress, ret, hi2c_sfpiic.ErrorCode);
-            return ret;
         }
+        return false;
     }
-    return ret;
+    return true;
 }
 
 HAL_StatusTypeDef sfpiic_mem_read16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
@@ -147,45 +148,42 @@ HAL_StatusTypeDef sfpiic_mem_read16(uint16_t addr, uint16_t MemAddress, uint8_t 
     if (ret != HAL_OK) {
         if (hi2c_sfpiic.ErrorCode & HAL_I2C_ERROR_AF) {
             // no acknowledge, empty slot
-            return HAL_TIMEOUT;
         } else {
             debug_printf("%s (dev_addr %02X, mem_addr 0x%04X): HAL code %d, I2C code %d\n", __func__, addr, MemAddress, ret, hi2c_sfpiic.ErrorCode);
-            return ret;
         }
+        return false;
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
+bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
     addr  = (uint16_t)((addr<<1)|1);
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
     if (ret != HAL_OK) {
         if (hi2c_sfpiic.ErrorCode & HAL_I2C_ERROR_AF) {
             // no acknowledge, MCU not loaded
-            return HAL_TIMEOUT;
         } else {
             debug_printf("%s (dev_addr %02X, mem_addr 0x%04X): HAL code %d, I2C code %d\n", __func__, addr, MemAddress, ret, hi2c_sfpiic.ErrorCode);
-            return ret;
         }
+        return false;
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
+bool sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
     addr  = (uint16_t)((addr<<1)|1);
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_16BIT, pData, Size, SFPI2C_TIMEOUT_MS);
     if (ret != HAL_OK) {
         if (hi2c_sfpiic.ErrorCode & HAL_I2C_ERROR_AF) {
             // no acknowledge, MCU not loaded
-            return HAL_TIMEOUT;
         } else {
             debug_printf("%s (dev_addr %02X, mem_addr 0x%04X): HAL code %d, I2C code %d\n", __func__, addr, MemAddress, ret, hi2c_sfpiic.ErrorCode);
-            return ret;
         }
+        return false;
     }
-    return ret;
+    return true;
 }
 
 
