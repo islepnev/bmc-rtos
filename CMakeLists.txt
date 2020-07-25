@@ -123,7 +123,7 @@ include_directories(
 )
 
 
-#include(cmake/Doxygen.cmake)
+include(cmake/Doxygen.cmake)
 include(cmake/git_version.cmake)
 configure_file(
   ${MY_TOP_DIR}/build_id.in
