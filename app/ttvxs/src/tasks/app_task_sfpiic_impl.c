@@ -78,6 +78,7 @@ void task_sfpiic_run(void)
         break;
     }
     if (old_state != state) {
+        old_state = state;
         stateStartTick = osKernelSysTick();
     }
 }
