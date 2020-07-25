@@ -24,7 +24,6 @@ include_directories(
     ${MY_SRC_DIR}/config
     ${MY_TOP_DIR}/common
     ${MY_TOP_DIR}/system
-    ${MY_LIB_DIR}/eth
 )
 
 file(GLOB BSP_SRCS
@@ -127,6 +126,7 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/drivers
     ${MY_LIB_DIR}/system/init
+    ${MY_LIB_DIR}/eth
     ${MY_SRC_DIR}
     ${MY_SRC_DIR}/rtos
     ${MY_SRC_DIR}/tasks
