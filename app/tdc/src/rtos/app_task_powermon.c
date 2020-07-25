@@ -37,9 +37,6 @@ static const uint32_t powermonTaskLoopDelay = 10;
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-
     while (1)
     {
         bsp_smbus_reset();

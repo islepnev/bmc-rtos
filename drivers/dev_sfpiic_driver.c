@@ -22,7 +22,7 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bus/i2c_driver.h"
-#include "debug_helpers.h"
+#include "log/logbuffer.h"
 #include "i2c.h"
 
 static const int SFPI2C_TIMEOUT_MS = 25;
@@ -91,7 +91,7 @@ bool sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint
 bool sfpiic_get_ch_i2c_status(uint8_t ch)
 {
     if (!i2c_driver_get_master_ready(&hi2c_sfpiic)) {
-        debug_printf("%s (port %2d) I2C controller not ready\n", __func__, ch);
+        log_printf(LOG_WARNING, "%s (port %2d) I2C controller not ready\n", __func__, ch);
         return false;
     }
     return true;

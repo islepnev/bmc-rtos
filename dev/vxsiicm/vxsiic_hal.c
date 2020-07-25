@@ -22,7 +22,7 @@
 #include "i2c.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "debug_helpers.h"
+#include "log/logbuffer.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 
@@ -66,7 +66,7 @@ bool vxsiic_get_pp_i2c_status(uint8_t pp)
 {
     HAL_I2C_StateTypeDef state = HAL_I2C_GetState(&vxsiic_hi2c);
     if (state != HAL_I2C_STATE_READY) {
-        debug_printf("%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
+        log_printf(LOG_CRIT, "%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
         return false;
     }
     return true;

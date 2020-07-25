@@ -21,6 +21,7 @@
 #include "stm32f7xx_ll_usart.h"
 #include "bsp_tty.h"
 #include "ansi_escape_codes.h"
+#include "log/logbuffer.h"
 
 static inline void debug_send_char(const char c)
 {
@@ -59,6 +60,8 @@ void debug_printf(const char *format, ...)
     size_t n = vsnprintf(buffer, sizeof buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
-    if (n_written > 0)
-        debug_print(buffer);
+    if (n_written > 0) {
+        // debug_print(buffer);
+        log_put(LOG_DEBUG, buffer);
+    }
 }

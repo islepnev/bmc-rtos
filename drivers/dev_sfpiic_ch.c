@@ -22,8 +22,7 @@
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_driver.h"
 #include "dev_sfpiic_types.h"
-#include "logbuffer.h"
-#include "debug_helpers.h"
+#include "log/logbuffer.h"
 #include "ipmi_sensor_types.h"
 #include "cmsis_os.h"
 #include "sff_8436.h"
@@ -58,7 +57,7 @@ static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
     if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
         return false;
     if ((val&0xF) != 0) {
-        debug_printf("Failed to enable TX port at SFP #%d: reg[86]=0x%02X\n", ch, val);
+        log_printf(LOG_WARNING, "Failed to enable TX port at SFP #%d: reg[86]=0x%02X\n", ch, val);
         return false;
     }
     return true;
@@ -70,7 +69,7 @@ static bool dev_sfpiic_ch_test(int ch)
     uint8_t id=(uint8_t)-1;
     if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &id, 1))
         return false;
-    debug_printf("Test val at SFP #%d: 0x%02X\n", ch, id);
+    log_printf(LOG_INFO, "Test val at SFP #%d: 0x%02X\n", ch, id);
     return true;
 }
 
@@ -81,7 +80,7 @@ static bool dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t 
     dev_sfpiic_update_ch_state(d, ch, ret);
     if (ret && val) {
         *val = (uint16_t)(data[0]<<8)| data[1];
-//        debug_printf("Read 16-bit reg=%d at SFP #%d: %d\n", reg, ch, *val);
+        // log_printf(LOG_DEBUG, "Read 16-bit reg=%d at SFP #%d: %d\n", reg, ch, *val);
     }
     return ret;
 }
@@ -91,7 +90,7 @@ static bool dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
     int16_t *temp = &d->status.sfp[ch].temp;
     if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp))
         return false;
-    // debug_printf("Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
+    // log_printf(LOG_DEBUG, "Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
     return true;
 }
 
@@ -100,7 +99,7 @@ static bool dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
     uint16_t *volt = &d->status.sfp[ch].volt;
     if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_VOLT_REG2, volt))
         return false;
-    // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
+    // log_printf(LOG_DEBUG, "Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     return true;
 }
 
@@ -112,7 +111,7 @@ static bool dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
         uint16_t *pow = &d->status.sfp[sfp].rx_pow[ch];
         if (! dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow))
             return false;
-        // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
+        // log_printf(LOG_DEBUG, "Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
     return true;
 }
@@ -125,7 +124,7 @@ static bool dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
         uint16_t *pow = &d->status.sfp[sfp].tx_pow[ch];
         if (! dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow))
             return false;
-        // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
+        // log_printf(LOG_DEBUG, "Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
     return true;
 }
@@ -140,7 +139,7 @@ static bool dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
     dev_sfpiic_update_ch_state(d, ch, ret);
     if (ret) {
         memcpy(d->status.sfp[ch].vendor_serial, buf, sizeof (buf));
-//        debug_printf("Vendor serial at SFP #%d: %s\n", ch, buf);
+        // log_printf(LOG_DEBUG, "Vendor serial at SFP #%d: %s\n", ch, buf);
     }
     return ret;
 }
@@ -157,7 +156,7 @@ static bool dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
     dev_sfpiic_update_ch_state(d, ch, ret);
     if (ret) {
         memcpy(d->status.sfp[ch].vendor_name, buf, sizeof (buf));
-//        debug_printf("Vendor name at SFP #%d: %s\n", ch, buf);
+        // log_printf(LOG_DEBUG, "Vendor name at SFP #%d: %s\n", ch, buf);
     }
     return ret;
 }

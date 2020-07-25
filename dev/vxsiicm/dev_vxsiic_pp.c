@@ -33,9 +33,9 @@ static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
     uint8_t eeprom_data = 0;
     bool ok = vxsiic_read_pp_eeprom(pp, addr, &eeprom_data);
     if (ok) {
-        // debug_printf("EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
+        // log_printf(LOG_DEBUG, "EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
         if (eeprom_data != 0xFF) {
-            debug_printf("EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
+            log_printf(LOG_NOTICE, "EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
         }
     }
     d->status.slot[pp].pp_state.eeprom_found = ok;
@@ -49,7 +49,7 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
     bool ret = vxsiic_read_pp_ioexp(pp, addr, &data);
     d->status.slot[pp].pp_state.gpio_found = ret;
 //    if (ret) {
-//        debug_printf("IOEXP at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, data);
+//        log_printf(LOG_DEBUG, "IOEXP at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, data);
 //    }
     vxsiic_slot_status_t *status = &d->status.slot[pp];
     status->ioexp = data;

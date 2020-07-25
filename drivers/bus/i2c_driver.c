@@ -21,7 +21,7 @@
 
 #include "bus_types.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
+#include "log/logbuffer.h"
 #include "error_handler.h"
 #include "i2c.h"
 #include "i2c_driver_util.h"
@@ -70,7 +70,7 @@ void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    debug_printf("%s I2C%d error, code %d\n", __func__, hi2c_index(hi2c), hi2c->ErrorCode);
+    log_printf(LOG_WARNING, "%s I2C%d error, code %d\n", __func__, hi2c_index(hi2c), hi2c->ErrorCode);
     // reinitialize I2C
     i2c_driver_reset(hi2c);
     release_it_sem(hi2c);
@@ -78,7 +78,7 @@ void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    debug_printf("%s I2C%d\n", __func__, hi2c_index(hi2c));
+    log_printf(LOG_WARNING, "%s I2C%d\n", __func__, hi2c_index(hi2c));
     release_it_sem(hi2c);
 }
 
@@ -94,12 +94,12 @@ bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint
         if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
             return false; // no acknowledge or timeout
         }
-        debug_printf("%s (%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
+        log_printf(LOG_WARNING, "%s (%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
         return false;
     }
     int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
-        debug_printf("%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
+        log_printf(LOG_WARNING, "%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
         return false;
     }
     return true;
@@ -112,12 +112,12 @@ bool i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uin
         if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
             return false; // no acknowledge or timeout
         }
-        debug_printf("%s(%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
+        log_printf(LOG_WARNING, "%s(%02X): I2C%d error %d, %d\n", __func__, DevAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
         return false;
     }
     int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
-        debug_printf("%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
+        log_printf(LOG_WARNING, "%s (%02X): I2C%d timeout\n", __func__, hi2c_index(hi2c), DevAddress);
         return false;
     }
     return true;
@@ -130,13 +130,13 @@ bool i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, 
         if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
             return false; // no acknowledge or timeout
         }
-        debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
+        log_printf(LOG_WARNING, "%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
                      __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
         return false;
     }
     int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
-        debug_printf("%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
+        log_printf(LOG_WARNING, "%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
         return false;
     }
     return true;
@@ -149,14 +149,14 @@ bool i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
         if (hi2c->ErrorCode & (HAL_I2C_ERROR_AF | HAL_I2C_ERROR_TIMEOUT)) {
             return false; // no acknowledge or timeout
         }
-        debug_printf("%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
+        log_printf(LOG_WARNING, "%s (%02X, 0x%04X): I2C%d error %d, I2C code %d\n",
                      __func__, DevAddress, MemAddress, hi2c_index(hi2c), ret, hi2c->ErrorCode);
         return false;
 
     }
     int32_t status = wait_it_sem(hi2c, millisec);
     if (status != osOK) {
-        debug_printf("%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
+        log_printf(LOG_WARNING, "%s (%02X, 0x%04X) I2C%d timeout\n", __func__, DevAddress, MemAddress, hi2c_index(hi2c));
         return false;
     }
     return true;

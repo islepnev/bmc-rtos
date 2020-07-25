@@ -33,7 +33,6 @@ static const uint32_t pllTaskLoopDelay = 30;
 static void pllTask(void const *arg)
 {
     (void) arg;
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     dev_ad9545_init();
     while(1) {
         task_eeprom_config_run();
