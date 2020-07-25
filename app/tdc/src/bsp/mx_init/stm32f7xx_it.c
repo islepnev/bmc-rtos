@@ -17,7 +17,6 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "main.h"
 #include "stm32f7xx_it.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"

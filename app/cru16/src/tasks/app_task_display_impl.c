@@ -47,7 +47,7 @@
 #include "system_status.h"
 #include "version.h"
 
-#include "rtos/freertos_stats.h"
+#include "freertos_stats.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_rtc.h"

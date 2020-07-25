@@ -25,7 +25,7 @@
 #include "dev_pm_sensors_config.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "log/logbuffer.h"
+#include "logbuffer.h"
 
 uint32_t detect_pcb_version(void)
 {
