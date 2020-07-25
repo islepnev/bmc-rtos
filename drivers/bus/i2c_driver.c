@@ -45,7 +45,7 @@ void i2c_driver_reset(struct __I2C_HandleTypeDef *hi2c)
 
 bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c)
 {
-    return  HAL_I2C_STATE_READY == HAL_I2C_GetState(&hi2c);
+    return  HAL_I2C_STATE_READY == HAL_I2C_GetState(hi2c);
 }
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
