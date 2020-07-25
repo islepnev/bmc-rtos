@@ -30,7 +30,7 @@
 #include "debug_helpers.h"
 #include "ipmi_sensor_types.h"
 #include "cmsis_os.h"
-
+#include "sff_8436.h"
 
 static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, HAL_StatusTypeDef ret)
 {
@@ -45,28 +45,28 @@ static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, HAL_StatusTypeDef 
     }
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
+static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
 {
-    uint16_t reg = 86;
+    uint16_t reg = SFF_8436_TX_DISABLE_REG;
     uint8_t val = 1;
     HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
     if (HAL_OK != ret)
-        return ret;
+        return false;
     if((val&0xF)==0)
-        return ret;
+        return true;
 
     ++d->status.sfp[ch].tx_en_cnt;
     val &= ~0xF;
     ret = sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
     if (HAL_OK != ret)
-        return ret;
+        return false;
     val=1;
     ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1);
     if (HAL_OK == ret && (val&0xF) != 0) {
         debug_printf("Failed to enable TX port at SFP #%d: reg[86]=0x%02X\n", ch, val);
-        ret = HAL_ERROR;
+        return false;
     }
-    return ret;
+    return true;
 }
 
 static HAL_StatusTypeDef dev_sfpiic_ch_test(int ch)
@@ -94,7 +94,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t r
 static HAL_StatusTypeDef dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
 {
     int16_t *temp = &d->status.sfp[ch].temp;
-    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, 22, temp);
+    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp);
     if (HAL_OK == ret) {
 //        debug_printf("Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
     }
@@ -104,7 +104,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
 static HAL_StatusTypeDef dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
 {
     uint16_t *volt = &d->status.sfp[ch].volt;
-    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, 26, volt);
+    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_VOLT_REG2, volt);
     if (HAL_OK == ret) {
 //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
@@ -114,7 +114,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
 static HAL_StatusTypeDef dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    const uint16_t reg_base = 34;
+    const uint16_t reg_base = SFF_8436_CH_1_RX_POW_REG2;
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].rx_pow[ch];
@@ -131,7 +131,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
 static HAL_StatusTypeDef dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    const uint16_t reg_base = 42;
+    const uint16_t reg_base = SFF_8436_CH_1_TX_POW_REG2;
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].tx_pow[ch];
@@ -148,7 +148,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
 static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
 {
     uint16_t reg;
-    reg = 196; // Vendor SN (16 bytes) Serial number provided by vendor (ASCII)
+    reg = SFF_8436_VENDOR_SN_REG16; // Vendor SN (16 bytes) Serial number provided by vendor (ASCII)
     const size_t size = 16;
     char buf[16];
     HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, (uint8_t *)&buf[0], size);
@@ -166,7 +166,8 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
     const size_t size = 16;
     char buf[16];
     uint16_t addr = SFP_MAIN_I2C_ADDRESS;
-    uint16_t reg = ch<3 ? 20 : 148;
+    bool is_qsfp = ch >= 3;
+    uint16_t reg = is_qsfp ? SFF_8436_VENDOR_NAME_REG16 : 20; // FIXME: 20???
     HAL_StatusTypeDef ret = sfpiic_mem_read(addr, reg, (uint8_t *)&buf[0], size);
     dev_sfpiic_update_ch_state(d, ch, ret);
     if (HAL_OK == ret) {
@@ -200,7 +201,7 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
     } else {
         // QSFP channals
         //    ret = dev_sfpiic_test(ch);
-        if (HAL_OK != dev_sfpiic_ch_enable_tx(d, ch))
+        if (! dev_sfpiic_ch_enable_tx(d, ch))
             return false;
         if (HAL_OK != dev_sfpiic_ch_read_temp(d, ch))
             return false;
