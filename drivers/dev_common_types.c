@@ -23,3 +23,17 @@ const char *sensor_status_text(SensorStatus state)
     default: return "FAIL";
     }
 }
+
+char *deviceStatusResultStr(DeviceStatus status)
+{
+    switch (status) {
+    case DEVICE_UNKNOWN:
+        return STR_RESULT_UNKNOWN;
+    case DEVICE_NORMAL:
+        return STR_RESULT_NORMAL;
+    case DEVICE_FAIL:
+        return STR_RESULT_FAIL;
+    default:
+        return "???";
+    }
+}

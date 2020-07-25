@@ -34,17 +34,3 @@ void print_goto(int line, int col)
 {
     printf("\x1B[%d;%dH", line, col);
 }
-
-char *deviceStatusResultStr(DeviceStatus status)
-{
-    switch (status) {
-    case DEVICE_UNKNOWN:
-        return STR_RESULT_UNKNOWN;
-    case DEVICE_NORMAL:
-        return STR_RESULT_NORMAL;
-    case DEVICE_FAIL:
-        return STR_RESULT_FAIL;
-    default:
-        return "???";
-    }
-}

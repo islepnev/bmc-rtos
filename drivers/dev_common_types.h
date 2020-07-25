@@ -44,6 +44,7 @@ typedef enum {
 
 const char *sensor_status_ansi_str(SensorStatus state);
 const char *sensor_status_text(SensorStatus state);
+char *deviceStatusResultStr(DeviceStatus status);
 
 #ifdef __cplusplus
 }

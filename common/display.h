@@ -20,7 +20,6 @@
 
 #include <stdint.h>
 #include "ansi_escape_codes.h"
-#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,9 +42,6 @@ extern "C" {
 void print_clear_eol(void);
 void print_clearbox(int line1, int height);
 void print_goto(int line, int col);
-
-
-char *deviceStatusResultStr(DeviceStatus status);
 
 #ifdef __cplusplus
 }
