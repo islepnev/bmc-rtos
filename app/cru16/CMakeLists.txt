@@ -54,8 +54,8 @@ file(GLOB Drivers_SRCS
     ${MY_LIB_DIR}/drivers/ad9545/*.h
     ${MY_LIB_DIR}/drivers/mcp23017/*.c
     ${MY_LIB_DIR}/drivers/mcp23017/*.h
-    ${MY_LIB_DIR}/drivers/bus/*.c
-    ${MY_LIB_DIR}/drivers/bus/*.h
+    ${MY_LIB_DIR}/drivers/bus/*.*
+    ${MY_LIB_DIR}/drivers/bus/impl/*.*
     ${MY_LIB_DIR}/drivers/debug_helpers.c
     ${MY_LIB_DIR}/drivers/debug_helpers.h
     ${MY_LIB_DIR}/drivers/dev_ad9545.c

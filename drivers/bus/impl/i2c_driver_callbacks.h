@@ -1,5 +1,7 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Generic interrupt mode IIC driver
+**
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,30 +17,26 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef I2C_DRIVER_UTIL_H
-#define I2C_DRIVER_UTIL_H
+#ifndef I2C_DRIVER_CALLBACKS_H
+#define I2C_DRIVER_CALLBACKS_H
 
-#include <stdbool.h>
-
-#include "bus_types.h"
-#include "cmsis_os.h"
-#include "i2c.h"
+#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool i2c_driver_util_init(void);
-SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c);
-SemaphoreHandle_t dev_sem_by_index(int index);
-int hi2c_index(struct __I2C_HandleTypeDef *hi2c);
-int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec);
-void release_it_sem(struct __I2C_HandleTypeDef *hi2c);
-int32_t wait_dev_sem(int index, uint32_t millisec);
-void release_dev_sem(int index);
+struct __I2C_HandleTypeDef;
+
+void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c);
+void HAL_I2C_MasterRxCpltCallback(struct __I2C_HandleTypeDef *hi2c);
+void HAL_I2C_MemTxCpltCallback(struct __I2C_HandleTypeDef *hi2c);
+void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c);
+void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c);
+void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // I2C_DRIVER_UTIL_H
+#endif // I2C_DRIVER_CALLBACKS_H

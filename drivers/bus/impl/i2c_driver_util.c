@@ -19,10 +19,13 @@
 
 #include "i2c_driver_util.h"
 
+#include <assert.h>
+
 #include "i2c.h"
 #include "debug_helpers.h"
 #include "cmsis_os.h"
 #include "error_handler.h"
+#include "log/logbuffer.h"
 
 // interrupt wait semaphores
 osSemaphoreId i2c1_it_sem;
@@ -123,7 +126,7 @@ int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
     if (sem)
         return osSemaphoreWait(sem, millisec);
     else
-        return -1;
+        return osErrorValue;
 }
 
 void release_it_sem(struct __I2C_HandleTypeDef *hi2c)
@@ -136,15 +139,19 @@ void release_it_sem(struct __I2C_HandleTypeDef *hi2c)
 int32_t wait_dev_sem(int index, uint32_t millisec)
 {
     SemaphoreHandle_t sem = dev_sem_by_index(index);
-    if (sem)
-        return osSemaphoreWait(sem, millisec);
-    else
-        return -1;
+    assert(sem);
+    if (!sem)
+        return osErrorValue;
+    int32_t ret =  osSemaphoreWait(sem, millisec);
+    if (ret)
+        log_printf(LOG_WARNING, "I2C%d device lock error\n", index);
+    return  ret;
 }
 
 void release_dev_sem(int index)
 {
     SemaphoreHandle_t sem = dev_sem_by_index(index);
+    assert(sem);
     if (sem)
         osSemaphoreRelease(sem);
 }
