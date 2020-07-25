@@ -79,7 +79,7 @@ static bool dev_sfpiic_ch_test(int ch)
     return HAL_OK == ret;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t *val)
+static bool dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t *val)
 {
     uint8_t data[2];
     HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, data, 2);
@@ -88,27 +88,25 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t r
         *val = (uint16_t)(data[0]<<8)| data[1];
 //        debug_printf("Read 16-bit reg=%d at SFP #%d: %d\n", reg, ch, *val);
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
 static bool dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
 {
     int16_t *temp = &d->status.sfp[ch].temp;
-    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp);
-    if (HAL_OK == ret) {
-//        debug_printf("Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
-    }
-    return HAL_OK == ret;
+    if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp))
+        return false;
+    // debug_printf("Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
+    return true;
 }
 
 static bool dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
 {
     uint16_t *volt = &d->status.sfp[ch].volt;
-    HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_VOLT_REG2, volt);
-    if (HAL_OK == ret) {
-//        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
-    }
-    return HAL_OK == ret;
+    if (! dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_VOLT_REG2, volt))
+        return false;
+    // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
+    return true;
 }
 
 static bool dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
@@ -117,12 +115,9 @@ static bool dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].rx_pow[ch];
-        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
-        if (HAL_OK == ret) {
-            //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
-        } else {
+        if (! dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow))
             return false;
-        }
+        // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
     return true;
 }
@@ -133,12 +128,9 @@ static bool dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].tx_pow[ch];
-        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
-        if (HAL_OK == ret) {
-            //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
-        } else {
+        if (! dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow))
             return false;
-        }
+        // debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
     return true;
 }
