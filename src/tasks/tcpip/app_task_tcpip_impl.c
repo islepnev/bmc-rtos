@@ -8,7 +8,6 @@
 #include "lwip/init.h"
 #include "dhcp_thread.h"
 #include "http/http_server_impl.h"
-#include "lcd_log.h"
 #include "lwipcfg.h"
 #include "ipaddress.h"
 #include "sntp/sntp_client.h"
