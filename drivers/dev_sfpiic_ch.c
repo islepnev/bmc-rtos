@@ -1,7 +1,5 @@
 /*
-**    VXS payload port IIC master functions
-**
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -16,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "dev_sfpiic_ch.h"
 
 #include <string.h>

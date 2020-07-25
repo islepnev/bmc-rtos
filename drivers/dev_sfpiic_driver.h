@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef SFPIIC_IIC_DRIVER_H
 #define SFPIIC_IIC_DRIVER_H
 
@@ -25,26 +26,17 @@ extern "C" {
 #endif
 
 enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
-//enum { SFP_I2C_ADDRESS = 0x51 };
-//enum { SFP_I2C_ADDRESS = 0x56 };
-
-void sfpiic_I2C_MasterTxCpltCallback(void);
-void sfpiic_I2C_MasterRxCpltCallback(void);
-void sfpiic_HAL_I2C_MemTxCpltCallback(void);
-void sfpiic_HAL_I2C_MemRxCpltCallback(void);
-void sfpiic_HAL_I2C_ErrorCallback(void);
-void sfpiic_HAL_I2C_AbortCpltCallback(void);
 
 void sfpiic_master_reset(void);
 void sfpiic_switch_reset(void);
 bool sfpiic_device_detect(uint16_t addr);
 bool sfpiic_switch_set_channel(uint8_t channel);
-void sfpiic_init(void);
 bool sfpiic_read(uint8_t *pData, uint16_t Size);
 bool sfpiic_write(uint8_t *pData, uint16_t Size);
 bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 bool sfpiic_get_ch_i2c_status(uint8_t ch);
+
 #ifdef  __cplusplus
 }
 #endif

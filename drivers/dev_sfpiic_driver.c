@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -16,19 +16,17 @@
 */
 
 #include "dev_sfpiic_driver.h"
+
 #include <assert.h>
-#include "bus/i2c_driver.h"
-#include "cmsis_os.h"
-#include "i2c.h"
-#include "debug_helpers.h"
-#include "bsp_pin_defs.h"
+
 #include "bsp.h"
+#include "bsp_pin_defs.h"
+#include "bus/i2c_driver.h"
+#include "debug_helpers.h"
+#include "i2c.h"
 
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;
-
-osSemaphoreId sfpiic_semaphore;                         // Semaphore ID
-osSemaphoreDef(sfpiic_semaphore);                       // Semaphore definition
 
 void sfpiic_master_reset(void)
 {
@@ -52,50 +50,6 @@ bool sfpiic_switch_set_channel(uint8_t channel)
     assert(channel < 8);
     uint8_t data = (uint8_t)(1 << channel); // enable channel
     return sfpiic_write(&data, 1);
-}
-
-void sfpiic_I2C_MasterTxCpltCallback(void)
-{
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_I2C_MasterRxCpltCallback(void)
-{
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_HAL_I2C_MemTxCpltCallback(void)
-{
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_HAL_I2C_MemRxCpltCallback(void)
-{
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_HAL_I2C_ErrorCallback(void)
-{
-    debug_printf("%s I2C error, code %d\n", __func__, hi2c_sfpiic.ErrorCode);
-    // reinitialize I2C
-    sfpiic_master_reset();
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_HAL_I2C_AbortCpltCallback(void)
-{
-    debug_printf("%s\n", __func__);
-    osSemaphoreRelease(sfpiic_semaphore);
-}
-
-void sfpiic_init(void)
-{
-    // Create and take the semaphore
-    sfpiic_semaphore = osSemaphoreCreate(osSemaphore(sfpiic_semaphore), 1);
-    osStatus status = (osStatus)osSemaphoreWait(sfpiic_semaphore, osWaitForever);
-    if (status != osOK) {
-        debug_printf("%s(%02X): I2C timeout\n", __func__, 1);
-    }
 }
 
 bool sfpiic_read(uint8_t *pData, uint16_t Size)
