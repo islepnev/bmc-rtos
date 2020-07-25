@@ -17,6 +17,7 @@
 #ifndef DEV_VXSIIC_PP_H
 #define DEV_VXSIIC_PP_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
 
@@ -27,7 +28,7 @@
 extern "C" {
 #endif
 
-HAL_StatusTypeDef dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch);
+bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch);
 
 #ifdef __cplusplus
 }

@@ -18,6 +18,7 @@
 #ifndef DEV_SFPIIC_H
 #define DEV_SFPIIC_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "dev_common_types.h"
 

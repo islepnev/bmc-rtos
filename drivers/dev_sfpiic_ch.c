@@ -176,11 +176,10 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
     return ret;
 }
 
-HAL_StatusTypeDef dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
+bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 {
-    HAL_StatusTypeDef ret = sfpiic_get_ch_i2c_status(ch);
-    if (HAL_OK != ret)
-        return ret;
+    if (! sfpiic_get_ch_i2c_status(ch))
+        return false;
 
 //    if(sfpiic_device_detect(0x50)==HAL_OK){
 //        debug_printf("Has device at 0x50\n");
@@ -194,31 +193,27 @@ HAL_StatusTypeDef dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 
     if(ch<3) {
         // SFP channals
-        ret = dev_sfpiic_ch_read_vendor_name(d, ch);
+        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_vendor_name(d, ch);
         dev_sfpiic_update_ch_state(d, ch, ret);
+        if (HAL_OK != ret)
+            return false;
     } else {
         // QSFP channals
-
         //    ret = dev_sfpiic_test(ch);
-        ret = dev_sfpiic_ch_enable_tx(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_temp(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_voltage(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_rx_pow(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_tx_pow(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_vendor_name(d, ch);
-        if (HAL_OK != ret)
-            return ret;
-        ret = dev_sfpiic_ch_read_vendor_serial(d, ch);
+        if (HAL_OK != dev_sfpiic_ch_enable_tx(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_temp(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_voltage(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_rx_pow(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_tx_pow(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_vendor_name(d, ch))
+            return false;
+        if (HAL_OK != dev_sfpiic_ch_read_vendor_serial(d, ch))
+            return false;
     }
-    return ret;
+    return true;
 }

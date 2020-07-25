@@ -21,16 +21,15 @@
 #include "dev_sfpiic_types.h"
 #include "logbuffer.h"
 
-static HAL_StatusTypeDef dev_sfpiic_select_ch(uint8_t ch)
+static bool dev_sfpiic_select_ch(uint8_t ch)
 {
     if (ch >= SFPIIC_CH_CNT)
-        return HAL_ERROR;
+        return false;
 
     sfpiic_master_reset();
     sfpiic_switch_reset();
 
-    HAL_StatusTypeDef ret = sfpiic_switch_set_channel(ch);
-    return ret;
+    return sfpiic_switch_set_channel(ch);
 }
 
 void dev_sfpiic_init(struct Dev_sfpiic *d)
@@ -56,16 +55,13 @@ static int sfp_old_present[SFPIIC_CH_CNT] = {0};
 
 DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-
     for(uint8_t ch=0; ch<SFPIIC_CH_CNT; ++ch) {
-        ret = dev_sfpiic_select_ch(ch);
-        if (HAL_OK != ret) {
+        if (! dev_sfpiic_select_ch(ch)) {
             d->present = DEVICE_FAIL;
             return d->present;
         }
         sfpiic_ch_status_t *status = &d->status.sfp[ch];
-        if (HAL_OK == dev_sfpiic_ch_update(d, ch)) {
+        if (dev_sfpiic_ch_update(d, ch)) {
             status->present = 1;
             if (!sfp_old_present[ch])
                 log_printf(LOG_NOTICE, "SFP ch #%d: inserted", ch);

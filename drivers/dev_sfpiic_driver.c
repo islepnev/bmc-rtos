@@ -52,14 +52,12 @@ HAL_StatusTypeDef sfpiic_device_detect(uint16_t addr)
     ret = HAL_I2C_IsDeviceReady(&hi2c_sfpiic, addr << 1, Trials, I2C_TIMEOUT_MS);
     return ret;
 }
-HAL_StatusTypeDef sfpiic_switch_set_channel(uint8_t channel)
+
+bool sfpiic_switch_set_channel(uint8_t channel)
 {
     assert_param(channel < 8);
-    HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data;
-    data = (uint8_t)(1 << channel); // enable channel
-    ret = sfpiic_write(&data, 1);
-    return ret;
+    uint8_t data = (uint8_t)(1 << channel); // enable channel
+    return HAL_OK == sfpiic_write(&data, 1);
 }
 
 void sfpiic_I2C_MasterTxCpltCallback(void)
@@ -191,12 +189,12 @@ HAL_StatusTypeDef sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t
 }
 
 
-HAL_StatusTypeDef sfpiic_get_ch_i2c_status(uint8_t ch)
+bool sfpiic_get_ch_i2c_status(uint8_t ch)
 {
     HAL_I2C_StateTypeDef state = HAL_I2C_GetState(&hi2c_sfpiic);
     if (state != HAL_I2C_STATE_READY) {
         debug_printf("%s (port %2d) I2C not ready: state %d\n", __func__, ch, state);
-        return HAL_ERROR;
+        return false;
     }
-    return HAL_OK;
+    return true;
 }
