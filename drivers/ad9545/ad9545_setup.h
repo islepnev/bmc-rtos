@@ -17,7 +17,7 @@
 #ifndef AD9545_SETUP_H
 #define AD9545_SETUP_H
 
-#include "ad9545/ad9545_setup_regs.h"
+#include "ad9545_setup_regs.h"
 
 void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d);
 void init_PllRefSetup(PllRefSetup_TypeDef *d);

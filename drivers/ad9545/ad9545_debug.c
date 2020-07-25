@@ -15,7 +15,6 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "stm32f7xx_hal.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "bsp.h"

@@ -20,8 +20,8 @@
 
 #include <stdbool.h>
 
-#include "ad9545/ad9545_setup_regs.h"
-#include "ad9545/ad9545_status_regs.h"
+#include "ad9545_setup_regs.h"
+#include "ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {

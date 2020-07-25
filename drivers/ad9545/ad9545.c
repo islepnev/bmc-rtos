@@ -17,7 +17,6 @@
 
 #include "ad9545.h"
 
-//#include "stm32f7xx_hal.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "bsp.h"
