@@ -12,13 +12,15 @@ endif
 TOPTARGETS := all clean
 
 all: cmake
-	$(MAKE) -C build $(MAKECMDGOALS)
+	cmake --build build
+
+clean:
+	cmake --build build --target clean
 
 .PHONY: cmake
 
 cmake:
-	$(MKDIR) build
-	(cd build && cmake $(CMAKE_ARGS) ..)
+	cmake $(CMAKE_ARGS) -B build
 
 distclean:
 	@  ($(RM) build/.* build/*)
