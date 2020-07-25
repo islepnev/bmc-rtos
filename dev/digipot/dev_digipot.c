@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 
-#include "ad5141_i2c_hal.h"
+#include "ad5141/ad5141.h"
 
 void dev_ad5141_reset(Dev_ad5141 *d)
 {

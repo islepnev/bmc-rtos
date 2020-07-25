@@ -39,6 +39,7 @@ file(GLOB Dev_SRCS
 )
 
 file(GLOB Drivers_SRCS
+    ${MY_LIB_DIR}/drivers/ad5141/*.*
     ${MY_LIB_DIR}/drivers/ad9516/*.c
     ${MY_LIB_DIR}/drivers/ad9516/*.h
     ${MY_LIB_DIR}/drivers/ad9545/*.c
@@ -120,6 +121,7 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/drivers
     ${MY_LIB_DIR}/system/init
+#    ${MY_LIB_DIR}/eth
     ${MY_SRC_DIR}
     ${MY_SRC_DIR}/rtos
     ${MY_SRC_DIR}/tasks

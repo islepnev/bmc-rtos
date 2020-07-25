@@ -38,6 +38,7 @@ file(GLOB BSP_SRCS
 file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9516/*
     ${MY_LIB_DIR}/dev/ad9545/*
+#    ${MY_LIB_DIR}/dev/digipot/*
     ${MY_LIB_DIR}/dev/fpga/*
     ${MY_LIB_DIR}/dev/powermon/*
     ${MY_LIB_DIR}/dev/ttvxs_clkmux/*
@@ -45,6 +46,7 @@ file(GLOB Dev_SRCS
 )
 
 file(GLOB Drivers_SRCS
+    ${MY_LIB_DIR}/drivers/ad5141/*.*
     ${MY_LIB_DIR}/drivers/ad9516/*.c
     ${MY_LIB_DIR}/drivers/ad9516/*.h
     ${MY_LIB_DIR}/drivers/ad9545/*.c

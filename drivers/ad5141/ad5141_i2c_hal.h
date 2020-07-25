@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef AD5141_I2C_HAL_H
 #define AD5141_I2C_HAL_H
 
@@ -21,13 +22,7 @@
 #include <stdint.h>
 
 void ad5141_i2c_driver_reset(void);
-bool ad5141_nop(uint8_t deviceAddress);
-bool ad5141_reset(uint8_t deviceAddress);
-bool ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);
-bool ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress);
-bool ad5141_write_rdac(uint8_t deviceAddress, uint8_t data);
-bool ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data);
-bool ad5141_inc_rdac(uint8_t deviceAddress);
-bool ad5141_dec_rdac(uint8_t deviceAddress);
+bool ad5141_write(uint8_t deviceAddress, uint8_t ctrl_addr, uint8_t data);
+bool ad5141_read(uint8_t deviceAddress, uint16_t command, uint8_t *data);
 
 #endif // AD5141_I2C_HAL_H
