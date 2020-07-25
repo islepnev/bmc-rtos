@@ -69,14 +69,14 @@ static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
     return true;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_test(int ch)
+static bool dev_sfpiic_ch_test(int ch)
 {
     uint16_t reg=0;
     uint8_t id=(uint8_t)-1;
     HAL_StatusTypeDef ret = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &id, 1);
     if (HAL_OK == ret)
         debug_printf("Test val at SFP #%d: 0x%02X\n", ch, id);
-    return ret;
+    return HAL_OK == ret;
 }
 
 static HAL_StatusTypeDef dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t reg, uint16_t *val)
@@ -91,61 +91,59 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_16(Dev_sfpiic *d, int ch, uint16_t r
     return ret;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
+static bool dev_sfpiic_ch_read_temp(Dev_sfpiic *d, int ch)
 {
     int16_t *temp = &d->status.sfp[ch].temp;
     HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_TEMP_REG2, temp);
     if (HAL_OK == ret) {
 //        debug_printf("Temp at SFP #%d: %4.1\n", ch, 1./256*(*temp));
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
+static bool dev_sfpiic_ch_read_voltage(Dev_sfpiic *d, int ch)
 {
     uint16_t *volt = &d->status.sfp[ch].volt;
     HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, ch, SFF_8436_MON_VOLT_REG2, volt);
     if (HAL_OK == ret) {
 //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
+static bool dev_sfpiic_ch_read_rx_pow(Dev_sfpiic *d, int sfp)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     const uint16_t reg_base = SFF_8436_CH_1_RX_POW_REG2;
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].rx_pow[ch];
-        ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
+        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
         if (HAL_OK == ret) {
             //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
         } else {
-            break;
+            return false;
         }
     }
-    return ret;
+    return true;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
+static bool dev_sfpiic_ch_read_tx_pow(Dev_sfpiic *d, int sfp)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     const uint16_t reg_base = SFF_8436_CH_1_TX_POW_REG2;
 
     for(int ch=0; ch<4; ++ch) {
         uint16_t *pow = &d->status.sfp[sfp].tx_pow[ch];
-        ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
+        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_16(d, sfp, reg_base+2*ch, pow);
         if (HAL_OK == ret) {
             //        debug_printf("Supply Volt. at SFP #%d: %4.2f %s\n", ch, 1e-4*(*volt));
         } else {
-            break;
+            return false;
         }
     }
-    return ret;
+    return true;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
+static bool dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
 {
     uint16_t reg;
     reg = SFF_8436_VENDOR_SN_REG16; // Vendor SN (16 bytes) Serial number provided by vendor (ASCII)
@@ -157,10 +155,10 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_serial(Dev_sfpiic *d, int ch)
         memcpy(d->status.sfp[ch].vendor_serial, buf, sizeof (buf));
 //        debug_printf("Vendor serial at SFP #%d: %s\n", ch, buf);
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
-static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
+static bool dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
 {
     // Vendor name (16 bytes) QSFP/SFP vendor name (ASCII)
     const size_t size = 16;
@@ -174,7 +172,7 @@ static HAL_StatusTypeDef dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
         memcpy(d->status.sfp[ch].vendor_name, buf, sizeof (buf));
 //        debug_printf("Vendor name at SFP #%d: %s\n", ch, buf);
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
 bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
@@ -194,26 +192,26 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 
     if(ch<3) {
         // SFP channals
-        HAL_StatusTypeDef ret = dev_sfpiic_ch_read_vendor_name(d, ch);
+        bool ret = dev_sfpiic_ch_read_vendor_name(d, ch);
         dev_sfpiic_update_ch_state(d, ch, ret);
-        if (HAL_OK != ret)
+        if (! ret)
             return false;
     } else {
         // QSFP channals
         //    ret = dev_sfpiic_test(ch);
         if (! dev_sfpiic_ch_enable_tx(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_temp(d, ch))
+        if (! dev_sfpiic_ch_read_temp(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_voltage(d, ch))
+        if (! dev_sfpiic_ch_read_voltage(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_rx_pow(d, ch))
+        if (! dev_sfpiic_ch_read_rx_pow(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_tx_pow(d, ch))
+        if (! dev_sfpiic_ch_read_tx_pow(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_vendor_name(d, ch))
+        if (! dev_sfpiic_ch_read_vendor_name(d, ch))
             return false;
-        if (HAL_OK != dev_sfpiic_ch_read_vendor_serial(d, ch))
+        if (! dev_sfpiic_ch_read_vendor_serial(d, ch))
             return false;
     }
     return true;
