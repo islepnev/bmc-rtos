@@ -26,8 +26,9 @@ SET(CMAKE_TOOLCHAIN_FILE cmake/gcc_stm32.cmake)
 SET(STM32_MIN_HEAP_SIZE 0x20000)
 SET(STM32_MIN_STACK_SIZE 0x200)
 
-PROJECT(bmc_rtos VERSION 1.17 LANGUAGES C)
+PROJECT(bmc_rtos VERSION 1.17 LANGUAGES C CXX)
 ENABLE_LANGUAGE(ASM)
+set(CMAKE_CXX_STANDARD 11)
 
 # Stack Smashing Protection
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fstack-protector-all -fstack-usage -Wstack-usage=250")
@@ -51,10 +52,10 @@ STM32_SET_TARGET_PROPERTIES(CMSIS)
 FIND_PACKAGE(STM32HAL COMPONENTS adc dma eth flash fmc gpio i2c qspi rcc rtc sd sdram sdmmc smbus spi tim uart REQUIRED)
 
 SET(HAL_LL_COMPONENTS ${HAL_LL_COMPONENTS} gpio i2c usart)
-file(GLOB_RECURSE HAL_LL_EXTRA_INCLUDES
+file(GLOB HAL_LL_EXTRA_INCLUDES
    ${STM32Cube_DIR}/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.h
 )
-file(GLOB_RECURSE HAL_LL_EXTRA_SOURCES
+file(GLOB HAL_LL_EXTRA_SOURCES
    ${STM32Cube_DIR}/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_*.c
 )
 
@@ -70,7 +71,7 @@ STM32_SET_TARGET_PROPERTIES(STM32HAL)
 
 
 ### FreeRTOS
-file(GLOB_RECURSE FreeRTOS_SRCS
+file(GLOB FreeRTOS_SRCS
     ${FREERTOS_DIR}/include/*.h
     ${FREERTOS_DIR}/tasks.c
     ${FREERTOS_DIR}/timers.c
@@ -105,7 +106,7 @@ SET(LWIP_SOURCES
    ${lwipnetif_SRCS}
    ${lwipsntp_SRCS}
    ${lwipsnmp_SRCS}
-   ${MY_LIB_DIR}/system/OS/sys_arch.c
+   ${MY_SRC_DIR}/system/OS/sys_arch.c
 )
 
 add_library(lwip STATIC ${LWIP_SOURCES})
@@ -118,8 +119,8 @@ TARGET_LINK_LIBRARIES(${ELF} lwip)
 # required for lwip
 include_directories(
     ${MY_SRC_DIR}/config
-    ${MY_TOP_DIR}/system
-    ${MY_TOP_DIR}/common/log
+    ${MY_SRC_DIR}/system
+    ${MY_SRC_DIR}/common/log
 )
 
 
