@@ -33,14 +33,19 @@ void i2c_driver_init(void)
         Error_Handler();
 }
 
-void i2c_driver_reset(struct __I2C_HandleTypeDef *handle)
+void i2c_driver_reset(struct __I2C_HandleTypeDef *hi2c)
 {
-    __HAL_I2C_DISABLE(handle);
-    handle->ErrorCode = HAL_I2C_ERROR_NONE;
-    handle->State = HAL_I2C_STATE_READY;
-    handle->PreviousState = HAL_I2C_MODE_NONE;
-    handle->Mode = HAL_I2C_MODE_NONE;
-    __HAL_I2C_ENABLE(handle);
+    __HAL_I2C_DISABLE(hi2c);
+    hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
+    hi2c->State = HAL_I2C_STATE_READY;
+    hi2c->PreviousState = HAL_I2C_MODE_NONE;
+    hi2c->Mode = HAL_I2C_MODE_NONE;
+    __HAL_I2C_ENABLE(hi2c);
+}
+
+bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c)
+{
+    return  HAL_I2C_STATE_READY == HAL_I2C_GetState(&hi2c);
 }
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
