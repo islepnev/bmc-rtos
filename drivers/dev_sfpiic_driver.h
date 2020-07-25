@@ -18,7 +18,7 @@
 #define SFPIIC_IIC_DRIVER_H
 
 #include <stdbool.h>
-#include "stm32f7xx_hal_def.h"
+#include <stdint.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -37,7 +37,7 @@ void sfpiic_HAL_I2C_AbortCpltCallback(void);
 
 void sfpiic_master_reset(void);
 void sfpiic_switch_reset(void);
-HAL_StatusTypeDef sfpiic_device_detect(uint16_t addr);
+bool sfpiic_device_detect(uint16_t addr);
 bool sfpiic_switch_set_channel(uint8_t channel);
 void sfpiic_init(void);
 bool sfpiic_read(uint8_t *pData, uint16_t Size);

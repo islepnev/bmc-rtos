@@ -45,7 +45,7 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
     DeviceStatus status = DEVICE_NORMAL;
     sfpiic_master_reset();
     sfpiic_switch_reset();
-    if (HAL_OK != sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
+    if (! sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
         status = DEVICE_FAIL;
     d->present = status;
     return d->present;
