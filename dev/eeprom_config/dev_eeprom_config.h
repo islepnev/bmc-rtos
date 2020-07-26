@@ -23,6 +23,10 @@
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Dev_eeprom_config {
     BusInterface bus;
     DeviceStatus present;
@@ -31,5 +35,9 @@ typedef struct Dev_eeprom_config {
 Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus);
 DeviceStatus dev_eeprom_config_detect(struct Dev_eeprom_config *d);
 DeviceStatus dev_eeprom_config_read(struct Dev_eeprom_config *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEV_EEPROM_CONFIG_H
