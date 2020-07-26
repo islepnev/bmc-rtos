@@ -18,8 +18,6 @@
 #include "ad9545.h"
 
 #include "gpio.h"
-#include "i2c.h"
-#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "ad9545_setup.h"
 #include "ad9545_i2c_hal.h"
@@ -42,19 +40,19 @@ void init_ad9545_setup(ad9545_setup_t *setup)
     init_PllSysclkSetup(&setup->sysclk);
 }
 
-static bool pllIoUpdate(void)
+static bool pllIoUpdate(BusInterface *bus)
 {
     uint8_t data = 1;
-    return ad9545_write1(0x000F, data);
+    return ad9545_write1(bus, 0x000F, data);
 }
 
-bool ad9545_detect(void)
+bool ad9545_detect(BusInterface *bus)
 {
     bool deviceError = 0;
-    bool devicePresent = ad9545_i2c_detect();
+    bool devicePresent = ad9545_i2c_detect(bus);
     if (devicePresent) {
         uint32_t data = 0;
-        devicePresent = ad9545_read3(AD9545_REG_VENDOR_ID, &data) &&
+        devicePresent = ad9545_read3(bus, AD9545_REG_VENDOR_ID, &data) &&
                         (data == AD9545_VENDOR_ID);
     }
     if (devicePresent) {
@@ -63,8 +61,8 @@ bool ad9545_detect(void)
             // scratchpad test
             test = ~test;
             uint32_t data = 0;
-            if (! ad9545_write4(0x0020, test) ||
-                ! ad9545_read4(0x0020, &data) ||
+            if (! ad9545_write4(bus, 0x0020, test) ||
+                ! ad9545_read4(bus, 0x0020, &data) ||
                 (data != test)) {
                 deviceError = 1;
                 break;
@@ -81,48 +79,48 @@ bool ad9545_detect(void)
     return devicePresent && !deviceError;
 }
 
-bool ad9545_software_reset(void)
+bool ad9545_software_reset(BusInterface *bus)
 {
-    return ad9545_write1(0x0000, 0x81) &&
-           ad9545_write1(0x0000, 0);
+    return ad9545_write1(bus, 0x0000, 0x81) &&
+           ad9545_write1(bus, 0x0000, 0);
 }
 
-bool ad9545_setup_sysclk(const PllSysclkSetup_TypeDef *sysclkSetup)
+bool ad9545_setup_sysclk(BusInterface *bus, const PllSysclkSetup_TypeDef *sysclkSetup)
 {
-    return ad9545_write1(AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup->Sysclk_FB_DIV_Ratio) &&
-           ad9545_write1(AD9545_REG1_Sysclk_Input, sysclkSetup->Sysclk_Input) &&
-           ad9545_write5(AD9545_REG5_Sysclk_Ref_Frequency, sysclkSetup->sysclk_Ref_Frequency_milliHz) &&
-           ad9545_write3(AD9545_REG3_Sysclk_Stability_Timer, sysclkSetup->Sysclk_Stability_Timer) &&
-           ad9545_write1(AD9545_REG1_0280, sysclkSetup->TDC_Compensation_Source) &&
-           ad9545_write1(AD9545_REG1_0282, sysclkSetup->DPLL_Compensation_Source) &&
-           ad9545_write2(AD9545_REG2_0285, sysclkSetup->AuxDPLL_Bandwidth) &&
-           ad9545_write5(AD9545_REG5_0289, sysclkSetup->CompensationValue) &&
-           ad9545_write2(0x2903, sysclkSetup->Temperature_Low_Threshold) &&
-           ad9545_write2(0x2905, sysclkSetup->Temperature_High_Threshold) &&
-           pllIoUpdate();
+    return ad9545_write1(bus, AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup->Sysclk_FB_DIV_Ratio) &&
+           ad9545_write1(bus, AD9545_REG1_Sysclk_Input, sysclkSetup->Sysclk_Input) &&
+           ad9545_write5(bus, AD9545_REG5_Sysclk_Ref_Frequency, sysclkSetup->sysclk_Ref_Frequency_milliHz) &&
+           ad9545_write3(bus, AD9545_REG3_Sysclk_Stability_Timer, sysclkSetup->Sysclk_Stability_Timer) &&
+           ad9545_write1(bus, AD9545_REG1_0280, sysclkSetup->TDC_Compensation_Source) &&
+           ad9545_write1(bus, AD9545_REG1_0282, sysclkSetup->DPLL_Compensation_Source) &&
+           ad9545_write2(bus, AD9545_REG2_0285, sysclkSetup->AuxDPLL_Bandwidth) &&
+           ad9545_write5(bus, AD9545_REG5_0289, sysclkSetup->CompensationValue) &&
+           ad9545_write2(bus, 0x2903, sysclkSetup->Temperature_Low_Threshold) &&
+           ad9545_write2(bus, 0x2905, sysclkSetup->Temperature_High_Threshold) &&
+           pllIoUpdate(bus);
 }
 
-static bool pllSetupOutputDrivers(const Pll_OutputDrivers_Setup_TypeDef *setup)
+static bool pllSetupOutputDrivers(BusInterface *bus, const Pll_OutputDrivers_Setup_TypeDef *setup)
 {
-    return ad9545_write1(AD9545_REG1_10D7, setup->Driver_Config.raw) &&
-           ad9545_write1(AD9545_REG1_10D8, setup->Driver_Config.raw) &&
-           ad9545_write1(AD9545_REG1_10D9, setup->Driver_Config.raw) &&
-           ad9545_write1(AD9545_REG1_14D7, setup->Driver_Config.raw) &&
-           ad9545_write1(AD9545_REG1_14D8, setup->Driver_Config.raw);
+    return ad9545_write1(bus, AD9545_REG1_10D7, setup->Driver_Config.raw) &&
+           ad9545_write1(bus, AD9545_REG1_10D8, setup->Driver_Config.raw) &&
+           ad9545_write1(bus, AD9545_REG1_10D9, setup->Driver_Config.raw) &&
+           ad9545_write1(bus, AD9545_REG1_14D7, setup->Driver_Config.raw) &&
+           ad9545_write1(bus, AD9545_REG1_14D8, setup->Driver_Config.raw);
 }
 
-static bool pllSetupDistribution0WithUpdate(const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistribution0WithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
 {
     // channel 0
-    if (! (ad9545_write1(AD9545_REG1_10DA, setup->Secondary_Clock_Path_0) &&
-          ad9545_write1(AD9545_REG1_10DC, setup->Automute_Control_0) &&
-          ad9545_write1(AD9545_REG1_1100, setup->Distribution_Divider_0_A) &&
-          ad9545_write1(AD9545_REG1_1112, setup->Distribution_Divider_0_B) &&
-          ad9545_write1(AD9545_REG1_1124, setup->Distribution_Divider_0_C) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_10DA, setup->Secondary_Clock_Path_0) &&
+          ad9545_write1(bus, AD9545_REG1_10DC, setup->Automute_Control_0) &&
+          ad9545_write1(bus, AD9545_REG1_1100, setup->Distribution_Divider_0_A) &&
+          ad9545_write1(bus, AD9545_REG1_1112, setup->Distribution_Divider_0_B) &&
+          ad9545_write1(bus, AD9545_REG1_1124, setup->Distribution_Divider_0_C) &&
+          pllIoUpdate(bus)))
         return false;
     //    uint8_t Sync_Control_0 = 0x5; // 0x05;
-    //    if (! ad9545_write1(AD9545_REG1_10DB, Sync_Control_0)))
+    //    if (! ad9545_write1(bus, AD9545_REG1_10DB, Sync_Control_0)))
     //        return false;
 
     // When using reference synchronization in conjunction with
@@ -132,24 +130,24 @@ static bool pllSetupDistribution0WithUpdate(const Pll_OutputDividers_Setup_TypeD
     Sync_Control_REG_Type Sync_Control_0;
     Sync_Control_0.raw = 0;
     Sync_Control_0.b.enable_ref_sync = setup->enable_ref_sync_0;
-    if (! (ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_10DB, Sync_Control_0.raw) &&
+          pllIoUpdate(bus)))
         return false;
     Sync_Control_0.b.autosync_mode = setup->autosync_mode_0;
-    if (! (ad9545_write1(AD9545_REG1_10DB, Sync_Control_0.raw) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_10DB, Sync_Control_0.raw) &&
+          pllIoUpdate(bus)))
         return false;
     return true;
 }
 
-static bool pllSetupDistribution1WithUpdate(const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistribution1WithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
 {
     // channel 1
-    if (! (ad9545_write1(AD9545_REG1_14DA, setup->Secondary_Clock_Path_1) &&
-          ad9545_write1(AD9545_REG1_14DC, setup->Automute_Control_1) &&
-          ad9545_write1(AD9545_REG1_1500, setup->Distribution_Divider_1_A) &&
-          ad9545_write1(AD9545_REG1_1512, setup->Distribution_Divider_1_B) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_14DA, setup->Secondary_Clock_Path_1) &&
+          ad9545_write1(bus, AD9545_REG1_14DC, setup->Automute_Control_1) &&
+          ad9545_write1(bus, AD9545_REG1_1500, setup->Distribution_Divider_1_A) &&
+          ad9545_write1(bus, AD9545_REG1_1512, setup->Distribution_Divider_1_B) &&
+          pllIoUpdate(bus)))
         return false;
 
     // When using reference synchronization in conjunction with
@@ -159,190 +157,185 @@ static bool pllSetupDistribution1WithUpdate(const Pll_OutputDividers_Setup_TypeD
     Sync_Control_REG_Type Sync_Control_1;
     Sync_Control_1.raw = 0;
     Sync_Control_1.b.enable_ref_sync = setup->enable_ref_sync_1;
-    if (! (ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_14DB, Sync_Control_1.raw) &&
+          pllIoUpdate(bus)))
         return false;
     Sync_Control_1.b.autosync_mode = setup->autosync_mode_1;
-    if (! (ad9545_write1(AD9545_REG1_14DB, Sync_Control_1.raw) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_14DB, Sync_Control_1.raw) &&
+          pllIoUpdate(bus)))
         return false;
 
     return true;
 }
 
-static bool pllSetupDistributionWithUpdate(const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistributionWithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
 {
-    return pllSetupDistribution0WithUpdate(setup) &&
-           pllSetupDistribution1WithUpdate(setup);
+    return pllSetupDistribution0WithUpdate(bus, setup) &&
+           pllSetupDistribution1WithUpdate(bus, setup);
 }
 
-static bool pllSetupRef(const PllRefSetup_TypeDef *refSetup)
+static bool pllSetupRef(BusInterface *bus, const PllRefSetup_TypeDef *refSetup)
 {
     uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
 
-    return ad9545_write1(AD9545_REG1_0300, refSetup->REFA_Receiver_Settings) &&
-           ad9545_write1(AD9545_REG1_0304, refSetup->REFB_Receiver_Settings) &&
+    return ad9545_write1(bus, AD9545_REG1_0300, refSetup->REFA_Receiver_Settings) &&
+           ad9545_write1(bus, AD9545_REG1_0304, refSetup->REFB_Receiver_Settings) &&
 
            // REFERENCE INPUT A (REFA) REGISTERS—REGISTER 0x0400 TO REGISTER 0x0414
-           ad9545_write4(AD9545_REG4_0400, refSetup->REFA_R_Divider) &&
-           ad9545_write8(AD9545_REG8_0404, refSetup->REFA_Input_Period) &&
-           ad9545_write3(AD9545_REG3_040C, refSetup->REFA_Offset_Limit) &&
-           ad9545_write3(AD9545_REG3_0410, refSetup->REFA_Validation_Timer) &&
-           ad9545_write2(AD9545_REG2_0413, refSetup->REFA_Jitter_Tolerance) &&
+           ad9545_write4(bus, AD9545_REG4_0400, refSetup->REFA_R_Divider) &&
+           ad9545_write8(bus, AD9545_REG8_0404, refSetup->REFA_Input_Period) &&
+           ad9545_write3(bus, AD9545_REG3_040C, refSetup->REFA_Offset_Limit) &&
+           ad9545_write3(bus, AD9545_REG3_0410, refSetup->REFA_Validation_Timer) &&
+           ad9545_write2(bus, AD9545_REG2_0413, refSetup->REFA_Jitter_Tolerance) &&
 
            // REFERENCE INPUT B (REFB) REGISTERS—REGISTER 0x0440 TO REGISTER 0x0454
-           ad9545_write4(AD9545_REG4_0440, refSetup->REFB_R_Divider) &&
-           ad9545_write8(AD9545_REG8_0444, refSetup->REFB_Input_Period) &&
-           ad9545_write3(AD9545_REG3_044C, refSetup->REFB_Offset_Limit) &&
-           ad9545_write2(AD9545_REG2_0450, refSetup->REFB_Validation_Timer) &&
-           ad9545_write2(AD9545_REG2_0453, refSetup->REFB_Jitter_Tolerance) &&
+           ad9545_write4(bus, AD9545_REG4_0440, refSetup->REFB_R_Divider) &&
+           ad9545_write8(bus, AD9545_REG8_0444, refSetup->REFB_Input_Period) &&
+           ad9545_write3(bus, AD9545_REG3_044C, refSetup->REFB_Offset_Limit) &&
+           ad9545_write2(bus, AD9545_REG2_0450, refSetup->REFB_Validation_Timer) &&
+           ad9545_write2(bus, AD9545_REG2_0453, refSetup->REFB_Jitter_Tolerance) &&
 
-           ad9545_write1(AD9545_REG1_2000, OpControlGlobal);
+           ad9545_write1(bus, AD9545_REG1_2000, OpControlGlobal);
 }
 
-static bool pllWriteProfile(PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
+static bool pllWriteProfile(BusInterface *bus, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
 {
     uint16_t reg_offset = (channel == DPLL0) ? AD9545_REG1_1200 : AD9545_REG1_1600;
 
     reg_offset += profileIndex * 0x20;
 
     // DPLL TRANSLATION PROFILE REGISTERS
-    return ad9545_write1(reg_offset + 0x0, profile.Priority_and_Enable) &&
-           ad9545_write1(reg_offset + 0x1, profile.Profile_Ref_Source) &&
-           ad9545_write1(reg_offset + 0x2, profile.ZD_Feedback_Path) &&
-           ad9545_write1(reg_offset + 0x3, profile.Feedback_Mode.raw) &&
-           ad9545_write4(reg_offset + 0x4, profile.Loop_BW) &&
-           ad9545_write4(reg_offset + 0x8, profile.Hitless_FB_Divider) &&
-           ad9545_write4(reg_offset + 0xC, profile.Buildout_FB_Divider) &&
-           ad9545_write3(reg_offset + 0x10, profile.Buildout_FB_Fraction) &&
-           ad9545_write3(reg_offset + 0x13, profile.Buildout_FB_Modulus) &&
-           ad9545_write3(reg_offset + 0x17, profile.FastLock);
+    return ad9545_write1(bus, reg_offset + 0x0, profile.Priority_and_Enable) &&
+           ad9545_write1(bus, reg_offset + 0x1, profile.Profile_Ref_Source) &&
+           ad9545_write1(bus, reg_offset + 0x2, profile.ZD_Feedback_Path) &&
+           ad9545_write1(bus, reg_offset + 0x3, profile.Feedback_Mode.raw) &&
+           ad9545_write4(bus, reg_offset + 0x4, profile.Loop_BW) &&
+           ad9545_write4(bus, reg_offset + 0x8, profile.Hitless_FB_Divider) &&
+           ad9545_write4(bus, reg_offset + 0xC, profile.Buildout_FB_Divider) &&
+           ad9545_write3(bus, reg_offset + 0x10, profile.Buildout_FB_Fraction) &&
+           ad9545_write3(bus, reg_offset + 0x13, profile.Buildout_FB_Modulus) &&
+           ad9545_write3(bus, reg_offset + 0x17, profile.FastLock);
 }
 
-static bool pllSetupDPLLChannel(const Pll_DPLL_Setup_TypeDef *dpll, PllChannel_TypeDef channel)
+static bool pllSetupDPLLChannel(BusInterface *bus, const Pll_DPLL_Setup_TypeDef *dpll, PllChannel_TypeDef channel)
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x400;
 
     return
         // DPLL CHANNEL REGISTERS
-        ad9545_write6(reg_offset + 0x1000, dpll->Freerun_Tuning_Word) &&
-        ad9545_write3(reg_offset + 0x1006, dpll->FTW_Offset_Clamp) &&
+        ad9545_write6(bus, reg_offset + 0x1000, dpll->Freerun_Tuning_Word) &&
+        ad9545_write3(bus, reg_offset + 0x1006, dpll->FTW_Offset_Clamp) &&
 
         // APLL CHANNEL REGISTERS
-        ad9545_write1(reg_offset + 0x1081, dpll->APLL_M_Divider) &&
+        ad9545_write1(bus, reg_offset + 0x1081, dpll->APLL_M_Divider) &&
 
-        pllWriteProfile(channel, 0, dpll->profile[0]) &&
-        pllWriteProfile(channel, 1, dpll->profile[1]);
+        pllWriteProfile(bus, channel, 0, dpll->profile[0]) &&
+        pllWriteProfile(bus, channel, 1, dpll->profile[1]);
 }
 
-static bool pllSetupDPLL(const ad9545_setup_t *d)
+static bool pllSetupDPLL(BusInterface *bus, const ad9545_setup_t *d)
 {
-    return pllSetupDPLLChannel(&d->dpll0, DPLL0) &&
-           pllSetupDPLLChannel(&d->dpll1, DPLL1);
+    return pllSetupDPLLChannel(bus, &d->dpll0, DPLL0) &&
+           pllSetupDPLLChannel(bus, &d->dpll1, DPLL1);
 }
 
-static bool pllSetupDPLLMode(const Pll_DPLLMode_Setup_TypeDef *dpll_mode)
+static bool pllSetupDPLLMode(BusInterface *bus, const Pll_DPLLMode_Setup_TypeDef *dpll_mode)
 {
-    return ad9545_write1(AD9545_REG1_2105, dpll_mode->dpll0_mode.raw) &&
-           ad9545_write1(AD9545_REG1_2205, dpll_mode->dpll1_mode.raw);
+    return ad9545_write1(bus, AD9545_REG1_2105, dpll_mode->dpll0_mode.raw) &&
+           ad9545_write1(bus, AD9545_REG1_2205, dpll_mode->dpll1_mode.raw);
 }
 
-bool ad9545_calibrate_sysclk(void)
+bool ad9545_calibrate_sysclk(BusInterface *bus)
 {
-    return ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x04) &&
-           pllIoUpdate() &&
-           ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x04) &&
-           pllIoUpdate();
+    return ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x04) &&
+           pllIoUpdate(bus) &&
+           ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x04) &&
+           pllIoUpdate(bus);
 }
 
-static bool pllCalibrateAll(void)
+static bool pllCalibrateAll(BusInterface *bus)
 {
-    return ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x02) &&
-           pllIoUpdate() &&
-           ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x02) &&
-           pllIoUpdate();
+    return ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x02) &&
+           pllIoUpdate(bus) &&
+           ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x02) &&
+           pllIoUpdate(bus);
 }
 
-static bool pllSyncAllDistDividers(void)
+static bool pllSyncAllDistDividers(BusInterface *bus)
 {
-    return ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x08) &&
-           pllIoUpdate() &&
-           ad9545_write1(AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x08) &&
-           pllIoUpdate();
+    return ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT | 0x08) &&
+           pllIoUpdate(bus) &&
+           ad9545_write1(bus, AD9545_REG1_2000, AD9545_OPER_CONTROL_DEFAULT & ~0x08) &&
+           pllIoUpdate(bus);
 }
 
-static bool pllReadRefStatus(AD9545_Status *status)
+static bool pllReadRefStatus(BusInterface *bus, AD9545_Status *status)
 {
     uint8_t refa;
-    if (! ad9545_read1(AD9545_REG1_3005, &refa))
+    if (! ad9545_read1(bus, AD9545_REG1_3005, &refa))
         return false;
     status->ref[0].raw = refa;
 
     uint8_t refb;
-    if (! ad9545_read1(AD9545_REG1_3005, &refb))
+    if (! ad9545_read1(bus, AD9545_REG1_3005, &refb))
         return false;
     status->ref[2].raw = refb;
 
     return true;
 }
 
-static bool pllReadDPLLChannelStatus(DPLL_Status *dpll_status, PllChannel_TypeDef channel)
+static bool pllReadDPLLChannelStatus(BusInterface *bus, DPLL_Status *dpll_status, PllChannel_TypeDef channel)
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x100;
 
-    return ad9545_read1(AD9545_REG1_3009 + 1 * channel, &dpll_status->act_profile.raw) &&
-           ad9545_read1(AD9545_REG1_3100 + reg_offset, &dpll_status->lock_status.raw) &&
-           ad9545_read1(AD9545_REG1_3101 + reg_offset, &dpll_status->operation.raw) &&
-           ad9545_read1(AD9545_REG1_3102 + reg_offset, &dpll_status->state.raw) &&
-           ad9545_read2(AD9545_REG2_3109 + reg_offset, &dpll_status->pld_tub) &&
-           ad9545_read2(AD9545_REG2_310B + reg_offset, &dpll_status->fld_tub) &&
-           ad9545_read6(AD9545_REG6_3103 + reg_offset, &dpll_status->ftw_history) &&
-           ad9545_read1(AD9545_REG1_310D + reg_offset, &dpll_status->phase_slew) &&
-           ad9545_read1(AD9545_REG1_310E + reg_offset, &dpll_status->phase_control_error);
+    return ad9545_read1(bus, AD9545_REG1_3009 + 1 * channel, &dpll_status->act_profile.raw) &&
+           ad9545_read1(bus, AD9545_REG1_3100 + reg_offset, &dpll_status->lock_status.raw) &&
+           ad9545_read1(bus, AD9545_REG1_3101 + reg_offset, &dpll_status->operation.raw) &&
+           ad9545_read1(bus, AD9545_REG1_3102 + reg_offset, &dpll_status->state.raw) &&
+           ad9545_read2(bus, AD9545_REG2_3109 + reg_offset, &dpll_status->pld_tub) &&
+           ad9545_read2(bus, AD9545_REG2_310B + reg_offset, &dpll_status->fld_tub) &&
+           ad9545_read6(bus, AD9545_REG6_3103 + reg_offset, &dpll_status->ftw_history) &&
+           ad9545_read1(bus, AD9545_REG1_310D + reg_offset, &dpll_status->phase_slew) &&
+           ad9545_read1(bus, AD9545_REG1_310E + reg_offset, &dpll_status->phase_control_error);
 }
 
-bool ad9545_read_status(AD9545_Status *status)
+bool ad9545_read_status(BusInterface *bus, AD9545_Status *status)
 {
-    return pllIoUpdate() &&
-           ad9545_read1(AD9545_LIVE_REG1_3000, &status->eeprom.raw) &&
-           ad9545_read1(AD9545_LIVE_REG1_3001, &status->sysclk.raw) &&
-           ad9545_read1(AD9545_REG1_3002, &status->misc.raw) &&
-           ad9545_read2(AD9545_REG2_INT_THERM, (uint16_t *)&status->internal_temp) &&
-           pllReadRefStatus(status) &&
-           pllReadDPLLChannelStatus(&status->dpll[0], DPLL0) &&
-           pllReadDPLLChannelStatus(&status->dpll[1], DPLL1);
+    return pllIoUpdate(bus) &&
+           ad9545_read1(bus, AD9545_LIVE_REG1_3000, &status->eeprom.raw) &&
+           ad9545_read1(bus, AD9545_LIVE_REG1_3001, &status->sysclk.raw) &&
+           ad9545_read1(bus, AD9545_REG1_3002, &status->misc.raw) &&
+           ad9545_read2(bus, AD9545_REG2_INT_THERM, (uint16_t *)&status->internal_temp) &&
+           pllReadRefStatus(bus, status) &&
+           pllReadDPLLChannelStatus(bus, &status->dpll[0], DPLL0) &&
+           pllReadDPLLChannelStatus(bus, &status->dpll[1], DPLL1);
 }
 
-bool ad9545_read_sysclk_status(AD9545_Status *status)
+bool ad9545_read_sysclk_status(BusInterface *bus, AD9545_Status *status)
 {
-    return ad9545_read1(AD9545_LIVE_REG1_3001, &status->sysclk.raw);
+    return ad9545_read1(bus, AD9545_LIVE_REG1_3001, &status->sysclk.raw);
 }
 
-void ad9545_reset_i2c(void)
+bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup)
 {
-    __HAL_I2C_DISABLE(&hi2c_ad9545);
-    __HAL_I2C_ENABLE(&hi2c_ad9545);
+    return pllSetupOutputDrivers(bus, &setup->out_drivers) &&
+           pllSetupDPLL(bus, setup) &&
+           pllSetupDPLLMode(bus, &setup->dpll_mode) &&
+           pllSetupRef(bus, &setup->ref) &&
+           pllSetupDistributionWithUpdate(bus, &setup->out_dividers) &&
+           pllCalibrateAll(bus) &&
+           pllSyncAllDistDividers(bus);
 }
 
-bool ad9545_setup(const ad9545_setup_t *setup)
+void ad9545_reset(BusInterface *bus)
 {
-    return pllSetupOutputDrivers(&setup->out_drivers) &&
-           pllSetupDPLL(setup) &&
-           pllSetupDPLLMode(&setup->dpll_mode) &&
-           pllSetupRef(&setup->ref) &&
-           pllSetupDistributionWithUpdate(&setup->out_dividers) &&
-           pllCalibrateAll() &&
-           pllSyncAllDistDividers();
-}
-
-void ad9545_reset(void)
-{
+    ad9545_reset_bus(bus);
     // toggle reset_b pin
     HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
 }
 
-bool ad9545_gpio_test(void)
+bool ad9545_gpio_test(BusInterface *bus)
 {
     GPIO_PinState pin_resetb = HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
     GPIO_PinState pin_m3 = HAL_GPIO_ReadPin(PLL_M3_GPIO_Port, PLL_M3_Pin);
@@ -365,7 +358,7 @@ bool ad9545_gpio_test(void)
 
 // AD9545
 // M0, M1, M2 do not have internal resistors
-void ad9545_gpio_init(void)
+void ad9545_gpio_init(BusInterface *bus)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

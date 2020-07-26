@@ -18,7 +18,7 @@
 #include "dev_ad9545_fsm.h"
 #include <string.h>
 #include "ad9545/ad9545.h"
-#include "app_shared_data.h"
+#include "app_shared_data.h" // required for enable_power, system_power_present
 #include "cmsis_os.h"
 #include "dev_ad9545.h"
 #include "logbuffer.h"
@@ -36,9 +36,9 @@ static uint32_t stateTicks(void)
 4. Configure the output drivers
 5. Configure the status pins (optional)
 */
-void dev_ad9545_run(void)
+void dev_ad9545_run(Dev_ad9545 *d)
 {
-    Dev_ad9545 *d = get_dev_pll();
+    BusInterface *bus = &d->bus;
     if (!enable_power || !system_power_present) {
         if (d->fsm_state != PLL_STATE_INIT) {
             d->fsm_state = PLL_STATE_INIT;
@@ -51,7 +51,7 @@ void dev_ad9545_run(void)
     const ad9545_state_t old_state = d->fsm_state;
     switch(d->fsm_state) {
     case PLL_STATE_INIT:
-        if (ad9545_gpio_test()) {
+        if (ad9545_gpio_test(bus)) {
             d->fsm_state = PLL_STATE_RESET;
         } else {
             log_put(LOG_ERR, "PLL AD9545 GPIO test fail");
@@ -59,12 +59,11 @@ void dev_ad9545_run(void)
         }
         break;
     case PLL_STATE_RESET:
-        ad9545_reset_i2c();
-        ad9545_reset();
+        ad9545_reset(bus);
         osDelay(50);
-        d->present = ad9545_detect() ? DEVICE_NORMAL : DEVICE_FAIL;
+        d->present = ad9545_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
         if (DEVICE_NORMAL == d->present) {
-            if (!ad9545_software_reset()) {
+            if (!ad9545_software_reset(bus)) {
                 d->fsm_state = PLL_STATE_ERROR;
                 break;
             }
@@ -78,11 +77,11 @@ void dev_ad9545_run(void)
         }
         break;
     case PLL_STATE_SETUP_SYSCLK:
-        if (!ad9545_setup_sysclk(&d->setup.sysclk)) {
+        if (!ad9545_setup_sysclk(bus, &d->setup.sysclk)) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
-        if (!ad9545_calibrate_sysclk()) {
+        if (!ad9545_calibrate_sysclk(bus)) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
@@ -98,7 +97,7 @@ void dev_ad9545_run(void)
         }
         break;
     case PLL_STATE_SETUP:
-        if (!ad9545_setup(&d->setup)) {
+        if (!ad9545_setup(bus, &d->setup)) {
             d->fsm_state = PLL_STATE_ERROR;
             break;
         }
@@ -139,19 +138,21 @@ void dev_ad9545_run(void)
             d->fsm_state != PLL_STATE_RESET &&
             d->fsm_state != PLL_STATE_ERROR &&
             d->fsm_state != PLL_STATE_FATAL) {
-        if (!ad9545_read_sysclk_status(&d->status)) {
+        if (!ad9545_read_sysclk_status(bus, &d->status)) {
             d->fsm_state = PLL_STATE_ERROR;
         }
     } else {
         d->status.sysclk.raw = 0;
     }
     if (d->fsm_state == PLL_STATE_RUN) {
-        if (!ad9545_read_status(&d->status)) {
+        if (!ad9545_read_status(bus, &d->status)) {
             d->fsm_state = PLL_STATE_ERROR;
         }
     } else {
         pll_ad9545_clear_status(d);
     }
+    update_pll_sensor_status(d);
+
     int stateChanged = old_state != d->fsm_state;
     if (stateChanged) {
         stateStartTick = osKernelSysTick();

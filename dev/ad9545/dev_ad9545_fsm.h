@@ -33,7 +33,8 @@ typedef enum {
     PLL_STATE_FATAL
 } ad9545_state_t;
 
-void dev_ad9545_run(void);
+struct Dev_ad9545;
+void dev_ad9545_run(struct Dev_ad9545 *dev);
 
 #ifdef __cplusplus
 }

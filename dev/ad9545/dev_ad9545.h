@@ -18,6 +18,8 @@
 #define DEV_AD9545_TYPES_H
 
 #include <stdint.h>
+
+#include "bus/bus_types.h"
 #include "dev_ad9545_fsm.h"
 #include "dev_common_types.h"
 #include "ad9545/ad9545_setup_regs.h"
@@ -27,18 +29,18 @@
 extern "C" {
 #endif
 
-
 typedef struct Dev_ad9545 {
+    BusInterface bus;
     DeviceStatus present;
+    SensorStatus sensor;
     ad9545_setup_t setup;
     AD9545_Status status;
     ad9545_state_t fsm_state;
     uint32_t recoveryCount;
 } Dev_ad9545;
 
-SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll);
-
-void dev_ad9545_init(void);
+void update_pll_sensor_status(Dev_ad9545 *pll);
+Dev_ad9545 *dev_ad9545_init(BusInterface *bus);
 void pll_ad9545_clear_status(Dev_ad9545 *d);
 
 #ifdef __cplusplus

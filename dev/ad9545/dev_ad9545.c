@@ -21,18 +21,17 @@
 
 #include "ad9545/ad9545.h"
 
-SensorStatus get_pll_sensor_status(const Dev_ad9545 *pll)
+void update_pll_sensor_status(Dev_ad9545 *pll)
 {
     if (DEVICE_NORMAL != pll->present)
-        return SENSOR_UNKNOWN;
+        pll->sensor = SENSOR_UNKNOWN;
     if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
-        return SENSOR_CRITICAL;
+        pll->sensor = SENSOR_CRITICAL;
     if (!pll->status.dpll[0].lock_status.b.all_lock)
-        return SENSOR_WARNING;
+        pll->sensor = SENSOR_WARNING;
     if (!pll->status.dpll[1].lock_status.b.all_lock)
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-
+        pll->sensor = SENSOR_WARNING;
+    pll->sensor = SENSOR_NORMAL;
 }
 
 void pll_ad9545_clear_status(Dev_ad9545 *d)
@@ -42,9 +41,11 @@ void pll_ad9545_clear_status(Dev_ad9545 *d)
     memset(&d->status.dpll, 0, sizeof(d->status.dpll));
 }
 
-void dev_ad9545_init(void)
+Dev_ad9545 *dev_ad9545_init(BusInterface *bus)
 {
     Dev_ad9545 *d = get_dev_pll();
     init_ad9545_setup(&d->setup);
-    ad9545_gpio_init();
+    d->bus = *bus;
+    ad9545_gpio_init(bus);
+    return d;
 }

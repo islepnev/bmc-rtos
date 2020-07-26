@@ -32,6 +32,7 @@ bool i2c_driver_util_init(void);
 SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c);
 SemaphoreHandle_t dev_sem_by_index(int index);
 int hi2c_index(struct __I2C_HandleTypeDef *hi2c);
+struct __I2C_HandleTypeDef *hi2c_handle(BusIndex index);
 int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec);
 void release_it_sem(struct __I2C_HandleTypeDef *hi2c);
 int32_t wait_dev_sem(int index, uint32_t millisec);

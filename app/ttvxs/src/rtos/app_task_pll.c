@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 
+#include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "app_task_eeprom_config_impl.h"
@@ -31,15 +32,21 @@ osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
 static const uint32_t pllTaskLoopDelay = 50;
 
+static BusInterface pll_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x4A
+};
+
 static void pllTask(void const *arg)
 {
     (void) arg;
     task_clkmux_init();
-    dev_ad9545_init();
+    Dev_ad9545 *dev = dev_ad9545_init(&pll_bus_info);
     while(1) {
         task_eeprom_config_run();
         task_clkmux_run();
-        dev_ad9545_run();
+        dev_ad9545_run(dev);
         osDelay(pllTaskLoopDelay);
     }
 }

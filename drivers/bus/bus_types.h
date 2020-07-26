@@ -29,6 +29,12 @@ typedef enum BusType {
 
 typedef int BusIndex;
 
+typedef struct BusInterface {
+    BusType type;
+    int bus_number;
+    BusIndex address;
+} BusInterface;
+
 #ifdef __cplusplus
 }
 #endif

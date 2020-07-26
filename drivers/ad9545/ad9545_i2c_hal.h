@@ -20,24 +20,27 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "bus/bus_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ad9545_i2c_detect(void);
-bool ad9545_read1(uint16_t reg, uint8_t *data);
-bool ad9545_write1(uint16_t reg, uint8_t data);
-bool ad9545_read2(uint16_t reg, uint16_t *data);
-bool ad9545_write2(uint16_t reg, uint16_t data);
-bool ad9545_read3(uint16_t reg, uint32_t *data);
-bool ad9545_write3(uint16_t reg, uint32_t data);
-bool ad9545_read4(uint16_t reg, uint32_t *data);
-bool ad9545_write4(uint16_t reg, uint32_t data);
-bool ad9545_read5(uint16_t reg, uint64_t *data);
-bool ad9545_write5(uint16_t reg, uint64_t data);
-bool ad9545_read6(uint16_t reg, uint64_t *data);
-bool ad9545_write6(uint16_t reg, uint64_t data);
-bool ad9545_write8(uint16_t reg, uint64_t data);
+void ad9545_reset_bus(BusInterface *bus);
+bool ad9545_i2c_detect(BusInterface *bus);
+bool ad9545_read1 (BusInterface *bus, uint16_t reg, uint8_t *data);
+bool ad9545_write1(BusInterface *bus, uint16_t reg, uint8_t data);
+bool ad9545_read2 (BusInterface *bus, uint16_t reg, uint16_t *data);
+bool ad9545_write2(BusInterface *bus, uint16_t reg, uint16_t data);
+bool ad9545_read3 (BusInterface *bus, uint16_t reg, uint32_t *data);
+bool ad9545_write3(BusInterface *bus, uint16_t reg, uint32_t data);
+bool ad9545_read4 (BusInterface *bus, uint16_t reg, uint32_t *data);
+bool ad9545_write4(BusInterface *bus, uint16_t reg, uint32_t data);
+bool ad9545_read5 (BusInterface *bus, uint16_t reg, uint64_t *data);
+bool ad9545_write5(BusInterface *bus, uint16_t reg, uint64_t data);
+bool ad9545_read6 (BusInterface *bus, uint16_t reg, uint64_t *data);
+bool ad9545_write6(BusInterface *bus, uint16_t reg, uint64_t data);
+bool ad9545_write8(BusInterface *bus, uint16_t reg, uint64_t data);
 
 #ifdef __cplusplus
 }

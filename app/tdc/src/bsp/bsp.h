@@ -30,13 +30,17 @@ extern "C" {
 
 #define LED_HEARTBEAT LED_INT_GREEN
 
-#define hi2c_ad9545 hi2c2
+//#define hi2c_ad9545 hi2c2
 #define hi2c_sensors hi2c4
 #define hi2c_sfpiic hi2c4
 
 #define fpga_spi hspi1
 #define ad9516_spi hspi4
 #define therm_spi hspi4
+
+//#define ad9545_deviceAddr 0x4A
+#define hi2c_eeprom_cfg hi2c2
+#define eeprom_cfg_deviceAddr 0x50
 
 #define AUXPLL_AD9516_OUT6_ENABLE 1
 #define AUXPLL_AD9516_OUT7_ENABLE 1
@@ -49,10 +53,6 @@ extern "C" {
 #ifdef BOARD_TDC72
 #define DEV_THERM_COUNT 4
 #endif
-
-#define ad9545_deviceAddr 0x4A
-#define hi2c_eeprom_cfg hi2c2
-#define eeprom_cfg_deviceAddr 0x50
 
 #ifdef BOARD_TDC72
 typedef enum {

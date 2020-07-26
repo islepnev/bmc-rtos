@@ -271,7 +271,7 @@ static s16_t pllStatus_get_value(struct snmp_node_instance* instance, void* valu
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)get_pll_sensor_status(&getDevicesConst()->pll);
+    *uint_ptr = (u32_t)(&getDevicesConst()->pll.sensor);
     return sizeof(*uint_ptr);
 }
 

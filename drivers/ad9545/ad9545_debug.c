@@ -28,78 +28,78 @@
 #include "ansi_escape_codes.h"
 #include "logbuffer.h"
 
-static bool pllIoUpdate(void)
+static bool pllIoUpdate(BusInterface *bus)
 {
     uint8_t data = 1;
-    return ad9545_write1(0x000F, data);
+    return ad9545_write1(bus, 0x000F, data);
 }
 
-bool pllRegisterPulseBit_unused(uint16_t address, uint8_t bitmask)
+bool pllRegisterPulseBit_unused(BusInterface *bus, uint16_t address, uint8_t bitmask)
 {
     uint8_t data = 0;
-    return pllIoUpdate() &&
-           ad9545_read1(address, &data) &&
-           ad9545_write1(address, data | bitmask) &&
-           pllIoUpdate() &&
-           ad9545_write1(address, data & ~bitmask) &&
-           pllIoUpdate();
+    return pllIoUpdate(bus) &&
+           ad9545_read1(bus, address, &data) &&
+           ad9545_write1(bus, address, data | bitmask) &&
+           pllIoUpdate(bus) &&
+           ad9545_write1(bus, address, data & ~bitmask) &&
+           pllIoUpdate(bus);
 }
 
-bool pllCalibrateApll_unused(void)
+bool pllCalibrateApll_unused(BusInterface *bus)
 {
     uint8_t OpControlChannel;
 
     // calibrate APLL 0 (requires IO Update, not autoclearing)
     OpControlChannel = 0x02; // calibrate
-    if (! (ad9545_write1(AD9545_REG1_2100, OpControlChannel) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_2100, OpControlChannel) &&
+          pllIoUpdate(bus)))
         return false;
     OpControlChannel = 0; // clear calibrate bit
-    if (! (ad9545_write1(AD9545_REG1_2100, OpControlChannel) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_2100, OpControlChannel) &&
+          pllIoUpdate(bus)))
         return false;
 
     // calibrate APLL 1 (requires IO Update, not autoclearing)
     OpControlChannel = 0x02; // calibrate
-    if (! (ad9545_write1(AD9545_REG1_2200, OpControlChannel) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_2200, OpControlChannel) &&
+          pllIoUpdate(bus)))
         return false;
     OpControlChannel = 0; // clear calibrate bit
-    if (! (ad9545_write1(AD9545_REG1_2200, OpControlChannel) &&
-          pllIoUpdate()))
+    if (! (ad9545_write1(bus, AD9545_REG1_2200, OpControlChannel) &&
+          pllIoUpdate(bus)))
         return false;
 
     return true;
 }
 
-bool pllResetOutputDividers_unused(void)
+bool pllResetOutputDividers_unused(BusInterface *bus)
 {
-    return ad9545_write1(AD9545_REG1_2102, 0x1) &&
-           ad9545_write1(AD9545_REG1_2103, 0x1) &&
-           ad9545_write1(AD9545_REG1_2104, 0x1) &&
-           ad9545_write1(AD9545_REG1_2202, 0x1) &&
-           ad9545_write1(AD9545_REG1_2203, 0x1) &&
-           pllIoUpdate() &&
+    return ad9545_write1(bus, AD9545_REG1_2102, 0x1) &&
+           ad9545_write1(bus, AD9545_REG1_2103, 0x1) &&
+           ad9545_write1(bus, AD9545_REG1_2104, 0x1) &&
+           ad9545_write1(bus, AD9545_REG1_2202, 0x1) &&
+           ad9545_write1(bus, AD9545_REG1_2203, 0x1) &&
+           pllIoUpdate(bus) &&
 
-           ad9545_write1(AD9545_REG1_2102, 0x0) &&
-           ad9545_write1(AD9545_REG1_2103, 0x0) &&
-           ad9545_write1(AD9545_REG1_2104, 0x0) &&
-           ad9545_write1(AD9545_REG1_2202, 0x0) &&
-           ad9545_write1(AD9545_REG1_2203, 0x0) &&
-           pllIoUpdate();
+           ad9545_write1(bus, AD9545_REG1_2102, 0x0) &&
+           ad9545_write1(bus, AD9545_REG1_2103, 0x0) &&
+           ad9545_write1(bus, AD9545_REG1_2104, 0x0) &&
+           ad9545_write1(bus, AD9545_REG1_2202, 0x0) &&
+           ad9545_write1(bus, AD9545_REG1_2203, 0x0) &&
+           pllIoUpdate(bus);
 }
 
-bool pllClearAutomute_unused(void)
+bool pllClearAutomute_unused(BusInterface *bus)
 {
-    return ad9545_write1(AD9545_REG1_2107, 0x10) &&
-           ad9545_write1(AD9545_REG1_2207, 0x10) &&
-           pllIoUpdate() &&
-           ad9545_write1(AD9545_REG1_2107, 0x00) &&
-           ad9545_write1(AD9545_REG1_2207, 0x00) &&
-           pllIoUpdate();
+    return ad9545_write1(bus, AD9545_REG1_2107, 0x10) &&
+           ad9545_write1(bus, AD9545_REG1_2207, 0x10) &&
+           pllIoUpdate(bus) &&
+           ad9545_write1(bus, AD9545_REG1_2107, 0x00) &&
+           ad9545_write1(bus, AD9545_REG1_2207, 0x00) &&
+           pllIoUpdate(bus);
 }
 
-bool pllReadAllRegisters_unused(void)
+bool pllReadAllRegisters_unused(BusInterface *bus)
 {
     typedef struct {
         uint16_t first;
@@ -154,7 +154,7 @@ bool pllReadAllRegisters_unused(void)
         uint16_t last = regs[n].last;
         for (int i=first; i<=last; i++) {
             uint8_t data = 0;
-            if (! ad9545_read1(i, &data))
+            if (! ad9545_read1(bus, i, &data))
                 return false;
             //            printf("0x%04X,0x%02X\n", i, data);
         }

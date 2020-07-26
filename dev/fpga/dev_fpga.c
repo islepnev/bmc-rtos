@@ -150,7 +150,7 @@ bool fpgaWriteBmcTemperature(const Dev_thset *thset)
 bool fpgaWritePllStatus(const Dev_ad9545 *pll)
 {
     uint16_t data = 0;
-    if (SENSOR_NORMAL == get_pll_sensor_status(pll)) {
+    if (SENSOR_NORMAL == pll->sensor) {
         data |= 0x8;
     } else {
         if (pll->status.sysclk.b.pll0_locked)

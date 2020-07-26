@@ -29,17 +29,21 @@
 extern "C" {
 #endif
 
-#define hi2c_ad9545 hi2c4
+//#define hi2c_ad9545 hi2c4
 #define hi2c_sensors hi2c2
 #define hi2c_sfpiic hi2c2
 #define vxsiic_hi2c hi2c1
 #define hi2c_eeprom_cfg hi2c3
 
-#define ad9545_deviceAddr 0x4A
+//#define ad9545_deviceAddr 0x4A
 #define eeprom_cfg_deviceAddr 0x50
 
 #define fpga_spi hspi5
+#ifdef TTVXS_1_0
+#define therm_spi hspi2
+#else
 #define ad9516_spi hspi2
+#endif
 
 #define DEV_THERM_COUNT 1
 

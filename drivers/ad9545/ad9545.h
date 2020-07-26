@@ -22,25 +22,25 @@
 
 #include "ad9545_setup_regs.h"
 #include "ad9545_status_regs.h"
+#include "bus/bus_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void init_ad9545_setup(ad9545_setup_t *setup);
-bool ad9545_detect(void);
-bool ad9545_setup(const ad9545_setup_t *setup);
+bool ad9545_detect(BusInterface *bus);
+bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup);
 
-void ad9545_reset_i2c(void);
-bool ad9545_software_reset(void);
-bool ad9545_setup_sysclk(const PllSysclkSetup_TypeDef *sysclkSetup);
-bool ad9545_calibrate_sysclk(void);
-bool ad9545_read_status(AD9545_Status *status);
-bool ad9545_read_sysclk_status(AD9545_Status *status);
+bool ad9545_software_reset(BusInterface *bus);
+bool ad9545_setup_sysclk(BusInterface *bus, const PllSysclkSetup_TypeDef *sysclkSetup);
+bool ad9545_calibrate_sysclk(BusInterface *bus);
+bool ad9545_read_status(BusInterface *bus, AD9545_Status *status);
+bool ad9545_read_sysclk_status(BusInterface *bus, AD9545_Status *status);
 
-void ad9545_reset(void);
-bool ad9545_gpio_test(void);
-void ad9545_gpio_init(void);
+void ad9545_reset(BusInterface *bus);
+bool ad9545_gpio_test(BusInterface *bus);
+void ad9545_gpio_init(BusInterface *bus);
 
 #ifdef __cplusplus
 }

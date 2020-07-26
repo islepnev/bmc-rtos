@@ -53,7 +53,7 @@ void dev_ad9545_print_box(const Dev_ad9545 *d)
 {
     printf("PLL AD9545:      %s %s",
            dev_ad9545_state_str(d->fsm_state),
-           sensor_status_ansi_str(get_pll_sensor_status(d)));
+           sensor_status_ansi_str(d->sensor));
     print_clear_eol();
     ad9545_brief_status(&d->status);
 

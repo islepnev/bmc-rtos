@@ -120,6 +120,19 @@ int hi2c_index(struct __I2C_HandleTypeDef *hi2c)
     return 0;
 }
 
+struct __I2C_HandleTypeDef * hi2c_handle(BusIndex index)
+{
+    if (1 == index)
+        return &hi2c1;
+    if (2 == index)
+        return &hi2c2;
+    if (3 == index)
+        return &hi2c3;
+    if (4 == index)
+        return &hi2c4;
+    return NULL;
+}
+
 int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
 {
     SemaphoreHandle_t sem = it_sem_by_hi2c(hi2c);
