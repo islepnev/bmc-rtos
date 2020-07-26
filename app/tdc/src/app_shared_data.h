@@ -60,7 +60,7 @@ struct Dev_ad9545 *get_dev_pll(void);
 struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
-struct Dev_at24c *get_dev_eeprom_config(void);
+struct Dev_eeprom_config *get_dev_eeprom_config(void);
 struct Dev_digipots *get_dev_digipots(void);
 
 void schedule_display_refresh(void);

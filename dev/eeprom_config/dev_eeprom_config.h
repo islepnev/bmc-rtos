@@ -15,22 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_EEPROM_H
-#define DEV_EEPROM_H
+#ifndef DEV_EEPROM_CONFIG_H
+#define DEV_EEPROM_CONFIG_H
 
+#include <stdint.h>
+
+#include "bus/bus_types.h"
 #include "dev_common_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef struct Dev_eeprom_config {
+    BusInterface bus;
+    DeviceStatus present;
+} Dev_eeprom_config;
 
-struct Dev_at24c;
+Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus);
+DeviceStatus dev_eeprom_config_detect(struct Dev_eeprom_config *d);
+DeviceStatus dev_eeprom_config_read(struct Dev_eeprom_config *d);
 
-DeviceStatus dev_eepromConfig_detect(struct Dev_at24c *d);
-DeviceStatus dev_eepromConfig_read(struct Dev_at24c *d);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEV_EEPROM_H
+#endif // DEV_EEPROM_CONFIG_H

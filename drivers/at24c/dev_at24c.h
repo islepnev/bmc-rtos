@@ -15,14 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_EEPROM_TYPES_H
-#define DEV_EEPROM_TYPES_H
+#ifndef DEV_AT24C_H
+#define DEV_AT24C_H
 
+#include <stdbool.h>
 #include <stdint.h>
-#include "dev_common_types.h"
+#include "bus/bus_types.h"
 
-typedef struct Dev_at24c {
-    DeviceStatus present;
-} Dev_at24c;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // DEV_EEPROM_TYPES_H
+bool at24c_detect(BusInterface *bus);
+bool at24c_read(BusInterface *bus, uint16_t addr, uint8_t *data);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_AT24C_H

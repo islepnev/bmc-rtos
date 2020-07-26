@@ -20,7 +20,7 @@
 
 #include "ad9516/dev_auxpll_types.h"
 #include "ad9545/dev_ad9545.h"
-#include "dev_eeprom_types.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "dev_leds_types.h"
 #include "dev_sfpiic_types.h"
 #include "dev_thset_types.h"
@@ -42,7 +42,7 @@ typedef struct Devices {
     Dev_fpga fpga;
     Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
-    Dev_at24c eeprom_config;
+    Dev_eeprom_config eeprom_config;
     Dev_ad9545 pll;
     Dev_auxpll auxpll;
     Dev_powermon pm;

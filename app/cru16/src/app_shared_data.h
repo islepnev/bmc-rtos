@@ -48,7 +48,7 @@ struct Dev_ad9545;
 struct Dev_auxpll;
 struct Dev_thset;
 struct Dev_sfpiic;
-struct Dev_at24c;
+struct Dev_eeprom_config;
 
 int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
@@ -62,7 +62,7 @@ struct Dev_ad9545 *get_dev_pll(void);
 struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
-struct Dev_at24c *get_dev_eeprom_config(void);
+struct Dev_eeprom_config *get_dev_eeprom_config(void);
 
 void schedule_display_refresh(void);
 int read_display_refresh(void);

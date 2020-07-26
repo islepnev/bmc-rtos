@@ -18,7 +18,7 @@
 #ifndef DEVICES_TYPES_H
 #define DEVICES_TYPES_H
 
-#include "dev_eeprom_types.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_types.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 #include "ad9545/dev_ad9545.h"
@@ -44,7 +44,7 @@ typedef struct Devices {
     Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
     Dev_vxsiicm vxsiicm;
-    Dev_at24c eeprom_config;
+    Dev_eeprom_config eeprom_config;
     Dev_ad9545 pll;
     Dev_auxpll auxpll;
     Dev_powermon pm;

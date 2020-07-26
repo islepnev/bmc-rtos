@@ -40,7 +40,7 @@ extern "C" {
 
 //#define ad9545_deviceAddr 0x4A
 #define hi2c_eeprom_cfg hi2c2
-#define eeprom_cfg_deviceAddr 0x50
+//#define eeprom_cfg_deviceAddr 0x50
 
 #define AUXPLL_AD9516_OUT6_ENABLE 1
 #define AUXPLL_AD9516_OUT7_ENABLE 1

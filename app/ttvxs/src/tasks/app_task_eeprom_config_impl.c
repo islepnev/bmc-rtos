@@ -17,8 +17,7 @@
 
 #include "app_task_eeprom_config_impl.h"
 #include "cmsis_os.h"
-#include "dev_eeprom.h"
-#include "dev_eeprom_types.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "app_shared_data.h"
 #include "logbuffer.h"
 
@@ -41,19 +40,26 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-
 void task_eeprom_config_run(void)
 {
-    Dev_at24c *d = get_dev_eeprom_config();
+    Dev_eeprom_config *d = get_dev_eeprom_config();
     switch (state) {
     case STATE_RESET: {
-        DeviceStatus status = dev_eepromConfig_detect(d);
-        if (status == DEVICE_NORMAL)
+        DeviceStatus status = dev_eeprom_config_detect(d);
+        if (status == DEVICE_NORMAL) {
             state = STATE_RUN;
+            log_printf(LOG_INFO, "Configuration EEPROM Ok");
+            break;
+        }
+        if (stateTicks() > 2000) {
+            log_put(LOG_ERR, "Configuration EEPROM not found");
+            state = STATE_ERROR;
+            break;
+        }
         break;
     }
     case STATE_RUN:
-        if (DEVICE_NORMAL != dev_eepromConfig_read(d)) {
+        if (DEVICE_NORMAL != dev_eeprom_config_read(d)) {
             state = STATE_ERROR;
             break;
         }
@@ -74,6 +80,7 @@ void task_eeprom_config_run(void)
         break;
     }
     if (old_state != state) {
+        old_state = state;
         stateStartTick = osKernelSysTick();
     }
 }

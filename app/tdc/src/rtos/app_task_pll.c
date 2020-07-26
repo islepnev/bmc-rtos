@@ -25,6 +25,7 @@
 #include "app_task_eeprom_config_impl.h"
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "debug_helpers.h"
 
 osThreadId pllThreadId = NULL;
@@ -37,10 +38,17 @@ static BusInterface pll_bus_info = {
     .address = 0x4A
 };
 
+static BusInterface eeprom_config_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x50
+};
+
 static void pllTask(void const *arg)
 {
     (void) arg;
     Dev_ad9545 *dev = dev_ad9545_init(&pll_bus_info);
+    dev_eeprom_config_init(&eeprom_config_bus_info);
     while(1) {
         task_eeprom_config_run();
         dev_ad9545_run(dev);

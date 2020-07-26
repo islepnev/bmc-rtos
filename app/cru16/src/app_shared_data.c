@@ -82,7 +82,7 @@ Dev_sfpiic *get_dev_sfpiic(void)
     return &dev.sfpiic;
 }
 
-Dev_at24c *get_dev_eeprom_config(void)
+Dev_eeprom_config *get_dev_eeprom_config(void)
 {
     return &dev.eeprom_config;
 }

@@ -28,7 +28,6 @@
 #include "debug_helpers.h"
 #include "ad9545/dev_ad9545_print.h"
 #include "ad9516/dev_auxpll_print.h"
-#include "dev_eeprom.h"
 #include "dev_common_types.h"
 #include "fpga/dev_fpga_types.h"
 #include "dev_mcu.h"
@@ -215,8 +214,8 @@ static void devPrintStatus(const Devices *d)
     print_clear_eol();
     printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
     print_clear_eol();
-    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
-    print_clear_eol();
+    //    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
+    //    print_clear_eol();
     //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
     //    print_clear_eol();
 }

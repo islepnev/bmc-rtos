@@ -15,42 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_eeprom.h"
-#include "dev_eeprom_types.h"
+#include "dev_eeprom_config.h"
+
+#include "app_shared_data.h"
+#include "at24c/dev_at24c.h"
+#include "dev_common_types.h"
 #include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
+#include "bus/bus_types.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 
-static const int I2C_TIMEOUT_MS = 10;
-
-static void struct_at24c_init(Dev_at24c *d)
+Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus)
 {
-    d->present = DEVICE_UNKNOWN;
+    Dev_eeprom_config *d = get_dev_eeprom_config();
+    d->bus = *bus;
+    return d;
 }
 
-static bool at24c_detect(uint8_t address)
+DeviceStatus dev_eeprom_config_detect(Dev_eeprom_config *d)
 {
-    uint32_t Trials = 10;
-    return i2c_driver_detect(&hi2c_eeprom_cfg, address << 1, Trials, I2C_TIMEOUT_MS);
-}
-
-bool at24c_read(uint8_t address, uint16_t addr, uint8_t *data)
-{
-    enum {Size = 1};
-    uint8_t pData[Size];
-    bool ret = i2c_driver_mem_read(&hi2c_eeprom_cfg, address << 1, addr, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS);
-    if (ret) {
-        if (data) {
-            *data = pData[0];
-        }
-    }
-    return ret;
-}
-
-DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
-{
-    struct_at24c_init(d);
-    if (at24c_detect(eeprom_cfg_deviceAddr))
+    if (at24c_detect(&d->bus))
         d->present = DEVICE_NORMAL;
     else
         d->present = DEVICE_FAIL;
@@ -61,10 +46,10 @@ DeviceStatus dev_eepromConfig_detect(Dev_at24c *d)
     return d->present;
 }
 
-DeviceStatus dev_eepromConfig_read(Dev_at24c *d)
+DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
 {
     uint8_t data = 0;
-    if (! at24c_read(eeprom_cfg_deviceAddr, 0, &data)) {
+    if (! at24c_read(&d->bus, 0, &data)) {
         d->present = DEVICE_FAIL;
     }
     return d->present;
