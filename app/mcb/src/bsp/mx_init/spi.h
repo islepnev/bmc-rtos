@@ -1,5 +1,7 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    SPI Init/Deinit
+**
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,37 +17,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+#ifndef SPI_H
+#define SPI_H
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 
-void init_periph(void)
-{
-  //  MX_FMC_Init();
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi5;
 
-  i2c_driver_init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_I2C3_Init();
-  MX_I2C4_Init();
+void MX_SPI2_Init(void);
+void MX_SPI5_Init(void);
 
-  //  MX_QUADSPI_Init();
-  //  MX_SDMMC1_SD_Init();
-  spi_driver_init();
-  MX_SPI2_Init();
-  MX_SPI5_Init();
+void SPI2_synchronize(void);
 
-  MX_USART1_UART_Init(); // front-panel usb
-  MX_USART2_UART_Init(); // mezzanine usb
-  //  MX_USART6_UART_Init();
-
-  MX_ADC1_Init();
-  MX_RTC_Init();
+#ifdef __cplusplus
 }
+#endif
+
+#endif // SPI_H

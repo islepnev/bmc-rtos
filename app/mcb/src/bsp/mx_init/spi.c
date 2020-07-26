@@ -1,5 +1,5 @@
 /*
-**    TTVXS SPI Init/Deinit
+**    SPI Init/Deinit
 **
 **    Copyright 2019 Ilja Slepnev
 **

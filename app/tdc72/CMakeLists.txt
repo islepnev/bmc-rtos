@@ -75,7 +75,7 @@ file(GLOB Drivers_SRCS
     ${MY_LIB_DIR}/drivers/mcp23017_i2c_hal.c
     ${MY_LIB_DIR}/drivers/os_serial_tty.c
     ${MY_LIB_DIR}/drivers/powermon_i2c_driver.c
-#    ${MY_LIB_DIR}/drivers/rtc_util.c
+    ${MY_LIB_DIR}/drivers/rtc_util.c
 )
 
 file(GLOB_RECURSE Src_HEADERS
@@ -116,6 +116,8 @@ target_sources(${ELF} PRIVATE
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${LWIP_DIR}/src/include
+    ${CMSIS_INCLUDE_DIRS}
+    ${STM32HAL_INCLUDE_DIR}
     ${BSP_DIR}
     ${BSP_DIR}/bsp
     ${BSP_DIR}/bsp/mx_init

@@ -25,7 +25,6 @@
 #include "ad9545/ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
-#include "bsp_display.h"
 #include "bsp_powermon.h"
 #include "debug_helpers.h"
 #include "ad9545/dev_ad9545_print.h"

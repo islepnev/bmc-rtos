@@ -1,5 +1,5 @@
 /*
-**    CRU16 I2C Init/Deinit
+**    I2C Init/Deinit
 **
 **    Copyright 2019 Ilja Slepnev
 **
@@ -19,21 +19,26 @@
 
 #include "i2c.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
 #include "stm32f7xx_hal_cortex.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
+#ifndef BOARD_TTVXS
 #include "stm32f7xx_ll_bus.h"
 #include "stm32f7xx_ll_gpio.h"
 #include "stm32f7xx_ll_i2c.h"
+#endif
 
 I2C_HandleTypeDef hi2c1; // VXS switches 0x71-0x73, VXSIIC
 I2C_HandleTypeDef hi2c2; // Power Monitors
 I2C_HandleTypeDef hi2c3; // EEPROM
 I2C_HandleTypeDef hi2c4; // PLL AD9545
 
-// I2C1: VXS PB, IO Exp, EEPROM 0x51
+#ifndef BOARD_TTVXS
+
+// I2C1: VXSIIC Slave
 void MX_I2C1_Init(void)
 {
   LL_I2C_InitTypeDef I2C_InitStruct = {0};
@@ -79,6 +84,34 @@ void MX_I2C1_Init(void)
   LL_I2C_Init(I2C1, &I2C_InitStruct);
 
 }
+
+#else
+
+// I2C1: VXSIIC Master
+void MX_I2C1_Init(void)
+{
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.Timing = 0x00601957; // 400 kHz
+    //  hi2c1.Init.Timing = 0x0030081D; // 1 MHz
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c1.Init.OwnAddress2 = 0;
+    hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
+        Error_Handler();
+    }
+    //  HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C1);
+}
+#endif
 
 // I2C2: Power Monitors
 void MX_I2C2_Init(void)

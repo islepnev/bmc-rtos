@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.12)
 
 set(BOARD "ttvxs")
 
-SET(BSP_DIR ${MY_TOP_DIR}/app/ttvxs/src)
-
 SET(ELF ${BOARD}_rtos.elf)
 
 BMC_TARGET_PRE(${ELF})
@@ -14,9 +12,14 @@ BMC_TARGET_PRE(${ELF})
 #subdirs(${MY_SRC_DIR})
 
 set(BSP_INC_DIRS
-    ${BSP_DIR}
-    ${BSP_DIR}/bsp
-    ${BSP_DIR}/bsp/mx_init
+    ${MY_TOP_DIR}/app/mcb/src
+    ${MY_TOP_DIR}/app/mcb/src/bsp
+    ${MY_TOP_DIR}/app/mcb/src/bsp/mx_init
+    ${MY_TOP_DIR}/app/${BOARD}/src
+    ${MY_TOP_DIR}/app/${BOARD}/src/bsp
+    ${MY_TOP_DIR}/app/${BOARD}/src/bsp/mx_init
+    ${MY_TOP_DIR}/app/${BOARD}/src/rtos
+    ${MY_TOP_DIR}/app/${BOARD}/src/tasks
 )
 
 # required for lwip
@@ -27,15 +30,13 @@ include_directories(
 )
 
 file(GLOB_RECURSE BSP_HEADERS
-    ${BSP_DIR}/*.h
+    ${MY_TOP_DIR}/app/mcb/src/*.h
+    ${MY_TOP_DIR}/app/${BOARD}/src/*.h
 )
 
-file(GLOB BSP_SRCS
-    ${BSP_DIR}/*.c
-    ${BSP_DIR}/bsp/*.c
-    ${BSP_DIR}/bsp/mx_init/*.c
-    ${BSP_DIR}/rtos/*.c
-    ${BSP_DIR}/tasks/*.c
+file(GLOB_RECURSE BSP_SRCS
+    ${MY_TOP_DIR}/app/mcb/src/*.c
+    ${MY_TOP_DIR}/app/${BOARD}/src/*.c
 )
 
 file(GLOB_RECURSE Dev_HEADERS
@@ -134,11 +135,9 @@ target_sources(${ELF} PRIVATE
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${LWIP_DIR}/src/include
-    ${BSP_DIR}
-    ${BSP_DIR}/bsp
-    ${BSP_DIR}/bsp/mx_init
-    ${BSP_DIR}/rtos
-    ${BSP_DIR}/tasks
+    ${CMSIS_INCLUDE_DIRS}
+    ${STM32HAL_INCLUDE_DIR}
+    ${BSP_INC_DIRS}
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/drivers
     ${MY_SRC_DIR}/common
