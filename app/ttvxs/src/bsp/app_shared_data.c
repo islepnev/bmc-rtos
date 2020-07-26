@@ -77,6 +77,11 @@ Dev_thset *get_dev_thset(void)
     return &dev.thset;
 }
 
+Dev_max31725 *get_dev_max31725(void)
+{
+    return &dev.max31725;
+}
+
 Dev_vxsiicm *get_dev_vxsiicm(void)
 {
     return &dev.vxsiicm;

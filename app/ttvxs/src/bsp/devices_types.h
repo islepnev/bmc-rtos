@@ -25,6 +25,7 @@
 #include "ad9516/dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
+#include "max31725/dev_max31725.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "dev_leds_types.h"
@@ -39,6 +40,7 @@ enum {
 };
 
 typedef struct Devices {
+    Dev_max31725 max31725;
     Dev_thset thset;
     Dev_fpga fpga;
     Dev_ttvxs_clkmux clkmux;
