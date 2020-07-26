@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include "bsp_digipot.h"
+#include "bus/bus_types.h"
 #include "dev_common_types.h"
 #include "powermon/dev_pm_sensors_types.h"
 
@@ -28,9 +29,9 @@ extern "C" {
 #endif
 
 typedef struct Dev_ad5141 {
+    BusInterface bus;
     PotIndex index;
     SensorIndex sensorIndex;
-    uint8_t busAddress;
     DeviceStatus deviceStatus;
     uint8_t value;
 } Dev_ad5141;

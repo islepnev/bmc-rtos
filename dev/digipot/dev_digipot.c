@@ -22,38 +22,42 @@
 #include <stdio.h>
 
 #include "ad5141/ad5141.h"
+#include "ad5141/ad5141_i2c_hal.h"
 
 void dev_ad5141_reset(Dev_ad5141 *d)
 {
     if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_reset(d->busAddress);
+        ad5141_reset(&d->bus);
 }
 
 void dev_ad5141_inc(Dev_ad5141 *d)
 {
     if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_inc_rdac(d->busAddress);
+        ad5141_inc_rdac(&d->bus);
 }
 
 void dev_ad5141_dec(Dev_ad5141 *d)
 {
     if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_dec_rdac(d->busAddress);
+        ad5141_dec_rdac(&d->bus);
 }
 
 void dev_ad5141_write(Dev_ad5141 *d)
 {
     if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_copy_rdac_to_eeprom(d->busAddress);
+        ad5141_copy_rdac_to_eeprom(&d->bus);
 }
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    int detected = ad5141_nop(d->busAddress);
-    if (detected)
+    ad5141_reset_bus(&d->bus);
+    int detected = ad5141_nop(&d->bus);
+    if (detected) {
         d->deviceStatus = DEVICE_NORMAL;
-    else
+    } else {
+        ad5141_reset_bus(&d->bus);
         d->deviceStatus = DEVICE_UNKNOWN;
+    }
     return d->deviceStatus;
 }
 
@@ -61,13 +65,10 @@ int digipot_detect(Dev_digipots *d)
 {
     int count = 0;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        ad5141_i2c_driver_reset();
         DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
         if (s == DEVICE_NORMAL) {
             dev_ad5141_reset(&d->pot[i]);
             count++;
-        } else {
-            ad5141_i2c_driver_reset();
         }
     }
     return count;
@@ -79,7 +80,7 @@ void digipot_read_rdac_all(Dev_digipots *d)
         Dev_ad5141 *p = &d->pot[i];
         if (p->deviceStatus != DEVICE_NORMAL)
             continue;
-        if (! ad5141_read_rdac(p->busAddress, &p->value))
+        if (! ad5141_read_rdac(&p->bus, &p->value))
             break;
     }
 }

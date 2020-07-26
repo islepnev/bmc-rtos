@@ -18,60 +18,58 @@
 #include "ad5141.h"
 #include "ad5141_i2c_hal.h"
 
-#include "bsp.h"
-
-bool ad5141_nop(uint8_t deviceAddress)
+bool ad5141_nop(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0x00;
-    return ad5141_write(deviceAddress, ctrl_addr, 0);
+    return ad5141_write(bus, ctrl_addr, 0);
 }
 
-bool ad5141_reset(uint8_t deviceAddress)
+bool ad5141_reset(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0xB0;
-    return ad5141_write(deviceAddress, ctrl_addr, 0);
+    return ad5141_write(bus, ctrl_addr, 0);
 }
 
-bool ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress)
+bool ad5141_copy_rdac_to_eeprom(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0x70;
     uint8_t data = 0x01;
-    if (! ad5141_write(deviceAddress, ctrl_addr, data))
+    if (! ad5141_write(bus, ctrl_addr, data))
         return false;
     // wait 18 ms
     for (int i=0; i<360; i++)
-        if (! ad5141_nop(deviceAddress))
+        if (! ad5141_nop(bus))
             return false;
     return true;
 }
 
-bool ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress)
+bool ad5141_copy_eeprom_to_rdac(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0x70;
     uint8_t data = 0x00;
-    return ad5141_write(deviceAddress, ctrl_addr, data);
+    return ad5141_write(bus, ctrl_addr, data);
 }
 
-bool ad5141_write_rdac(uint8_t deviceAddress, uint8_t data)
+bool ad5141_write_rdac(BusInterface *bus, uint8_t data)
 {
     uint8_t ctrl_addr = 0x10;
-    return ad5141_write(deviceAddress, ctrl_addr, data);
+    return ad5141_write(bus, ctrl_addr, data);
 }
 
-bool ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data)
+bool ad5141_read_rdac(BusInterface *bus, uint8_t *data)
 {
     uint16_t command = 0x3003;
-    return ad5141_read(deviceAddress, command, data);
+    return ad5141_read(bus, command, data);
 }
 
-bool ad5141_inc_rdac(uint8_t deviceAddress)
+bool ad5141_inc_rdac(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0x40;
-    return ad5141_write(deviceAddress, ctrl_addr, 1);
+    return ad5141_write(bus, ctrl_addr, 1);
 }
 
-bool ad5141_dec_rdac(uint8_t deviceAddress)
+bool ad5141_dec_rdac(BusInterface *bus)
 {
     uint8_t ctrl_addr = 0x40;
-    return ad5141_write(deviceAddress, ctrl_addr, 0);
+    return ad5141_write(bus, ctrl_addr, 0);
 }

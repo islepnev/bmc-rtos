@@ -134,6 +134,12 @@ double monVoltageNom(SensorIndex index)
     return 0;
 }
 
+int sensorBusNumber(SensorIndex index)
+{
+    (void)index;
+    return 4;
+}
+
 int sensorBusAddress(SensorIndex index)
 {
     switch (index) {

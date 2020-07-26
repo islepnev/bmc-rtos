@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bus/bus_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,9 +42,10 @@ enum {
     INA226_REG_DEVICE_ID = 0xFF
 };
 
-bool ina226_i2c_Detect(uint16_t deviceAddr);
-bool ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data);
-bool ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data);
+void ina226_reset_bus(BusInterface *bus);
+bool ina226_i2c_Detect(BusInterface *bus);
+bool ina226_i2c_Read(BusInterface *bus, uint16_t reg, uint16_t *data);
+bool ina226_i2c_Write(BusInterface *bus, uint16_t reg, uint16_t data);
 
 #ifdef __cplusplus
 }

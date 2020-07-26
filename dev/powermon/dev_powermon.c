@@ -25,7 +25,6 @@
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
 #include "logbuffer.h"
-#include "powermon_i2c_driver.h"
 
 #include "cmsis_os.h"
 #include "gpio.h"
@@ -39,14 +38,22 @@ void struct_powermon_sensors_init(Dev_powermon *d)
     }
 }
 
-void struct_powermon_init(Dev_powermon *d)
+Dev_powermon *dev_powermon_init(BusInterface *bus)
+{
+    Dev_powermon *d = get_dev_powermon();
+    d->bus = *bus;
+    pm_clear_all(d);
+    return d;
+}
+
+void pm_clear_all(Dev_powermon *d)
 {
     d->monState = MON_STATE_INIT;
     d->stateStartTick = 0;
     d->monErrors = 0;
     d->monCycle = 0;
     struct_powermon_sensors_init(d);
-//    d->present = DEVICE_UNKNOWN;
+    //    d->present = DEVICE_UNKNOWN;
     d->vmePresent = 0;
     init_pgood(d->pgood);
     init_power_switches(d->sw);
@@ -134,13 +141,11 @@ int monDetect(Dev_powermon *d)
     int errors = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         if (errors > 2) break;
-        powermon_i2c_reset_master();
         DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
             errors++;
-            powermon_i2c_reset_master();
         }
     }
     return count;

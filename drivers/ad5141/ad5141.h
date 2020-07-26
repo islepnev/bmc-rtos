@@ -21,14 +21,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void ad5141_i2c_driver_reset(void);
-bool ad5141_nop(uint8_t deviceAddress);
-bool ad5141_reset(uint8_t deviceAddress);
-bool ad5141_copy_rdac_to_eeprom(uint8_t deviceAddress);
-bool ad5141_copy_eeprom_to_rdac(uint8_t deviceAddress);
-bool ad5141_write_rdac(uint8_t deviceAddress, uint8_t data);
-bool ad5141_read_rdac(uint8_t deviceAddress, uint8_t *data);
-bool ad5141_inc_rdac(uint8_t deviceAddress);
-bool ad5141_dec_rdac(uint8_t deviceAddress);
+#include "bus/bus_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool ad5141_nop(BusInterface *bus);
+bool ad5141_reset(BusInterface *bus);
+bool ad5141_copy_rdac_to_eeprom(BusInterface *bus);
+bool ad5141_copy_eeprom_to_rdac(BusInterface *bus);
+bool ad5141_write_rdac(BusInterface *bus, uint8_t data);
+bool ad5141_read_rdac(BusInterface *bus, uint8_t *data);
+bool ad5141_inc_rdac(BusInterface *bus);
+bool ad5141_dec_rdac(BusInterface *bus);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // AD5141_H

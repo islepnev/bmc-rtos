@@ -183,7 +183,7 @@ void task_powermon_run (void)
     }
     switch (pm->pmState) {
     case PM_STATE_INIT:
-        struct_powermon_init(pm);
+        pm_clear_all(pm);
         if (enable_power) {
             update_power_switches(pm, true);
             change_state(PM_STATE_WAITINPUT);

@@ -20,20 +20,24 @@
 #include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 
 static const int I2C_TIMEOUT_MS = 10;
 
-void ad5141_i2c_driver_reset(void)
+void ad5141_reset_bus(BusInterface *bus)
 {
-    i2c_driver_reset(&hi2c_sensors);
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    i2c_driver_reset(hi2c);
 }
 
-bool ad5141_write(uint8_t deviceAddress, uint8_t ctrl_addr, uint8_t data)
+bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data)
 {
-    return i2c_driver_mem_write(&hi2c_sensors, deviceAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_write(hi2c_handle(bus->bus_number), DevAddress << 1, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1, I2C_TIMEOUT_MS);
 }
 
-bool ad5141_read(uint8_t deviceAddress, uint16_t command, uint8_t *data)
+bool ad5141_read(BusInterface *bus, uint16_t command, uint8_t *data)
 {
-    return i2c_driver_mem_read(&hi2c_sensors, deviceAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_read(hi2c_handle(bus->bus_number), DevAddress << 1, command, I2C_MEMADD_SIZE_16BIT, data, 1, I2C_TIMEOUT_MS);
 }

@@ -48,12 +48,14 @@ void struct_pm_sensor_clear_measurements(pm_sensor *d)
 
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
+    d->bus.type = BUS_IIC;
+    d->bus.bus_number = sensorBusNumber(index);
+    d->bus.address = sensorBusAddress(index);
     d->index = index;
     d->deviceStatus = DEVICE_UNKNOWN;
     d->sensorStatus = SENSOR_UNKNOWN;
     d->rampState = RAMP_NONE;
     d->lastStatusUpdatedTick = 0;
-    d->busAddress = sensorBusAddress(index);
     d->isOptional = monIsOptional(index);
     d->hasShunt = monShuntVal(index) > 1e-6;
     d->shuntVal = monShuntVal(index);
@@ -141,27 +143,26 @@ static configreg_t default_configreg(void)
 
 static bool pm_sensor_write_conf(pm_sensor *d)
 {
-    uint16_t deviceAddr = d->busAddress;
     uint16_t data;
     data = default_configreg().raw;
-    return ina226_i2c_Write(deviceAddr, INA226_REG_CONFIG, data)
-           && ina226_i2c_Write(deviceAddr, INA226_REG_CAL, d->cal);
+    return ina226_i2c_Write(&d->bus, INA226_REG_CONFIG, data)
+           && ina226_i2c_Write(&d->bus, INA226_REG_CAL, d->cal);
 }
 
 DeviceStatus pm_sensor_detect(pm_sensor *d)
 {
     d->lastStatusUpdatedTick = osKernelSysTick();
-    uint16_t deviceAddr = d->busAddress;
     uint16_t manuf_id;
     uint16_t device_id;
+    ina226_reset_bus(&d->bus);
     int detected =(
-                // ina226_i2c_Detect(deviceAddr)
-                ina226_i2c_Read(deviceAddr, INA226_REG_MANUFACTURER_ID, &manuf_id)
-                && (manuf_id == INA226_MANUFACTURER_ID)
-                && ina226_i2c_Read(deviceAddr, INA226_REG_DEVICE_ID, &device_id)
-                && (device_id == INA226_DEVICE_ID)
-                && pm_sensor_write_conf(d)
-            );
+        // ina226_i2c_Detect(&d->bus)
+        ina226_i2c_Read(&d->bus, INA226_REG_MANUFACTURER_ID, &manuf_id)
+        && (manuf_id == INA226_MANUFACTURER_ID)
+        && ina226_i2c_Read(&d->bus, INA226_REG_DEVICE_ID, &device_id)
+        && (device_id == INA226_DEVICE_ID)
+        && pm_sensor_write_conf(d)
+        );
     pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
     return d->deviceStatus;
 }
@@ -192,7 +193,6 @@ SensorStatus pm_sensor_compute_status(const pm_sensor *d)
 
 DeviceStatus pm_sensor_read(pm_sensor *d)
 {
-    uint16_t deviceAddr = d->busAddress;
 //    uint16_t rawMask = 0;
     uint16_t rawVoltage = 0;
     uint16_t rawShuntVoltage = 0;
@@ -204,15 +204,15 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     int err = 0;
     while (1) {
         if (1
-//                && ina226_i2c_Read(deviceAddr, INA226_REG_MASK, &rawMask)
+//                && ina226_i2c_Read(&d->bus, INA226_REG_MASK, &rawMask)
 //                && (rawMask & 0x0400)
-                && ina226_i2c_Read(deviceAddr, INA226_REG_BUS_VOLT, &rawVoltage)
-                && ina226_i2c_Read(deviceAddr, INA226_REG_SHUNT_VOLT, &rawShuntVoltage)
+            && ina226_i2c_Read(&d->bus, INA226_REG_BUS_VOLT, &rawVoltage)
+                && ina226_i2c_Read(&d->bus, INA226_REG_SHUNT_VOLT, &rawShuntVoltage)
 #if INA226_USE_INTERNAL_CALC
-                && ina226_i2c_Read(deviceAddr, INA226_REG_CURRENT, &rawCurrent)
-                && ina226_i2c_Read(deviceAddr, INA226_REG_POWER, &rawPower)
+                && ina226_i2c_Read(&d->bus, INA226_REG_CURRENT, &rawCurrent)
+                && ina226_i2c_Read(&d->bus, INA226_REG_POWER, &rawPower)
 #endif
-                && ina226_i2c_Read(deviceAddr, INA226_REG_CONFIG, &configreg.raw)
+                && ina226_i2c_Read(&d->bus, INA226_REG_CONFIG, &configreg.raw)
                 && (configreg.raw == default_configreg().raw)) {
             break;
         }

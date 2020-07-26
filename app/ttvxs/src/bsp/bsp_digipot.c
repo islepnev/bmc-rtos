@@ -24,6 +24,11 @@ const char *potLabel(PotIndex index)
     return "";
 }
 
+int potBusNumber(PotIndex index)
+{
+    return 0;
+}
+
 int potBusAddress(PotIndex index)
 {
     return 0;

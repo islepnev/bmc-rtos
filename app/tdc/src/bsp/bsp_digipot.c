@@ -32,6 +32,11 @@ const char *potLabel(PotIndex index)
     return "";
 }
 
+int potBusNumber(PotIndex index)
+{
+    return 4;
+}
+
 int potBusAddress(PotIndex index)
 {
     switch (index) {

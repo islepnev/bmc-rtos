@@ -17,15 +17,12 @@
 
 #include "app_task_powermon.h"
 
-#include "cmsis_os.h"
-
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
-#include "app_tasks.h"
 #include "bsp.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "powermon/dev_powermon.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };

@@ -17,8 +17,9 @@
 
 // CRU16 board specific functions
 
-#include "bsp_pin_defs.h"
 #include "bsp_powermon.h"
+
+#include "bsp_pin_defs.h"
 #include "cmsis_os.h"
 #include "dev_pm_sensors_config.h"
 #include "gpio.h"

@@ -31,7 +31,7 @@ extern "C" {
 #define LED_HEARTBEAT LED_INT_GREEN
 
 //#define hi2c_ad9545 hi2c2
-#define hi2c_sensors hi2c4
+//#define hi2c_sensors hi2c4
 #define hi2c_sfpiic hi2c4
 
 #define fpga_spi hspi1

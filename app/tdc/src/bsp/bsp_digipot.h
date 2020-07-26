@@ -40,6 +40,7 @@ enum {DEV_DIGIPOT_COUNT = 3};
 #endif
 
 const char *potLabel(PotIndex index);
+int potBusNumber(PotIndex index);
 int potBusAddress(PotIndex index);
 int potSensorIndex(PotIndex index);
 

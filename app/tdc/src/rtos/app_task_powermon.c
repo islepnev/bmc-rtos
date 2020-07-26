@@ -17,16 +17,12 @@
 
 #include "app_task_powermon.h"
 
-#include "cmsis_os.h"
-
-#include "bsp.h"
-#include "bsp_sfpiic.h"
-//#include "dev_powermon.h"
 #include "app_shared_data.h"
-//#include "app_tasks.h"
-#include "app_task_sfpiic_impl.h"
 #include "app_task_digipot_impl.h"
 #include "app_task_powermon_impl.h"
+#include "app_task_sfpiic_impl.h"
+#include "bsp.h"
+#include "cmsis_os.h"
 #include "ipmi_sensors.h"
 #include "debug_helpers.h"
 

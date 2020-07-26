@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "bus/bus_types.h"
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_types.h"
@@ -51,6 +53,7 @@ typedef enum MonState {
 typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
 
 typedef struct Dev_powermon {
+    BusInterface bus;
     PmState pmState;
     MonState monState;
     uint32_t stateStartTick;

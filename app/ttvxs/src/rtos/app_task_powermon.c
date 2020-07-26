@@ -20,10 +20,9 @@
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
-#include "app_tasks.h"
+#include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "powermon/dev_powermon.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
@@ -34,6 +33,7 @@ static void start_task_powermon( void const *arg)
     (void) arg;
     while (1)
     {
+        bsp_smbus_reset();
         task_sfpiic_run();
         task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);

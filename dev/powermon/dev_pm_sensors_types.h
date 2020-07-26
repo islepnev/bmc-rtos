@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bus/bus_types.h"
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
 
@@ -34,12 +35,13 @@ typedef enum {
     } RampState;
 
 typedef struct pm_sensor {
+    BusInterface bus;
     SensorIndex index;
     DeviceStatus deviceStatus;
     SensorStatus sensorStatus;
     RampState rampState;
     uint32_t lastStatusUpdatedTick;
-    uint16_t busAddress;
+    // uint16_t busAddress;
     bool isOptional;
     bool hasShunt;
     double shuntVal;

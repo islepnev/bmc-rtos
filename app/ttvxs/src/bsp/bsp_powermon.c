@@ -18,6 +18,7 @@
 // TTVXS board specific functions
 
 #include "bsp_powermon.h"
+
 #include "dev_pm_sensors_config.h"
 #include "powermon/dev_powermon_types.h"
 #include "powermon/dev_pm_sensors_types.h"

@@ -138,7 +138,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 2: {/* sensor I2C bus address */
-        *(s32_t *)value = s->busAddress;
+        *(s32_t *)value = s->bus.address;
         return sizeof(s32_t);
     }
     case 3: {/* sensor name */

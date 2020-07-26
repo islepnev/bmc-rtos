@@ -19,6 +19,7 @@
 #define DEV_POWERMON_H
 
 #include <stdbool.h>
+#include "bus/bus_types.h"
 #include "dev_powermon_types.h"
 
 #ifdef __cplusplus
@@ -26,7 +27,8 @@ extern "C" {
 #endif
 
 void struct_powermon_sensors_init(Dev_powermon *d);
-void struct_powermon_init(Dev_powermon *d);
+Dev_powermon *dev_powermon_init(BusInterface *bus);
+void pm_clear_all(Dev_powermon *d);
 bool pm_read_liveInsert(Dev_powermon *pm);
 bool update_power_switches(Dev_powermon *pm, bool state);
 void monClearMinMax(Dev_powermon *d);

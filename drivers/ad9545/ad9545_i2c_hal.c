@@ -26,8 +26,7 @@ static const int I2C_TIMEOUT_MS = 100;
 void ad9545_reset_bus(BusInterface *bus)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
-    __HAL_I2C_DISABLE(hi2c);
-    __HAL_I2C_ENABLE(hi2c);
+    i2c_driver_reset(hi2c);
 }
 
 static bool pll_i2c_detect(BusInterface *bus, uint32_t Trials)

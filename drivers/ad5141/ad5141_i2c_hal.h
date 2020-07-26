@@ -21,8 +21,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void ad5141_i2c_driver_reset(void);
-bool ad5141_write(uint8_t deviceAddress, uint8_t ctrl_addr, uint8_t data);
-bool ad5141_read(uint8_t deviceAddress, uint16_t command, uint8_t *data);
+#include "bus/bus_types.h"
+
+void ad5141_reset_bus(BusInterface *bus);
+bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data);
+bool ad5141_read(BusInterface *bus, uint16_t command, uint8_t *data);
 
 #endif // AD5141_I2C_HAL_H

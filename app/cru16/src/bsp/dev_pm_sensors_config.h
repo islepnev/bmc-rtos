@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 
+#include "bus/bus_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -53,6 +54,7 @@ double monShuntVal(SensorIndex index);
 double monVoltageMarginWarn(SensorIndex index);
 double monVoltageMarginCrit(SensorIndex index);
 double monVoltageNom(SensorIndex index);
+int sensorBusNumber(SensorIndex index);
 int sensorBusAddress(SensorIndex index);
 const char *monLabel(SensorIndex index);
 

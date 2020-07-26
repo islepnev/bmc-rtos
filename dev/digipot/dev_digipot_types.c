@@ -29,7 +29,9 @@ void struct_pots_init(Dev_digipots *d)
         d->pot[i].index = i;
         d->pot[i].deviceStatus = DEVICE_UNKNOWN;
         d->pot[i].sensorIndex = potSensorIndex(i);
-        d->pot[i].busAddress = potBusAddress(i);
+        d->pot[i].bus.type = BUS_IIC;
+        d->pot[i].bus.bus_number = potBusNumber(i);
+        d->pot[i].bus.address = potBusAddress(i);
     }
 }
 
