@@ -23,17 +23,27 @@
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "max31725/dev_max31725_fsm.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
+static BusInterface cru16_max31725_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x1C
+};
+
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
+    Dev_max31725 therm1;
+    therm1.bus = cru16_max31725_bus_info;
     while (1)
     {
         task_sfpiic_run();
+        dev_max31725_run(&therm1);
         task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {

@@ -46,7 +46,7 @@ struct Dev_ad9545;
 struct Dev_auxpll;
 struct Dev_thset;
 struct Dev_sfpiic;
-struct Dev_at24c;
+struct Dev_eeprom_config;
 struct Dev_digipots;
 
 struct Devices* getDevices(void);

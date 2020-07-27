@@ -28,13 +28,22 @@
 extern "C" {
 #endif
 
+typedef enum {
+    MAX31725_STATE_RESET,
+    MAX31725_STATE_RUN,
+    MAX31725_STATE_PAUSE,
+    MAX31725_STATE_ERROR
+} dev_max31725_state_t;
+
+
 typedef struct Dev_max31725 {
     BusInterface bus;
     DeviceStatus present;
+    dev_max31725_state_t state;
+    uint32_t stateStartTick;
     double temp;
 } Dev_max31725;
 
-void dev_max31725_init(BusInterface *bus);
 bool dev_max31725_detect(Dev_max31725 *d);
 bool dev_max31725_read(Dev_max31725 *d);
 

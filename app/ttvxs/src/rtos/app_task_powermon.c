@@ -20,7 +20,7 @@
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
-#include "app_task_therm_impl.h"
+#include "max31725/dev_max31725_fsm.h"
 #include "bus/bus_types.h"
 #include "bsp.h"
 #include "cmsis_os.h"
@@ -31,7 +31,7 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
-static BusInterface max31725_bus_info = {
+static BusInterface ttvxs_max31725_bus_info = {
     .type = BUS_IIC,
     .bus_number = 2,
     .address = 0x1C
@@ -40,11 +40,12 @@ static BusInterface max31725_bus_info = {
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    dev_max31725_init(&max31725_bus_info);
+    Dev_max31725 therm1;
+    therm1.bus = ttvxs_max31725_bus_info;
     while (1)
     {
         task_sfpiic_run();
-        // task_therm_run();
+        dev_max31725_run(&therm1);
         task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {

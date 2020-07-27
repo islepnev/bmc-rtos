@@ -21,21 +21,44 @@
 #include "app_task_digipot_impl.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
+#include "max31725/dev_max31725_fsm.h"
+#include "bus/bus_types.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "ipmi_sensors.h"
 #include "debug_helpers.h"
+#include "max31725/dev_max31725.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
+static BusInterface tdc64_max31725_1_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x50
+};
+
+static BusInterface tdc64_max31725_2_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x51
+};
+
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
+    Dev_max31725 therm1;
+    therm1.bus = tdc64_max31725_1_bus_info;
+    Dev_max31725 therm2;
+    therm2.bus = tdc64_max31725_2_bus_info;
     while (1)
     {
         // task_sfpiic_run(); // broken on tdc64
+#ifdef BOARD_TDC64
+        dev_max31725_run(&therm1);
+        dev_max31725_run(&therm2);
+#endif
         task_digipot_run();
         task_powermon_run();
         sync_ipmi_sensors();

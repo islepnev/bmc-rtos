@@ -19,17 +19,30 @@
 
 #include "app_shared_data.h"
 #include "devices_types.h"
+#include "log/log.h"
 #include "max31725/max31725_i2c_hal.h"
 
-void dev_max31725_init(BusInterface *bus)
-{
-    Dev_max31725 *d = get_dev_max31725();
-    d->bus = *bus;
-}
+enum {
+    MAX31725_REG_THERM = 0,
+    MAX31725_REG_CONFIG = 1,
+    MAX31725_REG_THYST = 2,
+    MAX31725_REG_TOS = 3
+};
+
+// static const uint16_t MAX31725_REG_THERM_POR  = 0x0000;
+// static const uint16_t MAX31725_REG_CONFIG_POR = 0x0040;
+static const uint16_t MAX31725_REG_THYST_POR  = 0x4b00;
+// static const uint16_t MAX31725_REG_TOS_POR    = 0x5000;
 
 bool dev_max31725_detect(Dev_max31725 *d)
 {
-    return max31725_detect(&d->bus);
+    uint16_t data;
+    if (! max31725_detect(&d->bus) || ! max31725_read(&d->bus, MAX31725_REG_THYST, &data))
+        return false;
+    if (data != MAX31725_REG_THYST_POR) {
+        return false;
+    }
+    return true;
 }
 
 bool dev_max31725_read(Dev_max31725 *d)
@@ -37,6 +50,7 @@ bool dev_max31725_read(Dev_max31725 *d)
     uint16_t data;
     if (! max31725_read(&d->bus, 0, &data))
         return false;
-    d->temp = 1. * data/256+64;
+
+    d->temp = (int16_t)data/256.0 + 64.0;
     return true;
 }

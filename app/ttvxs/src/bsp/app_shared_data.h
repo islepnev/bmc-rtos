@@ -61,7 +61,6 @@ struct Dev_ttvxs_clkmux *get_dev_clkmux(void);
 struct Dev_ad9545 *get_dev_pll(void);
 struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
-struct Dev_max31725 *get_dev_max31725(void);
 struct Dev_vxsiicm *get_dev_vxsiicm(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 struct Dev_eeprom_config *get_dev_eeprom_config(void);

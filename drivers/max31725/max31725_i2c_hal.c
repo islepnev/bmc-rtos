@@ -35,13 +35,12 @@ bool max31725_read(BusInterface *bus, uint16_t reg, uint16_t *data)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     uint16_t DevAddress = bus->address << 1;
-    enum {Size = 2};
+    int Size = 2;
     uint8_t pData[Size];
-    if (! i2c_driver_mem_read(hi2c, DevAddress, reg, I2C_MEMADD_SIZE_16BIT, pData, Size, I2C_TIMEOUT_MS))
+    if (! i2c_driver_mem_read(hi2c, DevAddress, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS))
         return false;
     if (data) {
-        *data = ((uint32_t)pData[1] << 8) | pData[0];
-        // temp = 1.*d->rawTemp/256+64;
+        *data = ((uint16_t)pData[0] << 8) | pData[1];
     }
     return true;
 }

@@ -15,9 +15,10 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_therm_impl.h"
+#include "dev_max31725_fsm.h"
+
 #include "cmsis_os.h"
-#include "max31725/dev_max31725.h"
+#include "dev_max31725.h"
 #include "app_shared_data.h"
 #include "log.h"
 #include "device_status_log.h"
@@ -25,66 +26,57 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-typedef enum {
-    STATE_RESET,
-    STATE_RUN,
-    STATE_PAUSE,
-    STATE_ERROR,
-} state_t;
-
-static state_t state = STATE_RESET;
-static state_t old_state = STATE_RESET;
-
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(Dev_max31725 *d)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - d->stateStartTick;
 }
 
-void task_therm_run(void)
+void dev_max31725_run(Dev_max31725 *d)
 {
-    Dev_max31725 *d = get_dev_max31725();
-    switch (state) {
-    case STATE_RESET: {
-        if (dev_max31725_detect(d) && dev_max31725_read(d)) {
-            state = STATE_RUN;
+    dev_max31725_state_t old_state = d->state;
+    switch (d->state) {
+    case MAX31725_STATE_RESET: {
+        if (dev_max31725_detect(d)) {
+            d->state = MAX31725_STATE_RUN;
             d->present = DEVICE_NORMAL;
             dev_log_status_change(&d->bus, d->present);
             break;
         } else {
-            state = STATE_ERROR;
+            d->state = MAX31725_STATE_ERROR;
         }
-        if (stateTicks() > 2000) {
+        if (stateTicks(d) > 2000) {
             d->present = DEVICE_UNKNOWN;
             dev_log_status_change(&d->bus, d->present);
-            state = STATE_ERROR;
+            d->state = MAX31725_STATE_ERROR;
             break;
         }
         break;
     }
-    case STATE_RUN:
+    case MAX31725_STATE_RUN:
         if (! dev_max31725_read(d)) {
             d->present = DEVICE_FAIL;
             dev_log_status_change(&d->bus, d->present);
-            state = STATE_ERROR;
+            d->state = MAX31725_STATE_ERROR;
             break;
         }
         log_printf(LOG_INFO, "MAX31725 temperature %f", d->temp);
-        state = STATE_PAUSE;
+        d->state = MAX31725_STATE_PAUSE;
         break;
-    case STATE_PAUSE:
-        if (stateTicks() > POLL_DELAY_TICKS) {
-            state = STATE_RUN;
+    case MAX31725_STATE_PAUSE:
+        if (stateTicks(d) > POLL_DELAY_TICKS) {
+            d->state = MAX31725_STATE_RUN;
         }
         break;
-    case STATE_ERROR:
-        if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = STATE_RESET;
+    case MAX31725_STATE_ERROR:
+        if (stateTicks(d) > ERROR_DELAY_TICKS) {
+            d->state = MAX31725_STATE_RESET;
         }
         break;
+    default:
+        d->state = MAX31725_STATE_RESET;
     }
-    if (old_state != state) {
-        old_state = state;
-        stateStartTick = osKernelSysTick();
+
+    if (old_state != d->state) {
+        d->stateStartTick = osKernelSysTick();
     }
 }
