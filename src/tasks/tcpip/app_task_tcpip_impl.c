@@ -84,7 +84,7 @@ void task_tcpip_init()
   /* Initialize the LwIP stack */
   Netif_Config();
 
-  log_printf(LOG_DEBUG, "starting apps...");
+  log_printf(LOG_DEBUG, "starting TCP/IP apps");
 
   /* Initialize webserver demo */
   http_server_init();
