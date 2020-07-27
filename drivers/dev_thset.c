@@ -17,6 +17,8 @@
 
 #include "dev_thset.h"
 
+#include <string.h>
+
 #include "dev_thset_types.h"
 #include "cmsis_os.h"
 #include "stm32f7xx_hal.h"
@@ -34,32 +36,34 @@ static const int16_t tempMaxCrit = 80;
 static const int16_t tempMinWarn = 0;
 static const int16_t tempMaxWarn = 60;
 
-static void struct_thset_init(Dev_thset *d)
+bool dev_thset_add(Dev_thset *d, const char *name)
 {
-    d->state = THSET_STATE_0;
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        d->th[i].valid = 0;
-        d->th[i].rawTemp = 0;
-    }
+    if (d->count >= DEV_THSET_MAX_COUNT)
+        return false;
+    int i = d->count;
+    d->sensors[i].hdr.raw = 0;
+    d->sensors[i].hdr.b.type = IPMI_SENSOR_TEMPERATURE;
+    strncpy(d->sensors[i].name, name, SENSOR_NAME_SIZE-1);
+    d->count++;
+    return true;
 }
 
-void dev_thset_read(Dev_thset *d)
-{
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        int16_t rawTemp;
-        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
-        int16_t temp = rawTemp / 32;
-        d->th[i].valid = (ret == HAL_OK) && (temp > tempMinValid) && (temp < tempMaxValid);
-        d->th[i].rawTemp = rawTemp;
-    }
-}
+//void dev_thset_read(Dev_thset *d)
+//{
+//    for(int i=0; i<DEV_THERM_COUNT; i++) {
+//        int16_t rawTemp;
+//        HAL_StatusTypeDef ret = adt7301_read_temp(i, &rawTemp);
+//        int16_t temp = rawTemp / 32;
+//        d->th[i].valid = (ret == HAL_OK) && (temp > tempMinValid) && (temp < tempMaxValid);
+//        d->th[i].rawTemp = rawTemp;
+//    }
+//}
 
-SensorStatus dev_adt7301_status(const Dev_adt7301 *d)
+SensorStatus dev_thset_sensor_status(const GenericSensor *d)
 {
-    if (!d->valid)
+    if (d->hdr.b.state != DEVICE_NORMAL)
         return SENSOR_UNKNOWN;
-    int16_t temp = d->rawTemp;
-    temp /= 32;
+    double temp = d->value;
     if (temp < tempMinCrit || temp > tempMaxCrit) {
         return SENSOR_CRITICAL;
     }
@@ -72,8 +76,8 @@ SensorStatus dev_adt7301_status(const Dev_adt7301 *d)
 SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 {
     SensorStatus maxStatus = SENSOR_UNKNOWN;
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        const SensorStatus status = dev_adt7301_status(&d->th[i]);
+    for (int i=0; i < d->count; i++) {
+        const SensorStatus status = dev_thset_sensor_status(&d->sensors[i]);
         if (status > maxStatus)
             maxStatus = status;
     }
@@ -83,23 +87,23 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 static uint32_t thermal_shutdown_start_tick = 0;
 static const int thermal_shutdown_min_period_ticks = 5000;
 
-thset_state_t thermal_shutdown_check(Dev_thset *d)
+void dev_thset_run(Dev_thset *d)
 {
     int valid_count = 0;
     int critical_count = 0;
-    for(int i=0; i<DEV_THERM_COUNT; i++) {
-        if (d->th[i].valid) {
+    for (int i=0; i < d->count; i++) {
+        if (d->sensors[i].hdr.b.state == DEVICE_NORMAL) {
             valid_count++;
-            int16_t temp = d->th[i].rawTemp / 32;
+            double temp = d->sensors[i].value;
             if (temp > tempMaxCrit)
                 critical_count++;
         }
     }
     // minimum 2 sensors
     if (valid_count < 2)
-        return d->state;
+        return;
     const int shutdown_condition = (critical_count >= 2);
-    const int recover_condition = (valid_count == DEV_THERM_COUNT) && (critical_count == 0);
+    const int recover_condition = (valid_count == d->count) && (critical_count == 0);
     switch (d->state) {
     case THSET_STATE_0:
         if (shutdown_condition) {
@@ -117,9 +121,9 @@ thset_state_t thermal_shutdown_check(Dev_thset *d)
             uint32_t period = osKernelSysTick() - thermal_shutdown_start_tick;
             if (period >= thermal_shutdown_min_period_ticks) {
                 log_put(LOG_CRIT, "Temperature critical, shutdown");
-                for (int i=0; i < DEV_THERM_COUNT; i++) {
-                    int16_t temp = d->th[i].rawTemp;
-                    log_printf(LOG_CRIT, "Temperature sensor [%d]: %d", i, temp / 32);
+                for (int i=0; i < d->count; i++) {
+                    double temp = d->sensors[i].value;
+                    log_printf(LOG_CRIT, "Temperature sensor [%d]: %f", i, temp);
                 }
                 d->state = THSET_STATE_2;
             }
@@ -135,32 +139,9 @@ thset_state_t thermal_shutdown_check(Dev_thset *d)
     default:
         break;
     }
-    return d->state;
 }
 
 void clear_thermal_shutdown(Dev_thset *d)
 {
     d->state = THSET_STATE_0;
-}
-
-void dev_thset_init(Dev_thset *d)
-{
-    struct_thset_init(d);
-}
-
-void dev_thset_run(Dev_thset *d)
-{
-   uint32_t ticks = osKernelSysTick() - thermReadTick;
-   if (ticks > thermReadInterval) {
-       thermReadTick = osKernelSysTick();
-       dev_thset_read(d);
-       int allzero = 1;
-       for (int i=0; i < DEV_THERM_COUNT; i++)
-           if (d->th[i].valid && d->th[i].rawTemp != 0)
-               allzero = 0;
-       if (allzero)
-           for (int i=0; i < DEV_THERM_COUNT; i++)
-               d->th[i].valid = 0;
-   }
-   thermal_shutdown_check(d);
 }

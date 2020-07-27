@@ -38,7 +38,7 @@ static BusInterface cru16_max31725_bus_info = {
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    Dev_max31725 therm1;
+    Dev_max31725 therm1 = {0};
     therm1.bus = cru16_max31725_bus_info;
     while (1)
     {

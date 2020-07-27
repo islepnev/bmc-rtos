@@ -138,7 +138,6 @@ static bool old_inut_power_critical = false;
 void powermon_task_init(void)
 {
     clearOldSensorStatus();
-    dev_thset_init(get_dev_thset());
 }
 
 void change_state(PmState state)

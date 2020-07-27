@@ -1,19 +1,19 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "app_task_powermon.h"
 
@@ -28,6 +28,8 @@
 #include "ipmi_sensors.h"
 #include "debug_helpers.h"
 #include "max31725/dev_max31725.h"
+#include "dev_thset_types.h"
+#include "dev_thset.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
@@ -48,16 +50,27 @@ static BusInterface tdc64_max31725_2_bus_info = {
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    Dev_max31725 therm1;
+    static Dev_max31725 therm1;
+    static Dev_max31725 therm2;
     therm1.bus = tdc64_max31725_1_bus_info;
-    Dev_max31725 therm2;
     therm2.bus = tdc64_max31725_2_bus_info;
+    Dev_thset *thset = get_dev_thset();
+    Dev_thset zz = {0};
+    *thset = zz;
+    dev_thset_add(thset, "TDC-A");
+    dev_thset_add(thset, "TDC-B");
+
     while (1)
     {
         // task_sfpiic_run(); // broken on tdc64
 #ifdef BOARD_TDC64
         dev_max31725_run(&therm1);
+        thset->sensors[0].value = therm1.temp;
+        thset->sensors[0].hdr.b.state = (therm1.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         dev_max31725_run(&therm2);
+        thset->sensors[1].value = therm2.temp;
+        thset->sensors[1].hdr.b.state = (therm2.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        dev_thset_run(thset);
 #endif
         task_digipot_run();
         task_powermon_run();

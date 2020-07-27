@@ -18,6 +18,7 @@
 #ifndef DEV_THSET_H
 #define DEV_THSET_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "dev_common_types.h"
@@ -27,11 +28,12 @@
 extern "C" {
 #endif
 
-void dev_thset_init(Dev_thset *d);
+bool dev_thset_add(Dev_thset *d, const char *name);
+
 void dev_thset_run(Dev_thset *d);
 SensorStatus dev_thset_thermStatus(const Dev_thset *d);
-int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
-thset_state_t thermal_shutdown_check(Dev_thset *d);
+//int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
+//thset_state_t thermal_shutdown_check(Dev_thset *d);
 void clear_thermal_shutdown(Dev_thset *d);
 
 #ifdef __cplusplus

@@ -35,12 +35,11 @@ typedef enum {
     MAX31725_STATE_ERROR
 } dev_max31725_state_t;
 
-
 typedef struct Dev_max31725 {
     BusInterface bus;
-    DeviceStatus present;
+    DeviceStatus device_status;
     dev_max31725_state_t state;
-    uint32_t stateStartTick;
+    uint32_t state_start_tick;
     double temp;
 } Dev_max31725;
 

@@ -28,7 +28,7 @@ static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 static uint32_t stateTicks(Dev_max31725 *d)
 {
-    return osKernelSysTick() - d->stateStartTick;
+    return osKernelSysTick() - d->state_start_tick;
 }
 
 void dev_max31725_run(Dev_max31725 *d)
@@ -38,15 +38,15 @@ void dev_max31725_run(Dev_max31725 *d)
     case MAX31725_STATE_RESET: {
         if (dev_max31725_detect(d)) {
             d->state = MAX31725_STATE_RUN;
-            d->present = DEVICE_NORMAL;
-            dev_log_status_change(&d->bus, d->present);
+            d->device_status = DEVICE_NORMAL;
+            dev_log_status_change(&d->bus, d->device_status);
             break;
         } else {
             d->state = MAX31725_STATE_ERROR;
         }
         if (stateTicks(d) > 2000) {
-            d->present = DEVICE_UNKNOWN;
-            dev_log_status_change(&d->bus, d->present);
+            d->device_status = DEVICE_UNKNOWN;
+            dev_log_status_change(&d->bus, d->device_status);
             d->state = MAX31725_STATE_ERROR;
             break;
         }
@@ -54,8 +54,8 @@ void dev_max31725_run(Dev_max31725 *d)
     }
     case MAX31725_STATE_RUN:
         if (! dev_max31725_read(d)) {
-            d->present = DEVICE_FAIL;
-            dev_log_status_change(&d->bus, d->present);
+            d->device_status = DEVICE_FAIL;
+            dev_log_status_change(&d->bus, d->device_status);
             d->state = MAX31725_STATE_ERROR;
             break;
         }
@@ -77,6 +77,6 @@ void dev_max31725_run(Dev_max31725 *d)
     }
 
     if (old_state != d->state) {
-        d->stateStartTick = osKernelSysTick();
+        d->state_start_tick = osKernelSysTick();
     }
 }

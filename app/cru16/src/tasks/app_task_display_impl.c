@@ -212,9 +212,9 @@ static void print_thset(const Dev_thset *d)
 {
     print_goto(DISPLAY_TEMP_Y, 1);
     printf("Temp: ");
-    for (int i=0; i<DEV_THERM_COUNT; i++) {
-        if (d->th[i].valid)
-            printf("%5.1f", d->th[i].rawTemp / 32.0);
+    for (int i=0; i<d->count; i++) {
+        if (d->sensors[i].hdr.b.state == DEVICE_NORMAL)
+            printf("%5.1f", d->sensors[i].value);
         else
             printf(" --- ");
         printf(" ");

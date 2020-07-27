@@ -14,12 +14,14 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef DEV_THSET_TYPES_H
 #define DEV_THSET_TYPES_H
 
 #include <stdint.h>
 
-#include "bsp.h"
+#include "dev_common_types.h"
+#include "ipmi_sensor_types.h"
 
 typedef struct Dev_adt7301 {
     int valid;
@@ -32,9 +34,12 @@ typedef enum {
     THSET_STATE_2,
 } thset_state_t;
 
+enum {DEV_THSET_MAX_COUNT = 8};
+
 typedef struct Dev_thset {
     thset_state_t state;
-    Dev_adt7301 th[DEV_THERM_COUNT];
+    int count;
+    GenericSensor sensors[DEV_THSET_MAX_COUNT];
 } Dev_thset;
 
 #endif // DEV_THSET_TYPES_H

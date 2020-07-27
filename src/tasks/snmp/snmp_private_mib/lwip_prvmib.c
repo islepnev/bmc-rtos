@@ -137,7 +137,7 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    s32_t t = (s32_t)getDevicesConst()->thset.th[0].rawTemp * 100 / 32;
+    s32_t t = (s32_t)getDevicesConst()->thset.sensors[0].value * 100;
     *uint_ptr = (s32_t)(t);
     return sizeof(*uint_ptr);
 }

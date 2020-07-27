@@ -16,7 +16,10 @@
 */
 
 #include "ipmi_sensors.h"
+
+#include <assert.h>
 #include <string.h>
+
 #include "powermon/dev_pm_sensors.h"
 #include "dev_pm_sensors_config.h"
 #include "powermon/dev_powermon.h"
@@ -48,36 +51,17 @@ void sync_ipmi_sensors(void)
             strncpy(gs->name, s->label, SENSOR_NAME_SIZE-1);
         }
     }
+
+    assert(index + dev->thset.count < MAX_SENSOR_COUNT);
     // Temperature sensors
     const Dev_thset *thset = &dev->thset;
-    {
+    for (int i=0; i<thset->count; i++) {
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
-        gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-        gs->hdr.b.state = thset->th[0].valid ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        gs->value = thset->th[0].rawTemp / 32.0;
-        strncpy(gs->name, "Temp PLL", SENSOR_NAME_SIZE-1);
+        *gs = thset->sensors[i];
     }
-    {
-        GenericSensor *gs = &ipmi_sensors.sensors[index++];
-        gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-        gs->hdr.b.state = thset->th[1].valid ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        gs->value = thset->th[1].rawTemp / 32.0;
-        strncpy(gs->name, "Temp TDC-A", SENSOR_NAME_SIZE-1);
-    }
-    {
-        GenericSensor *gs = &ipmi_sensors.sensors[index++];
-        gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-        gs->hdr.b.state = thset->th[2].valid ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        gs->value = thset->th[2].rawTemp / 32.0;
-        strncpy(gs->name, "Temp TDC-B", SENSOR_NAME_SIZE-1);
-    }
-    {
-        GenericSensor *gs = &ipmi_sensors.sensors[index++];
-        gs->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-        gs->hdr.b.state = thset->th[3].valid ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        gs->value = thset->th[3].rawTemp / 32.0;
-        strncpy(gs->name, "Temp TDC-C", SENSOR_NAME_SIZE-1);
-    }
+
+    assert(index + 2 < MAX_SENSOR_COUNT);
+
     // PLL pseudo sensor
     const Dev_ad9545 *pll = &dev->pll;
     {
