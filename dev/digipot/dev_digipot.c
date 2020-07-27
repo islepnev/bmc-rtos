@@ -50,14 +50,8 @@ void dev_ad5141_write(Dev_ad5141 *d)
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    ad5141_reset_bus(&d->bus);
-    int detected = ad5141_nop(&d->bus);
-    if (detected) {
-        d->deviceStatus = DEVICE_NORMAL;
-    } else {
-        ad5141_reset_bus(&d->bus);
-        d->deviceStatus = DEVICE_UNKNOWN;
-    }
+    bool detected = ad5141_nop(&d->bus);
+    d->deviceStatus = detected ? DEVICE_NORMAL : DEVICE_UNKNOWN;
     return d->deviceStatus;
 }
 
