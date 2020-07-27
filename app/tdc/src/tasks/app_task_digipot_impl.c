@@ -103,11 +103,18 @@ void task_digipot_run(void)
         break;
     }
     case STATE_DETECT: {
-        int pots_detected = digipot_detect(d);
-        if (pots_detected > 0)
-            state = STATE_RUN;
-        else
+        int pots_detected_1 = digipot_detect(d);
+        if (pots_detected_1 == 0) {
             osDelay(100);
+            break;
+        }
+        int pots_detected_2 = digipot_detect(d);
+        if (pots_detected_2 == pots_detected_1) {
+            log_printf(LOG_INFO, "Found %d digipots", pots_detected_2);
+            state = STATE_RUN;
+            break;
+        }
+        osDelay(100);
         break;
     }
     case STATE_RUN:
