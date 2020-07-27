@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-void vxsiic_reset_i2c_master(void);
 bool vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
 bool vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size);
 bool vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);

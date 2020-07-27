@@ -44,7 +44,6 @@ static bool vxsiic_select_pp(Dev_vxsiicm *d, uint8_t pp)
     if (pp >= VXSIIC_SLOTS)
         return false;
 
-    vxsiic_reset_i2c_master();
     vxsiic_reset_mux();
 
     uint8_t channel = map_slot_to_channel[pp];

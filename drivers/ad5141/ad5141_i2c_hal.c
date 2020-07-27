@@ -24,12 +24,6 @@
 
 static const int I2C_TIMEOUT_MS = 10;
 
-void ad5141_reset_bus(BusInterface *bus)
-{
-    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
-    i2c_driver_reset(hi2c);
-}
-
 bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data)
 {
     uint16_t DevAddress = bus->address << 1;

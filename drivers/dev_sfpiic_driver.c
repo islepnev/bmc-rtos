@@ -28,11 +28,6 @@
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;
 
-void sfpiic_master_reset(void)
-{
-    i2c_driver_reset(&hi2c_sfpiic);
-}
-
 void sfpiic_switch_reset(void)
 {
 //    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_RESET);

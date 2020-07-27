@@ -329,7 +329,6 @@ bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup)
 
 void ad9545_reset(BusInterface *bus)
 {
-    ad9545_reset_bus(bus);
     // toggle reset_b pin
     HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);

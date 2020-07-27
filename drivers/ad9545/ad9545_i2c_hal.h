@@ -26,7 +26,6 @@
 extern "C" {
 #endif
 
-void ad9545_reset_bus(BusInterface *bus);
 bool ad9545_i2c_detect(BusInterface *bus);
 bool ad9545_read1 (BusInterface *bus, uint16_t reg, uint8_t *data);
 bool ad9545_write1(BusInterface *bus, uint16_t reg, uint8_t data);

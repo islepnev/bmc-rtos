@@ -42,7 +42,6 @@ void vxsiic_reset_mux(void)
 bool vxsiic_detect_mux(void)
 {
     for (int i=0; i<3; i++) {
-        vxsiic_reset_i2c_master();
         vxsiic_reset_mux();
         uint8_t i2c_address= PCA9548_BASE_I2C_ADDRESS + i;
         uint8_t data;

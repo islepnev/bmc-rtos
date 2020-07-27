@@ -161,7 +161,6 @@ DeviceStatus pm_sensor_detect(pm_sensor *d)
     d->lastStatusUpdatedTick = osKernelSysTick();
     uint16_t manuf_id;
     uint16_t device_id;
-    ina226_reset_bus(&d->bus);
     int detected =(
         // ina226_i2c_Detect(&d->bus)
         ina226_i2c_Read(&d->bus, INA226_REG_MANUFACTURER_ID, &manuf_id)

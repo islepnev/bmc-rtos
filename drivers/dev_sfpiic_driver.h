@@ -27,7 +27,6 @@ extern "C" {
 
 enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
 
-void sfpiic_master_reset(void);
 void sfpiic_switch_reset(void);
 bool sfpiic_device_detect(uint16_t addr);
 bool sfpiic_switch_set_channel(uint8_t channel);

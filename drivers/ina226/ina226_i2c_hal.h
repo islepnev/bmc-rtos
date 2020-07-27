@@ -42,7 +42,6 @@ enum {
     INA226_REG_DEVICE_ID = 0xFF
 };
 
-void ina226_reset_bus(BusInterface *bus);
 bool ina226_i2c_Detect(BusInterface *bus);
 bool ina226_i2c_Read(BusInterface *bus, uint16_t reg, uint16_t *data);
 bool ina226_i2c_Write(BusInterface *bus, uint16_t reg, uint16_t data);

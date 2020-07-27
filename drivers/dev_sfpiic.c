@@ -27,7 +27,6 @@ static bool dev_sfpiic_select_ch(uint8_t ch)
     if (ch >= SFPIIC_CH_CNT)
         return false;
 
-    sfpiic_master_reset();
     sfpiic_switch_reset();
 
     return sfpiic_switch_set_channel(ch);
@@ -43,7 +42,6 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    sfpiic_master_reset();
     sfpiic_switch_reset();
     if (! sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
         status = DEVICE_FAIL;

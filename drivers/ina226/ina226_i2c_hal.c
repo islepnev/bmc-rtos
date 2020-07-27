@@ -22,12 +22,6 @@
 
 static const int I2C_TIMEOUT_MS = 10;
 
-void ina226_reset_bus(BusInterface *bus)
-{
-    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
-    i2c_driver_reset(hi2c);
-}
-
 bool ina226_i2c_Detect(BusInterface *bus)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);

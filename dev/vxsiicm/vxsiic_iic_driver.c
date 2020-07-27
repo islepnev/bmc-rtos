@@ -21,11 +21,6 @@
 
 static const int I2C_TIMEOUT_MS = 25;
 
-void vxsiic_reset_i2c_master(void)
-{
-    i2c_driver_reset(&vxsiic_hi2c);
-}
-
 bool vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
 {
     return i2c_driver_read(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
