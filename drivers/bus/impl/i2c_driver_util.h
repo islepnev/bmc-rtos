@@ -28,6 +28,10 @@
 extern "C" {
 #endif
 
+void raise_transfer_error(struct __I2C_HandleTypeDef *hi2c);
+void clear_transfer_error(struct __I2C_HandleTypeDef *hi2c);
+bool is_transfer_ok(struct __I2C_HandleTypeDef *hi2c);
+
 bool i2c_driver_util_init(void);
 SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c);
 SemaphoreHandle_t dev_sem_by_index(int index);

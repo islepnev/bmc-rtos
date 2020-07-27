@@ -27,6 +27,8 @@
 #include "error_handler.h"
 #include "log/logbuffer.h"
 
+enum {I2C_BUS_COUNT = 4};
+
 // interrupt wait semaphores
 osSemaphoreId i2c1_it_sem;
 osSemaphoreId i2c2_it_sem;
@@ -47,6 +49,30 @@ osSemaphoreDef(i2c1_dev_sem);
 osSemaphoreDef(i2c2_dev_sem);
 osSemaphoreDef(i2c3_dev_sem);
 osSemaphoreDef(i2c4_dev_sem);
+
+// transfer error flags
+bool transfer_error[I2C_BUS_COUNT] = {0};
+
+void clear_transfer_error(struct __I2C_HandleTypeDef *hi2c)
+{
+    int index = hi2c_index(hi2c);
+    if (index == 0 || index > I2C_BUS_COUNT) return;
+    transfer_error[index-1] = 0;
+}
+
+void raise_transfer_error(struct __I2C_HandleTypeDef *hi2c)
+{
+    int index = hi2c_index(hi2c);
+    if (index == 0 || index > I2C_BUS_COUNT) return;
+    transfer_error[index-1] = true;
+}
+
+bool is_transfer_ok(struct __I2C_HandleTypeDef *hi2c)
+{
+    int index = hi2c_index(hi2c);
+    if (index == 0 || index > I2C_BUS_COUNT) return false;
+    return 0 == transfer_error[index-1];
+}
 
 bool i2c_driver_util_init(void)
 {
@@ -100,7 +126,7 @@ SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
 
 SemaphoreHandle_t dev_sem_by_index(int index)
 {
-    assert(index >=1 && index <= 4);
+    assert(index >=1 && index <= I2C_BUS_COUNT);
     switch (index) {
     case 1: return i2c1_dev_sem;
     case 2: return i2c2_dev_sem;

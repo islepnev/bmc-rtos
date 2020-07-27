@@ -19,12 +19,8 @@
 
 #include "i2c_driver_callbacks.h"
 
-#include "cmsis_os.h"
-#include "log/logbuffer.h"
-#include "error_handler.h"
 #include "i2c.h"
 #include "i2c_driver_util.h"
-#include "i2c_driver_impl.h"
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
@@ -48,14 +44,11 @@ void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    log_printf(LOG_WARNING, "%s I2C%d error, code %d\n", __func__, hi2c_index(hi2c), hi2c->ErrorCode);
-    // reinitialize I2C
-    i2c_driver_reset_internal(hi2c);
+    raise_transfer_error(hi2c);
     release_it_sem(hi2c);
 }
 
 void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    log_printf(LOG_WARNING, "%s I2C%d\n", __func__, hi2c_index(hi2c));
     release_it_sem(hi2c);
 }
