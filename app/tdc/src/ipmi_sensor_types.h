@@ -47,7 +47,7 @@ typedef struct GenericSensor {
 } GenericSensor;
 #pragma pack(pop)
 
-enum { MAX_SENSOR_COUNT = 32 };
+enum { MAX_SENSOR_COUNT = 48 };
 
 typedef struct IpmiSensors {
     uint32_t sensor_count;
