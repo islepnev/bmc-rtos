@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LOGBUFFER_H
-#define LOGBUFFER_H
+#ifndef DEVICE_STATUS_LOG_H
+#define DEVICE_STATUS_LOG_H
 
-#include <stdint.h>
-#include "log.h"
+#include "log/log_prio.h"
+#include "dev_common_types.h"
+#include "bus/bus_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {LOG_BUF_SIZE = 100};
-
-struct LogEntry;
-typedef struct LogEntry LogEntry;
-
-void log_put_long(LogPriority priority, uint32_t tick, const char *str);
-void log_get(int index, LogEntry *dest);
-uint32_t log_get_wptr(void);
-uint32_t log_get_count(void);
+LogPriority device_status_log_priority(DeviceStatus status);
+void dev_log_status_change(BusInterface *bus, DeviceStatus status);
+LogPriority sensor_status_log_priority(SensorStatus status);
+void sensor_log_status_change(BusInterface *bus, SensorStatus status);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // LOGBUFFER_H
+
+#endif // DEVICE_STATUS_LOG_H

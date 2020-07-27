@@ -23,6 +23,7 @@
 #include <string.h>
 #include "cmsis_os.h"
 #include "logentry.h"
+#include "log_prio.h"
 
 static unsigned int log_wptr = 0;
 static unsigned int log_count = 0;
@@ -44,39 +45,6 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
     buf[log_wptr].tick = tick;
     log_wptr = (log_wptr+1) % LOG_BUF_SIZE;
     log_count++;
-}
-
-void log_printf(LogPriority priority, const char *format, ...)
-{
-    enum {buf_size = LOG_LINE_SIZE};
-    static va_list args;
-    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
-
-    va_start(args, format);
-    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
-    va_end(args);
-    size_t n_written = (n > buf_size) ? buf_size : n;
-    if (n_written > 0)
-        log_put_long(priority, osKernelSysTick(), buffer);
-}
-
-void log_printf_debug(const char *format, ...)
-{
-    enum {buf_size = LOG_LINE_SIZE};
-    static va_list args;
-    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
-
-    va_start(args, format);
-    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
-    va_end(args);
-    size_t n_written = (n > buf_size) ? buf_size : n;
-    if (n_written > 0)
-        log_put_long(LOG_DEBUG, osKernelSysTick(), buffer);
-}
-
-void log_put(LogPriority priority, const char *str)
-{
-    log_put_long(priority, osKernelSysTick(), str);
 }
 
 void log_get(int index, LogEntry *dest)

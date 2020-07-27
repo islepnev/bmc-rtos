@@ -44,6 +44,7 @@ file(GLOB_RECURSE Dev_HEADERS
 )
 
 file(GLOB Dev_SRCS
+    ${MY_LIB_DIR}/dev/common/*.c
     ${MY_LIB_DIR}/dev/ad9516/*.c
     ${MY_LIB_DIR}/dev/ad9545/*.c
 #    ${MY_LIB_DIR}/dev/digipot/*.c
@@ -143,6 +144,7 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${STM32HAL_INCLUDE_DIR}
     ${BSP_INC_DIRS}
     ${MY_LIB_DIR}/dev
+    ${MY_LIB_DIR}/dev/common
     ${MY_LIB_DIR}/drivers
     ${MY_SRC_DIR}/common
     ${MY_SRC_DIR}/eth

@@ -15,28 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LOGBUFFER_H
-#define LOGBUFFER_H
+#ifndef LOG_H
+#define LOG_H
 
-#include <stdint.h>
-#include "log.h"
+#include "log_prio.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {LOG_BUF_SIZE = 100};
-
-struct LogEntry;
-typedef struct LogEntry LogEntry;
-
-void log_put_long(LogPriority priority, uint32_t tick, const char *str);
-void log_get(int index, LogEntry *dest);
-uint32_t log_get_wptr(void);
-uint32_t log_get_count(void);
+void log_printf(LogPriority priority, const char *format, ...);
+void log_printf_debug(const char *format, ...);
+void log_put(LogPriority priority, const char *str);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // LOGBUFFER_H
+#endif // LOG_H
