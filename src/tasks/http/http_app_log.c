@@ -32,19 +32,31 @@ static int8_t http_serve_log_entry(struct http_server_t *server, uint32_t index)
     log_get(index, &ent);
     const char *css_class = "default";
     switch (ent.priority) {
-    case LOG_EMERG: css_class = "purple"; break;
-    case LOG_ALERT: css_class = "purple"; break;
-    case LOG_CRIT: css_class = "purple"; break;
-    case LOG_ERR: css_class = "red"; break;
-    case LOG_WARNING: css_class = "yellow"; break;
-    case LOG_NOTICE: css_class = "blue"; break;
-    case LOG_INFO: css_class = "green"; break;
-    case LOG_DEBUG: break;
-    default: css_class = "purple"; break;
+    case LOG_EMERG:   css_class = "log log-emerg";  break;
+    case LOG_ALERT:   css_class = "log log-alert";  break;
+    case LOG_CRIT:    css_class = "log log-crit";   break;
+    case LOG_ERR:     css_class = "log log-err";    break;
+    case LOG_WARNING: css_class = "log log-warn";   break;
+    case LOG_NOTICE:  css_class = "log log-notice"; break;
+    case LOG_INFO:    css_class = "log log-info";   break;
+    case LOG_DEBUG:   css_class = "log log-debug";  break;
+    default:          css_class = "log log-debug";  break;
+    }
+    const char *prio = "";
+    switch (ent.priority) {
+    case LOG_EMERG:   prio = "emergency"; break;
+    case LOG_ALERT:   prio = "alert";     break;
+    case LOG_CRIT:    prio = "critical";  break;
+    case LOG_ERR:     prio = "error";     break;
+    case LOG_WARNING: prio = "warning";   break;
+    case LOG_NOTICE:  prio = "notice";    break;
+    case LOG_INFO:    prio = "info";      break;
+    case LOG_DEBUG:   prio = "debug";     break;
+    default:          prio = "";          break;
     }
     enum {size=100};
     static char buf[size+1];
-    snprintf(buf, size, "<span class=\"%s\">%lu.%03lu ", css_class,
+    snprintf(buf, size, "<span class=\"%s\">%s</span> %lu.%03lu ", css_class, prio,
            ent.tick/1000, ent.tick%1000);
     int ret = http_server_write(server, buf);
     if (ret != 0)
