@@ -90,6 +90,7 @@ static bool i2c_driver_before_hal_call(const char *title, struct __I2C_HandleTyp
     if (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance)) {
         log_printf(LOG_CRIT, "%s: I2C %d.%02X bus busy\n",
                    title, hi2c_index(hi2c), DevAddress >> 1);
+        i2c_driver_reset_internal(hi2c);
         return false;
     }
     return true;
