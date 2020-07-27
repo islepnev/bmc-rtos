@@ -33,8 +33,7 @@ static void start_task_powermon( void const *arg)
     (void) arg;
     while (1)
     {
-        bsp_smbus_reset();
-//        task_sfpiic_run();
+        task_sfpiic_run();
         task_powermon_run();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {

@@ -43,7 +43,6 @@ static void start_task_powermon( void const *arg)
     dev_max31725_init(&max31725_bus_info);
     while (1)
     {
-        bsp_smbus_reset();
         task_sfpiic_run();
         // task_therm_run();
         task_powermon_run();
