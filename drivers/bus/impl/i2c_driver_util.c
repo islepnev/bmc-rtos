@@ -60,6 +60,7 @@ bool i2c_driver_util_init(void)
             || NULL == i2c3_it_sem
             || NULL == i2c4_it_sem
             ) {
+        assert(false);
         return false;
     }
     osSemaphoreWait(i2c1_it_sem, osWaitForever);
@@ -77,6 +78,7 @@ bool i2c_driver_util_init(void)
         || NULL == i2c3_dev_sem
         || NULL == i2c4_dev_sem
         ) {
+        assert(false);
         return false;
     }
     return true;
@@ -92,11 +94,13 @@ SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
         return i2c3_it_sem;
     if (hi2c == &hi2c4)
         return i2c4_it_sem;
+    assert(false);
     return NULL;
 }
 
 SemaphoreHandle_t dev_sem_by_index(int index)
 {
+    assert(index >=1 && index <= 4);
     switch (index) {
     case 1: return i2c1_dev_sem;
     case 2: return i2c2_dev_sem;
@@ -117,6 +121,7 @@ int hi2c_index(struct __I2C_HandleTypeDef *hi2c)
         return 3;
     if (hi2c == &hi2c4)
         return 4;
+    assert(false);
     return 0;
 }
 
@@ -130,6 +135,7 @@ struct __I2C_HandleTypeDef * hi2c_handle(BusIndex index)
         return &hi2c3;
     if (4 == index)
         return &hi2c4;
+    assert(false);
     return NULL;
 }
 
