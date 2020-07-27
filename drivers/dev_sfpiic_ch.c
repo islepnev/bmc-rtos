@@ -163,7 +163,8 @@ static bool dev_sfpiic_ch_read_vendor_name(Dev_sfpiic *d, int ch)
 
 bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 {
-    if (! sfpiic_get_ch_i2c_status(ch))
+    uint16_t addr = SFP_MAIN_I2C_ADDRESS;
+    if (! sfpiic_get_ch_i2c_status(addr))
         return false;
 
     if(ch<3) {

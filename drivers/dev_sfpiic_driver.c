@@ -88,11 +88,9 @@ bool sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint
     return i2c_driver_mem_write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_16BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
-bool sfpiic_get_ch_i2c_status(uint8_t ch)
+bool sfpiic_get_ch_i2c_status(uint16_t addr)
 {
-    if (!i2c_driver_get_master_ready(&hi2c_sfpiic)) {
-        log_printf(LOG_WARNING, "%s (port %2d) I2C controller not ready\n", __func__, ch);
-        return false;
-    }
-    return true;
+    addr = (uint16_t)((addr<<1)|1);
+    int trials = 2;
+    return i2c_driver_detect(&hi2c_sfpiic, addr, trials, SFPI2C_TIMEOUT_MS);
 }

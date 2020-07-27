@@ -35,7 +35,7 @@ bool sfpiic_read(uint8_t *pData, uint16_t Size);
 bool sfpiic_write(uint8_t *pData, uint16_t Size);
 bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
-bool sfpiic_get_ch_i2c_status(uint8_t ch);
+bool sfpiic_get_ch_i2c_status(uint16_t addr);
 
 #ifdef  __cplusplus
 }
