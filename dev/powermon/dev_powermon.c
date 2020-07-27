@@ -153,14 +153,24 @@ int monDetect(Dev_powermon *d)
 
 int monReadValues(Dev_powermon *d)
 {
+    int ok = 0;
     int err = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         pm_sensor *sensor = &d->sensors[i];
-        if (sensor->deviceStatus == DEVICE_NORMAL) {
-            DeviceStatus s = pm_sensor_read(sensor);
-            if (s != DEVICE_NORMAL)
-                err++;
+        if (err >= 2) {
+            pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
+        } else {
+            if (sensor->deviceStatus == DEVICE_NORMAL) {
+                DeviceStatus s = pm_sensor_read(sensor);
+                if (s == DEVICE_NORMAL)
+                    ok++;
+                else
+                    err++;
+            }
         }
+    }
+    if (ok == 0) {
+        log_put(LOG_ERR, "No SMBus sensors read");
     }
     return err;
 }
