@@ -19,7 +19,8 @@
 #include "cmsis_os.h"
 #include "max31725/dev_max31725.h"
 #include "app_shared_data.h"
-#include "logbuffer.h"
+#include "log.h"
+#include "device_status_log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
@@ -45,22 +46,26 @@ void task_therm_run(void)
     Dev_max31725 *d = get_dev_max31725();
     switch (state) {
     case STATE_RESET: {
-        DeviceStatus status = dev_max31725_detect(d);
-        if (status == DEVICE_NORMAL) {
+        if (dev_max31725_detect(d) && dev_max31725_read(d)) {
             state = STATE_RUN;
-            log_printf(LOG_INFO, "MAX31725 thermometer Ok");
+            d->present = DEVICE_NORMAL;
+            dev_log_status_change(&d->bus, d->present);
             break;
+        } else {
+            state = STATE_ERROR;
         }
         if (stateTicks() > 2000) {
-            log_printf(LOG_ERR, "MAX31725 thermometer not found on I2C %d.%02X",
-                    d->bus.bus_number, d->bus.address);
+            d->present = DEVICE_UNKNOWN;
+            dev_log_status_change(&d->bus, d->present);
             state = STATE_ERROR;
             break;
         }
         break;
     }
     case STATE_RUN:
-        if (DEVICE_NORMAL != dev_max31725_read(d)) {
+        if (! dev_max31725_read(d)) {
+            d->present = DEVICE_FAIL;
+            dev_log_status_change(&d->bus, d->present);
             state = STATE_ERROR;
             break;
         }
@@ -73,9 +78,6 @@ void task_therm_run(void)
         }
         break;
     case STATE_ERROR:
-        if (old_state != state) {
-            log_printf(LOG_ERR, "MAX31725 thermometer error");
-        }
         if (stateTicks() > ERROR_DELAY_TICKS) {
             state = STATE_RESET;
         }

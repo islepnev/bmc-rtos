@@ -1,27 +1,31 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "dev_pm_sensors.h"
+
+#include <assert.h>
+
 #include "dev_pm_sensors_types.h"
 #include "ina226/ina226_i2c_hal.h"
 
 #include "ansi_escape_codes.h"
 #include "display.h"
 #include "logbuffer.h"
+#include "device_status_log.h"
 #include "dev_mcu.h"
 #include "cmsis_os.h"
 
@@ -74,6 +78,7 @@ static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
     if (oldStatus != status) {
         d->deviceStatus = status;
         d->lastStatusUpdatedTick = osKernelSysTick();
+        dev_log_status_change(&d->bus, d->deviceStatus);
     }
 }
 
@@ -102,10 +107,12 @@ static void pm_sensor_set_readPower(pm_sensor *d, double value)
         d->powerMax = value;
 }
 
-static void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
+void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
 {
     SensorStatus oldStatus = d->sensorStatus;
     if (oldStatus != status) {
+        if (false)
+            sensor_log_status_change(&d->bus, status);
         d->sensorStatus = status;
         d->lastStatusUpdatedTick = osKernelSysTick();
     }
@@ -200,9 +207,11 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     uint16_t rawCurrent = 0;
     uint16_t rawPower = 0;
 #endif
-    configreg_t configreg = {0};
+    configreg_t configreg = {{0}};
     int err = 0;
     while (1) {
+        if (err > 0)
+            log_printf(LOG_WARNING, "Sensor %s read error, retry %d", d->label, err);
         if (1
 //                && ina226_i2c_Read(&d->bus, INA226_REG_MASK, &rawMask)
 //                && (rawMask & 0x0400)
@@ -217,8 +226,7 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
             break;
         }
         err++;
-        if (err > ERROR_COUNT_LIMIT) {
-            log_printf(LOG_ERR, "Sensor %s failed", d->label);
+        if (err >= ERROR_COUNT_LIMIT) {
             pm_sensor_set_deviceStatus(d, DEVICE_FAIL);
             pm_sensor_set_sensorStatus(d, SENSOR_UNKNOWN);
             struct_pm_sensor_clear_measurements(d);
