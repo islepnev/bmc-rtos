@@ -35,7 +35,7 @@ static void start_task_powermon( void const *arg)
     (void) arg;
     while (1)
     {
-        task_sfpiic_run();
+        // task_sfpiic_run(); // broken on tdc64
         task_digipot_run();
         task_powermon_run();
         sync_ipmi_sensors();
