@@ -29,6 +29,8 @@ SensorStatus get_clkmux_sensor_status(void)
         return SENSOR_NORMAL;
     case DEVICE_FAIL:
         return SENSOR_CRITICAL;
+    case DEVICE_UNKNOWN:
+        return SENSOR_UNKNOWN;
     default:
         return SENSOR_UNKNOWN;
     }
