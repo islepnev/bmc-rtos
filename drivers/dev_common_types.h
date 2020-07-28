@@ -45,15 +45,44 @@ typedef enum {
     DEV_ERROR    = 0x20U,
 } OpStatusTypeDef;
 
+typedef enum {
+    DEV_CLASS_0, // no class
+    DEV_CLASS_VIRTUAL, // no bus
+    DEV_CLASS_AUXPLL,
+    DEV_CLASS_DIGIPOT,
+    DEV_CLASS_FPGA,
+    DEV_CLASS_PLL,
+    DEV_CLASS_POWERMON,
+    DEV_CLASS_SFP,
+    DEV_CLASS_THERM,
+    DEV_CLASS_VXSIICM,
+    DEV_CLASS_VXSIICS,
+} DeviceClass;
+
 typedef struct DeviceBase {
+    DeviceClass class;
     DeviceStatus device_status; // old name: 'present'
+    SensorStatus sensor;
     BusInterface bus;
     void *priv;
 } DeviceBase;
 
+enum { DEVICE_LIST_SIZE = 16 };
+typedef struct DeviceList {
+    int count;
+    DeviceBase *list[DEVICE_LIST_SIZE];
+} DeviceList;
+
 const char *sensor_status_ansi_str(SensorStatus state);
 const char *sensor_status_text(SensorStatus state);
 char *deviceStatusResultStr(DeviceStatus status);
+
+extern DeviceList deviceList;
+void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
+DeviceBase *find_device(DeviceClass class);
+const DeviceBase *find_device_const(DeviceClass class);
+void *device_priv(DeviceBase *d);
+const void *device_priv_const(const DeviceBase *d);
 
 #ifdef __cplusplus
 }

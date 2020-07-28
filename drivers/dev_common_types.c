@@ -1,6 +1,11 @@
 
 #include "dev_common_types.h"
+
+#include <assert.h>
+
 #include "display.h"
+
+DeviceList deviceList = {0};
 
 const char *sensor_status_ansi_str(SensorStatus state)
 {
@@ -37,3 +42,46 @@ char *deviceStatusResultStr(DeviceStatus status)
         return "???";
     }
 }
+
+void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus)
+{
+    d->class = class;
+    d->bus = bus;
+    d->priv = priv;
+    if (deviceList.count >= DEVICE_LIST_SIZE) {
+        return;
+    }
+    deviceList.list[deviceList.count++] = d;
+}
+
+DeviceBase *find_device(DeviceClass class)
+{
+    for (int i=0; i<deviceList.count; i++) {
+        if (deviceList.list[i]->class == class) {
+            assert(deviceList.list[i]);
+            return deviceList.list[i];
+        }
+    }
+    assert(0);
+    return 0;
+}
+
+const DeviceBase *find_device_const(DeviceClass class)
+{
+    return find_device(class);
+}
+
+void *device_priv(DeviceBase *d)
+{
+    assert(d);
+    assert(d->priv);
+    return d->priv;
+}
+
+const void *device_priv_const(const DeviceBase *d)
+{
+    assert(d);
+    assert(d->priv);
+    return d->priv;
+}
+
