@@ -31,9 +31,13 @@ typedef enum {
     TTVXS_PLL_SOURCE_EXT = 2,
 } ttvxs_pll_source_t;
 
+typedef struct Dev_ttvxs_clkmux_priv {
+    ttvxs_pll_source_t pll_source;
+} Dev_ttvxs_clkmux_priv;
+
 typedef struct Dev_ttvxs_clkmux {
     DeviceBase dev;
-    ttvxs_pll_source_t pll_source;
+    Dev_ttvxs_clkmux_priv priv;
 } Dev_ttvxs_clkmux;
 
 SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d);
