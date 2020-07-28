@@ -96,6 +96,7 @@ file(GLOB_RECURSE Src_HEADERS
 )
 
 file(GLOB Src_SOURCES
+    ${MY_SRC_DIR}/app/*.c
     ${MY_SRC_DIR}/common/*.c
     ${MY_SRC_DIR}/common/log/*.c
     ${MY_SRC_DIR}/config/*.c
@@ -135,6 +136,7 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/dev/common
     ${MY_LIB_DIR}/drivers
+    ${MY_SRC_DIR}/app
     ${MY_SRC_DIR}/common
     ${MY_SRC_DIR}/eth
     ${MY_SRC_DIR}/rtos
