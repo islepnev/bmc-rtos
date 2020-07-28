@@ -43,9 +43,7 @@ extern int enable_stats_display;
 
 struct Devices;
 struct Dev_powermon;
-struct Dev_fpga;
 struct Dev_ttvxs_clkmux;
-struct Dev_auxpll;
 struct Dev_thset;
 struct Dev_vxsiicm;
 struct Dev_sfpiic;

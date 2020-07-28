@@ -27,8 +27,7 @@ DeviceStatus getDeviceStatus(const Devices *d)
     DeviceStatus status = DEVICE_NORMAL;
     if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
         (d->vxsiicm.dev.device_status == DEVICE_FAIL) ||
-        (d->eeprom_config.dev.device_status == DEVICE_FAIL) ||
-        (d->fpga.dev.device_status == DEVICE_FAIL)
+        (d->eeprom_config.dev.device_status == DEVICE_FAIL)
         )
         status = DEVICE_FAIL;
     for (int i=0; i<deviceList.count; i++)

@@ -26,14 +26,15 @@
 
 DeviceStatus getDeviceStatus(const Devices *d)
 {
-    DeviceStatus status = DEVICE_FAIL;
-    if ((d->sfpiic.dev.device_status == DEVICE_NORMAL)
-            // && (d->eeprom_vxspb.dev.device_status == DEVICE_NORMAL)
-            && (d->eeprom_config.dev.device_status == DEVICE_NORMAL)
-            && (d->pll.dev.device_status == DEVICE_NORMAL)
-            && (d->fpga.dev.device_status == DEVICE_NORMAL)
-            )
-        status = DEVICE_NORMAL;
+    DeviceStatus status = DEVICE_NORMAL;
+    if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
+        // (d->eeprom_vxspb.dev.device_status == DEVICE_FAIL) ||
+        (d->eeprom_config.dev.device_status == DEVICE_FAIL)
+        )
+        status = DEVICE_FAIL;
+    for (int i=0; i<deviceList.count; i++)
+        if (deviceList.list[i]->device_status == DEVICE_FAIL)
+            status = DEVICE_FAIL;
     return status;
 }
 

@@ -41,7 +41,6 @@ enum {
 
 typedef struct Devices {
     Dev_thset thset;
-    Dev_fpga fpga;
     Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
     Dev_vxsiicm vxsiicm;

@@ -32,12 +32,9 @@
 
 typedef struct Devices {
     Dev_thset thset;
-    Dev_fpga fpga;
     Dev_sfpiic sfpiic;
     // Dev_eeprom_vxspb eeprom_vxspb;
     Dev_eeprom_config eeprom_config;
-    Dev_ad9545 pll;
-    Dev_auxpll auxpll;
     Dev_powermon pm;
     Dev_digipots pots;
     uint32_t pcb_ver;
