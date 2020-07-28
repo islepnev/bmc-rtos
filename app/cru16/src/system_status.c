@@ -24,14 +24,15 @@
 
 DeviceStatus getDeviceStatus(const Devices *d)
 {
-    DeviceStatus status = DEVICE_FAIL;
-    if ((d->sfpiic.dev.device_status == DEVICE_NORMAL)
-            && (d->sfpiic.dev.device_status == DEVICE_NORMAL)
-            && (d->eeprom_config.dev.device_status == DEVICE_NORMAL)
-            && (d->pll.dev.device_status == DEVICE_NORMAL)
-            && (d->fpga.dev.device_status == DEVICE_NORMAL)
-            )
-        status = DEVICE_NORMAL;
+    DeviceStatus status = DEVICE_NORMAL;
+    if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
+        (d->sfpiic.dev.device_status == DEVICE_FAIL) ||
+        (d->eeprom_config.dev.device_status == DEVICE_FAIL)
+        )
+        status = DEVICE_FAIL;
+    for (int i=0; i<deviceList.count; i++)
+        if (deviceList.list[i]->device_status == DEVICE_FAIL)
+            status = DEVICE_FAIL;
     return status;
 }
 
@@ -44,11 +45,6 @@ SensorStatus getMiscStatus(const Devices *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getFpgaStatus(const Dev_fpga *d)
-{
-    return get_fpga_sensor_status(d);
-}
-
 encoded_system_status_t encode_system_status(const Devices *dev)
 {
     encoded_system_status_t code;
@@ -57,7 +53,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     code.b.pm =  getPowermonStatus(&dev->pm) & 0xF;
     code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
-    code.b.fpga = getFpgaStatus(&dev->fpga) & 0xF;
+    code.b.fpga = getFpgaStatus() & 0xF;
     code.b.pll = getPllStatus() & 0xF;
     return code;
 }
@@ -68,7 +64,7 @@ SensorStatus getSystemStatus(void)
     const SensorStatus powermonStatus = getPowermonStatus(&d->pm);
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
     const SensorStatus miscStatus = getMiscStatus(d);
-    const SensorStatus fpgaStatus = getFpgaStatus(&d->fpga);
+    const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)

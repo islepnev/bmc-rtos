@@ -46,11 +46,6 @@ SensorStatus getMiscStatus(const Devices *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getFpgaStatus(const Dev_fpga *d)
-{
-    return get_fpga_sensor_status(d);
-}
-
 SensorStatus pollVxsiicStatus(Devices *dev)
 {
     static vxsiic_i2c_stats_t vxsiic_i2c_stats_save = {0};
@@ -69,7 +64,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     code.b.pm =  getPowermonStatus(&dev->pm) & 0xF;
     code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
-    code.b.fpga = getFpgaStatus(&dev->fpga) & 0xF;
+    code.b.fpga = getFpgaStatus() & 0xF;
     code.b.pll = getPllStatus() & 0xF;
     return code;
 }
@@ -80,7 +75,7 @@ SensorStatus getSystemStatus()
     const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
     const SensorStatus miscStatus = getMiscStatus(dev);
-    const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
+    const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
     const SensorStatus ad9516Status = get_auxpll_sensor_status(&dev->auxpll);
     const SensorStatus digipotStatus = get_digipot_sensor_status(&dev->pots);

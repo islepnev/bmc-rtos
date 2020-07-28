@@ -218,7 +218,7 @@ static s16_t fpgaStatus_get_value(struct snmp_node_instance* instance, void* val
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)get_fpga_sensor_status(&getDevicesConst()->fpga);
+    *uint_ptr = (u32_t)get_fpga_sensor_status();
     return sizeof(*uint_ptr);
 }
 
@@ -229,14 +229,14 @@ static s16_t fpgaDeviceId_get_value(struct snmp_node_instance* instance, void* v
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)getDevicesConst()->fpga.id;
+    *uint_ptr = (u32_t)get_fpga_id();
     return sizeof(*uint_ptr);
 }
 
 static s16_t fpgaDeviceIdStr_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    u16_t deviceId = htons(getDevicesConst()->fpga.id);
+    u16_t deviceId = htons(get_fpga_id());
     MEMCPY(value, &deviceId, 2);
     return 2;
 }
@@ -245,7 +245,7 @@ static s16_t fpgaVersion_get_value(struct snmp_node_instance* instance, void* va
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)getDevicesConst()->fpga.fw_ver;
+    *uint_ptr = (u32_t)get_fpga_fw_ver();
     return sizeof(*uint_ptr);
 }
 
@@ -253,7 +253,7 @@ static s16_t fpgaRevision_get_value(struct snmp_node_instance* instance, void* v
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)getDevicesConst()->fpga.fw_rev;
+    *uint_ptr = (u32_t)get_fpga_fw_rev();
     return sizeof(*uint_ptr);
 }
 

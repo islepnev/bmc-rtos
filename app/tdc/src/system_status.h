@@ -40,7 +40,6 @@ typedef union
 } encoded_system_status_t;
 
 SensorStatus getMiscStatus(const Devices *d);
-SensorStatus getFpgaStatus(const Dev_fpga *d);
 SensorStatus pollVxsiicStatus(Devices *dev);
 DeviceStatus getDeviceStatus(const Devices *d);
 SensorStatus getSystemStatus(void);

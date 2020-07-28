@@ -113,6 +113,7 @@ file(GLOB Src_SOURCES
     ${MY_SRC_DIR}/eth/*.c
     ${MY_SRC_DIR}/rtos/*.c
     ${MY_SRC_DIR}/system/init/*.c
+    ${MY_SRC_DIR}/tasks/base/*.c
     ${MY_SRC_DIR}/tasks/http/*.c
     ${MY_SRC_DIR}/tasks/snmp/*.c
     ${MY_SRC_DIR}/tasks/snmp/snmp_private_mib/*.c

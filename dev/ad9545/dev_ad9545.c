@@ -40,12 +40,3 @@ void pll_ad9545_clear_status(Dev_ad9545 *d)
     memset(&d->priv.status.ref, 0, sizeof(d->priv.status.ref));
     memset(&d->priv.status.dpll, 0, sizeof(d->priv.status.dpll));
 }
-
-//Dev_ad9545 *dev_ad9545_init(BusInterface *bus)
-//{
-//    Dev_ad9545 *d = get_dev_pll();
-//    init_ad9545_setup(&d->priv.setup);
-//    d->dev.bus = *bus;
-//    ad9545_gpio_init(bus);
-//    return d;
-//}

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_FPGA_IMPL_H
-#define APP_TASK_FPGA_IMPL_H
+#include "dev_fpga_print.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdio.h>
 
-void fpga_task_init(void);
-void fpga_task_run(void);
+#include "ansi_escape_codes.h"
+#include "display.h"
 
-#ifdef __cplusplus
+void dev_fpga_print_box(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d || !d->priv)
+        return;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+
+    printf("FPGA %s",
+           priv->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
+    if (priv->initb && !priv->done)
+        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
+    if (priv->done)
+        printf("%04X", priv->id);
+    printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
+    print_clear_eol();
+
 }
-#endif
-
-#endif // APP_TASK_FPGA_IMPL_H

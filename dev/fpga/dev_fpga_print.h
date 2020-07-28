@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_FPGA_IMPL_H
-#define APP_TASK_FPGA_IMPL_H
+#ifndef DEV_FPGA_PRINT_H
+#define DEV_FPGA_PRINT_H
+
+#include "dev_fpga_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void fpga_task_init(void);
-void fpga_task_run(void);
+void dev_fpga_print_box(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_FPGA_IMPL_H
+#endif // DEV_FPGA_PRINT_H

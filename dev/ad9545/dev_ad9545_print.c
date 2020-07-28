@@ -42,7 +42,9 @@ static const char *dev_ad9545_state_str(ad9545_state_t state)
 
 void dev_ad9545_verbose_status(void)
 {
-    const DeviceBase *d = find_device(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    if (!d || !d->priv)
+        return;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
     printf(" --- AD9545 Setup ---\n");
     ad9545_verbose_setup(&priv->setup);
@@ -54,7 +56,9 @@ void dev_ad9545_verbose_status(void)
 
 void dev_ad9545_print_box(void)
 {
-    const DeviceBase *d = find_device(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    if (!d || !d->priv)
+        return;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
     printf("PLL AD9545:      %s %s",
            dev_ad9545_state_str(priv->fsm_state),

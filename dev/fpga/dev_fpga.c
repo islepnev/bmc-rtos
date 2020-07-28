@@ -105,12 +105,12 @@ bool fpgaDetect(Dev_fpga *d)
 {
     int err = 0;
     for (int i=0; i<FPGA_REG_COUNT; i++) {
-        if (HAL_OK != fpga_spi_hal_read_reg(i, &d->regs[i])) {
+        if (HAL_OK != fpga_spi_hal_read_reg(i, &d->priv.regs[i])) {
             err++;
             break;
         }
     }
-    uint16_t id = d->regs[0];
+    uint16_t id = d->priv.regs[0];
     if (id == 0x0000 || id == 0xFFFF)
         err++;
     if (err == 0)
@@ -118,7 +118,7 @@ bool fpgaDetect(Dev_fpga *d)
 //    else
 //        d->present = DEVICE_FAIL;
 
-    d->id = id;
+    d->priv.id = id;
 
 //    if (0 && (DEVICE_NORMAL == d->present)) {
 

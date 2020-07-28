@@ -31,6 +31,7 @@
 #include "ad9516/dev_auxpll_print.h"
 #include "dev_common_types.h"
 #include "fpga/dev_fpga_types.h"
+#include "fpga/dev_fpga_print.h"
 #include "dev_mcu.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon.h"
@@ -245,20 +246,13 @@ static void print_ttvxs_clkmux(const Dev_ttvxs_clkmux *clkmux)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void print_fpga(const Dev_fpga *fpga)
+static void print_fpga(void)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
-    printf("FPGA %s",
-           fpga->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
-    if (fpga->initb && !fpga->done)
-        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
-    if (fpga->done)
-        printf("%04X", fpga->id);
-    printf("%s", sensor_status_ansi_str(get_fpga_sensor_status(fpga)));
-    print_clear_eol();
+    dev_fpga_print_box();
 }
 
-static void print_pll()
+static void print_pll(void)
 {
     print_goto(DISPLAY_PLL_Y, 1);
     dev_ad9545_print_box();
@@ -318,7 +312,7 @@ static void display_summary(const Devices * dev)
     print_thset(&dev->thset);
     print_main(dev);
     print_ttvxs_clkmux(&dev->clkmux);
-    print_fpga(&dev->fpga);
+    print_fpga();
     print_pll();
     print_auxpll(&dev->auxpll);
     print_log_messages();

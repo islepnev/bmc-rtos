@@ -18,8 +18,6 @@
 #ifndef DEV_AD9545_PRINT_H
 #define DEV_AD9545_PRINT_H
 
-#include "dev_common_types.h"
-
 enum { DISPLAY_PLL_H = 5 };
 enum { DISPLAY_PLL_DETAIL_H = 31 };
 

@@ -48,18 +48,13 @@ SensorStatus getMiscStatus(const Devices *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus getFpgaStatus(const Dev_fpga *d)
-{
-    return get_fpga_sensor_status(d);
-}
-
 SensorStatus getSystemStatus(void)
 {
     const Devices *d = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus(&d->pm);
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
     const SensorStatus miscStatus = getMiscStatus(d);
-    const SensorStatus fpgaStatus = getFpgaStatus(&d->fpga);
+    const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)

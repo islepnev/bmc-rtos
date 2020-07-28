@@ -55,21 +55,9 @@ const Dev_powermon* get_dev_powermon_const(void)
     return &dev.pm;
 }
 
-Dev_fpga* get_dev_fpga(void)
-{
-    return &dev.fpga;
-}
-
 Dev_ttvxs_clkmux* get_dev_clkmux(void)
 {
     return &dev.clkmux;
-}
-
-DeviceBase* get_dev_pll(void)
-{
-    DeviceBase *d = find_device(DEV_CLASS_PLL);
-    assert(d);
-    return d;
 }
 
 Dev_auxpll* get_dev_auxpll(void)

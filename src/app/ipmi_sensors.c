@@ -74,11 +74,10 @@ void sync_ipmi_sensors(void)
         strncpy(gs->name, "PLL", SENSOR_NAME_SIZE-1);
     }
     // FPGA pseudo sensor
-    const Dev_fpga *fpga = &dev->fpga;
     {
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_DISCRETE;
-        gs->hdr.b.state = getFpgaStatus(fpga);
+        gs->hdr.b.state = getFpgaStatus();
         gs->value = (gs->hdr.b.state == SENSOR_NORMAL);
         strncpy(gs->name, "FPGA", SENSOR_NAME_SIZE-1);
     }

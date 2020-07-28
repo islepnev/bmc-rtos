@@ -94,7 +94,7 @@ static void iic_read_callback(uint16_t addr, uint32_t *data)
             *data = ((uint32_t)(VERSION_MAJOR_NUM) << 16) | (uint16_t)(VERSION_MINOR_NUM);
             break;
         case 2:
-            *data = getDevicesConst()->fpga.id;
+            *data = get_fpga_id();
             break;
         case 3: {
             *data = encode_system_status(getDevicesConst()).w;

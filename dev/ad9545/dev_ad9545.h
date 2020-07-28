@@ -42,7 +42,6 @@ typedef struct Dev_ad9545 {
 } Dev_ad9545;
 
 void update_pll_sensor_status(Dev_ad9545 *pll);
-//Dev_ad9545 *dev_ad9545_init(BusInterface *bus);
 void pll_ad9545_clear_status(Dev_ad9545 *d);
 
 #ifdef __cplusplus

@@ -48,7 +48,6 @@ typedef union
 
 DeviceStatus getDeviceStatus(const struct Devices *d);
 SensorStatus getSystemStatus(void);
-SensorStatus getFpgaStatus(const struct Dev_fpga *d);
 
 encoded_system_status_t encode_system_status(const struct Devices *dev);
 

@@ -58,35 +58,22 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-static void struct_fpga_init(Dev_fpga *d)
-{
-    Dev_fpga zz = {};
-    *d = zz;
-    d->dev.device_status = DEVICE_UNKNOWN;
-}
-
-void fpga_task_init(void)
-{
-    struct_fpga_init(get_dev_fpga());
-}
-
 static int old_fpga_done = -1;
 
-void fpga_task_run(void)
+void fpga_task_run(Dev_fpga *d)
 {
-    Dev_fpga *d = get_dev_fpga();
     if (fpga_done_pin_present()) {
-        d->initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
-        d->done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+        d->priv.initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+        d->priv.done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
     } else {
-        d->initb = 1;
-        d->done = 1;
+        d->priv.initb = 1;
+        d->priv.done = 1;
     }
    int fpga_core_power_present = get_fpga_core_power_present(get_dev_powermon_const()->sensors);
     int fpga_power_present = enable_power && fpga_core_power_present;
-    int fpga_enable = fpga_power_present && d->initb;
-//    int fpga_loading = fpga_power_present && d->initb && !d->done;
-    int fpga_done = fpga_power_present && d->done;
+    int fpga_enable = fpga_power_present && d->priv.initb;
+//    int fpga_loading = fpga_power_present && d->priv.initb && !d->priv.done;
+    int fpga_done = fpga_power_present && d->priv.done;
     if (old_fpga_done != fpga_done) {
         old_fpga_done = fpga_done;
         if (fpga_done)
@@ -100,7 +87,8 @@ void fpga_task_run(void)
             state = FPGA_STATE_LOAD;
             fpga_load_start_tick = osKernelSysTick();
         }
-        struct_fpga_init(d);
+        Dev_fpga_priv zz = {0};
+        d->priv = zz;
         break;
     case FPGA_STATE_LOAD:
         if (!fpga_enable) {

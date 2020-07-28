@@ -47,7 +47,7 @@ static BusInterface eeprom_config_bus_info = {
     .address = 0x50
 };
 
-Dev_ad9545 d = {0};
+static Dev_ad9545 d = {0};
 
 static void local_init(void) {
     init_ad9545_setup(&d.priv.setup);

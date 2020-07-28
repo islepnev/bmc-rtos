@@ -19,13 +19,19 @@
 
 #include "ad9545/dev_ad9545.h"
 #include "dev_common_types.h"
+#include "fpga/dev_fpga_types.h"
+
+SensorStatus getFpgaStatus(void)
+{
+    return get_fpga_sensor_status();
+}
 
 bool getPllLockState(void)
 {
-    const DeviceBase *d = find_device(DEV_CLASS_PLL);
-    if (!d)
+    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    if (!d || !d->priv)
         return false;
-    Dev_ad9545_priv *priv = (Dev_ad9545_priv *)d->priv;
+    const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)d->priv;
     return priv->status.sysclk.b.stable &&
            priv->status.sysclk.b.pll0_locked &&
            priv->status.sysclk.b.pll1_locked;
@@ -34,9 +40,9 @@ bool getPllLockState(void)
 SensorStatus getPllStatus(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
-    if (!d)
+    if (!d || !d->priv)
         return SENSOR_UNKNOWN;
-    Dev_ad9545_priv *priv = (Dev_ad9545_priv *)d->priv;
+    const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)d->priv;
 
     if (priv->fsm_state == PLL_STATE_ERROR || priv->fsm_state == PLL_STATE_FATAL)
         return SENSOR_CRITICAL;

@@ -22,8 +22,8 @@
 extern "C" {
 #endif
 
-void fpga_task_init(void);
-void fpga_task_run(void);
+struct Dev_fpga;
+void fpga_task_run(struct Dev_fpga *d);
 
 #ifdef __cplusplus
 }

@@ -26,17 +26,25 @@ extern "C" {
 #endif
 
 enum {FPGA_REG_COUNT = 8};
-typedef struct Dev_fpga {
-    DeviceBase dev;
+
+typedef struct Dev_fpga_priv {
     uint16_t regs[FPGA_REG_COUNT];
     uint8_t initb;
     uint8_t done;
     uint16_t id;
     uint16_t fw_ver;
     uint16_t fw_rev;
+} Dev_fpga_priv;
+
+typedef struct Dev_fpga {
+    DeviceBase dev;
+    Dev_fpga_priv priv;
 } Dev_fpga;
 
-SensorStatus get_fpga_sensor_status(const Dev_fpga *d);
+SensorStatus get_fpga_sensor_status(void);
+uint32_t get_fpga_id(void);
+uint32_t get_fpga_fw_ver(void);
+uint32_t get_fpga_fw_rev(void);
 
 #ifdef __cplusplus
 }

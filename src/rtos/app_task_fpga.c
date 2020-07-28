@@ -21,22 +21,32 @@
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "debug_helpers.h"
-#include "app_task_fpga_impl.h"
+#include "base/app_task_fpga_impl.h"
+#include "fpga/dev_fpga_types.h"
 
 osThreadId fpgaThreadId = NULL;
 enum { fpgaThreadStackSize = threadStackSize };
 static const uint32_t fpgaTaskLoopDelay = 10;
 
+static BusInterface fpga_bus_info = {
+    .type = BUS_SPI,
+    .bus_number = 0, // FIXME
+    .address = 0
+};
+
+static Dev_fpga d = {0};
+
+static void local_init(void) {
+    create_device(&d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info);
+}
+
 static void start_fpga_thread(void const *arg)
 {
     (void) arg;
 
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-
-    fpga_task_init();
     for( ;; )
     {
-        fpga_task_run();
+        fpga_task_run(&d);
         osDelay(fpgaTaskLoopDelay);
     }
 }
@@ -45,8 +55,9 @@ osThreadDef(fpga, start_fpga_thread, osPriorityNormal,  1, fpgaThreadStackSize);
 
 void create_task_fpga(void)
 {
-        fpgaThreadId = osThreadCreate(osThread (fpga), NULL);
-        if (fpgaThreadId == NULL) {
-            debug_print("Failed to create fpga thread\n");
-        }
+    local_init();
+    fpgaThreadId = osThreadCreate(osThread (fpga), NULL);
+    if (fpgaThreadId == NULL) {
+        debug_print("Failed to create fpga thread\n");
+    }
 }
