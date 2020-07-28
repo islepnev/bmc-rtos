@@ -29,8 +29,8 @@ extern "C" {
 void struct_powermon_sensors_init(Dev_powermon_priv *p);
 void dev_powermon_init(Dev_powermon_priv *p);
 void pm_clear_all(Dev_powermon_priv *p);
-bool pm_read_liveInsert(Dev_powermon *pm);
-bool update_power_switches(Dev_powermon *pm, bool state);
+bool pm_read_liveInsert(Dev_powermon_priv *p);
+bool update_power_switches(Dev_powermon_priv *p, bool state);
 void monClearMinMax(Dev_powermon *d);
 void monClearMeasurements(Dev_powermon *d);
 int monDetect(Dev_powermon *d);

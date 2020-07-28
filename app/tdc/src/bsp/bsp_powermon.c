@@ -156,33 +156,33 @@ void bsp_update_system_powergood_pin(bool power_good)
     // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }
 
-void switch_power(Dev_powermon *pm, bool state)
+void switch_power(Dev_powermon_priv *p, bool state)
 {
     // turn off only when failed
     //    bool state = state_primary;
 
-    bool state_primary = (pm->priv.pmState != PM_STATE_PWRFAIL) &&
-                         (pm->priv.pmState != PM_STATE_OFF) &&
-                         (pm->priv.pmState != PM_STATE_OVERHEAT);
+    bool state_primary = (p->pmState != PM_STATE_PWRFAIL) &&
+                         (p->pmState != PM_STATE_OFF) &&
+                         (p->pmState != PM_STATE_OVERHEAT);
 
     // primary switches (required for monitors)
-    pm->priv.sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
-    pm->priv.sw[PSW_3V3] = state_primary;
-    write_power_switches(pm->priv.sw);
+    p->sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
+    p->sw[PSW_3V3] = state_primary;
+    write_power_switches(p->sw);
 
     // secondary switches
-    bool turnon_1v5 = !pm->priv.sw[PSW_1V5] && state;
-    pm->priv.sw[PSW_1V5] = state;
-    write_power_switches(pm->priv.sw);
+    bool turnon_1v5 = !p->sw[PSW_1V5] && state;
+    p->sw[PSW_1V5] = state;
+    write_power_switches(p->sw);
     if (turnon_1v5)
         osDelay(10);
-    pm->priv.sw[PSW_1V0] = state;
-    pm->priv.sw[PSW_TDC_A] = true; // state;
-    pm->priv.sw[PSW_TDC_B] = true; // state;
-    pm->priv.sw[PSW_TDC_C] = true; // state;
-    pm->priv.sw[PSW_TDC_D] = true; // state;
+    p->sw[PSW_1V0] = state;
+    p->sw[PSW_TDC_A] = true; // state;
+    p->sw[PSW_TDC_B] = true; // state;
+    p->sw[PSW_TDC_C] = true; // state;
+    p->sw[PSW_TDC_D] = true; // state;
 
-    write_power_switches(pm->priv.sw);
+    write_power_switches(p->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 }

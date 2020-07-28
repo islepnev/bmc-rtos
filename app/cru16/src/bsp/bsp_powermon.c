@@ -170,7 +170,7 @@ void bsp_update_system_powergood_pin(bool power_good)
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }
 
-void switch_power(Dev_powermon *pm, bool state)
+void switch_power(Dev_powermon_priv *p, bool state)
 {
     // int pcb_ver = get_mcb_pcb_ver();
     if (state)
@@ -178,12 +178,12 @@ void switch_power(Dev_powermon *pm, bool state)
     else
         log_put(LOG_NOTICE, "Switching OFF");
     for (int i=0; i<POWER_SWITCH_COUNT; i++)
-        pm->priv.sw[i] = state;
-//    pm->priv.sw[PSW_3V3] = 1;
-//    pm->priv.sw[PSW_5V] = 1;
-//    pm->priv.sw[PSW_2V5_CLK] = 1;
+        p->sw[i] = state;
+//    p->sw[PSW_3V3] = 1;
+//    p->sw[PSW_5V] = 1;
+//    p->sw[PSW_2V5_CLK] = 1;
 
-    write_power_switches(pm->priv.sw);
+    write_power_switches(p->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 }

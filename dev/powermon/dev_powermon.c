@@ -56,10 +56,10 @@ void pm_clear_all(Dev_powermon_priv *p)
     init_power_switches(p->sw);
 }
 
-bool pm_read_liveInsert(Dev_powermon *pm)
+bool pm_read_liveInsert(Dev_powermon_priv *p)
 {
-    pm->priv.vmePresent = readLiveInsertPin();
-    return pm->priv.vmePresent;
+    p->vmePresent = readLiveInsertPin();
+    return p->vmePresent;
 }
 
 bool get_critical_power_valid(const pm_sensors_arr sensors)
@@ -84,29 +84,29 @@ bool get_critical_power_failure(const pm_sensors_arr sensors)
     return false;
 }
 
-static bool check_power_switches(const Dev_powermon *pm)
+static bool check_power_switches(const Dev_powermon_priv *p)
 {
     bool ret = true;
     for (int i=0; i<POWER_SWITCH_COUNT; i++) {
-        if (pm->priv.sw_state[i] != pm->priv.sw[i]) {
+        if (p->sw_state[i] != p->sw[i]) {
             log_printf(LOG_CRIT, "%s switch failure: stuck %s",
-                       psw_label((PowerSwitchIndex)i), pm->priv.sw_state[i] ? "high" : "low");
+                       psw_label((PowerSwitchIndex)i), p->sw_state[i] ? "high" : "low");
             ret = false;
         }
     }
     return ret;
 }
 
-bool update_power_switches(Dev_powermon *pm, bool state)
+bool update_power_switches(Dev_powermon_priv *p, bool state)
 {
     if (state)
         log_put(LOG_NOTICE, "Switching ON");
     else
         log_put(LOG_NOTICE, "Switching OFF");
-    switch_power(pm, state);
-    read_power_switches_state(pm->priv.sw_state);
-    bool ok = pm_switches_isEqual(pm->priv.sw_state, pm->priv.sw);
-    check_power_switches(pm);
+    switch_power(p, state);
+    read_power_switches_state(p->sw_state);
+    bool ok = pm_switches_isEqual(p->sw_state, p->sw);
+    check_power_switches(p);
     return ok;
 }
 
