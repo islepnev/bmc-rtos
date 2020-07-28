@@ -34,14 +34,18 @@ typedef enum {
     AUXPLL_STATE_FATAL
 } AuxPllState;
 
-typedef struct Dev_auxpll {
-    DeviceBase dev;
+typedef struct Dev_auxpll_priv {
     AD9516_Status status;
     AuxPllState fsm_state;
     uint32_t recoveryCount;
+} Dev_auxpll_priv;
+
+typedef struct Dev_auxpll {
+    DeviceBase dev;
+    Dev_auxpll_priv priv;
 } Dev_auxpll;
 
-SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll);
+SensorStatus get_auxpll_sensor_status(void);
 
 #ifdef __cplusplus
 }

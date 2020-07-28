@@ -54,7 +54,6 @@ const struct Devices* getDevicesConst(void);
 struct Dev_powermon* get_dev_powermon(void);
 const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_clkmux *get_dev_clkmux(void);
-struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 struct Dev_eeprom_config *get_dev_eeprom_config(void);

@@ -60,11 +60,6 @@ Dev_ttvxs_clkmux* get_dev_clkmux(void)
     return &dev.clkmux;
 }
 
-Dev_auxpll* get_dev_auxpll(void)
-{
-    return &dev.auxpll;
-}
-
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;

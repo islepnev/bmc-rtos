@@ -46,11 +46,6 @@ const Dev_powermon* get_dev_powermon_const(void)
     return &dev.pm;
 }
 
-Dev_auxpll* get_dev_auxpll(void)
-{
-    return &dev.auxpll;
-}
-
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;

@@ -246,10 +246,10 @@ static void print_pll(void)
     dev_ad9545_print_box();
 }
 
-static void print_auxpll(const Dev_auxpll *pll)
+static void print_auxpll(void)
 {
     print_goto(DISPLAY_AUXPLL_Y, 1);
-    auxpllPrint(pll);
+    auxpllPrint();
 }
 
 static void print_log_lines(int count)
@@ -327,7 +327,7 @@ static void display_summary(const Devices * dev)
     print_main(dev);
     print_fpga();
     print_pll();
-    print_auxpll(&dev->auxpll);
+    print_auxpll();
     print_log_messages();
 }
 

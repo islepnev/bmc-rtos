@@ -21,19 +21,33 @@
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "ad9516/app_task_auxpll_impl.h"
+#include "bus/bus_types.h"
 #include "debug_helpers.h"
 
 osThreadId auxpllThreadId = NULL;
 enum { auxpllThreadStackSize = threadStackSize };
 static const uint32_t auxpllTaskLoopDelay = 10;
 
+static BusInterface auxpll_bus_info = {
+    .type = BUS_SPI,
+    .bus_number = 0, // FIXME
+    .address = 0
+};
+
+static Dev_auxpll d = {0};
+
+static void local_init(void) {
+//    init_auxpll_setup(&d.priv.setup);
+    create_device(&d.dev, &d.priv, DEV_CLASS_AUXPLL, auxpll_bus_info);
+}
+
 static void auxpllTask(void const *arg)
 {
     (void) arg;
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while(1) {
-        auxpll_task_run();
+        auxpll_task_run(&d);
         osDelay(auxpllTaskLoopDelay);
     }
 }
@@ -42,6 +56,7 @@ osThreadDef(auxpll, auxpllTask, osPriorityNormal,      1, auxpllThreadStackSize)
 
 void create_task_auxpll(void)
 {
+    local_init();
     auxpllThreadId = osThreadCreate(osThread (auxpll), NULL);
     if (auxpllThreadId == NULL) {
         debug_print("Failed to create auxpll thread\n");

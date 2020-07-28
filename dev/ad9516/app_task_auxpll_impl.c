@@ -31,21 +31,20 @@ static uint32_t stateTicks(void)
 
 void auxpll_clear_status(Dev_auxpll *d)
 {
-    d->status.pll_readback.raw = 0;
+    d->priv.status.pll_readback.raw = 0;
 }
 
 static int old_enable = 0;
 
-void auxpll_task_run(void)
+void auxpll_task_run(Dev_auxpll *d)
 {
     bool enable = enable_power && system_power_present;
     if (old_enable != enable) {
         old_enable = enable;
     }
-    Dev_auxpll *d = get_dev_auxpll();
     if (!enable) {
-        if (d->fsm_state != AUXPLL_STATE_INIT) {
-            d->fsm_state = AUXPLL_STATE_INIT;
+        if (d->priv.fsm_state != AUXPLL_STATE_INIT) {
+            d->priv.fsm_state = AUXPLL_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
             ad9516_disable_interface();
             auxpll_clear_status(d);
@@ -53,88 +52,88 @@ void auxpll_task_run(void)
         }
         return;
     }
-    const AuxPllState old_state = d->fsm_state;
-    switch(d->fsm_state) {
+    const AuxPllState old_state = d->priv.fsm_state;
+    switch(d->priv.fsm_state) {
     case AUXPLL_STATE_INIT:
         ad9516_enable_interface();
         auxpll_clear_status(d);
-        d->fsm_state = AUXPLL_STATE_RESET;
+        d->priv.fsm_state = AUXPLL_STATE_RESET;
         break;
     case AUXPLL_STATE_RESET:
         if (!auxpllSoftwareReset()) {
-            d->fsm_state = AUXPLL_STATE_ERROR;
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
         auxpllDetect(d);
         if (DEVICE_NORMAL == d->dev.device_status) {
-            d->fsm_state = AUXPLL_STATE_SETUP;
+            d->priv.fsm_state = AUXPLL_STATE_SETUP;
             break;
         }
         if (stateTicks() > 2000) {
             log_put(LOG_ERR, "AUXPLL AD9516 not found");
-            d->fsm_state = AUXPLL_STATE_ERROR;
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
         break;
     case AUXPLL_STATE_SETUP:
         if (DEV_OK != auxpllSetup(d)) {
-            d->fsm_state = AUXPLL_STATE_ERROR;
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
-        d->fsm_state = AUXPLL_STATE_RUN;
+        d->priv.fsm_state = AUXPLL_STATE_RUN;
         break;
     case AUXPLL_STATE_RUN:
         if (!enable) {
-            d->fsm_state = AUXPLL_STATE_ERROR;
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
-        d->recoveryCount = 0;
+        d->priv.recoveryCount = 0;
         break;
     case AUXPLL_STATE_ERROR:
-        if (d->recoveryCount > 3) {
-            d->fsm_state = AUXPLL_STATE_FATAL;
+        if (d->priv.recoveryCount > 3) {
+            d->priv.fsm_state = AUXPLL_STATE_FATAL;
             log_put(LOG_CRIT, "AUXPLL AD9516 fatal error");
             break;
         }
         if (stateTicks() > 1000) {
             ad9516_disable_interface();
-            d->recoveryCount++;
-            d->fsm_state = AUXPLL_STATE_INIT;
+            d->priv.recoveryCount++;
+            d->priv.fsm_state = AUXPLL_STATE_INIT;
         }
         break;
     case AUXPLL_STATE_FATAL:
         d->dev.device_status = DEVICE_FAIL;
         if (stateTicks() > 2000) {
             // recover
-            d->recoveryCount = 0;
-            d->fsm_state = AUXPLL_STATE_INIT;
+            d->priv.recoveryCount = 0;
+            d->priv.fsm_state = AUXPLL_STATE_INIT;
         }
         break;
     default:
-        d->fsm_state = AUXPLL_STATE_INIT;
+        d->priv.fsm_state = AUXPLL_STATE_INIT;
     }
 
-    if (d->fsm_state != AUXPLL_STATE_INIT &&
-            d->fsm_state != AUXPLL_STATE_RESET &&
-            d->fsm_state != AUXPLL_STATE_ERROR &&
-            d->fsm_state != AUXPLL_STATE_FATAL) {
+    if (d->priv.fsm_state != AUXPLL_STATE_INIT &&
+            d->priv.fsm_state != AUXPLL_STATE_RESET &&
+            d->priv.fsm_state != AUXPLL_STATE_ERROR &&
+            d->priv.fsm_state != AUXPLL_STATE_FATAL) {
     }
-    if (d->fsm_state == AUXPLL_STATE_RUN) {
+    if (d->priv.fsm_state == AUXPLL_STATE_RUN) {
         if (DEV_OK != auxpllReadStatus(d)) {
-            d->fsm_state = AUXPLL_STATE_ERROR;
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
         }
     } else {
         auxpll_clear_status(d);
     }
-    int stateChanged = old_state != d->fsm_state;
+    int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
         stateStartTick = osKernelSysTick();
     }
     if (stateChanged && (old_state != AUXPLL_STATE_RESET)) {
-        if (d->fsm_state == AUXPLL_STATE_ERROR) {
+        if (d->priv.fsm_state == AUXPLL_STATE_ERROR) {
             log_put(LOG_ERR, "AUXPLL AD9516 interface error");
         }
-        if (d->fsm_state == AUXPLL_STATE_RUN) {
+        if (d->priv.fsm_state == AUXPLL_STATE_RUN) {
             log_put(LOG_INFO, "AUXPLL AD9516 started");
         }
     }

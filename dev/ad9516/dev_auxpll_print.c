@@ -33,27 +33,38 @@ static char *auxpllStateStr(AuxPllState auxpllState)
     }
 }
 
-void auxpllPrintStatus(const Dev_auxpll *d)
+void auxpllPrintStatus()
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    if (!d || !d->priv)
+        return;
+    const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
+
     // printf("AUXPLL FSM state %s\n", auxpllStateStr(d->fsm_state));
+    const AUXPLL_Readback_REG_Type *pll_readback = &priv->status.pll_readback;
     printf("PLL readback %02X %s%s%s%s%s%s\n",
-           d->status.pll_readback.raw,
-           d->status.pll_readback.b.dlock ? " DLOCK" : "",
-           d->status.pll_readback.b.ref1_over_thr ? " REF1_over" : "",
-           d->status.pll_readback.b.ref2_over_thr ? " REF2_over" : "",
-           d->status.pll_readback.b.vco_over_thr ? " VCO_over" : "",
-           d->status.pll_readback.b.ref2_selected ? " REF2_SEL" : "",
-           d->status.pll_readback.b.vco_cal_finished ? " VCO_CAL_OK" : ""
+           pll_readback->raw,
+           pll_readback->b.dlock ? " DLOCK" : "",
+           pll_readback->b.ref1_over_thr ? " REF1_over" : "",
+           pll_readback->b.ref2_over_thr ? " REF2_over" : "",
+           pll_readback->b.vco_over_thr ? " VCO_over" : "",
+           pll_readback->b.ref2_selected ? " REF2_SEL" : "",
+           pll_readback->b.vco_cal_finished ? " VCO_CAL_OK" : ""
            );
     printf("\n");
 }
 
-void auxpllPrint(const Dev_auxpll *d)
+void auxpllPrint(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    if (!d || !d->priv)
+        return;
+    const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
+
     printf("PLL AD9516:   %s %s",
-           auxpllStateStr(d->fsm_state),
-           sensor_status_ansi_str(get_auxpll_sensor_status(d)));
+           auxpllStateStr(priv->fsm_state),
+           sensor_status_ansi_str(get_auxpll_sensor_status()));
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("  ");
-    auxpllPrintStatus(d);
+    auxpllPrintStatus();
 }

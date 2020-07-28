@@ -19,16 +19,21 @@
 #include "dev_common_types.h"
 #include "dev_auxpll.h"
 
-SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll)
+SensorStatus get_auxpll_sensor_status(void)
 {
-    if (DEVICE_NORMAL != pll->dev.device_status)
+    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
+
+    if (DEVICE_NORMAL != d->device_status)
         return SENSOR_UNKNOWN;
     // TODO
 //    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
 //        return SENSOR_CRITICAL;
 //    if (!pll->status.dpll[0].lock_status.b.all_lock)
 //        return SENSOR_WARNING;
-    if (!pll->status.pll_readback.b.dlock)
+    if (!priv->status.pll_readback.b.dlock)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }

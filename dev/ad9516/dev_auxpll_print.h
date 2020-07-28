@@ -21,9 +21,8 @@
 extern "C" {
 #endif
 
-struct Dev_auxpll;
-void auxpllPrintStatus(const struct Dev_auxpll *d);
-void auxpllPrint(const struct Dev_auxpll *d);
+void auxpllPrintStatus(void);
+void auxpllPrint(void);
 
 #ifdef __cplusplus
 }

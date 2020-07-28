@@ -18,6 +18,7 @@
 #ifndef APP_TASK_AUXPLL_IMPL_H
 #define APP_TASK_AUXPLL_IMPL_H
 
-void auxpll_task_run(void);
+struct Dev_auxpll;
+void auxpll_task_run(struct Dev_auxpll *d);
 
 #endif // APP_TASK_AUXPLL_IMPL_H

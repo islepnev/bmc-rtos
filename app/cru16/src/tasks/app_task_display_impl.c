@@ -258,10 +258,10 @@ static void print_pll(void)
     dev_ad9545_print_box();
 }
 
-static void print_auxpll(const Dev_auxpll *pll)
+static void print_auxpll(void)
 {
     print_goto(DISPLAY_AUXPLL_Y, 1);
-    auxpllPrint(pll);
+    auxpllPrint();
 }
 
 static void print_log_lines(int count)
@@ -314,7 +314,7 @@ static void display_summary(const Devices * dev)
     print_ttvxs_clkmux(&dev->clkmux);
     print_fpga();
     print_pll();
-    print_auxpll(&dev->auxpll);
+    print_auxpll();
     print_log_messages();
 }
 
@@ -392,12 +392,12 @@ static void display_pll_detail(const Devices * dev)
     dev_ad9545_verbose_status();
 }
 
-static void display_auxpll_detail(const Devices * dev)
+static void display_auxpll_detail(void)
 {
     print_clearbox(DISPLAY_AUXPLL_DETAIL_Y, DISPLAY_AUXPLL_DETAIL_H);
     print_goto(DISPLAY_AUXPLL_DETAIL_Y, 1);
     printf(" --- AD9516 Status ---\n");
-    auxpllPrintStatus(&dev->auxpll);
+    auxpllPrintStatus();
 }
 
 static display_mode_t old_display_mode = DISPLAY_NONE;
@@ -459,7 +459,7 @@ void display_task_run(void)
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail(d);
-        display_auxpll_detail(d);
+        display_auxpll_detail();
         break;
 //    case DISPLAY_BOARDS:
 //        display_boards(d);

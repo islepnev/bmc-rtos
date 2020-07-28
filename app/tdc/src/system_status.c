@@ -77,7 +77,7 @@ SensorStatus getSystemStatus()
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
-    const SensorStatus ad9516Status = get_auxpll_sensor_status(&dev->auxpll);
+    const SensorStatus ad9516Status = get_auxpll_sensor_status();
     const SensorStatus digipotStatus = get_digipot_sensor_status(&dev->pots);
 //    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);
     SensorStatus systemStatus = SENSOR_NORMAL;

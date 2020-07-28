@@ -137,7 +137,7 @@ OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d)
     ret = pllIoUpdate(d);
     if (ret != HAL_OK)
         goto err;
-    ret = ad9516_read1(AD9516_REG1_PLL_READBACK, &d->status.pll_readback.raw);
+    ret = ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw);
     if (ret != HAL_OK)
         goto err;
 
