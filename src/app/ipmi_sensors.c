@@ -27,6 +27,7 @@
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_powermon.h"
 #include "system_status.h"
+#include "system_status_common.h"
 
 IpmiSensors ipmi_sensors = {0};
 
@@ -65,12 +66,11 @@ void sync_ipmi_sensors(void)
     assert(index + 2 < MAX_SENSOR_COUNT);
 
     // PLL pseudo sensor
-    const Dev_ad9545 *pll = &dev->pll;
     {
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_DISCRETE;
-        gs->hdr.b.state = getPllStatus(pll);
-        gs->value = getPllLockState(pll);
+        gs->hdr.b.state = getPllStatus();
+        gs->value = getPllLockState();
         strncpy(gs->name, "PLL", SENSOR_NAME_SIZE-1);
     }
     // FPGA pseudo sensor

@@ -19,14 +19,14 @@
 
 #include <stdint.h>
 
-#include "bus/bus_types.h"
-#include "cmsis_os.h"
-//#include "app_tasks.h"
-#include "app_task_eeprom_config_impl.h"
+#include "ad9545/ad9545.h"
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
-#include "eeprom_config/dev_eeprom_config.h"
+#include "app_task_eeprom_config_impl.h"
+#include "bus/bus_types.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "eeprom_config/dev_eeprom_config.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = 400 };
@@ -44,14 +44,23 @@ static BusInterface eeprom_config_bus_info = {
     .address = 0x50
 };
 
+Dev_ad9545 d = {0};
+
+static void local_init(void) {
+    init_ad9545_setup(&d.priv.setup);
+    create_device(&d.dev, &d.priv, DEV_CLASS_PLL, pll_bus_info);
+}
+
 static void pllTask(void const *arg)
 {
     (void) arg;
-    Dev_ad9545 *dev = dev_ad9545_init(&pll_bus_info);
+
+    ad9545_gpio_init(&d.dev.bus);
+
     dev_eeprom_config_init(&eeprom_config_bus_info);
     while(1) {
         task_eeprom_config_run();
-        dev_ad9545_run(dev);
+        dev_ad9545_run(&d);
         osDelay(pllTaskLoopDelay);
     }
 }
@@ -60,6 +69,7 @@ osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
 
 void create_task_pll(void)
 {
+    local_init();
     pllThreadId = osThreadCreate(osThread (pll), NULL);
     if (pllThreadId == NULL) {
         debug_print("Failed to create pll thread\n");

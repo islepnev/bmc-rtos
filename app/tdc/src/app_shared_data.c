@@ -51,9 +51,9 @@ Dev_fpga* get_dev_fpga(void)
     return &dev.fpga;
 }
 
-Dev_ad9545* get_dev_pll(void)
+DeviceBase* get_dev_pll(void)
 {
-    return &dev.pll;
+    return &dev.pll.dev;
 }
 
 Dev_auxpll* get_dev_auxpll(void)

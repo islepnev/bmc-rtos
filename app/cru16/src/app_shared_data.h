@@ -20,6 +20,8 @@
 
 #include <stdbool.h>
 
+#include "dev_common_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,7 +46,6 @@ struct Devices;
 struct Dev_powermon;
 struct Dev_fpga;
 struct Dev_ttvxs_clkmux;
-struct Dev_ad9545;
 struct Dev_auxpll;
 struct Dev_thset;
 struct Dev_sfpiic;
@@ -58,7 +59,7 @@ struct Dev_powermon* get_dev_powermon(void);
 const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_fpga *get_dev_fpga(void);
 struct Dev_ttvxs_clkmux *get_dev_clkmux(void);
-struct Dev_ad9545 *get_dev_pll(void);
+DeviceBase *get_dev_pll(void);
 struct Dev_auxpll *get_dev_auxpll(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);

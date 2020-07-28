@@ -29,7 +29,6 @@ extern "C" {
 
 struct Devices;
 struct Dev_fpga;
-struct Dev_ad9545;
 
 typedef union
 {
@@ -50,8 +49,6 @@ typedef union
 DeviceStatus getDeviceStatus(const struct Devices *d);
 SensorStatus getSystemStatus(void);
 SensorStatus getFpgaStatus(const struct Dev_fpga *d);
-SensorStatus getPllStatus(const struct Dev_ad9545 *d);
-bool getPllLockState(const struct Dev_ad9545 *d);
 
 encoded_system_status_t encode_system_status(const struct Devices *dev);
 

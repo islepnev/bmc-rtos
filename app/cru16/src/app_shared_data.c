@@ -62,9 +62,9 @@ Dev_ttvxs_clkmux* get_dev_clkmux(void)
     return &dev.clkmux;
 }
 
-Dev_ad9545* get_dev_pll(void)
+DeviceBase* get_dev_pll(void)
 {
-    return &dev.pll;
+    return &dev.pll.dev;
 }
 
 Dev_auxpll* get_dev_auxpll(void)

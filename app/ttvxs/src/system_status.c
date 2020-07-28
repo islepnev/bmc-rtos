@@ -16,20 +16,24 @@
 */
 
 #include "system_status.h"
+
 #include "app_shared_data.h"
 #include "devices_types.h"
 #include "dev_thset.h"
+#include "system_status_common.h"
 
 DeviceStatus getDeviceStatus(const Devices *d)
 {
-    DeviceStatus status = DEVICE_FAIL;
-    if ((d->sfpiic.dev.device_status == DEVICE_NORMAL)
-            && (d->vxsiicm.dev.device_status == DEVICE_NORMAL)
-            && (d->eeprom_config.dev.device_status == DEVICE_NORMAL)
-            && (d->pll.dev.device_status == DEVICE_NORMAL)
-            && (d->fpga.dev.device_status == DEVICE_NORMAL)
-            )
-        status = DEVICE_NORMAL;
+    DeviceStatus status = DEVICE_NORMAL;
+    if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
+        (d->vxsiicm.dev.device_status == DEVICE_FAIL) ||
+        (d->eeprom_config.dev.device_status == DEVICE_FAIL) ||
+        (d->fpga.dev.device_status == DEVICE_FAIL)
+        )
+        status = DEVICE_FAIL;
+    for (int i=0; i<deviceList.count; i++)
+        if (deviceList.list[i]->device_status == DEVICE_FAIL)
+            status = DEVICE_FAIL;
     return status;
 }
 
@@ -49,26 +53,6 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
     return get_fpga_sensor_status(d);
 }
 
-int getPllLockState(const Dev_ad9545 *d)
-{
-    return d->status.sysclk.b.stable
-            && d->status.sysclk.b.pll0_locked
-            && d->status.sysclk.b.pll1_locked;
-}
-
-SensorStatus getPllStatus(const Dev_ad9545 *d)
-{
-    if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
-        return SENSOR_CRITICAL;
-    if (d->dev.device_status != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.locked)
-        return SENSOR_CRITICAL;
-    if (!getPllLockState(d))
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
 SensorStatus getSystemStatus(void)
 {
     const Devices *d = getDevicesConst();
@@ -76,7 +60,7 @@ SensorStatus getSystemStatus(void)
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
     const SensorStatus miscStatus = getMiscStatus(d);
     const SensorStatus fpgaStatus = getFpgaStatus(&d->fpga);
-    const SensorStatus pllStatus = getPllStatus(&d->pll);
+    const SensorStatus pllStatus = getPllStatus();
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
         systemStatus = powermonStatus;

@@ -18,6 +18,8 @@
 #ifndef DEV_AD9545_PRINT_H
 #define DEV_AD9545_PRINT_H
 
+#include "dev_common_types.h"
+
 enum { DISPLAY_PLL_H = 5 };
 enum { DISPLAY_PLL_DETAIL_H = 31 };
 
@@ -25,9 +27,8 @@ enum { DISPLAY_PLL_DETAIL_H = 31 };
 extern "C" {
 #endif
 
-struct Dev_ad9545;
-void dev_ad9545_verbose_status(const struct Dev_ad9545 *d);
-void dev_ad9545_print_box(const struct Dev_ad9545 *d);
+void dev_ad9545_verbose_status(void);
+void dev_ad9545_print_box(void);
 
 #ifdef __cplusplus
 }

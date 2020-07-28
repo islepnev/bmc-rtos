@@ -63,6 +63,7 @@
 #include "snmp_ipmi_sensors_table.h"
 #include "version.h"
 #include "system_status.h"
+#include "system_status_common.h"
 #include "rtc_util.h"
 
 static s16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value)
@@ -271,7 +272,7 @@ static s16_t pllStatus_get_value(struct snmp_node_instance* instance, void* valu
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)(&getDevicesConst()->pll.sensor);
+    *uint_ptr = (u32_t)(getPllStatus());
     return sizeof(*uint_ptr);
 }
 

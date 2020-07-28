@@ -17,6 +17,7 @@
 
 #include "dev_ad9545_print.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "dev_ad9545.h"
@@ -39,22 +40,26 @@ static const char *dev_ad9545_state_str(ad9545_state_t state)
     }
 }
 
-void dev_ad9545_verbose_status(const Dev_ad9545 *d)
+void dev_ad9545_verbose_status(void)
 {
+    const DeviceBase *d = find_device(DEV_CLASS_PLL);
+    const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
     printf(" --- AD9545 Setup ---\n");
-    ad9545_verbose_setup(&d->setup);
+    ad9545_verbose_setup(&priv->setup);
     printf(" --- AD9545 Status ---\n");
-    printf("AD9545 device FSM state: %s\n", dev_ad9545_state_str(d->fsm_state));
-    ad9545_verbose_status(&d->status);
+    printf("AD9545 device FSM state: %s\n", dev_ad9545_state_str(priv->fsm_state));
+    ad9545_verbose_status(&priv->status);
     printf("\n");
 }
 
-void dev_ad9545_print_box(const Dev_ad9545 *d)
+void dev_ad9545_print_box(void)
 {
+    const DeviceBase *d = find_device(DEV_CLASS_PLL);
+    const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
     printf("PLL AD9545:      %s %s",
-           dev_ad9545_state_str(d->fsm_state),
+           dev_ad9545_state_str(priv->fsm_state),
            sensor_status_ansi_str(d->sensor));
     print_clear_eol();
-    ad9545_brief_status(&d->status);
+    ad9545_brief_status(&priv->status);
 
 }

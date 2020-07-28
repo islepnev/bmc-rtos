@@ -16,11 +16,13 @@
 */
 
 #include "system_status.h"
+
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "vxsiics/dev_vxsiics_stats.h"
-#include "fpga/dev_fpga.h"
 #include "dev_thset.h"
+#include "fpga/dev_fpga.h"
+#include "system_status_common.h"
+#include "vxsiics/dev_vxsiics_stats.h"
 
 DeviceStatus getDeviceStatus(const Devices *d)
 {
@@ -49,26 +51,6 @@ SensorStatus getFpgaStatus(const Dev_fpga *d)
     return get_fpga_sensor_status(d);
 }
 
-int getPllLockState(const Dev_ad9545 *d)
-{
-    return d->status.sysclk.b.stable
-            && d->status.sysclk.b.pll0_locked
-            && d->status.sysclk.b.pll1_locked;
-}
-
-SensorStatus getPllStatus(const Dev_ad9545 *d)
-{
-    if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
-        return SENSOR_CRITICAL;
-    if (d->dev.device_status != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    if (!d->status.sysclk.b.locked)
-        return SENSOR_CRITICAL;
-    if (!getPllLockState(d))
-        return SENSOR_WARNING;
-    return SENSOR_NORMAL;
-}
-
 SensorStatus pollVxsiicStatus(Devices *dev)
 {
     static vxsiic_i2c_stats_t vxsiic_i2c_stats_save = {0};
@@ -88,7 +70,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
     code.b.fpga = getFpgaStatus(&dev->fpga) & 0xF;
-    code.b.pll = getPllStatus(&dev->pll) & 0xF;
+    code.b.pll = getPllStatus() & 0xF;
     return code;
 }
 
@@ -99,7 +81,7 @@ SensorStatus getSystemStatus()
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus(&dev->fpga);
-    const SensorStatus pllStatus = getPllStatus(&dev->pll);
+    const SensorStatus pllStatus = getPllStatus();
     const SensorStatus ad9516Status = get_auxpll_sensor_status(&dev->auxpll);
     const SensorStatus digipotStatus = get_digipot_sensor_status(&dev->pots);
 //    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);

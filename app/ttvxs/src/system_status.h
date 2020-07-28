@@ -29,7 +29,6 @@ struct Dev_ad9545;
 
 DeviceStatus getDeviceStatus(const struct Devices *d);
 SensorStatus getSystemStatus(void);
-SensorStatus getPllStatus(const struct Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }

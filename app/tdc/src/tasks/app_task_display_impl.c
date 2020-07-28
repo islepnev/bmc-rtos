@@ -249,7 +249,7 @@ static void print_fpga(const Dev_fpga *fpga)
 static void print_pll(const Dev_ad9545 *pll)
 {
     print_goto(DISPLAY_PLL_Y, 1);
-    dev_ad9545_print_box(pll);
+    dev_ad9545_print_box();
 }
 
 static void print_auxpll(const Dev_auxpll *pll)
@@ -372,7 +372,7 @@ static void display_pll_detail(const Devices * dev)
 {
     print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
     print_goto(DISPLAY_PLL_DETAIL_Y, 1);
-    dev_ad9545_verbose_status(&dev->pll);
+    dev_ad9545_verbose_status();
 }
 
 static display_mode_t old_display_mode = DISPLAY_NONE;

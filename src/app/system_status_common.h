@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,39 +14,24 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_AD9545_TYPES_H
-#define DEV_AD9545_TYPES_H
 
+#ifndef SYSTEM_STATUS_COMMON_HH
+#define SYSTEM_STATUS_COMMON_HH
+
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "bus/bus_types.h"
-#include "dev_ad9545_fsm.h"
 #include "dev_common_types.h"
-#include "ad9545/ad9545_setup_regs.h"
-#include "ad9545/ad9545_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Dev_ad9545_priv {
-    ad9545_setup_t setup;
-    AD9545_Status status;
-    ad9545_state_t fsm_state;
-    uint32_t recoveryCount;
-} Dev_ad9545_priv;
-
-typedef struct Dev_ad9545 {
-    DeviceBase dev;
-    Dev_ad9545_priv priv;
-} Dev_ad9545;
-
-void update_pll_sensor_status(Dev_ad9545 *pll);
-//Dev_ad9545 *dev_ad9545_init(BusInterface *bus);
-void pll_ad9545_clear_status(Dev_ad9545 *d);
+SensorStatus getPllStatus(void);
+bool getPllLockState(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_AD9545_TYPES_H
+#endif // SYSTEM_STATUS_COMMON_H

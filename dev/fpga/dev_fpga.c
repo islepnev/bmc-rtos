@@ -17,17 +17,18 @@
 
 #include "dev_fpga.h"
 
-#include "stm32f7xx_hal_def.h"
-#include "spi.h"
-#include "fpga_spi_hal.h"
-#include "version.h"
-#include "app_shared_data.h"
-#include "logbuffer.h"
-#include "dev_fpga_types.h"
 #include "ad9545/dev_ad9545.h"
+#include "app_shared_data.h"
+#include "dev_fpga_types.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
+#include "fpga_spi_hal.h"
+#include "logbuffer.h"
+#include "spi.h"
+#include "stm32f7xx_hal_def.h"
 #include "system_status.h"
+#include "system_status_common.h"
+#include "version.h"
 
 static uint16_t live_magic = 0x55AA;
 
@@ -149,13 +150,18 @@ bool fpgaWriteBmcTemperature(const Dev_thset *thset)
     return true;
 }
 
-bool fpgaWritePllStatus(const Dev_ad9545 *pll)
+bool fpgaWritePllStatus(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    if (!d || !d->priv)
+        return false;
+    const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);
+
     uint16_t data = 0;
-    if (SENSOR_NORMAL == pll->sensor) {
+    if (SENSOR_NORMAL == d->sensor) {
         data |= 0x8;
     } else {
-        if (pll->status.sysclk.b.pll0_locked)
+        if (priv->status.sysclk.b.pll0_locked)
             data |= 0x1;
     }
     if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data))
@@ -175,7 +181,7 @@ bool fpgaWriteSystemStatus(const Devices *d)
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data);
     if (HAL_OK != ret)
         return false;
-    data = getPllStatus(&d->pll);
+    data = getPllStatus();
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data);
     if (HAL_OK != ret)
         return false;

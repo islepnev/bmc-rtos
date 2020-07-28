@@ -157,7 +157,7 @@ void fpga_task_run(void)
         if ((!fpga_check_live_magic()) ||
             (!fpgaWriteBmcVersion()) ||
             (!fpgaWriteBmcTemperature(get_dev_thset())) ||
-            (!fpgaWritePllStatus(get_dev_pll())) ||
+            (!fpgaWritePllStatus()) ||
             (!fpgaWriteSystemStatus(getDevicesConst())) ||
             (!fpgaWriteSensors(get_dev_powermon_const()))
             ) {

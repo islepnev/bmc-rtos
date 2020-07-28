@@ -36,7 +36,7 @@ bool fpga_check_live_magic(void);
 bool fpga_test(void);
 bool fpgaWriteBmcVersion(void);
 bool fpgaWriteBmcTemperature(const struct Dev_thset *thset);
-bool fpgaWritePllStatus(const struct Dev_ad9545 *pll);
+bool fpgaWritePllStatus(void);
 bool fpgaWriteSystemStatus(const struct Devices *d);
 
 #ifdef __cplusplus

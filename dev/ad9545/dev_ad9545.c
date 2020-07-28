@@ -24,28 +24,28 @@
 void update_pll_sensor_status(Dev_ad9545 *pll)
 {
     if (DEVICE_NORMAL != pll->dev.device_status)
-        pll->sensor = SENSOR_UNKNOWN;
-    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
-        pll->sensor = SENSOR_CRITICAL;
-    if (!pll->status.dpll[0].lock_status.b.all_lock)
-        pll->sensor = SENSOR_WARNING;
-    if (!pll->status.dpll[1].lock_status.b.all_lock)
-        pll->sensor = SENSOR_WARNING;
-    pll->sensor = SENSOR_NORMAL;
+        pll->dev.sensor = SENSOR_UNKNOWN;
+    if ((pll->priv.fsm_state != PLL_STATE_RUN) || (!pll->priv.status.sysclk.b.locked))
+        pll->dev.sensor = SENSOR_CRITICAL;
+    if (!pll->priv.status.dpll[0].lock_status.b.all_lock)
+        pll->dev.sensor = SENSOR_WARNING;
+    if (!pll->priv.status.dpll[1].lock_status.b.all_lock)
+        pll->dev.sensor = SENSOR_WARNING;
+    pll->dev.sensor = SENSOR_NORMAL;
 }
 
 void pll_ad9545_clear_status(Dev_ad9545 *d)
 {
-    memset(&d->status.misc, 0, sizeof(d->status.misc));
-    memset(&d->status.ref, 0, sizeof(d->status.ref));
-    memset(&d->status.dpll, 0, sizeof(d->status.dpll));
+    memset(&d->priv.status.misc, 0, sizeof(d->priv.status.misc));
+    memset(&d->priv.status.ref, 0, sizeof(d->priv.status.ref));
+    memset(&d->priv.status.dpll, 0, sizeof(d->priv.status.dpll));
 }
 
-Dev_ad9545 *dev_ad9545_init(BusInterface *bus)
-{
-    Dev_ad9545 *d = get_dev_pll();
-    init_ad9545_setup(&d->setup);
-    d->dev.bus = *bus;
-    ad9545_gpio_init(bus);
-    return d;
-}
+//Dev_ad9545 *dev_ad9545_init(BusInterface *bus)
+//{
+//    Dev_ad9545 *d = get_dev_pll();
+//    init_ad9545_setup(&d->priv.setup);
+//    d->dev.bus = *bus;
+//    ad9545_gpio_init(bus);
+//    return d;
+//}

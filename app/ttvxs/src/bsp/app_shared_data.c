@@ -1,21 +1,24 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019-2020 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 
 #include "app_shared_data.h"
+
+#include <assert.h>
 
 #include "devices_types.h"
 
@@ -62,9 +65,11 @@ Dev_ttvxs_clkmux* get_dev_clkmux(void)
     return &dev.clkmux;
 }
 
-Dev_ad9545* get_dev_pll(void)
+DeviceBase* get_dev_pll(void)
 {
-    return &dev.pll;
+    DeviceBase *d = find_device(DEV_CLASS_PLL);
+    assert(d);
+    return d;
 }
 
 Dev_auxpll* get_dev_auxpll(void)

@@ -41,8 +41,6 @@ typedef union
 
 SensorStatus getMiscStatus(const Devices *d);
 SensorStatus getFpgaStatus(const Dev_fpga *d);
-int getPllLockState(const Dev_ad9545 *d);
-SensorStatus getPllStatus(const Dev_ad9545 *d);
 SensorStatus pollVxsiicStatus(Devices *dev);
 DeviceStatus getDeviceStatus(const Devices *d);
 SensorStatus getSystemStatus(void);
