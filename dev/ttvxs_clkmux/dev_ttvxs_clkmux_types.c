@@ -19,7 +19,7 @@
 
 SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d)
 {
-   if (!d->present)
+   if (!d->dev.device_status)
       return SENSOR_UNKNOWN;
    return SENSOR_NORMAL;
 }

@@ -30,6 +30,7 @@
 #include "dev_leds_types.h"
 
 typedef struct Dev_sdcard {
+    DeviceBase dev;
     int detect_b;
 } Dev_sdcard;
 

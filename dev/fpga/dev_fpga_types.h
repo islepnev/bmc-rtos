@@ -27,7 +27,7 @@ extern "C" {
 
 enum {FPGA_REG_COUNT = 8};
 typedef struct Dev_fpga {
-    DeviceStatus present;
+    DeviceBase dev;
     uint16_t regs[FPGA_REG_COUNT];
     uint8_t initb;
     uint8_t done;

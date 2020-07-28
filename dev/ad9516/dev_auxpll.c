@@ -98,12 +98,12 @@ DeviceStatus auxpllDetect(Dev_auxpll *d)
     devicePresent = (data == AD9516_PART_ID);
     if (devicePresent)
         log_put(LOG_INFO, "AUXPLL AD9516 present");
-    d->present = devicePresent ? DEVICE_NORMAL : DEVICE_FAIL;
+    d->dev.device_status = devicePresent ? DEVICE_NORMAL : DEVICE_FAIL;
     // ad9516_test_loop(); // FIXME
-    return d->present;
+    return d->dev.device_status;
 err:
-    d->present = DEVICE_FAIL;
-    return d->present;
+    d->dev.device_status = DEVICE_FAIL;
+    return d->dev.device_status;
 }
 
 /*

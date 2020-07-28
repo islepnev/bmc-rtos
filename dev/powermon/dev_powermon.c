@@ -41,7 +41,7 @@ void struct_powermon_sensors_init(Dev_powermon *d)
 Dev_powermon *dev_powermon_init(BusInterface *bus)
 {
     Dev_powermon *d = get_dev_powermon();
-    d->bus = *bus;
+    d->dev.bus = *bus;
     pm_clear_all(d);
     return d;
 }

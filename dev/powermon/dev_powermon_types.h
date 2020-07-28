@@ -53,7 +53,7 @@ typedef enum MonState {
 typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
 
 typedef struct Dev_powermon {
-    BusInterface bus;
+    DeviceBase dev;
     PmState pmState;
     MonState monState;
     uint32_t stateStartTick;

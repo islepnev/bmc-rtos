@@ -32,7 +32,7 @@ typedef enum {
 } ttvxs_pll_source_t;
 
 typedef struct Dev_ttvxs_clkmux {
-    DeviceStatus present;
+    DeviceBase dev;
     ttvxs_pll_source_t pll_source;
 } Dev_ttvxs_clkmux;
 

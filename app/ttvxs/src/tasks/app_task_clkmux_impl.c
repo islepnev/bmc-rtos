@@ -44,7 +44,7 @@ static uint32_t stateTicks(void)
 
 static void struct_vxs_i2c_init(Dev_ttvxs_clkmux *d)
 {
-    d->present = DEVICE_UNKNOWN;
+    d->dev.device_status = DEVICE_UNKNOWN;
     d->pll_source = TTVXS_PLL_SOURCE_DIV3;
 }
 
@@ -59,7 +59,7 @@ void task_clkmux_run(void)
     Dev_ttvxs_clkmux *d = get_dev_clkmux();
     if (!enable_power || !system_power_present) {
         state = CLKMUX_STATE_RESET;
-        d->present = DEVICE_UNKNOWN;
+        d->dev.device_status = DEVICE_UNKNOWN;
         return;
     }
     switch (state) {

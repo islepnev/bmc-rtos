@@ -38,11 +38,11 @@ static uint32_t stateTicks(void)
 */
 void dev_ad9545_run(Dev_ad9545 *d)
 {
-    BusInterface *bus = &d->bus;
+    BusInterface *bus = &d->dev.bus;
     if (!enable_power || !system_power_present) {
         if (d->fsm_state != PLL_STATE_INIT) {
             d->fsm_state = PLL_STATE_INIT;
-            d->present = DEVICE_UNKNOWN;
+            d->dev.device_status = DEVICE_UNKNOWN;
             pll_ad9545_clear_status(d);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
         }
@@ -61,8 +61,8 @@ void dev_ad9545_run(Dev_ad9545 *d)
     case PLL_STATE_RESET:
         ad9545_reset(bus);
         osDelay(50);
-        d->present = ad9545_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
-        if (DEVICE_NORMAL == d->present) {
+        d->dev.device_status = ad9545_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
+        if (DEVICE_NORMAL == d->dev.device_status) {
             if (!ad9545_software_reset(bus)) {
                 d->fsm_state = PLL_STATE_ERROR;
                 break;
@@ -123,7 +123,7 @@ void dev_ad9545_run(Dev_ad9545 *d)
         }
         break;
     case PLL_STATE_FATAL:
-        d->present = DEVICE_FAIL;
+        d->dev.device_status = DEVICE_FAIL;
         if (stateTicks() > 2000) {
             // recover
             d->recoveryCount = 0;

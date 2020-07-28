@@ -29,29 +29,29 @@
 Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus)
 {
     Dev_eeprom_config *d = get_dev_eeprom_config();
-    d->bus = *bus;
+    d->dev.bus = *bus;
     return d;
 }
 
 DeviceStatus dev_eeprom_config_detect(Dev_eeprom_config *d)
 {
-    if (at24c_detect(&d->bus))
-        d->present = DEVICE_NORMAL;
+    if (at24c_detect(&d->dev.bus))
+        d->dev.device_status = DEVICE_NORMAL;
     else
-        d->present = DEVICE_FAIL;
+        d->dev.device_status = DEVICE_FAIL;
 //    uint8_t data = 0;
 //    if (at24c_read(eeprom_Config_busAddress, 0, &data)) {
 //        d->present = DEVICE_NORMAL;
 //    }
-    return d->present;
+    return d->dev.device_status;
 }
 
 DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
 {
     uint8_t data = 0;
-    if (! at24c_read(&d->bus, 0, &data)) {
-        d->present = DEVICE_FAIL;
+    if (! at24c_read(&d->dev.bus, 0, &data)) {
+        d->dev.device_status = DEVICE_FAIL;
     }
-    return d->present;
+    return d->dev.device_status;
 }
 

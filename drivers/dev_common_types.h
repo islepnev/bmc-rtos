@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,8 +14,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef DEV_COMMON_TYPES_H
 #define DEV_COMMON_TYPES_H
+
+#include "bus/bus_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +44,12 @@ typedef enum {
     IIC_TIMEOUT  = 3,
     DEV_ERROR    = 0x20U,
 } OpStatusTypeDef;
+
+typedef struct DeviceBase {
+    DeviceStatus device_status; // old name: 'present'
+    BusInterface bus;
+    void *priv;
+} DeviceBase;
 
 const char *sensor_status_ansi_str(SensorStatus state);
 const char *sensor_status_text(SensorStatus state);

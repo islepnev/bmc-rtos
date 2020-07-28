@@ -62,7 +62,7 @@ static void struct_fpga_init(Dev_fpga *d)
 {
     Dev_fpga zz = {};
     *d = zz;
-    d->present = DEVICE_UNKNOWN;
+    d->dev.device_status = DEVICE_UNKNOWN;
 }
 
 void fpga_task_init(void)
@@ -175,7 +175,7 @@ void fpga_task_run(void)
         }
         break;
     case FPGA_STATE_ERROR:
-        d->present = DEVICE_FAIL;
+        d->dev.device_status = DEVICE_FAIL;
         if (stateTicks() > ERROR_DELAY_TICKS) {
             state = FPGA_STATE_STANDBY;
         }

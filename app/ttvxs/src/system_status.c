@@ -23,12 +23,11 @@
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_FAIL;
-    if ((d->sfpiic.present == DEVICE_NORMAL)
-            && (d->sfpiic.present == DEVICE_NORMAL)
-            && (d->vxsiicm.present == DEVICE_NORMAL)
-            && (d->eeprom_config.present == DEVICE_NORMAL)
-            && (d->pll.present == DEVICE_NORMAL)
-            && (d->fpga.present == DEVICE_NORMAL)
+    if ((d->sfpiic.dev.device_status == DEVICE_NORMAL)
+            && (d->vxsiicm.dev.device_status == DEVICE_NORMAL)
+            && (d->eeprom_config.dev.device_status == DEVICE_NORMAL)
+            && (d->pll.dev.device_status == DEVICE_NORMAL)
+            && (d->fpga.dev.device_status == DEVICE_NORMAL)
             )
         status = DEVICE_NORMAL;
     return status;
@@ -36,11 +35,11 @@ DeviceStatus getDeviceStatus(const Devices *d)
 
 SensorStatus getMiscStatus(const Devices *d)
 {
-    if (d->sfpiic.present != DEVICE_NORMAL)
+    if (d->sfpiic.dev.device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
-    if (d->vxsiicm.present != DEVICE_NORMAL)
+    if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
-    if (d->eeprom_config.present != DEVICE_NORMAL)
+    if (d->eeprom_config.dev.device_status != DEVICE_NORMAL)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }
@@ -61,7 +60,7 @@ SensorStatus getPllStatus(const Dev_ad9545 *d)
 {
     if (d->fsm_state == PLL_STATE_ERROR || d->fsm_state == PLL_STATE_FATAL)
         return SENSOR_CRITICAL;
-    if (d->present != DEVICE_NORMAL)
+    if (d->dev.device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
     if (!d->status.sysclk.b.locked)
         return SENSOR_CRITICAL;

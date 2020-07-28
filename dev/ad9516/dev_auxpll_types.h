@@ -35,7 +35,7 @@ typedef enum {
 } AuxPllState;
 
 typedef struct Dev_auxpll {
-    DeviceStatus present;
+    DeviceBase dev;
     AD9516_Status status;
     AuxPllState fsm_state;
     uint32_t recoveryCount;

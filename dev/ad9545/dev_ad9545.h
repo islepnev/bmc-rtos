@@ -30,8 +30,7 @@ extern "C" {
 #endif
 
 typedef struct Dev_ad9545 {
-    BusInterface bus;
-    DeviceStatus present;
+    DeviceBase dev;
     SensorStatus sensor;
     ad9545_setup_t setup;
     AD9545_Status status;

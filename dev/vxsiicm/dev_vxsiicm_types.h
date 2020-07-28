@@ -109,7 +109,7 @@ struct vxsiic_status_t {
 typedef struct vxsiic_status_t vxsiic_status_t;
 
 typedef struct Dev_vxsiicm {
-    DeviceStatus present;
+    DeviceBase dev;
     vxsiic_status_t status;
 } Dev_vxsiicm;
 

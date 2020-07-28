@@ -45,8 +45,8 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
     sfpiic_switch_reset();
     if (! sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
         status = DEVICE_FAIL;
-    d->present = status;
-    return d->present;
+    d->dev.device_status = status;
+    return d->dev.device_status;
 }
 
 static int sfp_old_present[SFPIIC_CH_CNT] = {0};
@@ -55,8 +55,8 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
     for(uint8_t ch=0; ch<SFPIIC_CH_CNT; ++ch) {
         if (! dev_sfpiic_select_ch(ch)) {
-            d->present = DEVICE_FAIL;
-            return d->present;
+            d->dev.device_status = DEVICE_FAIL;
+            return d->dev.device_status;
         }
         sfpiic_ch_status_t *status = &d->status.sfp[ch];
         if (dev_sfpiic_ch_update(d, ch)) {
@@ -70,6 +70,6 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
         }
         sfp_old_present[ch] = status->present;
     }
-    return d->present;
+    return d->dev.device_status;
 }
 

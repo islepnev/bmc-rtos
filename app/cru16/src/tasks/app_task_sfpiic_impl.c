@@ -43,7 +43,7 @@ static uint32_t stateTicks(void)
 
 static void struct_sfpiic_init(Dev_sfpiic *d)
 {
-    d->present = DEVICE_UNKNOWN;
+    d->dev.device_status = DEVICE_UNKNOWN;
 }
 
 void task_sfpiic_init(void)

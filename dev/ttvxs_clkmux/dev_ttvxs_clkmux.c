@@ -148,13 +148,13 @@ DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
     if (! mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
-    d->present = DEVICE_NORMAL;
+    d->dev.device_status = DEVICE_NORMAL;
     return DEVICE_NORMAL;
 err:
-    d->present = DEVICE_FAIL;
+    d->dev.device_status = DEVICE_FAIL;
     return DEVICE_FAIL;
 unknown:
-    d->present = DEVICE_UNKNOWN;
+    d->dev.device_status = DEVICE_UNKNOWN;
     return DEVICE_UNKNOWN;
 }
 

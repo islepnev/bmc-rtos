@@ -58,11 +58,11 @@ static int force_refresh = 0;
 
 static void devPrintStatus(const struct Devices *d)
 {
-    printf("SFP I2C mux:    %s", deviceStatusResultStr(d->sfpiic.present));
+    printf("SFP I2C mux:    %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiicm), deviceStatusResultStr(d->vxsiicm.present));
+    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiicm), deviceStatusResultStr(d->vxsiicm.dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.present));
+    printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 

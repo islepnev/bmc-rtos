@@ -28,8 +28,7 @@ extern "C" {
 #endif
 
 typedef struct Dev_eeprom_config {
-    BusInterface bus;
-    DeviceStatus present;
+    DeviceBase dev;
 } Dev_eeprom_config;
 
 Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus);

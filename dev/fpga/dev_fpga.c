@@ -113,7 +113,7 @@ bool fpgaDetect(Dev_fpga *d)
     if (id == 0x0000 || id == 0xFFFF)
         err++;
     if (err == 0)
-        d->present = DEVICE_NORMAL;
+        d->dev.device_status = DEVICE_NORMAL;
 //    else
 //        d->present = DEVICE_FAIL;
 
@@ -125,7 +125,7 @@ bool fpgaDetect(Dev_fpga *d)
 //        if (rdata != wdata)
 //            log_printf(LOG_ERR, "FPGA register test failed: addr %04X, wdata %04X, rdata %04X", addr, wdata, rdata);
 //    }
-    return DEVICE_NORMAL == d->present;
+    return DEVICE_NORMAL == d->dev.device_status;
 }
 
 bool fpgaWriteBmcVersion(void)

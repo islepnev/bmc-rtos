@@ -210,13 +210,13 @@ static void print_thset(const Dev_thset *d)
 
 static void devPrintStatus(const Devices *d)
 {
-    printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.present));
+    printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
     print_clear_eol();
-    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.present));
+    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.dev.device_status));
     print_clear_eol();
-    //    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.present));
+    //    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.dev.device_status));
     //    print_clear_eol();
-    //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.present));
+    //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.dev.device_status));
     //    print_clear_eol();
 }
 

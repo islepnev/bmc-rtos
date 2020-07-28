@@ -21,7 +21,7 @@
 
 SensorStatus get_auxpll_sensor_status(const Dev_auxpll *pll)
 {
-    if (DEVICE_NORMAL != pll->present)
+    if (DEVICE_NORMAL != pll->dev.device_status)
         return SENSOR_UNKNOWN;
     // TODO
 //    if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))

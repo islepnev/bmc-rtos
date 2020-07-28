@@ -19,7 +19,7 @@
 
 SensorStatus get_fpga_sensor_status(const Dev_fpga *d)
 {
-   if (!d->present)
+   if (!d->dev.device_status)
       return SENSOR_UNKNOWN;
    if (!d->initb)
       return SENSOR_CRITICAL;

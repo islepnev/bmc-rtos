@@ -23,7 +23,7 @@
 
 void update_pll_sensor_status(Dev_ad9545 *pll)
 {
-    if (DEVICE_NORMAL != pll->present)
+    if (DEVICE_NORMAL != pll->dev.device_status)
         pll->sensor = SENSOR_UNKNOWN;
     if ((pll->fsm_state != PLL_STATE_RUN) || (!pll->status.sysclk.b.locked))
         pll->sensor = SENSOR_CRITICAL;
@@ -45,7 +45,7 @@ Dev_ad9545 *dev_ad9545_init(BusInterface *bus)
 {
     Dev_ad9545 *d = get_dev_pll();
     init_ad9545_setup(&d->setup);
-    d->bus = *bus;
+    d->dev.bus = *bus;
     ad9545_gpio_init(bus);
     return d;
 }

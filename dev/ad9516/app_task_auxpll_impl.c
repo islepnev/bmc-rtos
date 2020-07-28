@@ -46,7 +46,7 @@ void auxpll_task_run(void)
     if (!enable) {
         if (d->fsm_state != AUXPLL_STATE_INIT) {
             d->fsm_state = AUXPLL_STATE_INIT;
-            d->present = DEVICE_UNKNOWN;
+            d->dev.device_status = DEVICE_UNKNOWN;
             ad9516_disable_interface();
             auxpll_clear_status(d);
             log_put(LOG_INFO, "PLL AD9516 shutdown");
@@ -66,7 +66,7 @@ void auxpll_task_run(void)
             break;
         }
         auxpllDetect(d);
-        if (DEVICE_NORMAL == d->present) {
+        if (DEVICE_NORMAL == d->dev.device_status) {
             d->fsm_state = AUXPLL_STATE_SETUP;
             break;
         }
@@ -103,7 +103,7 @@ void auxpll_task_run(void)
         }
         break;
     case AUXPLL_STATE_FATAL:
-        d->present = DEVICE_FAIL;
+        d->dev.device_status = DEVICE_FAIL;
         if (stateTicks() > 2000) {
             // recover
             d->recoveryCount = 0;

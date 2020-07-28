@@ -65,8 +65,8 @@ DeviceStatus dev_vxsiicm_detect(Dev_vxsiicm *d)
     DeviceStatus status = DEVICE_NORMAL;
     if (! vxsiic_detect_mux())
         status = DEVICE_FAIL;
-    d->present = status;
-    return d->present;
+    d->dev.device_status = status;
+    return d->dev.device_status;
 }
 
 #ifdef MCU_TEST
@@ -105,8 +105,8 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
 //    uint32_t tick_begin = osKernelSysTick();
     for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
         if (! vxsiic_select_pp(d, pp)) {
-            d->present = DEVICE_FAIL;
-            return d->present;
+            d->dev.device_status = DEVICE_FAIL;
+            return d->dev.device_status;
         }
         vxsiic_slot_status_t *status = &d->status.slot[pp];
         if (dev_vxsiic_read_pp(d, pp)) {
@@ -123,5 +123,5 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
 //    uint32_t tick_end = osKernelSysTick();
 //    uint32_t ticks = tick_end - tick_begin;
 //    debug_printf("%s: %ld ticks\n", __func__, ticks);
-    return d->present;
+    return d->dev.device_status;
 }
