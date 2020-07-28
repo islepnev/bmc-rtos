@@ -5,7 +5,6 @@
 
 #include "display.h"
 
-DeviceList deviceList = {0};
 
 const char *sensor_status_ansi_str(SensorStatus state)
 {

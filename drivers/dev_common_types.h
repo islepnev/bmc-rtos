@@ -19,6 +19,7 @@
 #define DEV_COMMON_TYPES_H
 
 #include "bus/bus_types.h"
+#include "devicelist.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,17 +70,10 @@ typedef struct DeviceBase {
     void *priv;
 } DeviceBase;
 
-enum { DEVICE_LIST_SIZE = 16 };
-typedef struct DeviceList {
-    int count;
-    DeviceBase *list[DEVICE_LIST_SIZE];
-} DeviceList;
-
 const char *sensor_status_ansi_str(SensorStatus state);
 const char *sensor_status_text(SensorStatus state);
 char *deviceStatusResultStr(DeviceStatus status);
 
-extern DeviceList deviceList;
 void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
 DeviceBase *find_device(DeviceClass class);
 const DeviceBase *find_device_const(DeviceClass class);
