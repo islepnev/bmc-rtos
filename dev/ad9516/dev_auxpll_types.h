@@ -18,7 +18,7 @@
 #define DEV_AUXPLL_TYPES_H
 
 #include <stdint.h>
-#include "dev_common_types.h"
+#include "devicelist.h"
 #include "ad9516/ad9516_status.h"
 
 #ifdef __cplusplus

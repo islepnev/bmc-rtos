@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dev_common_types.h"
+#include "devicelist.h"
 #include "ipmi_sensor_types.h"
 
 #ifdef __cplusplus

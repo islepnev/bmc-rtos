@@ -18,10 +18,18 @@
 #ifndef DEVICELIST_H
 #define DEVICELIST_H
 
-typedef struct DeviceListEl {
-    struct DeviceBase *dev;
-    struct DeviceListEl *next;
-} DeviceListEl;
+#include "dev_common_types.h"
+
+typedef struct DeviceBase {
+    DeviceClass class;
+    DeviceStatus device_status;
+    SensorStatus sensor;
+    BusInterface bus;
+    void *priv;
+    struct DeviceBase *parent;
+    struct DeviceBase *children;
+    struct DeviceBase *next;
+} DeviceBase;
 
 enum { DEVICE_LIST_SIZE = 16 };
 typedef struct DeviceList {
@@ -30,5 +38,11 @@ typedef struct DeviceList {
 } DeviceList;
 
 extern DeviceList deviceList;
+
+void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
+DeviceBase *find_device(DeviceClass class);
+const DeviceBase *find_device_const(DeviceClass class);
+void *device_priv(DeviceBase *d);
+const void *device_priv_const(const DeviceBase *d);
 
 #endif // DEVICELIST_H

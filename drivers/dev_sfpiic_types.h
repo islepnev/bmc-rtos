@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-#include "dev_common_types.h"
+#include "devicelist.h"
 #include "ipmi_sensor_types.h"
 
 enum {SFPIIC_CH_CNT = 8};

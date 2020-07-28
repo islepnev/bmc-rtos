@@ -19,7 +19,6 @@
 #define DEV_COMMON_TYPES_H
 
 #include "bus/bus_types.h"
-#include "devicelist.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,23 +61,9 @@ typedef enum {
     DEV_CLASS_VXSIICS,
 } DeviceClass;
 
-typedef struct DeviceBase {
-    DeviceClass class;
-    DeviceStatus device_status; // old name: 'present'
-    SensorStatus sensor;
-    BusInterface bus;
-    void *priv;
-} DeviceBase;
-
 const char *sensor_status_ansi_str(SensorStatus state);
 const char *sensor_status_text(SensorStatus state);
 char *deviceStatusResultStr(DeviceStatus status);
-
-void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
-DeviceBase *find_device(DeviceClass class);
-const DeviceBase *find_device_const(DeviceClass class);
-void *device_priv(DeviceBase *d);
-const void *device_priv_const(const DeviceBase *d);
 
 #ifdef __cplusplus
 }
