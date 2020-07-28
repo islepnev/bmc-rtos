@@ -22,12 +22,6 @@
 #include "dev_ttvxs_clkmux_types.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
 
-void dev_ttvxs_clkmux_init(Dev_ttvxs_clkmux *d)
-{
-    Dev_ttvxs_clkmux zz = {};
-    *d = zz;
-}
-
 typedef union {
     struct {
         uint8_t reserved: 2;

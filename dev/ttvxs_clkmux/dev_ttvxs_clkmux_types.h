@@ -40,7 +40,7 @@ typedef struct Dev_ttvxs_clkmux {
     Dev_ttvxs_clkmux_priv priv;
 } Dev_ttvxs_clkmux;
 
-SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d);
+SensorStatus get_clkmux_sensor_status(void);
 
 #ifdef __cplusplus
 }

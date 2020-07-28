@@ -32,6 +32,7 @@
 #include "dev_common_types.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_types.h"
+#include "fpga/dev_fpga_print.h"
 #include "dev_mcu.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon.h"
@@ -45,6 +46,7 @@
 #include "logentry.h"
 #include "system_status.h"
 #include "version.h"
+#include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 
 #include "freertos_stats.h"
 #include "cmsis_os.h"
@@ -236,30 +238,18 @@ static void print_main(const Devices *dev)
 //    }
 }
 
-static void print_ttvxs_clkmux(const Dev_ttvxs_clkmux *clkmux)
+static void print_ttvxs_clkmux(void)
 {
     print_goto(DISPLAY_CLKMUX_Y, 1);
     printf("CLKMUX");
-    printf(sensor_status_ansi_str(get_clkmux_sensor_status(clkmux)));
+    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status()));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
 static void print_fpga(void)
 {
     print_goto(DISPLAY_FPGA_Y, 1);
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d || !d->priv)
-        return;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-
-    printf("FPGA %s",
-           priv->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
-    if (priv->initb && !priv->done)
-        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
-    if (priv->done)
-        printf("%04X", priv->id);
-    printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
-    print_clear_eol();
+    dev_fpga_print_box();
 }
 
 static void print_pll(void)
@@ -321,7 +311,7 @@ static void display_summary(const Devices * dev)
     }
     print_thset(&dev->thset);
     print_main(dev);
-    print_ttvxs_clkmux(&dev->clkmux);
+    print_ttvxs_clkmux();
     print_fpga();
     print_pll();
     print_auxpll();

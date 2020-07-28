@@ -26,7 +26,6 @@ extern "C" {
 
 struct Dev_ttvxs_clkmux;
 
-void dev_ttvxs_clkmux_init(struct Dev_ttvxs_clkmux *d);
 DeviceStatus dev_ttvxs_clkmux_detect(struct Dev_ttvxs_clkmux *d);
 DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d);
 

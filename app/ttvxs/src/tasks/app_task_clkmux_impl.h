@@ -22,8 +22,8 @@
 extern "C" {
 #endif
 
-void task_clkmux_init(void);
-void task_clkmux_run(void);
+struct Dev_ttvxs_clkmux;
+void task_clkmux_run(struct Dev_ttvxs_clkmux *d);
 
 #ifdef __cplusplus
 }

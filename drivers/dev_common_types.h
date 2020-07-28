@@ -49,6 +49,7 @@ typedef enum {
     DEV_CLASS_0, // no class
     DEV_CLASS_VIRTUAL, // no bus
     DEV_CLASS_AUXPLL,
+    DEV_CLASS_CLKMUX,
     DEV_CLASS_DIGIPOT,
     DEV_CLASS_EEPROM_CONFIG,
     DEV_CLASS_FPGA,

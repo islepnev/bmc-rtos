@@ -23,13 +23,14 @@
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
 #include "app_task_clkmux_impl.h"
-#include "eeprom_config/dev_eeprom_config.h"
-#include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "app_tasks.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
+#include "cru16_clkmux/dev_ttvxs_clkmux_types.h"
 #include "debug_helpers.h"
 #include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config_fsm.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
@@ -41,6 +42,12 @@ static BusInterface pll_bus_info = {
     .address = 0x4A
 };
 
+static BusInterface clkmux_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x20
+};
+
 // mezzanine eeprom
 static BusInterface eeprom_config_bus_info = {
     .type = BUS_IIC,
@@ -50,23 +57,24 @@ static BusInterface eeprom_config_bus_info = {
 
 static Dev_ad9545 pll = {0};
 static Dev_eeprom_config eeprom = {0};
+static Dev_ttvxs_clkmux clkmux = {0};
 
 static void local_init(void) {
     init_ad9545_setup(&pll.priv.setup);
     create_device(&pll.dev, &pll.priv, DEV_CLASS_PLL, pll_bus_info);
+    create_device(&clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info);
     create_device(&eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM_CONFIG, eeprom_config_bus_info);
 }
 
 static void pllTask(void const *arg)
 {
     (void) arg;
-    task_clkmux_init();
 
     ad9545_gpio_init(&pll.dev.bus);
 
     while(1) {
         dev_eeprom_config_run(&eeprom);
-        task_clkmux_run();
+        task_clkmux_run(&clkmux);
         dev_ad9545_run(&pll);
         osDelay(pllTaskLoopDelay);
     }

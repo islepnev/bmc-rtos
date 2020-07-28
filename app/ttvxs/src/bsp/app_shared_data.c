@@ -55,11 +55,6 @@ const Dev_powermon* get_dev_powermon_const(void)
     return &dev.pm;
 }
 
-Dev_ttvxs_clkmux* get_dev_clkmux(void)
-{
-    return &dev.clkmux;
-}
-
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;

@@ -39,7 +39,6 @@ enum {
 
 typedef struct Devices {
     Dev_thset thset;
-    Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
     Dev_eeprom_config eeprom_config;
     Dev_powermon pm;

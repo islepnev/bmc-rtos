@@ -17,9 +17,19 @@
 
 #include "dev_ttvxs_clkmux_types.h"
 
-SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d)
+SensorStatus get_clkmux_sensor_status(void)
 {
-   if (!d->present)
-      return SENSOR_UNKNOWN;
-   return SENSOR_NORMAL;
+    const DeviceBase *d = find_device_const(DEV_CLASS_CLKMUX);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_ttvxs_clkmux_priv *priv = (const Dev_ttvxs_clkmux_priv *)device_priv_const(d);
+
+    switch (d->device_status) {
+    case DEVICE_NORMAL:
+        return SENSOR_NORMAL;
+    case DEVICE_FAIL:
+        return SENSOR_CRITICAL;
+    default:
+        return SENSOR_UNKNOWN;
+    }
 }

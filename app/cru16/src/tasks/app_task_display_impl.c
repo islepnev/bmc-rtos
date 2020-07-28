@@ -238,11 +238,11 @@ static void print_main(const Devices *dev)
 //    }
 }
 
-static void print_ttvxs_clkmux(const Dev_ttvxs_clkmux *clkmux)
+static void print_ttvxs_clkmux(void)
 {
     print_goto(DISPLAY_CLKMUX_Y, 1);
     printf("CLKMUX");
-    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status(clkmux)));
+    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status()));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -311,7 +311,7 @@ static void display_summary(const Devices * dev)
     }
     print_thset(&dev->thset);
     print_main(dev);
-    print_ttvxs_clkmux(&dev->clkmux);
+    print_ttvxs_clkmux();
     print_fpga();
     print_pll();
     print_auxpll();
