@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_eeprom_config_impl.h"
+#include "dev_eeprom_config_fsm.h"
 #include "cmsis_os.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "app_shared_data.h"
@@ -24,63 +24,51 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-typedef enum {
-    STATE_RESET,
-    STATE_RUN,
-    STATE_PAUSE,
-    STATE_ERROR,
-} state_t;
-
-static state_t state = STATE_RESET;
-static state_t old_state = STATE_RESET;
-
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(Dev_eeprom_config *d)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - d->priv.state_start_tick;
 }
 
-void task_eeprom_config_run(void)
+void dev_eeprom_config_run(Dev_eeprom_config *d)
 {
-    Dev_eeprom_config *d = get_dev_eeprom_config();
-    switch (state) {
-    case STATE_RESET: {
+    const eeprom_config_state_t old_state = d->priv.fsm_state;
+    switch (d->priv.fsm_state) {
+    case EEPROM_CONFIG_STATE_RESET: {
         DeviceStatus status = dev_eeprom_config_detect(d);
         if (status == DEVICE_NORMAL) {
-            state = STATE_RUN;
+            d->priv.fsm_state = EEPROM_CONFIG_STATE_RUN;
             log_printf(LOG_INFO, "Configuration EEPROM Ok");
             break;
         }
-        if (stateTicks() > 2000) {
+        if (stateTicks(d) > 2000) {
             log_put(LOG_ERR, "Configuration EEPROM not found");
-            state = STATE_ERROR;
+            d->priv.fsm_state = EEPROM_CONFIG_STATE_ERROR;
             break;
         }
         break;
     }
-    case STATE_RUN:
+    case EEPROM_CONFIG_STATE_RUN:
         if (DEVICE_NORMAL != dev_eeprom_config_read(d)) {
-            state = STATE_ERROR;
+            d->priv.fsm_state = EEPROM_CONFIG_STATE_ERROR;
             break;
         }
-        state = STATE_PAUSE;
+        d->priv.fsm_state = EEPROM_CONFIG_STATE_PAUSE;
         break;
-    case STATE_PAUSE:
-        if (stateTicks() > POLL_DELAY_TICKS) {
-            state = STATE_RUN;
+    case EEPROM_CONFIG_STATE_PAUSE:
+        if (stateTicks(d) > POLL_DELAY_TICKS) {
+            d->priv.fsm_state = EEPROM_CONFIG_STATE_RUN;
         }
         break;
-    case STATE_ERROR:
-        if (old_state != state) {
+    case EEPROM_CONFIG_STATE_ERROR:
+        if (old_state != d->priv.fsm_state) {
             log_printf(LOG_ERR, "Configuration EEPROM error");
         }
-        if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = STATE_RESET;
+        if (stateTicks(d) > ERROR_DELAY_TICKS) {
+            d->priv.fsm_state = EEPROM_CONFIG_STATE_RESET;
         }
         break;
     }
-    if (old_state != state) {
-        old_state = state;
-        stateStartTick = osKernelSysTick();
+    if (old_state != d->priv.fsm_state) {
+        d->priv.state_start_tick = osKernelSysTick();
     }
 }

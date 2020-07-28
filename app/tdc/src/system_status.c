@@ -27,9 +27,7 @@
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
-        // (d->eeprom_vxspb.dev.device_status == DEVICE_FAIL) ||
-        (d->eeprom_config.dev.device_status == DEVICE_FAIL)
+    if ((d->sfpiic.dev.device_status == DEVICE_FAIL)
         )
         status = DEVICE_FAIL;
     for (int i=0; i<deviceList.count; i++)
@@ -41,8 +39,6 @@ DeviceStatus getDeviceStatus(const Devices *d)
 SensorStatus getMiscStatus(const Devices *d)
 {
     if (d->sfpiic.dev.device_status == DEVICE_FAIL)
-        return SENSOR_WARNING;
-    if (d->eeprom_config.dev.device_status == DEVICE_FAIL)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }

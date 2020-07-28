@@ -56,11 +56,6 @@ Dev_sfpiic *get_dev_sfpiic(void)
     return &dev.sfpiic;
 }
 
-Dev_eeprom_config *get_dev_eeprom_config(void)
-{
-    return &dev.eeprom_config;
-}
-
 Dev_digipots *get_dev_digipots(void)
 {
     return &dev.pots;

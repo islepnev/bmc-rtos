@@ -17,6 +17,9 @@
 
 #include "dev_eeprom_config.h"
 
+#include <stdio.h>
+
+#include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "at24c/dev_at24c.h"
 #include "dev_common_types.h"
@@ -25,13 +28,7 @@
 #include "bus/i2c_driver.h"
 #include "bus/bus_types.h"
 #include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
-
-Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus)
-{
-    Dev_eeprom_config *d = get_dev_eeprom_config();
-    d->dev.bus = *bus;
-    return d;
-}
+#include "system_status_common.h"
 
 DeviceStatus dev_eeprom_config_detect(Dev_eeprom_config *d)
 {
@@ -55,3 +52,13 @@ DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
     return d->dev.device_status;
 }
 
+void dev_eeprom_config_print(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM_CONFIG);
+    if (!d || !d->priv)
+        return;
+    const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);
+
+    printf("EEPROM config:  %s", sensor_status_ansi_str(get_eepromConfig_status()));
+    printf("%s\n", ANSI_CLEAR_EOL);
+}

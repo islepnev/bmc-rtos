@@ -19,7 +19,24 @@
 
 #include "ad9545/dev_ad9545.h"
 #include "dev_common_types.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_types.h"
+
+SensorStatus get_eepromConfig_status(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM_CONFIG);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);
+
+    if (priv->fsm_state == EEPROM_CONFIG_STATE_ERROR)
+        return SENSOR_CRITICAL;
+    if (d->device_status != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (!getPllLockState())
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}
 
 SensorStatus getFpgaStatus(void)
 {

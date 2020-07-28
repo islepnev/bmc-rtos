@@ -75,10 +75,6 @@ Dev_sfpiic *get_dev_sfpiic(void)
     return &dev.sfpiic;
 }
 
-Dev_eeprom_config *get_dev_eeprom_config(void)
-{
-    return &dev.eeprom_config;
-}
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

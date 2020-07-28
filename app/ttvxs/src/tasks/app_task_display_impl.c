@@ -30,6 +30,7 @@
 #include "ad9545/dev_ad9545_print.h"
 #include "ad9516/dev_auxpll_print.h"
 #include "dev_common_types.h"
+#include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_types.h"
 #include "dev_mcu.h"
 #include "powermon/dev_pm_sensors_types.h"
@@ -62,8 +63,7 @@ static void devPrintStatus(const struct Devices *d)
     printf("%s\n", ANSI_CLEAR_EOL);
     printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiicm), deviceStatusResultStr(d->vxsiicm.dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.dev.device_status));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    dev_eeprom_config_print();
 }
 
 static const char *auxpllStateStr(AuxPllState state)

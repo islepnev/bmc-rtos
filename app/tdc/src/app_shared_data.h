@@ -43,7 +43,6 @@ struct Devices;
 struct Dev_powermon;
 struct Dev_thset;
 struct Dev_sfpiic;
-struct Dev_eeprom_config;
 struct Dev_digipots;
 
 struct Devices* getDevices(void);
@@ -54,7 +53,6 @@ const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_clkmux *get_dev_clkmux(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
-struct Dev_eeprom_config *get_dev_eeprom_config(void);
 struct Dev_digipots *get_dev_digipots(void);
 
 void schedule_display_refresh(void);

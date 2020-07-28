@@ -44,7 +44,6 @@ typedef struct Devices {
     Dev_ttvxs_clkmux clkmux;
     Dev_sfpiic sfpiic;
     Dev_vxsiicm vxsiicm;
-    Dev_eeprom_config eeprom_config;
     Dev_powermon pm;
     Dev_sdcard sd;
     int pen_b;

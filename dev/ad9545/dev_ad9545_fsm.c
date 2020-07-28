@@ -23,7 +23,7 @@
 #include "dev_ad9545.h"
 #include "logbuffer.h"
 
-static uint32_t stateStartTick = 0;
+static uint32_t stateStartTick = 0; // FIXME: make device field
 static uint32_t stateTicks(void)
 {
     return osKernelSysTick() - stateStartTick;

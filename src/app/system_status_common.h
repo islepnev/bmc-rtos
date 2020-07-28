@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+SensorStatus get_eepromConfig_status(void);
 SensorStatus getFpgaStatus(void);
 SensorStatus getPllStatus(void);
 bool getPllLockState(void);

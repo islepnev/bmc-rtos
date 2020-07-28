@@ -27,13 +27,26 @@
 extern "C" {
 #endif
 
+typedef enum {
+    EEPROM_CONFIG_STATE_RESET,
+    EEPROM_CONFIG_STATE_RUN,
+    EEPROM_CONFIG_STATE_PAUSE,
+    EEPROM_CONFIG_STATE_ERROR
+} eeprom_config_state_t;
+
+typedef struct Dev_eeprom_config_priv {
+    eeprom_config_state_t fsm_state;
+    uint32_t state_start_tick;
+} Dev_eeprom_config_priv;
+
 typedef struct Dev_eeprom_config {
     DeviceBase dev;
+    Dev_eeprom_config_priv priv;
 } Dev_eeprom_config;
 
-Dev_eeprom_config *dev_eeprom_config_init(BusInterface *bus);
 DeviceStatus dev_eeprom_config_detect(struct Dev_eeprom_config *d);
 DeviceStatus dev_eeprom_config_read(struct Dev_eeprom_config *d);
+void dev_eeprom_config_print(void);
 
 #ifdef __cplusplus
 }

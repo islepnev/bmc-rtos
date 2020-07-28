@@ -14,17 +14,18 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_EEPROM_CONFIG_IMPL_H
-#define APP_TASK_EEPROM_CONFIG_IMPL_H
+#ifndef APP_TASK_EEPROM_CONFIG_FSM_H
+#define APP_TASK_EEPROM_CONFIG_FSM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void task_eeprom_config_run(void);
+struct Dev_eeprom_config;
+void dev_eeprom_config_run(struct Dev_eeprom_config *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_EEPROM_CONFIG_IMPL_H
+#endif // APP_TASK_EEPROM_CONFIG_FSM_H
