@@ -133,21 +133,21 @@ bool get_input_power_failed(const pm_sensors_arr sensors)
     return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VME_5V]);
 }
 
-double pm_get_power_w(const Dev_powermon *pm)
+double pm_get_power_w(const Dev_powermon_priv *p)
 {
     double mw = 0;
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_5V]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VME_3V3]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_VME_5V]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_VME_3V3]);
     return mw;
 }
 
-double pm_get_power_max_w(const Dev_powermon *pm)
+double pm_get_power_max_w(const Dev_powermon_priv *p)
 {
     double mw = 0;
-    mw += pm->sensors[SENSOR_5VPC].powerMax;
-    mw += pm->sensors[SENSOR_VME_5V].powerMax;
-    mw += pm->sensors[SENSOR_VME_3V3].powerMax;
+    mw += p->sensors[SENSOR_5VPC].powerMax;
+    mw += p->sensors[SENSOR_VME_5V].powerMax;
+    mw += p->sensors[SENSOR_VME_3V3].powerMax;
     return mw;
 }
 
@@ -161,26 +161,28 @@ void switch_power(Dev_powermon *pm, bool state)
     // turn off only when failed
     //    bool state = state_primary;
 
-    bool state_primary = (pm->pmState != PM_STATE_PWRFAIL) && (pm->pmState != PM_STATE_OFF) && (pm->pmState != PM_STATE_OVERHEAT);
+    bool state_primary = (pm->priv.pmState != PM_STATE_PWRFAIL) &&
+                         (pm->priv.pmState != PM_STATE_OFF) &&
+                         (pm->priv.pmState != PM_STATE_OVERHEAT);
 
     // primary switches (required for monitors)
-    pm->sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
-    pm->sw[PSW_3V3] = state_primary;
-    write_power_switches(pm->sw);
+    pm->priv.sw[PSW_5V]  = state_primary; // VME 5V and 3.3V
+    pm->priv.sw[PSW_3V3] = state_primary;
+    write_power_switches(pm->priv.sw);
 
     // secondary switches
-    bool turnon_1v5 = !pm->sw[PSW_1V5] && state;
-    pm->sw[PSW_1V5] = state;
-    write_power_switches(pm->sw);
+    bool turnon_1v5 = !pm->priv.sw[PSW_1V5] && state;
+    pm->priv.sw[PSW_1V5] = state;
+    write_power_switches(pm->priv.sw);
     if (turnon_1v5)
         osDelay(10);
-    pm->sw[PSW_1V0] = state;
-    pm->sw[PSW_TDC_A] = true; // state;
-    pm->sw[PSW_TDC_B] = true; // state;
-    pm->sw[PSW_TDC_C] = true; // state;
-    pm->sw[PSW_TDC_D] = true; // state;
+    pm->priv.sw[PSW_1V0] = state;
+    pm->priv.sw[PSW_TDC_A] = true; // state;
+    pm->priv.sw[PSW_TDC_B] = true; // state;
+    pm->priv.sw[PSW_TDC_C] = true; // state;
+    pm->priv.sw[PSW_TDC_D] = true; // state;
 
-    write_power_switches(pm->sw);
+    write_power_switches(pm->priv.sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 }

@@ -24,8 +24,7 @@
 extern "C" {
 #endif
 
-struct Dev_powermon;
-bool fpgaWriteSensors(const struct Dev_powermon *d);
+bool fpgaWriteSensors(void);
 
 #ifdef __cplusplus
 }

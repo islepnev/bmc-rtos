@@ -1,19 +1,19 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019-2020 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #ifndef DEV_POWERMON_H
 #define DEV_POWERMON_H
@@ -26,9 +26,9 @@
 extern "C" {
 #endif
 
-void struct_powermon_sensors_init(Dev_powermon *d);
-Dev_powermon *dev_powermon_init(BusInterface *bus);
-void pm_clear_all(Dev_powermon *d);
+void struct_powermon_sensors_init(Dev_powermon_priv *p);
+void dev_powermon_init(Dev_powermon_priv *p);
+void pm_clear_all(Dev_powermon_priv *p);
 bool pm_read_liveInsert(Dev_powermon *pm);
 bool update_power_switches(Dev_powermon *pm, bool state);
 void monClearMinMax(Dev_powermon *d);

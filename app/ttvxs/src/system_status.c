@@ -47,7 +47,7 @@ SensorStatus getMiscStatus(const Devices *d)
 SensorStatus getSystemStatus(void)
 {
     const Devices *d = getDevicesConst();
-    const SensorStatus powermonStatus = getPowermonStatus(&d->pm);
+    const SensorStatus powermonStatus = getPowermonStatus();
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
     const SensorStatus miscStatus = getMiscStatus(d);
     const SensorStatus fpgaStatus = getFpgaStatus();

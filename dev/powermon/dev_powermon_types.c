@@ -20,17 +20,17 @@
 #include "dev_pm_sensors.h"
 #include "bsp_powermon.h"
 
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
+SensorStatus pm_sensors_getStatus(const Dev_powermon_priv *priv)
 {
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &d->sensors[i];
+        const pm_sensor *sensor = &priv->sensors[i];
         if (sensor->isOptional)
             continue;
         DeviceStatus deviceStatus = sensor->deviceStatus;
         if (deviceStatus != DEVICE_NORMAL)
             maxStatus = SENSOR_CRITICAL;
-        int isOn = monIsOn(d->sw, (SensorIndex)i);
+        int isOn = monIsOn(priv->sw, (SensorIndex)i);
         if (isOn) {
             SensorStatus status = pm_sensor_status(sensor);
             if (status > maxStatus)
@@ -40,21 +40,24 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon *d)
     return maxStatus;
 }
 
-SensorStatus getMonStatus(const Dev_powermon *pm)
+SensorStatus getMonStatus(const Dev_powermon_priv *priv)
 {
     SensorStatus monStatus = SENSOR_CRITICAL;
-    if ((pm->monState == MON_STATE_READ)
+    if ((priv->monState == MON_STATE_READ)
 //            && (getMonStateTicks(pm) > SENSORS_SETTLE_TICKS)
             ) {
-        monStatus = pm_sensors_getStatus(pm);
+        monStatus = pm_sensors_getStatus(priv);
     }
     return monStatus;
 }
 
-SensorStatus getPowermonStatus(const Dev_powermon *d)
+SensorStatus getPowermonStatus(void)
 {
-    const SensorStatus monStatus = getMonStatus(d);
-    const PmState pmState = d->pmState;
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    if (!priv)
+        return SENSOR_UNKNOWN;
+    const SensorStatus monStatus = getMonStatus(priv);
+    const PmState pmState = priv->pmState;
     SensorStatus pmStatus = (pmState == PM_STATE_RUN || pmState == PM_STATE_OFF) ? SENSOR_NORMAL : SENSOR_WARNING;
     if (pmState == PM_STATE_PWRFAIL || pmState == PM_STATE_OVERHEAT || pmState == PM_STATE_ERROR)
         pmStatus = SENSOR_CRITICAL;
@@ -64,4 +67,26 @@ SensorStatus getPowermonStatus(const Dev_powermon *d)
     if (monStatus > systemStatus)
         systemStatus = monStatus;
     return systemStatus;
+}
+
+Dev_powermon_priv *get_powermon_priv(void)
+{
+    DeviceBase *d = find_device(DEV_CLASS_POWERMON);
+    if (!d || !d->priv)
+        return 0;
+    return (Dev_powermon_priv *)device_priv(d);
+}
+
+const Dev_powermon_priv *get_powermon_priv_const(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_POWERMON);
+    if (!d || !d->priv)
+        return 0;
+    return (const Dev_powermon_priv *)device_priv_const(d);
+}
+
+PmState get_powermon_state(void)
+{
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    return priv ? priv->pmState : PM_STATE_OFF;
 }

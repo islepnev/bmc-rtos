@@ -42,7 +42,6 @@ typedef struct Devices {
     Dev_thset thset;
     Dev_sfpiic sfpiic;
     Dev_vxsiicm vxsiicm;
-    Dev_powermon pm;
     Dev_sdcard sd;
     int pen_b;
     uint32_t pcb_ver;

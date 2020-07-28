@@ -177,7 +177,7 @@ bool fpgaWriteSystemStatus(const Devices *d)
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data);
     if (HAL_OK != ret)
         return false;
-    data = getPowermonStatus(&d->pm);
+    data = getPowermonStatus();
     ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data);
     if (HAL_OK != ret)
         return false;

@@ -129,8 +129,13 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
     u32_t i = instance->reference.u32;
     if (i >= POWERMON_SENSORS)
         return 0;
-    const Devices *dev = getDevicesConst();
-    const pm_sensor *s = &dev->pm.sensors[i];
+
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    if (!priv) {
+        *(s32_t *)value = 0;
+        return 0;
+    }
+    const pm_sensor *s = &priv->sensors[i];
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
     case 1: {/* sensor index */

@@ -58,7 +58,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     encoded_system_status_t code;
     code.w = 0;
     code.b.system = getSystemStatus() & 0xF;
-    code.b.pm =  getPowermonStatus(&dev->pm) & 0xF;
+    code.b.pm =  getPowermonStatus() & 0xF;
     code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
     code.b.fpga = getFpgaStatus() & 0xF;
@@ -69,7 +69,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
 SensorStatus getSystemStatus()
 {
     const Devices *dev = getDevicesConst();
-    const SensorStatus powermonStatus = getPowermonStatus(&dev->pm);
+    const SensorStatus powermonStatus = getPowermonStatus();
     const SensorStatus temperatureStatus = dev_thset_thermStatus(&dev->thset);
     const SensorStatus miscStatus = getMiscStatus(dev);
     const SensorStatus fpgaStatus = getFpgaStatus();

@@ -29,12 +29,11 @@ extern "C" {
 #define DISPLAY_SENSORS_H (POWERMON_SENSORS+2)
 
 struct pm_sensor;
-struct Dev_powermon;
 const char *sensor_status_str(SensorStatus status);
 void pm_sensor_print_header(void);
 void pm_sensor_print_values(const struct pm_sensor *d, bool isOn);
-void print_powermon_box(const struct Dev_powermon *pm);
-void print_sensors_box(const struct Dev_powermon *pm);
+void print_powermon_box(void);
+void print_sensors_box(void);
 
 #ifdef __cplusplus
 }

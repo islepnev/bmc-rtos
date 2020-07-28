@@ -33,7 +33,7 @@ void task_main_init(void)
 void task_main_run(void)
 {
     mainloopCount++;
-    const PmState pmState = get_dev_powermon_const()->pmState;
+    const PmState pmState = get_powermon_state();
     enable_pll_run = (pmState == PM_STATE_RUN);
 
     const SensorStatus systemStatus = getSystemStatus();

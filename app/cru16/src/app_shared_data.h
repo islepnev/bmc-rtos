@@ -52,8 +52,6 @@ int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 
-struct Dev_powermon* get_dev_powermon(void);
-const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 

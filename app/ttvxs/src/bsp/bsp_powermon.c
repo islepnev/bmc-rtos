@@ -156,21 +156,21 @@ bool get_input_power_failed(const pm_sensors_arr sensors)
     return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VXS_5V]);
 }
 
-double pm_get_power_w(const Dev_powermon *pm)
+double pm_get_power_w(const Dev_powermon_priv *p)
 {
     double mw = 0;
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VXS_5V]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_MCB_4V5]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_VXS_5V]);
+    mw += get_sensor_power_w(&p->sensors[SENSOR_MCB_4V5]);
     return mw;
 }
 
-double pm_get_power_max_w(const Dev_powermon *pm)
+double pm_get_power_max_w(const Dev_powermon_priv *p)
 {
     double mw = 0;
-    mw += pm->sensors[SENSOR_5VPC].powerMax;
-    mw += pm->sensors[SENSOR_VXS_5V].powerMax;
-    mw += pm->sensors[SENSOR_MCB_4V5].powerMax;
+    mw += p->sensors[SENSOR_5VPC].powerMax;
+    mw += p->sensors[SENSOR_VXS_5V].powerMax;
+    mw += p->sensors[SENSOR_MCB_4V5].powerMax;
     return mw;
 }
 
@@ -187,9 +187,9 @@ void switch_power(Dev_powermon *pm, bool state)
     else
         log_put(LOG_NOTICE, "Switching OFF");
     for (int i=0; i<POWER_SWITCH_COUNT; i++)
-        pm->sw[i] = state;
-    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
-    write_power_switches(pm->sw);
+        pm->priv.sw[i] = state;
+    pm->priv.sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
+    write_power_switches(pm->priv.sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 }

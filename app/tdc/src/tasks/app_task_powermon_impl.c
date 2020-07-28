@@ -110,7 +110,7 @@ static void log_sensor_status(const pm_sensor *sensor)
 static void log_sensors_change(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &pm->priv.sensors[i];
         if (sensor->rampState != RAMP_NONE)
             continue;
         SensorStatus status = pm_sensor_status(sensor);
@@ -124,7 +124,7 @@ static void log_sensors_change(const Dev_powermon *pm)
 static void log_critical_sensors(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->sensors[i];
+        const pm_sensor *sensor = &pm->priv.sensors[i];
         if (sensor->isOptional)
             continue;
         log_sensor_status(sensor);
@@ -140,32 +140,31 @@ void powermon_task_init(void)
     clearOldSensorStatus();
 }
 
-void change_state(PmState state)
+static void change_state(Dev_powermon_priv *p, PmState state)
 {
-    Dev_powermon *pm = get_dev_powermon();
-    if (pm->pmState == state)
+    if (p->pmState == state)
         return;
-    pm->pmState = state;
+    p->pmState = state;
     stateStartTick = osKernelSysTick();
 }
 
-void task_powermon_run (void)
+void task_powermon_run (Dev_powermon *pm)
 {
-    Dev_powermon *pm = get_dev_powermon();
+    Dev_powermon_priv *priv = &pm->priv;
     if (!pm_initialized) {
         powermon_task_init();
         pm_initialized = 1;
     }
     pmLoopCount++;
     bool vmePresent = pm_read_liveInsert(pm);
-    pm_read_pgood(pm->pgood);
-    const bool input_power_normal = get_input_power_normal(pm->sensors);
+    pm_read_pgood(pm->priv.pgood);
+    const bool input_power_normal = get_input_power_normal(pm->priv.sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)
             log_put(LOG_NOTICE, "Input power normal");
         old_inut_power_normal = input_power_normal;
     }
-    const int input_power_critical = get_input_power_failed(pm->sensors);
+    const int input_power_critical = get_input_power_failed(pm->priv.sensors);
     if (input_power_critical != old_inut_power_critical) {
         if (input_power_critical) {
             log_critical_sensors(pm);
@@ -173,79 +172,79 @@ void task_powermon_run (void)
         }
         old_inut_power_critical = input_power_critical;
     }
-    const int power_critical_ok = get_critical_power_valid(pm->sensors);
-    const int power_critical_failure = get_critical_power_failure(pm->sensors);
+    const int power_critical_ok = get_critical_power_valid(pm->priv.sensors);
+    const int power_critical_failure = get_critical_power_failure(pm->priv.sensors);
 
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
     if (THSET_STATE_2 == get_dev_thset()->state) {
-        change_state(PM_STATE_OVERHEAT);
+        change_state(priv, PM_STATE_OVERHEAT);
     }
-    switch (pm->pmState) {
+    switch (pm->priv.pmState) {
     case PM_STATE_INIT:
-        pm_clear_all(pm);
+        pm_clear_all(priv);
         if (enable_power) {
             update_power_switches(pm, true);
-            change_state(PM_STATE_WAITINPUT);
+            change_state(priv, PM_STATE_WAITINPUT);
         } else {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
         }
         break;
     case PM_STATE_WAITINPUT:
         if (!enable_power) {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         if (input_power_normal) {
-            change_state(PM_STATE_RAMP);
+            change_state(priv, PM_STATE_RAMP);
             break;
         }
         if (stateTicks() > INIT_TIMEOUT_TICKS) {
             log_put(LOG_NOTICE, "No input power");
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
         }
         break;
     case PM_STATE_STANDBY:
         if (enable_power && input_power_normal) {
             update_power_switches(pm, true);
-            change_state(PM_STATE_RAMP);
+            change_state(priv, PM_STATE_RAMP);
         }
         break;
     case PM_STATE_RAMP:
         if (!enable_power) {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         if (power_critical_ok) {
             log_put(LOG_NOTICE, "Critical power supplies ready");
-            change_state(PM_STATE_RUN);
+            change_state(priv, PM_STATE_RUN);
         }
         if (stateTicks() > RAMP_TIMEOUT_TICKS) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            change_state(PM_STATE_PWRFAIL);
+            change_state(priv, PM_STATE_PWRFAIL);
         }
         break;
     case PM_STATE_RUN:
         if (!enable_power) {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         if (input_power_critical) {
             log_put(LOG_ERR, "Input power lost");
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         if (power_critical_failure) {
             log_put(LOG_ERR, "Critical power supplies failure");
-            change_state(PM_STATE_PWRFAIL);
+            change_state(priv, PM_STATE_PWRFAIL);
             break;
         }
-        if (pm->monState != MON_STATE_READ) {
+        if (pm->priv.monState != MON_STATE_READ) {
             log_put(LOG_ERR, "Error in STATE_RUN");
-            change_state(PM_STATE_ERROR);
+            change_state(priv, PM_STATE_ERROR);
             break;
         }
         if (TEST_RESTART && (stateTicks() > 5000)) {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         break;
@@ -253,51 +252,51 @@ void task_powermon_run (void)
     case PM_STATE_OVERHEAT:
         if (!enable_power) {
             clear_thermal_shutdown(get_dev_thset());
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
             break;
         }
         if (THSET_STATE_0 == get_dev_thset()->state)
-            change_state(PM_STATE_STANDBY);
+            change_state(priv, PM_STATE_STANDBY);
         break;
     case PM_STATE_PWRFAIL:
         update_power_switches(pm, false);
-        change_state(PM_STATE_FAILWAIT);
+        change_state(priv, PM_STATE_FAILWAIT);
         // dev_switchPower(&dev.pm, false);
         break;
     case PM_STATE_FAILWAIT:
         if (stateTicks() > POWERFAIL_DELAY_TICKS) {
-            change_state(PM_STATE_STANDBY);
+            change_state(priv, PM_STATE_STANDBY);
         }
         break;
     case PM_STATE_ERROR:
 //        dev_switchPower(&dev.pm, false);
         if (stateTicks() > ERROR_DELAY_TICKS) {
-            change_state(PM_STATE_OFF);
+            change_state(priv, PM_STATE_OFF);
         }
         break;
     case PM_STATE_OFF:
         update_power_switches(pm, false);
-        change_state(PM_STATE_STANDBY);
+        change_state(priv, PM_STATE_STANDBY);
         break;
     }
 
     for (int i=0; i<POWERMON_SENSORS; i++)
-        pm->sensors[i].rampState = (pm->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
+        pm->priv.sensors[i].rampState = (pm->priv.pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
     if (!enable_power)
         monClearMinMax(pm);
 
     uint32_t ticks = osKernelSysTick() - sensorReadTick;
-    uint32_t interval = (pm->pmState == PM_STATE_RAMP) ? sensor_read_interval_ramp : sensor_read_interval_run;
+    uint32_t interval = (pm->priv.pmState == PM_STATE_RAMP) ? sensor_read_interval_ramp : sensor_read_interval_run;
     if (ticks > interval) {
         sensorReadTick = osKernelSysTick();
         runMon(pm);
     }
 
-    system_power_present = get_critical_power_valid(pm->sensors);
+    system_power_present = get_critical_power_valid(pm->priv.sensors);
     bsp_update_system_powergood_pin(system_power_present);
-    if ((pm->pmState == PM_STATE_RAMP)
-            || (pm->pmState == PM_STATE_RUN)
+    if ((pm->priv.pmState == PM_STATE_RAMP)
+            || (pm->priv.pmState == PM_STATE_RUN)
             ) {
         log_sensors_change(pm);
     } else {

@@ -27,6 +27,7 @@
 #include "fpga/dev_fpga.h"
 #include "fpga_spi_hal.h"
 #include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_types.h"
 #include "bsp.h"
 #include "bsp_fpga.h"
 #include "bsp_pin_defs.h"
@@ -69,7 +70,11 @@ void fpga_task_run(Dev_fpga *d)
         d->priv.initb = 1;
         d->priv.done = 1;
     }
-   int fpga_core_power_present = get_fpga_core_power_present(get_dev_powermon_const()->sensors);
+    int fpga_core_power_present = false;
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    if (priv) {
+        fpga_core_power_present = get_fpga_core_power_present(priv->sensors);
+    }
     int fpga_power_present = enable_power && fpga_core_power_present;
     int fpga_enable = fpga_power_present && d->priv.initb;
 //    int fpga_loading = fpga_power_present && d->priv.initb && !d->priv.done;
@@ -147,7 +152,7 @@ void fpga_task_run(Dev_fpga *d)
             (!fpgaWriteBmcTemperature(get_dev_thset())) ||
             (!fpgaWritePllStatus()) ||
             (!fpgaWriteSystemStatus(getDevicesConst())) ||
-            (!fpgaWriteSensors(get_dev_powermon_const()))
+            (!fpgaWriteSensors())
             ) {
             log_printf(LOG_ERR, "FPGA SPI error");
             state = FPGA_STATE_ERROR;

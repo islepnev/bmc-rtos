@@ -1,68 +1,65 @@
-//
-//    Copyright 2019-2020 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019-2020 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "dev_powermon.h"
 
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "bsp_powermon_types.h"
 #include "bsp_powermon.h"
+#include "bsp_powermon_types.h"
+#include "cmsis_os.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
-#include "logbuffer.h"
-
-#include "cmsis_os.h"
+#include "dev_powermon_types.h"
 #include "gpio.h"
+#include "logbuffer.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
-void struct_powermon_sensors_init(Dev_powermon *d)
+void struct_powermon_sensors_init(Dev_powermon_priv *p)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&d->sensors[i], (SensorIndex)(i));
+        struct_pm_sensor_init(&p->sensors[i], (SensorIndex)(i));
     }
 }
 
-Dev_powermon *dev_powermon_init(BusInterface *bus)
+void dev_powermon_init(Dev_powermon_priv *p)
 {
-    Dev_powermon *d = get_dev_powermon();
-    d->dev.bus = *bus;
-    pm_clear_all(d);
-    return d;
+    pm_clear_all(p);
 }
 
-void pm_clear_all(Dev_powermon *d)
+void pm_clear_all(Dev_powermon_priv *p)
 {
-    d->monState = MON_STATE_INIT;
-    d->stateStartTick = 0;
-    d->monErrors = 0;
-    d->monCycle = 0;
-    struct_powermon_sensors_init(d);
+    p->monState = MON_STATE_INIT;
+    p->stateStartTick = 0;
+    p->monErrors = 0;
+    p->monCycle = 0;
+    struct_powermon_sensors_init(p);
     //    d->present = DEVICE_UNKNOWN;
-    d->vmePresent = 0;
-    init_pgood(d->pgood);
-    init_power_switches(d->sw);
+    p->vmePresent = 0;
+    init_pgood(p->pgood);
+    init_power_switches(p->sw);
 }
 
 bool pm_read_liveInsert(Dev_powermon *pm)
 {
-    pm->vmePresent = readLiveInsertPin();
-    return pm->vmePresent;
+    pm->priv.vmePresent = readLiveInsertPin();
+    return pm->priv.vmePresent;
 }
 
 bool get_critical_power_valid(const pm_sensors_arr sensors)
@@ -91,9 +88,9 @@ static bool check_power_switches(const Dev_powermon *pm)
 {
     bool ret = true;
     for (int i=0; i<POWER_SWITCH_COUNT; i++) {
-        if (pm->sw_state[i] != pm->sw[i]) {
+        if (pm->priv.sw_state[i] != pm->priv.sw[i]) {
             log_printf(LOG_CRIT, "%s switch failure: stuck %s",
-                       psw_label((PowerSwitchIndex)i), pm->sw_state[i] ? "high" : "low");
+                       psw_label((PowerSwitchIndex)i), pm->priv.sw_state[i] ? "high" : "low");
             ret = false;
         }
     }
@@ -107,8 +104,8 @@ bool update_power_switches(Dev_powermon *pm, bool state)
     else
         log_put(LOG_NOTICE, "Switching OFF");
     switch_power(pm, state);
-    read_power_switches_state(pm->sw_state);
-    bool ok = pm_switches_isEqual(pm->sw_state, pm->sw);
+    read_power_switches_state(pm->priv.sw_state);
+    bool ok = pm_switches_isEqual(pm->priv.sw_state, pm->priv.sw);
     check_power_switches(pm);
     return ok;
 }
@@ -116,7 +113,7 @@ bool update_power_switches(Dev_powermon *pm, bool state)
 bool pm_sensors_isAllValid(const Dev_powermon *d)
 {
     for (int i=0; i < POWERMON_SENSORS; i++)
-        if (!pm_sensor_isValid(&d->sensors[i]))
+        if (!pm_sensor_isValid(&d->priv.sensors[i]))
             return false;
     return true;
 }
@@ -124,14 +121,14 @@ bool pm_sensors_isAllValid(const Dev_powermon *d)
 void monClearMinMax(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
-        struct_pm_sensor_clear_minmax(&d->sensors[i]);
+        struct_pm_sensor_clear_minmax(&d->priv.sensors[i]);
 }
 
 void monClearMeasurements(Dev_powermon *d)
 {
     monClearMinMax(d);
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear_measurements(&d->sensors[i]);
+        struct_pm_sensor_clear_measurements(&d->priv.sensors[i]);
     }
 }
 
@@ -141,7 +138,7 @@ int monDetect(Dev_powermon *d)
     int errors = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
         if (errors > 2) break;
-        DeviceStatus s = pm_sensor_detect(&d->sensors[i]);
+        DeviceStatus s = pm_sensor_detect(&d->priv.sensors[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
@@ -156,7 +153,7 @@ int monReadValues(Dev_powermon *d)
     int ok = 0;
     int err = 0;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        pm_sensor *sensor = &d->sensors[i];
+        pm_sensor *sensor = &d->priv.sensors[i];
         if (err >= 2) {
             pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
         } else {
@@ -177,12 +174,12 @@ int monReadValues(Dev_powermon *d)
 
 void pm_setStateStartTick(Dev_powermon *pm)
 {
-    pm->stateStartTick = osKernelSysTick();
+    pm->priv.stateStartTick = osKernelSysTick();
 }
 
 uint32_t getMonStateTicks(const Dev_powermon *pm)
 {
-    return osKernelSysTick() - pm->stateStartTick;
+    return osKernelSysTick() - pm->priv.stateStartTick;
 }
 
 int old_num_detected = 0;
@@ -190,17 +187,17 @@ int stable_detect_count = 0;
 
 MonState runMon(Dev_powermon *pm)
 {
-    pm->monCycle++;
-    const MonState oldState = pm->monState;
-    switch(pm->monState) {
+    pm->priv.monCycle++;
+    const MonState oldState = pm->priv.monState;
+    switch(pm->priv.monState) {
     case MON_STATE_INIT:
         monClearMeasurements(pm);
-        pm->monState = MON_STATE_DETECT;
+        pm->priv.monState = MON_STATE_DETECT;
         break;
     case MON_STATE_DETECT: {
         const int num_detected = monDetect(pm);
         if (num_detected == 0) {
-            pm->monState = MON_STATE_INIT;
+            pm->priv.monState = MON_STATE_INIT;
             break;
         }
         if (num_detected > 0 && (old_num_detected == num_detected))
@@ -211,34 +208,34 @@ MonState runMon(Dev_powermon *pm)
         if (stable_detect_count >= 2) {
             update_board_version(num_detected);
             log_printf(LOG_INFO, "%d sensors detected", num_detected);
-            pm->monState = MON_STATE_READ;
+            pm->priv.monState = MON_STATE_READ;
             break;
         }
 
         if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
             log_printf(LOG_ERR, "Sensor detect timeout, %d sensors found", num_detected);
-            pm->monState = MON_STATE_READ;
+            pm->priv.monState = MON_STATE_READ;
         }
         break;
     }
     case MON_STATE_READ:
         if (monReadValues(pm) == 0)
-            pm->monState = MON_STATE_READ;
+            pm->priv.monState = MON_STATE_READ;
         else
-            pm->monState = MON_STATE_ERROR;
+            pm->priv.monState = MON_STATE_ERROR;
         break;
     case MON_STATE_ERROR:
         log_put(LOG_ERR, "Sensor read error");
-        pm->monErrors++;
-        pm->monState = MON_STATE_INIT;
+        pm->priv.monErrors++;
+        pm->priv.monState = MON_STATE_INIT;
         break;
     default:
         break;
     }
-    if (oldState != pm->monState) {
+    if (oldState != pm->priv.monState) {
         pm_setStateStartTick(pm);
     }
-    return pm->monState;
+    return pm->priv.monState;
 }
 
 bool get_fpga_core_power_present(const pm_sensors_arr sensors)

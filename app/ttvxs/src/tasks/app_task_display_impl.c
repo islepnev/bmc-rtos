@@ -193,20 +193,20 @@ void print_system_status(const Devices *dev)
 
 }
 
-static void print_powermon(const Dev_powermon *pm)
+static void print_powermon(void)
 {
     print_goto(DISPLAY_POWERMON_Y, 1);
-    print_powermon_box(pm);
+    print_powermon_box();
 }
 
-static void print_sensors(const Dev_powermon *pm)
+static void print_sensors(void)
 {
-    const PmState pmState = pm->pmState;
+    const PmState pmState = get_powermon_state();
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
     } else {
         print_goto(DISPLAY_SENSORS_Y, 1);
-        print_sensors_box(pm);
+        print_sensors_box();
     }
 }
 
@@ -306,9 +306,9 @@ static int old_enable_stats_display = 0;
 static void display_summary(const Devices * dev)
 {
     print_system_status(dev);
-    print_powermon(&dev->pm);
+    print_powermon();
     if (enable_stats_display) {
-        print_sensors(&dev->pm);
+        print_sensors();
     }
     print_thset(&dev->thset);
     print_main(dev);

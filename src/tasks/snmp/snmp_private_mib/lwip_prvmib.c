@@ -196,7 +196,7 @@ static s16_t sysmonStatus_get_value(struct snmp_node_instance* instance, void* v
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    *uint_ptr = (u32_t)getPowermonStatus(&getDevicesConst()->pm);
+    *uint_ptr = (u32_t)getPowermonStatus();
     return sizeof(*uint_ptr);
 }
 

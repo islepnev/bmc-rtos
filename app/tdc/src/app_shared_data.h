@@ -49,8 +49,6 @@ struct Dev_digipots;
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 
-struct Dev_powermon* get_dev_powermon(void);
-const struct Dev_powermon* get_dev_powermon_const(void);
 struct Dev_thset *get_dev_thset(void);
 struct Dev_sfpiic *get_dev_sfpiic(void);
 struct Dev_digipots *get_dev_digipots(void);

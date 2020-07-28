@@ -105,26 +105,29 @@ void pm_sensor_print(const pm_sensor *d, int isOn)
     }
 }
 
-void monPrintValues(const Dev_powermon *d)
+static void monPrintValues(const Dev_powermon_priv *p)
 {
     pm_sensor_print_header();
     {
         for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&d->sensors[i], monIsOn(d->sw, (SensorIndex)i));
+            pm_sensor_print(&p->sensors[i], monIsOn(p->sw, (SensorIndex)i));
             print_clear_eol();
         }
     }
 }
 
-void print_sensors_box(const Dev_powermon *pm)
+void print_sensors_box(void)
 {
-    SensorStatus sensorStatus = pm_sensors_getStatus(pm);
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    if (!priv)
+        return;
+    SensorStatus sensorStatus = pm_sensors_getStatus(priv);
     printf("Power supplies: %4.1f W, %4.1f W max %s",
-           pm_get_power_w(pm),
-           pm_get_power_max_w(pm),
+           pm_get_power_w(priv),
+           pm_get_power_max_w(priv),
            sensor_status_ansi_str(sensorStatus));
     print_clear_eol();
-    monPrintValues(pm);
+    monPrintValues(priv);
 }
 
 static void print_pm_switches(const pm_switches sw)
@@ -147,16 +150,19 @@ static void pm_pgood_print(const pm_pgoods pgood)
     print_clear_eol();
 }
 
-void print_powermon_box(const Dev_powermon *pm)
+void print_powermon_box(void)
 {
-    const PmState pmState = pm->pmState;
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    if (!priv)
+        return;
+    const PmState pmState = get_powermon_state();
     //    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
-    printf("Powermon: %-20s   Sensors: %s", pmStateStr(pmState), monStateStr(pm->monState));
+    printf("Powermon: %-20s   Sensors: %s", pmStateStr(pmState), monStateStr(priv->monState));
     print_clear_eol();
 //    if (pmState == PM_STATE_INIT) {
 //        print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
 //    } else {
-        print_pm_switches(pm->sw_state);
-        pm_pgood_print(pm->pgood);
+    print_pm_switches(priv->sw_state);
+    pm_pgood_print(priv->pgood);
 //    }
 }

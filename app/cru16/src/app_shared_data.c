@@ -42,16 +42,6 @@ const Devices* getDevicesConst(void)
     return &dev;
 }
 
-Dev_powermon* get_dev_powermon(void)
-{
-    return &dev.pm;
-}
-
-const Dev_powermon* get_dev_powermon_const(void)
-{
-    return &dev.pm;
-}
-
 Dev_thset *get_dev_thset(void)
 {
     return &dev.thset;

@@ -22,7 +22,8 @@
 extern "C" {
 #endif
 
-void create_task_powermon(void);
+struct DeviceBase;
+void create_task_powermon(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }

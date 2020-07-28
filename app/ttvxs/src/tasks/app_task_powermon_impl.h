@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-extern uint32_t pmLoopCount;
-
-void task_powermon_run (void);
+extern uint32_t pmLoopCount; // FIXME: make local
+struct Dev_powermon;
+void task_powermon_run (struct Dev_powermon *pm);
 
 #ifdef __cplusplus
 }

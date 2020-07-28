@@ -52,24 +52,30 @@ typedef enum MonState {
 
 typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
 
-typedef struct Dev_powermon {
-    DeviceBase dev;
+typedef struct Dev_powermon_priv {
     PmState pmState;
     MonState monState;
     uint32_t stateStartTick;
     int monErrors;
     int monCycle;
-//    DeviceStatus present;
-   pm_sensors_arr sensors;
-   bool vmePresent;
-   pm_pgoods pgood;
-   pm_switches sw;
-   pm_switches sw_state;
+    pm_sensors_arr sensors;
+    bool vmePresent;
+    pm_pgoods pgood;
+    pm_switches sw;
+    pm_switches sw_state;
+} Dev_powermon_priv;
+
+typedef struct Dev_powermon {
+    DeviceBase dev;
+    Dev_powermon_priv priv;
 } Dev_powermon;
 
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
-SensorStatus getMonStatus(const Dev_powermon *pm);
-SensorStatus getPowermonStatus(const Dev_powermon *d);
+SensorStatus pm_sensors_getStatus(const Dev_powermon_priv *d);
+SensorStatus getMonStatus(const Dev_powermon_priv *pm);
+SensorStatus getPowermonStatus(void);
+PmState get_powermon_state(void);
+Dev_powermon_priv *get_powermon_priv(void);
+const Dev_powermon_priv *get_powermon_priv_const(void);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -21,15 +21,17 @@
 #include "app_task_digipot_impl.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
-#include "max31725/dev_max31725_fsm.h"
-#include "bus/bus_types.h"
 #include "bsp.h"
+#include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "ipmi_sensors.h"
 #include "debug_helpers.h"
-#include "max31725/dev_max31725.h"
-#include "dev_thset_types.h"
 #include "dev_thset.h"
+#include "dev_thset_types.h"
+#include "devicelist.h"
+#include "ipmi_sensors.h"
+#include "max31725/dev_max31725.h"
+#include "max31725/dev_max31725_fsm.h"
+#include "powermon/dev_powermon_types.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
@@ -46,6 +48,19 @@ static BusInterface tdc64_max31725_2_bus_info = {
     .bus_number = 4,
     .address = 0x51
 };
+
+static BusInterface powermon_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0
+};
+
+static Dev_powermon pm = {0};
+
+static void local_init(DeviceBase *parent)
+{
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
+}
 
 static void start_task_powermon( void const *arg)
 {
@@ -73,7 +88,7 @@ static void start_task_powermon( void const *arg)
         dev_thset_run(thset);
 #endif
         task_digipot_run();
-        task_powermon_run();
+        task_powermon_run(&pm);
         sync_ipmi_sensors();
 
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
@@ -87,8 +102,9 @@ static void start_task_powermon( void const *arg)
 
 osThreadDef(powermon, start_task_powermon, osPriorityHigh,      1, powermonThreadStackSize);
 
-void create_task_powermon(void)
+void create_task_powermon(DeviceBase *parent)
 {
+    local_init(parent);
     powermonThreadId = osThreadCreate(osThread (powermon), NULL);
     if (powermonThreadId == NULL) {
         debug_print("Failed to create powermon thread\n");

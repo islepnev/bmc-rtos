@@ -172,10 +172,10 @@ void print_system_status(const Devices *dev)
 
 }
 
-static void print_powermon(const Dev_powermon *pm)
+static void print_powermon(void)
 {
     print_goto(DISPLAY_POWERMON_Y, 1);
-    print_powermon_box(pm);
+    print_powermon_box();
 }
 
 static void print_digipots(const Dev_digipots *p)
@@ -183,14 +183,14 @@ static void print_digipots(const Dev_digipots *p)
     print_pm_pots(p);
 }
 
-static void print_sensors(const Dev_powermon *pm)
+static void print_sensors(void)
 {
-    const PmState pmState = pm->pmState;
+    const PmState pmState = get_powermon_state();
     if (pmState == PM_STATE_INIT) {
         print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
     } else {
         print_goto(DISPLAY_SENSORS_Y, 1);
-        print_sensors_box(pm);
+        print_sensors_box();
     }
 }
 
@@ -300,8 +300,8 @@ static void display_pot(const Devices * dev)
     pm_sensor_print_header();
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         const Dev_ad5141 *p = &dev->pots.pot[i];
-        const pm_sensor *sensor = &dev->pm.sensors[p->sensorIndex];
-        const int isOn = monIsOn(dev->pm.sw_state, p->sensorIndex);
+        const pm_sensor *sensor = &dev->pm.priv.sensors[p->sensorIndex];
+        const int isOn = monIsOn(dev->pm.priv.sw_state, p->sensorIndex);
         printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);
@@ -319,10 +319,10 @@ static int old_enable_stats_display = 0;
 static void display_summary(const Devices * dev)
 {
     print_system_status(dev);
-    print_powermon(&dev->pm);
+    print_powermon();
     print_digipots(&dev->pots);
     if (enable_stats_display) {
-        print_sensors(&dev->pm);
+        print_sensors();
     }
     print_thset(&dev->thset);
     print_main(dev);
