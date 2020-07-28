@@ -47,10 +47,10 @@ static BusInterface eeprom_config_bus_info = {
 static Dev_ad9545 pll = {0};
 static Dev_eeprom_config eeprom = {0};
 
-static void local_init(void) {
+static void local_init(DeviceBase *parent) {
     init_ad9545_setup(&pll.priv.setup);
-    create_device(&pll.dev, &pll.priv, DEV_CLASS_PLL, pll_bus_info);
-    create_device(&eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM_CONFIG, eeprom_config_bus_info);
+    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_PLL, pll_bus_info);
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM_CONFIG, eeprom_config_bus_info);
 }
 
 static void pllTask(void const *arg)
@@ -68,9 +68,9 @@ static void pllTask(void const *arg)
 
 osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
 
-void create_task_pll(void)
+void create_task_pll(DeviceBase *parent)
 {
-    local_init();
+    local_init(parent);
     pllThreadId = osThreadCreate(osThread (pll), NULL);
     if (pllThreadId == NULL) {
         debug_print("Failed to create pll thread\n");

@@ -32,6 +32,7 @@ typedef enum {
     DISPLAY_BOARDS,
     DISPLAY_PLL_DETAIL,
     DISPLAY_TASKS,
+    DISPLAY_DEVICES,
     DISPLAY_NONE,
 } display_mode_t;
 

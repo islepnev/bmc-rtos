@@ -36,8 +36,9 @@ static BusInterface fpga_bus_info = {
 
 static Dev_fpga d = {0};
 
-static void local_init(void) {
-    create_device(&d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info);
+static void local_init(DeviceBase *parent)
+{
+    create_device(parent, &d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info);
 }
 
 static void start_fpga_thread(void const *arg)
@@ -53,9 +54,9 @@ static void start_fpga_thread(void const *arg)
 
 osThreadDef(fpga, start_fpga_thread, osPriorityNormal,  1, fpgaThreadStackSize);
 
-void create_task_fpga(void)
+void create_task_fpga(DeviceBase *parent)
 {
-    local_init();
+    local_init(parent);
     fpgaThreadId = osThreadCreate(osThread (fpga), NULL);
     if (fpgaThreadId == NULL) {
         debug_print("Failed to create fpga thread\n");

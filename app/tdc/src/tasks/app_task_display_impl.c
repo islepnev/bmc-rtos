@@ -41,6 +41,7 @@
 #include "dev_thset_types.h"
 #include "devices_types.h"
 #include "display.h"
+#include "display_common.h"
 #include "logbuffer.h"
 #include "logentry.h"
 #include "system_status.h"
@@ -387,10 +388,11 @@ void display_task_run(void)
 
     const Devices * d = getDevices();
     int need_clear_screen =
-            display_mode == DISPLAY_NONE
-            || display_mode == DISPLAY_LOG
-            || display_mode == DISPLAY_DIGIPOT
-            || display_mode == DISPLAY_TASKS;
+        display_mode == DISPLAY_NONE ||
+        display_mode == DISPLAY_LOG ||
+        display_mode == DISPLAY_DIGIPOT ||
+        display_mode == DISPLAY_TASKS ||
+        display_mode == DISPLAY_DEVICES;
 
     if (need_clear_screen) {
         if (old_display_mode != display_mode) {
@@ -429,6 +431,9 @@ void display_task_run(void)
         break;
     case DISPLAY_TASKS:
         display_tasks();
+        break;
+    case DISPLAY_DEVICES:
+        display_devices();
         break;
     case DISPLAY_NONE:
         break;

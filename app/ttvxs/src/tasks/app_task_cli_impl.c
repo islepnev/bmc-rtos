@@ -54,6 +54,9 @@ void cycle_display_mode(void)
         display_mode = DISPLAY_TASKS;
         break;
     case DISPLAY_TASKS:
+        display_mode = DISPLAY_DEVICES;
+        break;
+    case DISPLAY_DEVICES:
         display_mode = DISPLAY_SUMMARY;
         break;
     case DISPLAY_NONE:

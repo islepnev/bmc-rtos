@@ -25,7 +25,8 @@ extern "C" {
 #endif
 
 extern osThreadId pllThreadId;
-void create_task_pll(void);
+struct DeviceBase;
+void create_task_pll(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }

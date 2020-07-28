@@ -22,7 +22,8 @@
 extern "C" {
 #endif
 
-void create_task_auxpll(void);
+struct DeviceBase;
+void create_task_auxpll(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }

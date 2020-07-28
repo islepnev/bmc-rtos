@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,21 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_PLL_H
-#define APP_TASK_PLL_H
+#include "display_common.h"
 
-#include "cmsis_os.h"
+#include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "ansi_escape_codes.h"
+#include "devicelist.h"
+#include "devicelist_print.h"
+#include "display.h"
 
-extern osThreadId pllThreadId;
-struct DeviceBase;
-void create_task_pll(struct DeviceBase *parent);
-
-#ifdef __cplusplus
+void display_devices(void)
+{
+    print_goto(2, 1);
+    printf("Device list" ANSI_CLEAR_EOL "\n");
+    devicelist_print(deviceList.list[0], 0);
+    printf(ANSI_CLEAR_EOL);
 }
-#endif
 
-#endif // APP_TASK_PLL_H

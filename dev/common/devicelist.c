@@ -23,11 +23,28 @@
 
 DeviceList deviceList = {0};
 
-void create_device(DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus)
+static void add_child(DeviceBase *list, DeviceBase *d)
+{
+    if (! list->children) {
+        list->children = d;
+        return;
+    }
+    DeviceBase *p = list->children;
+    while (p && p->next) {
+        p = p->next;
+    }
+    p->next = d;
+}
+
+void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus)
 {
     d->class = class;
     d->bus = bus;
     d->priv = priv;
+    d->parent = parent;
+    if (parent) {
+        add_child(parent, d);
+    }
     if (deviceList.count >= DEVICE_LIST_SIZE) {
         return;
     }

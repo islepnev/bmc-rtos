@@ -22,7 +22,8 @@
 extern "C" {
 #endif
 
-void create_task_fpga(void);
+struct DeviceBase;
+void create_task_fpga(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }

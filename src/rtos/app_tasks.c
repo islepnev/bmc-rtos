@@ -35,22 +35,29 @@
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
 #endif
+#include "devicelist.h"
+#include "dev_common_types.h"
+
+static DeviceBase topdevice = {0};
 
 void create_tasks(void)
 {
+    BusInterface bus = {0};
+    create_device(0, &topdevice, 0, DEV_CLASS_VIRTUAL, bus);
+
     create_task_heartbeat();
     create_task_display();
     create_task_cli();
     create_task_powermon();
     create_task_main();
 #if !defined(BOARD_TDC72)
-    create_task_auxpll();
+    create_task_auxpll(&topdevice);
 #endif
-    create_task_pll();
+    create_task_pll(&topdevice);
 #if defined(BOARD_TDC64)
-    create_task_auxpll();
+    create_task_auxpll(&topdevice);
 #endif
-    create_task_fpga();
+    create_task_fpga(&topdevice);
 #if defined(BOARD_TTVXS)
     create_task_vxsiicm();
 #else

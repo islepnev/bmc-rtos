@@ -38,9 +38,9 @@ static BusInterface auxpll_bus_info = {
 
 static Dev_auxpll d = {0};
 
-static void local_init(void) {
+static void local_init(DeviceBase *parent) {
 //    init_auxpll_setup(&d.priv.setup);
-    create_device(&d.dev, &d.priv, DEV_CLASS_AUXPLL, auxpll_bus_info);
+    create_device(parent, &d.dev, &d.priv, DEV_CLASS_AUXPLL, auxpll_bus_info);
 }
 
 static void auxpllTask(void const *arg)
@@ -54,9 +54,9 @@ static void auxpllTask(void const *arg)
 
 osThreadDef(auxpll, auxpllTask, osPriorityNormal,      1, auxpllThreadStackSize);
 
-void create_task_auxpll(void)
+void create_task_auxpll(DeviceBase *parent)
 {
-    local_init();
+    local_init(parent);
     auxpllThreadId = osThreadCreate(osThread (auxpll), NULL);
     if (auxpllThreadId == NULL) {
         debug_print("Failed to create auxpll thread\n");
