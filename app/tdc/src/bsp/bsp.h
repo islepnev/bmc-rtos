@@ -47,12 +47,8 @@ extern "C" {
 #define AUXPLL_AD9516_OUT8_ENABLE 1
 #define AUXPLL_AD9516_OUT9_ENABLE 1
 
-#ifdef BOARD_TDC64
-#define DEV_THERM_COUNT 0
-#endif
-#ifdef BOARD_TDC72
-#define DEV_THERM_COUNT 4
-#endif
+#define TDC64_MAX31725_COUNT 2
+#define TDC72_ADT7301_COUNT 4
 
 #ifdef BOARD_TDC72
 typedef enum {

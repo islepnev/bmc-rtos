@@ -34,7 +34,6 @@ static uint32_t stateTicks(Dev_adt7301_priv *p)
 void dev_adt7301_run(Dev_adt7301 *p)
 {
     Dev_adt7301_priv *d = (Dev_adt7301_priv *)&p->priv;
-#ifdef BOARD_TTVXS
     if (!enable_power || !system_power_present) {
         if (d->state != ADT7301_STATE_SHUTDOWN) {
             d->state = ADT7301_STATE_SHUTDOWN;
@@ -43,7 +42,6 @@ void dev_adt7301_run(Dev_adt7301 *p)
         }
         return;
     }
-#endif
     dev_adt7301_state_t old_state = d->state;
     switch (d->state) {
     case ADT7301_STATE_SHUTDOWN: {

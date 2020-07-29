@@ -41,16 +41,16 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
-static BusInterface tdc64_max31725_1_bus_info = {
-    .type = BUS_IIC,
-    .bus_number = 4,
-    .address = 0x50
-};
-
-static BusInterface tdc64_max31725_2_bus_info = {
-    .type = BUS_IIC,
-    .bus_number = 4,
-    .address = 0x51
+static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
+    {
+        .type = BUS_IIC,
+        .bus_number = 4,
+        .address = 0x50
+    }, {
+        .type = BUS_IIC,
+        .bus_number = 4,
+        .address = 0x51
+    }
 };
 
 static BusInterface powermon_bus_info = {
@@ -59,16 +59,18 @@ static BusInterface powermon_bus_info = {
     .address = 0
 };
 
+static BusInterface tdc72_adt7301_bus_info = {
+    .type = BUS_SPI,
+    .bus_number = 4,
+    .address = 0
+};
+
 static Dev_powermon pm = {0};
 #ifdef BOARD_TDC64
-static Dev_max31725 therm1 = {0};
-static Dev_max31725 therm2 = {0};
+static Dev_max31725 therm[TDC64_MAX31725_COUNT] = {0};
 #endif
 #ifdef BOARD_TDC72
-static Dev_adt7301 therm1 = {0};
-static Dev_adt7301 therm2 = {0};
-static Dev_adt7301 therm3 = {0};
-static Dev_adt7301 therm4 = {0};
+static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 #endif
 static Dev_digipots digipots = {0};
 
@@ -76,10 +78,17 @@ static void local_init(DeviceBase *parent)
 {
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
 #ifdef BOARD_TDC64
-    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, tdc64_max31725_1_bus_info);
-    create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_THERM, tdc64_max31725_2_bus_info);
+    for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
+        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_THERM, tdc64_max31725_bus_info[i]);
+    }
 #endif
-    create_device(parent, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info);
+#ifdef BOARD_TDC72
+    for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
+        tdc72_adt7301_bus_info.address = i;
+        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_THERM, tdc72_adt7301_bus_info);
+    }
+#endif
+    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info);
     create_digipots_subdevices(&digipots);
 }
 
@@ -103,24 +112,22 @@ static void start_task_powermon( void const *arg)
     {
         // task_sfpiic_run(); // broken on tdc64
 #ifdef BOARD_TDC72
-        thset->count = 4;
-        dev_adt7301_run(&therm1);
-        thset->sensors[0].value = therm1.priv.temp;
-        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        dev_adt7301_run(&therm2);
-        thset->sensors[1].value = therm2.priv.temp;
-        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
+            dev_adt7301_run(&therm[i]);
+            thset->sensors[i].value = therm[i].priv.temp;
+            thset->sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        }
+        thset->count = TDC72_ADT7301_COUNT;
         dev_thset_run(thset);
 #endif
 #ifdef BOARD_TDC64
-        thset->count = 2;
-        dev_max31725_run(&therm1);
-        thset->sensors[0].value = therm1.priv.temp;
-        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        dev_max31725_run(&therm2);
-        thset->sensors[1].value = therm2.priv.temp;
-        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        dev_thset_run(thset);
+        for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
+            dev_max31725_run(&therm[i]);
+            thset->sensors[i].value = therm[i].priv.temp;
+            thset->sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+            dev_thset_run(thset);
+        }
+        thset->count = TDC64_MAX31725_COUNT;
 #endif
         dev_digipot_run(&digipots);
         task_powermon_run(&pm);
