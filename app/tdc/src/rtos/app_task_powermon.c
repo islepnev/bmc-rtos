@@ -18,7 +18,7 @@
 #include "app_task_powermon.h"
 
 #include "app_shared_data.h"
-#include "app_task_digipot_impl.h"
+#include "digipot/dev_digipot_types.h"
 #include "app_task_powermon_impl.h"
 #include "app_task_sfpiic_impl.h"
 #include "bsp.h"
@@ -28,6 +28,8 @@
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devicebase.h"
+#include "digipot/dev_digipot_fsm.h"
+#include "digipot/dev_digipot_types.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
@@ -58,6 +60,7 @@ static BusInterface powermon_bus_info = {
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_max31725 therm2 = {0};
+static Dev_digipots digipots = {0};
 
 static void local_init(DeviceBase *parent)
 {
@@ -66,6 +69,8 @@ static void local_init(DeviceBase *parent)
     create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, tdc64_max31725_1_bus_info);
     create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_THERM, tdc64_max31725_2_bus_info);
 #endif
+    create_device(parent, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOT, powermon_bus_info);
+    dev_digipots_priv_init(&digipots.priv);
 }
 
 static void start_task_powermon( void const *arg)
@@ -90,7 +95,7 @@ static void start_task_powermon( void const *arg)
         thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         dev_thset_run(thset);
 #endif
-        task_digipot_run();
+        dev_digipot_run(&digipots);
         task_powermon_run(&pm);
         sync_ipmi_sensors();
 

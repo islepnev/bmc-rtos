@@ -46,10 +46,6 @@ Dev_sfpiic *get_dev_sfpiic(void)
     return &dev.sfpiic;
 }
 
-Dev_digipots *get_dev_digipots(void)
-{
-    return &dev.pots;
-}
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

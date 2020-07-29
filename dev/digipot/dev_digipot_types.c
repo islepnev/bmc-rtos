@@ -20,8 +20,9 @@
 #include "dev_digipot_types.h"
 
 #include "bsp_digipot.h"
+#include "devicelist.h"
 
-void struct_pots_init(Dev_digipots *d)
+void dev_digipots_priv_init(Dev_digipots_priv *d)
 {
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 zz = {0};
@@ -35,10 +36,14 @@ void struct_pots_init(Dev_digipots *d)
     }
 }
 
-SensorStatus get_digipot_sensor_status(const Dev_digipots *d)
+SensorStatus get_digipot_sensor_status(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOT);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (d->pot[i].deviceStatus != DEVICE_NORMAL)
+        if (priv->pot[i].deviceStatus != DEVICE_NORMAL)
             return SENSOR_CRITICAL;
     }
     return SENSOR_NORMAL;

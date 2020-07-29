@@ -15,42 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_DIGIPOT_TYPES_H
-#define DEV_DIGIPOT_TYPES_H
+#ifndef DEV_DIGIPOT_FSM_H
+#define DEV_DIGIPOT_FSM_H
 
 #include <stdint.h>
-#include "bsp_digipot.h"
-#include "bus/bus_types.h"
-#include "dev_common_types.h"
-#include "devicebase.h"
-#include "powermon/dev_pm_sensors_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Dev_ad5141 {
-    BusInterface bus;
-    PotIndex index;
-    SensorIndex sensorIndex;
-    DeviceStatus deviceStatus;
-    uint8_t value;
-} Dev_ad5141;
-
-typedef struct Dev_digipots_priv {
-    Dev_ad5141 pot[DEV_DIGIPOT_COUNT];
-} Dev_digipots_priv;
-
-typedef struct Dev_digipots {
-    DeviceBase dev;
-    Dev_digipots_priv priv;
-} Dev_digipots;
-
-void dev_digipots_priv_init(Dev_digipots_priv *d);
-SensorStatus get_digipot_sensor_status(void);
+//extern uint32_t digipotLoopCount;
+struct Dev_digipots;
+void dev_digipot_run (struct Dev_digipots *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_DIGIPOT_TYPES_H
+#endif // DEV_DIGIPOT_FSM_H

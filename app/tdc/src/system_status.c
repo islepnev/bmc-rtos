@@ -20,6 +20,7 @@
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "dev_thset.h"
+#include "digipot/dev_digipot_types.h"
 #include "fpga/dev_fpga.h"
 #include "system_status_common.h"
 #include "powermon/dev_powermon.h"
@@ -77,7 +78,7 @@ SensorStatus getSystemStatus()
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
     const SensorStatus ad9516Status = get_auxpll_sensor_status();
-    const SensorStatus digipotStatus = get_digipot_sensor_status(&dev->pots);
+    const SensorStatus digipotStatus = get_digipot_sensor_status();
 //    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)

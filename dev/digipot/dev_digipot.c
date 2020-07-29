@@ -59,9 +59,9 @@ int digipot_detect(Dev_digipots *d)
 {
     int count = 0;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
+        DeviceStatus s = dev_ad5141_detect(&d->priv.pot[i]);
         if (s == DEVICE_NORMAL) {
-            dev_ad5141_reset(&d->pot[i]);
+            dev_ad5141_reset(&d->priv.pot[i]);
             count++;
         }
     }
@@ -71,7 +71,7 @@ int digipot_detect(Dev_digipots *d)
 void digipot_read_rdac_all(Dev_digipots *d)
 {
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        Dev_ad5141 *p = &d->pot[i];
+        Dev_ad5141 *p = &d->priv.pot[i];
         if (p->deviceStatus != DEVICE_NORMAL)
             continue;
         if (! ad5141_read_rdac(&p->bus, &p->value))

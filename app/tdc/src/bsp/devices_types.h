@@ -21,13 +21,11 @@
 //#include "dev_eeprom_vxspb.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
-#include "digipot/dev_digipot_types.h"
 
 typedef struct Devices {
     Dev_thset thset;
     Dev_sfpiic sfpiic;
     // Dev_eeprom_vxspb eeprom_vxspb;
-    Dev_digipots pots;
     uint32_t pcb_ver;
 } Devices;
 

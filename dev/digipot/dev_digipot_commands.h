@@ -15,22 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_DIGIPOT_IMPL_H
-#define APP_TASK_DIGIPOT_IMPL_H
+#ifndef DEV_DIGIPOT_COMMANDS
+#define DEV_DIGIPOT_COMMANDS
 
-#include <stdint.h>
+#include "dev_digipot_types.h"
+#include "commands.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint32_t digipotLoopCount;
-
-void task_digipot_init (void);
-void task_digipot_run (void);
+void digipot_process_command(Dev_digipots_priv *d, const CommandDigipots *cmd);
+void digipot_check_mail(Dev_digipots_priv *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_DIGIPOT_IMPL_H
+#endif // DEV_DIGIPOT_COMMANDS

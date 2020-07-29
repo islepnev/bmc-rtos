@@ -15,14 +15,10 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_digipot_impl.h"
+#include "dev_digipot_fsm.h"
 
-#include <stdint.h>
-#include <stdio.h>
-
-#include "cmsis_os.h"
-
-#include "digipot/dev_digipot.h"
+#include "dev_digipot.h"
+#include "dev_digipot_commands.h"
 #include "bsp_digipot.h"
 #include "dev_common_types.h"
 #include "logbuffer.h"
@@ -32,48 +28,6 @@
 #include "commands.h"
 
 #include "cmsis_os.h"
-
-void digipot_process_command(Dev_digipots *d, const CommandDigipots *cmd)
-{
-    if (!cmd || cmd->arg >= DEV_DIGIPOT_COUNT)
-        return;
-    Dev_ad5141 *p = &d->pot[cmd->arg];
-    switch (cmd->command_id) {
-    case COMMAND_DIGIPOTS_RESET:
-        dev_ad5141_reset(p);
-        break;
-    case COMMAND_DIGIPOTS_INC:
-        dev_ad5141_inc(p);
-        break;
-    case COMMAND_DIGIPOTS_DEC:
-        dev_ad5141_dec(p);
-        break;
-    case COMMAND_DIGIPOTS_WRITE:
-        dev_ad5141_write(p);
-        break;
-    default:
-        break;
-    }
-}
-
-static const int POT_MAX_MAIL_BATCH = 10;
-
-void digipot_check_mail(Dev_digipots *d)
-{
-    if (!mq_cmd_digipots_id)
-        Error_Handler();
-    for (int i=0; i<POT_MAX_MAIL_BATCH; i++) {
-        osEvent event = osMailGet(mq_cmd_digipots_id, 0);
-        if (osEventMail != event.status) {
-            return;
-        }
-        CommandDigipots *mail = (CommandDigipots *) event.value.p;
-        if (!mail)
-            Error_Handler();
-        digipot_process_command(d, mail);
-        osMailFree(mq_cmd_digipots_id, mail);
-    }
-}
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 
@@ -93,12 +47,11 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-void task_digipot_run(void)
+void dev_digipot_run(struct Dev_digipots *d)
 {
-    Dev_digipots *d = get_dev_digipots();
     switch (state) {
     case STATE_INIT: {
-        struct_pots_init(get_dev_digipots());
+        dev_digipots_priv_init(&d->priv);
         state = STATE_DETECT;
         break;
     }
@@ -119,7 +72,7 @@ void task_digipot_run(void)
     }
     case STATE_RUN:
         digipot_read_rdac_all(d);
-        digipot_check_mail(d);
+        digipot_check_mail(&d->priv);
         break;
 
     case STATE_ERROR:
