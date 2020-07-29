@@ -22,5 +22,5 @@
 void generic_sensor_set_name(GenericSensor *sensor, const char *name)
 {
     strncpy(sensor->name, name, sizeof(sensor->name) - 1);
-    sensor->name[sizeof(sensor->name) - 1] = '0';
+    sensor->name[sizeof(sensor->name) - 1] = '\0';
 }
