@@ -49,7 +49,6 @@ typedef enum {
 } fpga_state_t;
 
 static fpga_state_t state = FPGA_STATE_STANDBY;
-static fpga_state_t old_state = FPGA_STATE_STANDBY;
 
 static uint32_t fpga_load_start_tick = 0;
 
@@ -60,9 +59,11 @@ static uint32_t stateTicks(void)
 }
 
 static int old_fpga_done = -1;
+static int old_fpga_ok = -1;
 
 void fpga_task_run(Dev_fpga *d)
 {
+    const fpga_state_t old_state = state;
     if (fpga_done_pin_present()) {
         d->priv.initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
         d->priv.done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
@@ -79,6 +80,7 @@ void fpga_task_run(Dev_fpga *d)
     int fpga_enable = fpga_power_present && d->priv.initb;
 //    int fpga_loading = fpga_power_present && d->priv.initb && !d->priv.done;
     int fpga_done = fpga_power_present && d->priv.done;
+    bool fpga_loaded = !old_fpga_done && fpga_done;
     if (old_fpga_done != fpga_done) {
         old_fpga_done = fpga_done;
         if (fpga_done)
@@ -104,7 +106,8 @@ void fpga_task_run(Dev_fpga *d)
             if (fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
-                log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
+                if (fpga_loaded)
+                    log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
             state = FPGA_STATE_RESET;
             break;
@@ -127,7 +130,8 @@ void fpga_task_run(Dev_fpga *d)
             if (! fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
-                log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
+                if (fpga_loaded)
+                    log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
         }
         {
@@ -135,8 +139,8 @@ void fpga_task_run(Dev_fpga *d)
             if (! fpga_done_pin_present())
                 detect_timeout += LOAD_DELAY_TICKS;
             if (stateTicks() > detect_timeout) {
-                log_put(LOG_ERR, "FPGA detect timeout");
-                state = FPGA_STATE_ERROR;
+                // log_put(LOG_ERR, "FPGA detect timeout");
+                state = FPGA_STATE_STANDBY;
             }
         }
         break;
@@ -168,6 +172,8 @@ void fpga_task_run(Dev_fpga *d)
         }
         break;
     case FPGA_STATE_ERROR:
+        if (old_state != FPGA_STATE_ERROR)
+            log_printf(LOG_ERR, "FPGA error");
         d->dev.device_status = DEVICE_FAIL;
         if (stateTicks() > ERROR_DELAY_TICKS) {
             state = FPGA_STATE_STANDBY;
@@ -179,5 +185,4 @@ void fpga_task_run(Dev_fpga *d)
     if (old_state != state) {
         stateStartTick = osKernelSysTick();
     }
-    old_state = state;
 }

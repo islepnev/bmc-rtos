@@ -24,8 +24,8 @@ SensorStatus get_fpga_sensor_status(void)
         return SENSOR_UNKNOWN;
     const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
 
-   if (!d->device_status)
-      return SENSOR_UNKNOWN;
+   if (d->device_status != DEVICE_NORMAL)
+      return SENSOR_WARNING;
    if (!priv->initb)
       return SENSOR_CRITICAL;
    if (!priv->done)
