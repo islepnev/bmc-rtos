@@ -42,6 +42,8 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
+static Dev_powermon pm = {0};
+#ifdef BOARD_TDC64
 static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
     {
         .type = BUS_IIC,
@@ -53,18 +55,14 @@ static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
         .address = 0x51
     }
 };
-
+static Dev_max31725 therm[TDC64_MAX31725_COUNT] = {0};
+#endif
+#ifdef BOARD_TDC72
 static BusInterface tdc72_adt7301_bus_info = {
     .type = BUS_SPI,
     .bus_number = 4,
     .address = 0
 };
-
-static Dev_powermon pm = {0};
-#ifdef BOARD_TDC64
-static Dev_max31725 therm[TDC64_MAX31725_COUNT] = {0};
-#endif
-#ifdef BOARD_TDC72
 static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 #endif
 static Dev_digipots digipots = {0};

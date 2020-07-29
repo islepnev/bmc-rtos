@@ -23,10 +23,9 @@
 #include "dev_ad9545.h"
 #include "logbuffer.h"
 
-static uint32_t stateStartTick = 0; // FIXME: make device field
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(Dev_ad9545_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 /*
@@ -70,7 +69,7 @@ void dev_ad9545_run(Dev_ad9545 *d)
             d->priv.fsm_state = PLL_STATE_SETUP_SYSCLK;
             break;
         }
-        if (stateTicks() > 2000) {
+        if (stateTicks(&d->priv) > 2000) {
             log_put(LOG_ERR, "PLL AD9545 not found");
             d->priv.fsm_state = PLL_STATE_ERROR;
             break;
@@ -91,7 +90,7 @@ void dev_ad9545_run(Dev_ad9545 *d)
         if (d->priv.status.sysclk.b.locked && d->priv.status.sysclk.b.stable) {
             d->priv.fsm_state = PLL_STATE_SETUP;
         }
-        if (stateTicks() > 2000) {
+        if (stateTicks(&d->priv) > 2000) {
             log_put(LOG_ERR, "PLL AD9545 sysclock lock timeout");
             d->priv.fsm_state = PLL_STATE_ERROR;
         }
@@ -117,14 +116,14 @@ void dev_ad9545_run(Dev_ad9545 *d)
             log_put(LOG_CRIT, "PLL AD9545 fatal error");
             break;
         }
-        if (stateTicks() > 1000) {
+        if (stateTicks(&d->priv) > 1000) {
             d->priv.recoveryCount++;
             d->priv.fsm_state = PLL_STATE_INIT;
         }
         break;
     case PLL_STATE_FATAL:
         d->dev.device_status = DEVICE_FAIL;
-        if (stateTicks() > 2000) {
+        if (stateTicks(&d->priv) > 2000) {
             // recover
             d->priv.recoveryCount = 0;
             d->priv.fsm_state = PLL_STATE_INIT;
@@ -155,7 +154,7 @@ void dev_ad9545_run(Dev_ad9545 *d)
 
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
-        stateStartTick = osKernelSysTick();
+        d->priv.stateStartTick = osKernelSysTick();
     }
     if (stateChanged && (old_state != PLL_STATE_RESET)) {
         if (d->priv.fsm_state == PLL_STATE_ERROR) {

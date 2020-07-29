@@ -31,32 +31,22 @@
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 
-typedef enum {
-    STATE_INIT,
-    STATE_DETECT,
-    STATE_RUN,
-    STATE_ERROR
-} state_t;
-
-static state_t state = STATE_INIT;
-static state_t old_state = STATE_INIT;
-
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(Dev_digipots_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 void dev_digipot_run(struct Dev_digipots *d)
 {
-    switch (state) {
-    case STATE_INIT: {
+    digipot_state_t old_state = d->priv.state;
+    switch (d->priv.state) {
+    case DIGIPOT_STATE_INIT: {
         //dev_digipots_priv_init(&d->priv);
         d->priv.count = 0;
-        state = STATE_DETECT;
+        d->priv.state = DIGIPOT_STATE_DETECT;
         break;
     }
-    case STATE_DETECT: {
+    case DIGIPOT_STATE_DETECT: {
         int pots_detected_1 = digipot_detect(d);
         if (pots_detected_1 == 0) {
             osDelay(100);
@@ -65,27 +55,27 @@ void dev_digipot_run(struct Dev_digipots *d)
         int pots_detected_2 = digipot_detect(d);
         if (pots_detected_2 == pots_detected_1) {
             log_printf(LOG_INFO, "Found %d digipots", pots_detected_2);
-            state = STATE_RUN;
+            d->priv.state = DIGIPOT_STATE_RUN;
             break;
         }
         osDelay(100);
         break;
     }
-    case STATE_RUN:
+    case DIGIPOT_STATE_RUN:
         digipot_read_rdac_all(d);
         digipot_check_mail(&d->priv);
         break;
 
-    case STATE_ERROR:
-        if (old_state != state) {
+    case DIGIPOT_STATE_ERROR:
+        if (old_state != d->priv.state) {
             log_printf(LOG_ERR, "Digipot error");
         }
-        if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = STATE_INIT;
+        if (stateTicks(&d->priv) > ERROR_DELAY_TICKS) {
+            d->priv.state = DIGIPOT_STATE_INIT;
         }
         break;
     }
-    if (old_state != state) {
-        stateStartTick = osKernelSysTick();
+    if (old_state != d->priv.state) {
+        d->priv.stateStartTick = osKernelSysTick();
     }
 }

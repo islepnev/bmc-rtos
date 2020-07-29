@@ -40,8 +40,17 @@ typedef struct Dev_ad5141 {
     Dev_ad5141_priv priv;
 } Dev_ad5141;
 
+typedef enum {
+    DIGIPOT_STATE_INIT,
+    DIGIPOT_STATE_DETECT,
+    DIGIPOT_STATE_RUN,
+    DIGIPOT_STATE_ERROR
+} digipot_state_t;
+
 typedef struct Dev_digipots_priv {
     unsigned int count;
+    uint32_t stateStartTick;
+    digipot_state_t state;
     Dev_ad5141 pot[DEV_DIGIPOT_COUNT];
 } Dev_digipots_priv;
 

@@ -33,6 +33,7 @@ typedef struct Dev_ad9545_priv {
     ad9545_setup_t setup;
     AD9545_Status status;
     ad9545_state_t fsm_state;
+    uint32_t stateStartTick;
     uint32_t recoveryCount;
 } Dev_ad9545_priv;
 
