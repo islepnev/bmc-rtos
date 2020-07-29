@@ -1,5 +1,5 @@
 /*
-**    Copyright 2017-2020 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,4 +15,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_thset.h"
+
+#include "dev_adt7301.h"
+
+#include "devices_types.h"
+#include "i2c.h"
+#include "adt7301/adt7301_spi_hal.h"
+
+
+bool dev_adt7301_detect(Dev_adt7301 *d)
+{
+    int16_t data;
+    if (adt7301_read(&d->dev.bus, &data))
+        return true;
+    return false;
+}
+
+bool dev_adt7301_read(Dev_adt7301 *d)
+{
+    int16_t data;
+    if (! adt7301_read(&d->dev.bus, &data)) {
+        return false;
+    }
+    int16_t rawTemp = (int16_t)data;
+    d->priv.temp = (double)rawTemp/32.0;
+    return true;
+}

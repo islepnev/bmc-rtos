@@ -31,6 +31,8 @@
 #include "digipot/dev_digipot_fsm.h"
 #include "digipot/dev_digipot_types.h"
 #include "ipmi_sensors.h"
+#include "adt7301/dev_adt7301.h"
+#include "adt7301/dev_adt7301_fsm.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon_types.h"
@@ -58,8 +60,16 @@ static BusInterface powermon_bus_info = {
 };
 
 static Dev_powermon pm = {0};
+#ifdef BOARD_TDC64
 static Dev_max31725 therm1 = {0};
 static Dev_max31725 therm2 = {0};
+#endif
+#ifdef BOARD_TDC72
+static Dev_adt7301 therm1 = {0};
+static Dev_adt7301 therm2 = {0};
+static Dev_adt7301 therm3 = {0};
+static Dev_adt7301 therm4 = {0};
+#endif
 static Dev_digipots digipots = {0};
 
 static void local_init(DeviceBase *parent)
@@ -79,12 +89,29 @@ static void start_task_powermon( void const *arg)
     Dev_thset *thset = get_dev_thset();
     Dev_thset zz = {0};
     *thset = zz;
+#ifdef BOARD_TDC72
+    dev_thset_add(thset, "PLL");
     dev_thset_add(thset, "TDC-A");
     dev_thset_add(thset, "TDC-B");
-
+    dev_thset_add(thset, "TDC-C");
+#endif
+#ifdef BOARD_TDC64
+    dev_thset_add(thset, "TDC-A");
+    dev_thset_add(thset, "TDC-B");
+#endif
     while (1)
     {
         // task_sfpiic_run(); // broken on tdc64
+#ifdef BOARD_TDC72
+        thset->count = 4;
+        dev_adt7301_run(&therm1);
+        thset->sensors[0].value = therm1.priv.temp;
+        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        dev_adt7301_run(&therm2);
+        thset->sensors[1].value = therm2.priv.temp;
+        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        dev_thset_run(thset);
+#endif
 #ifdef BOARD_TDC64
         thset->count = 2;
         dev_max31725_run(&therm1);

@@ -15,4 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_thset.h"
+#ifndef ADT7301_SPI_HAL_H
+#define ADT7301_SPI_HAL_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "bus/bus_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool adt7301_read(BusInterface *bus, int16_t *data);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ADT7301_SPI_HAL_H

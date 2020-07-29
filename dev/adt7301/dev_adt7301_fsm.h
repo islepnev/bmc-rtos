@@ -1,5 +1,5 @@
 /*
-**    Copyright 2017-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,4 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_thset.h"
+#ifndef DEV_ADT7301_FSM_H
+#define DEV_ADT7301_FSM_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct Dev_adt7301;
+void dev_adt7301_run(struct Dev_adt7301 *p);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_ADT7301_FSM_H

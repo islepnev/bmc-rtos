@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,26 +15,43 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_THSET_TYPES_H
-#define DEV_THSET_TYPES_H
+#ifndef DEV_ADT7301_H
+#define DEV_ADT7301_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "dev_common_types.h"
-#include "ipmi_sensor_types.h"
+#include "devicebase.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
-    THSET_STATE_0,
-    THSET_STATE_1,
-    THSET_STATE_2,
-} thset_state_t;
+    ADT7301_STATE_SHUTDOWN,
+    ADT7301_STATE_RESET,
+    ADT7301_STATE_RUN,
+    ADT7301_STATE_PAUSE,
+    ADT7301_STATE_ERROR
+} dev_adt7301_state_t;
 
-enum {DEV_THSET_MAX_COUNT = 8};
+typedef struct Dev_adt7301_priv {
+    dev_adt7301_state_t state;
+    uint32_t state_start_tick;
+    double temp;
+} Dev_adt7301_priv;
 
-typedef struct Dev_thset {
-    thset_state_t state;
-    int count;
-    GenericSensor sensors[DEV_THSET_MAX_COUNT];
-} Dev_thset;
+typedef struct Dev_adt7301 {
+    DeviceBase dev;
+    Dev_adt7301_priv priv;
+} Dev_adt7301;
 
-#endif // DEV_THSET_TYPES_H
+bool dev_adt7301_detect(Dev_adt7301 *d);
+bool dev_adt7301_read(Dev_adt7301 *d);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_ADT7301_H
