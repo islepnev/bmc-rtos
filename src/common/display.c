@@ -39,4 +39,7 @@ void print_get_screen_size(void)
 {
     printf(CSI "r" CSI "999;999H"); // move to 999:999
     printf(CSI "6n");
+    // repeat
+    printf(CSI "r" CSI "999;999H"); // move to 999:999
+    printf(CSI "6n");
 }

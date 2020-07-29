@@ -43,13 +43,25 @@ static int execute (int argc, const char * const * argv)
     return 0;
 }
 
+static int new_screen_width = 0;
+static int new_screen_height = 0;
+static int prev_screen_width = 0;
+static int prev_screen_height = 0;
+
 static void handle_escape_screen_pos(uint16_t row, uint16_t col)
 {
     if (row >= 1 && row <= 999 && col >= 1 && col <= 999) {
-        if (screen_width != col || screen_height != row) {
-            screen_width = col;
-            screen_height = row;
-            schedule_display_refresh();
+        prev_screen_width = new_screen_width;
+        prev_screen_height = new_screen_height;
+        new_screen_width = col;
+        new_screen_height = row;
+        if (prev_screen_width == new_screen_width &&
+            prev_screen_height == new_screen_height) {
+            if (screen_width != new_screen_width || screen_height != new_screen_height) {
+                screen_width = new_screen_width;
+                screen_height = new_screen_height;
+                schedule_display_refresh();
+            }
         }
     }
 }
