@@ -52,23 +52,27 @@ void struct_pm_sensor_clear_measurements(pm_sensor_priv *d)
 
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
-    d->dev.bus.type = BUS_IIC;
-    d->dev.bus.bus_number = sensorBusNumber(index);
-    d->dev.bus.address = sensorBusAddress(index);
     d->dev.device_status = DEVICE_UNKNOWN;
     pm_sensor_priv *sensor = &d->priv;
     sensor->index = index;
-    sensor->sensorStatus = SENSOR_UNKNOWN;
-    sensor->rampState = RAMP_NONE;
-    sensor->lastStatusUpdatedTick = 0;
     sensor->isOptional = monIsOptional(index);
     sensor->hasShunt = monShuntVal(index) > 1e-6;
     sensor->shuntVal = monShuntVal(index);
     sensor->busNomVoltage = monVoltageNom(index);
+    sensor->label = monLabel(index);
+
+    struct_pm_sensor_clear(d);
+}
+
+void struct_pm_sensor_clear(pm_sensor *d)
+{
+    pm_sensor_priv *sensor = &d->priv;
+    sensor->sensorStatus = SENSOR_UNKNOWN;
+    sensor->rampState = RAMP_NONE;
+    sensor->lastStatusUpdatedTick = 0;
     const double current_max = 16; // amperers
     sensor->current_lsb = current_max / 32768.0;
     sensor->cal = 0.00512 / (sensor->current_lsb * sensor->shuntVal);
-    sensor->label = monLabel(index);
     struct_pm_sensor_clear_measurements(&d->priv);
     struct_pm_sensor_clear_minmax(&d->priv);
 }

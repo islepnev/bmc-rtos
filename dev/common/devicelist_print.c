@@ -33,6 +33,7 @@ const char *device_class_str(DeviceClass class)
     case DEV_CLASS_DIGIPOTS: return "DigiPots";
     case DEV_CLASS_EEPROM_CONFIG: return "EEPROM-Config";
     case DEV_CLASS_FPGA: return "FPGA";
+    case DEV_CLASS_INA226: return "INA226";
     case DEV_CLASS_PLL: return "PLL";
     case DEV_CLASS_POWERMON: return "PowerMon";
     case DEV_CLASS_SFP: return "SFP";

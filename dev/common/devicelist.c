@@ -45,6 +45,7 @@ void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass cl
     if (parent) {
         add_child(parent, d);
     }
+    assert(deviceList.count < DEVICE_LIST_SIZE);
     if (deviceList.count >= DEVICE_LIST_SIZE) {
         return;
     }

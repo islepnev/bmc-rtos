@@ -26,8 +26,8 @@
 extern "C" {
 #endif
 
-void struct_powermon_sensors_init(Dev_powermon_priv *p);
-void dev_powermon_init(Dev_powermon_priv *p);
+void create_sensor_subdevices(Dev_powermon *d);
+void struct_powermon_sensors_clear(Dev_powermon_priv *p);
 void pm_clear_all(Dev_powermon_priv *p);
 bool pm_read_liveInsert(Dev_powermon_priv *p);
 bool update_power_switches(Dev_powermon_priv *p, bool state);

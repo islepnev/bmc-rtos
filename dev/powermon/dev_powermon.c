@@ -31,16 +31,25 @@
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
-void struct_powermon_sensors_init(Dev_powermon_priv *p)
+void create_sensor_subdevices(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_init(&p->sensors[i], (SensorIndex)(i));
+        pm_sensor *sensor = &d->priv.sensors[i];
+        struct_pm_sensor_init(sensor, (SensorIndex)(i));
+        BusInterface bus_info = {
+            .type = BUS_IIC,
+            .bus_number = sensorBusNumber(i),
+            .address = sensorBusAddress(i)
+        };
+        create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus_info);
     }
 }
 
-void dev_powermon_init(Dev_powermon_priv *p)
+void struct_powermon_sensors_clear(Dev_powermon_priv *p)
 {
-    pm_clear_all(p);
+    for (int i=0; i<POWERMON_SENSORS; i++) {
+        struct_pm_sensor_clear(&p->sensors[i]);
+    }
 }
 
 void pm_clear_all(Dev_powermon_priv *p)
@@ -49,7 +58,7 @@ void pm_clear_all(Dev_powermon_priv *p)
     p->stateStartTick = 0;
     p->monErrors = 0;
     p->monCycle = 0;
-    struct_powermon_sensors_init(p);
+    struct_powermon_sensors_clear(p);
     //    d->present = DEVICE_UNKNOWN;
     p->vmePresent = 0;
     init_pgood(p->pgood);

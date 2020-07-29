@@ -27,6 +27,7 @@
 #include "debug_helpers.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
+#include "powermon/dev_powermon.h"
 #include "devicebase.h"
 #include "digipot/dev_digipot_fsm.h"
 #include "digipot/dev_digipot_types.h"
@@ -90,6 +91,7 @@ static void local_init(DeviceBase *parent)
 #endif
     create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info);
     create_digipots_subdevices(&digipots);
+    create_sensor_subdevices(&pm);
 }
 
 static void start_task_powermon( void const *arg)
