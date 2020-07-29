@@ -29,6 +29,7 @@ extern "C" {
 #endif
 
 typedef enum {
+    MAX31725_STATE_SHUTDOWN,
     MAX31725_STATE_RESET,
     MAX31725_STATE_RUN,
     MAX31725_STATE_PAUSE,

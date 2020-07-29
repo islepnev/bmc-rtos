@@ -37,7 +37,8 @@ static const uint16_t MAX31725_REG_THYST_POR  = 0x4b00;
 bool dev_max31725_detect(Dev_max31725 *d)
 {
     uint16_t data;
-    if (! max31725_detect(&d->bus) || ! max31725_read(&d->bus, MAX31725_REG_THYST, &data))
+    if (// ! max31725_detect(&d->bus) ||
+        ! max31725_read(&d->bus, MAX31725_REG_THYST, &data))
         return false;
     if (data != MAX31725_REG_THYST_POR) {
         return false;

@@ -33,8 +33,22 @@ static uint32_t stateTicks(Dev_max31725 *d)
 
 void dev_max31725_run(Dev_max31725 *d)
 {
+#ifdef BOARD_TTVXS
+    if (!enable_power || !system_power_present) {
+        if (d->state != MAX31725_STATE_SHUTDOWN) {
+            d->state = MAX31725_STATE_SHUTDOWN;
+            d->device_status = DEVICE_UNKNOWN;
+            log_put(LOG_INFO, "MAX31725 shutdown");
+        }
+        return;
+    }
+#endif
     dev_max31725_state_t old_state = d->state;
     switch (d->state) {
+    case MAX31725_STATE_SHUTDOWN: {
+        d->state = MAX31725_STATE_RESET;
+        break;
+    }
     case MAX31725_STATE_RESET: {
         if (dev_max31725_detect(d)) {
             d->state = MAX31725_STATE_RUN;
