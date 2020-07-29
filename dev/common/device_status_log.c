@@ -59,7 +59,7 @@ void dev_log_status_change(const DeviceBase *dev)
                bus_type_str(dev->bus.type),
                dev->bus.bus_number,
                dev->bus.address,
-               device_class_str(dev->class)
+               device_class_str(dev->device_class)
                );
 }
 

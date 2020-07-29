@@ -36,9 +36,9 @@ static void add_child(DeviceBase *list, DeviceBase *d)
     p->next = d;
 }
 
-void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus)
+void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass device_class, const BusInterface bus)
 {
-    d->class = class;
+    d->device_class = device_class;
     d->bus = bus;
     d->priv = priv;
     d->parent = parent;
@@ -52,10 +52,10 @@ void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass cl
     deviceList.list[deviceList.count++] = d;
 }
 
-DeviceBase *find_device(DeviceClass class)
+DeviceBase *find_device(DeviceClass device_class)
 {
     for (int i=0; i<deviceList.count; i++) {
-        if (deviceList.list[i]->class == class) {
+        if (deviceList.list[i]->device_class == device_class) {
             return deviceList.list[i];
         }
     }

@@ -21,7 +21,7 @@
 #include "dev_common_types.h"
 
 typedef struct DeviceBase {
-    DeviceClass class;
+    DeviceClass device_class;
     DeviceStatus device_status;
     SensorStatus sensor;
     BusInterface bus;

@@ -73,7 +73,7 @@ void devicelist_print(DeviceBase *d, int depth)
            bus_type_str(bus->type),
            bus->bus_number,
            bus->address,
-           device_class_str(d->class),
+           device_class_str(d->device_class),
            ANSI_CLEAR_EOL);
 
     DeviceBase *p = d->children;

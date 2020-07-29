@@ -29,9 +29,9 @@ typedef struct DeviceList {
 
 extern DeviceList deviceList;
 
-void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
-DeviceBase *find_device(DeviceClass class);
-const DeviceBase *find_device_const(DeviceClass class);
+void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass device_class, const BusInterface bus);
+DeviceBase *find_device(DeviceClass device_class);
+const DeviceBase *find_device_const(DeviceClass device_class);
 void *device_priv(DeviceBase *d);
 const void *device_priv_const(const DeviceBase *d);
 
