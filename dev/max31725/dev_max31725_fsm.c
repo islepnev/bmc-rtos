@@ -54,14 +54,14 @@ void dev_max31725_run(Dev_max31725 *p)
         if (dev_max31725_detect(p)) {
             d->state = MAX31725_STATE_RUN;
             p->dev.device_status = DEVICE_NORMAL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             break;
         } else {
             d->state = MAX31725_STATE_ERROR;
         }
         if (stateTicks(d) > 2000) {
             p->dev.device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = MAX31725_STATE_ERROR;
             break;
         }
@@ -70,7 +70,7 @@ void dev_max31725_run(Dev_max31725 *p)
     case MAX31725_STATE_RUN:
         if (! dev_max31725_read(p)) {
             p->dev.device_status = DEVICE_FAIL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = MAX31725_STATE_ERROR;
             break;
         }

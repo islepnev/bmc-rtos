@@ -27,13 +27,13 @@ bool fpgaWriteSensors(void)
     if (!p)
         return false;
     uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_VXS_5V].busVoltage * 1000)))
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_VXS_5V].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_VXS_5V].current * 1000)))
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_VXS_5V].priv.current * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_3V3].busVoltage * 1000)))
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_3V3].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_3V3].current * 1000)))
+    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(p->sensors[SENSOR_3V3].priv.current * 1000)))
         return false;
     return true;
 }

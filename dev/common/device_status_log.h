@@ -21,15 +21,17 @@
 #include "log/log_prio.h"
 #include "dev_common_types.h"
 #include "bus/bus_types.h"
+#include "devicebase.h"
+#include "powermon/dev_pm_sensors_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 LogPriority device_status_log_priority(DeviceStatus status);
-void dev_log_status_change(BusInterface *bus, DeviceStatus status);
+void dev_log_status_change(const DeviceBase *dev);
 LogPriority sensor_status_log_priority(SensorStatus status);
-void sensor_log_status_change(BusInterface *bus, SensorStatus status);
+void sensor_log_status_change(pm_sensor *p);
 
 #ifdef __cplusplus
 }

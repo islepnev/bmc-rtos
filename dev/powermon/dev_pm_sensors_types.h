@@ -23,6 +23,7 @@
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,11 +32,10 @@ extern "C" {
 typedef enum {
     RAMP_NONE = 0,
     RAMP_UP   = 1,
-    RAMP_DOWN = 2,
-    } RampState;
+    RAMP_DOWN = 2
+} RampState;
 
-typedef struct pm_sensor {
-    BusInterface bus;
+typedef struct pm_sensor_priv {
     SensorIndex index;
     DeviceStatus deviceStatus;
     SensorStatus sensorStatus;
@@ -60,6 +60,11 @@ typedef struct pm_sensor {
     double currentMin;
     double currentMax;
     double powerMax;
+} pm_sensor_priv;
+
+typedef struct pm_sensor {
+    DeviceBase dev;
+    pm_sensor_priv priv;
 } pm_sensor;
 
 bool pm_sensor_isValid(const pm_sensor *d);

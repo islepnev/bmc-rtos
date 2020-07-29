@@ -66,7 +66,7 @@ bool get_critical_power_valid(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &sensors[i];
-        if (!sensor->isOptional)
+        if (!sensor->priv.isOptional)
             if (!pm_sensor_isValid(sensor))
                 return false;
     }
@@ -77,7 +77,7 @@ bool get_critical_power_failure(const pm_sensors_arr sensors)
 {
     for (int i=0; i < POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &sensors[i];
-        if (!sensor->isOptional)
+        if (!sensor->priv.isOptional)
             if (pm_sensor_isCritical(sensor))
                 return true;
     }
@@ -121,14 +121,14 @@ bool pm_sensors_isAllValid(const Dev_powermon *d)
 void monClearMinMax(Dev_powermon *d)
 {
     for (int i=0; i<POWERMON_SENSORS; i++)
-        struct_pm_sensor_clear_minmax(&d->priv.sensors[i]);
+        struct_pm_sensor_clear_minmax(&d->priv.sensors[i].priv);
 }
 
 void monClearMeasurements(Dev_powermon *d)
 {
     monClearMinMax(d);
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear_measurements(&d->priv.sensors[i]);
+        struct_pm_sensor_clear_measurements(&d->priv.sensors[i].priv);
     }
 }
 
@@ -157,7 +157,7 @@ int monReadValues(Dev_powermon *d)
         if (err >= 2) {
             pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
         } else {
-            if (sensor->deviceStatus == DEVICE_NORMAL) {
+            if (sensor->dev.device_status == DEVICE_NORMAL) {
                 DeviceStatus s = pm_sensor_read(sensor);
                 if (s == DEVICE_NORMAL)
                     ok++;

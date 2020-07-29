@@ -61,9 +61,10 @@ static void clearOldSensorStatus(void)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
-static void log_sensor_status(const pm_sensor *sensor)
+static void log_sensor_status(const pm_sensor *p)
 {
-    const SensorStatus status = pm_sensor_status(sensor);
+    const SensorStatus status = pm_sensor_status(p);
+    const pm_sensor_priv *sensor = &p->priv;
     enum { size = 50 };
     static char str[size];
     const double volt = sensor->busVoltage;
@@ -111,7 +112,7 @@ static void log_sensors_change(const Dev_powermon_priv *p)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &p->sensors[i];
-        if (sensor->rampState != RAMP_NONE)
+        if (sensor->priv.rampState != RAMP_NONE)
             continue;
         SensorStatus status = pm_sensor_status(sensor);
         if (status != oldSensorStatus[i]) {
@@ -125,7 +126,7 @@ static void log_critical_sensors(const Dev_powermon *pm)
 {
     for (int i=0; i<POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &pm->priv.sensors[i];
-        if (sensor->isOptional)
+        if (sensor->priv.isOptional)
             continue;
         log_sensor_status(sensor);
     }
@@ -281,7 +282,7 @@ void task_powermon_run (Dev_powermon *pm)
     }
 
     for (int i=0; i<POWERMON_SENSORS; i++)
-        priv->sensors[i].rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
+        priv->sensors[i].priv.rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
     if (!enable_power)
         monClearMinMax(pm);

@@ -42,7 +42,7 @@ bool pm_sensor_isCritical(const pm_sensor *d)
 
 SensorStatus pm_sensor_status(const pm_sensor *d)
 {
-    if (d->deviceStatus != DEVICE_NORMAL)
+    if (d->dev.device_status != DEVICE_NORMAL)
         return SENSOR_UNKNOWN;
-    return d->sensorStatus;
+    return d->priv.sensorStatus;
 }

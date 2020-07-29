@@ -18,7 +18,10 @@
 #ifndef DEVICELIST_PRINT_H
 #define DEVICELIST_PRINT_H
 
-struct DeviceBase;
+#include "devicebase.h"
+
+const char *device_class_str(DeviceClass class);
+const char *bus_type_str(BusType type);
 void devicelist_print(struct DeviceBase *d, int depth);
 
 #endif // DEVICELIST_PRINT_H

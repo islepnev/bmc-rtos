@@ -76,18 +76,20 @@ void pm_sensor_print_header(void)
 void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
 {
     SensorStatus sensorStatus = pm_sensor_status(d);
-    int offvoltage = !isOn && (d->busVoltage > 0.1);
+    const pm_sensor_priv *sensor = &d->priv;
+    int offvoltage = !isOn && (sensor->busVoltage > 0.1);
     const char *color = "";
     switch (sensorStatus) {
-    case SENSOR_UNKNOWN:  color = d->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
+    case SENSOR_UNKNOWN:  color = sensor->isOptional ? ANSI_GRAY : ANSI_YELLOW; break;
     case SENSOR_NORMAL:   color = ANSI_GREEN;  break;
     case SENSOR_WARNING:  color = ANSI_YELLOW; break;
-    case SENSOR_CRITICAL: color = d->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
+    case SENSOR_CRITICAL: color = sensor->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
     }
-    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", d->busVoltage, ANSI_CLEAR);
-    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
-        int backfeed = (d->current < -0.010);
-        printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", d->current, backfeed ? ANSI_CLEAR : "", d->currentMax, d->power);
+    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", sensor->busVoltage, ANSI_CLEAR);
+    if (sensor->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+        int backfeed = (sensor->current < -0.010);
+        printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", sensor->current, backfeed ? ANSI_CLEAR : "",
+               sensor->currentMax, sensor->power);
     } else {
         printf("         ");
     }
@@ -96,10 +98,10 @@ void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
 
 void pm_sensor_print(const pm_sensor *d, int isOn)
 {
-    printf("%10s", d->label);
-    if (d->deviceStatus == DEVICE_NORMAL) {
+    printf("%10s", d->priv.label);
+    if (d->dev.device_status == DEVICE_NORMAL) {
         pm_sensor_print_values(d, isOn);
-        printf(" %s", isOn ? sensor_status_ansi_str(d->sensorStatus) : STR_RESULT_OFF);
+        printf(" %s", isOn ? sensor_status_ansi_str(d->priv.sensorStatus) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
     }

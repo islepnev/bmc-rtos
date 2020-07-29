@@ -159,9 +159,9 @@ double pm_get_power_w(const Dev_powermon_priv *p)
 double pm_get_power_max_w(const Dev_powermon_priv *p)
 {
     double mw = 0;
-    mw += p->sensors[SENSOR_5VPC].powerMax;
-    mw += p->sensors[SENSOR_VME_5V].powerMax;
-    mw += p->sensors[SENSOR_MCB_4V5].powerMax;
+    mw += p->sensors[SENSOR_5VPC].priv.powerMax;
+    mw += p->sensors[SENSOR_VME_5V].priv.powerMax;
+    mw += p->sensors[SENSOR_MCB_4V5].priv.powerMax;
     return mw;
 }
 

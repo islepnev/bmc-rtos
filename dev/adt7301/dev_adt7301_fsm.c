@@ -52,14 +52,14 @@ void dev_adt7301_run(Dev_adt7301 *p)
         if (dev_adt7301_detect(p)) {
             d->state = ADT7301_STATE_RUN;
             p->dev.device_status = DEVICE_NORMAL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             break;
         } else {
             d->state = ADT7301_STATE_ERROR;
         }
         if (stateTicks(d) > 2000) {
             p->dev.device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = ADT7301_STATE_ERROR;
             break;
         }
@@ -68,7 +68,7 @@ void dev_adt7301_run(Dev_adt7301 *p)
     case ADT7301_STATE_RUN:
         if (! dev_adt7301_read(p)) {
             p->dev.device_status = DEVICE_FAIL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = ADT7301_STATE_ERROR;
             break;
         }

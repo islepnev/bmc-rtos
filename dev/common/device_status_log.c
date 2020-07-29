@@ -19,6 +19,7 @@
 
 #include <assert.h>
 
+#include "devicelist_print.h"
 #include "log/log.h"
 
 LogPriority device_status_log_priority(DeviceStatus status)
@@ -36,11 +37,11 @@ LogPriority device_status_log_priority(DeviceStatus status)
     }
 }
 
-void dev_log_status_change(BusInterface *bus, DeviceStatus status)
+void dev_log_status_change(const DeviceBase *dev)
 {
-    LogPriority prio = device_status_log_priority(status);
+    LogPriority prio = device_status_log_priority(dev->device_status);
     const char *text = "";
-    switch(status) {
+    switch(dev->device_status) {
     case DEVICE_UNKNOWN:
         text = "not found";
         break;
@@ -53,17 +54,13 @@ void dev_log_status_change(BusInterface *bus, DeviceStatus status)
     default:
         assert(0);
     }
-    const char *bus_type_str = "";
-    switch (bus->type) {
-    case BUS_IIC: bus_type_str = "IIC"; break;
-    case BUS_SPI: bus_type_str = "SPI"; break;
-    default: assert(0);
-    }
-    log_printf(prio, "Device %s on %s %d.%02X",
+    log_printf(prio, "Device %s on %s %d.%02X (%s)",
                text,
-               bus_type_str,
-               bus->bus_number,
-               bus->address);
+               bus_type_str(dev->bus.type),
+               dev->bus.bus_number,
+               dev->bus.address,
+               device_class_str(dev->class)
+               );
 }
 
 LogPriority sensor_status_log_priority(SensorStatus status)
@@ -83,11 +80,11 @@ LogPriority sensor_status_log_priority(SensorStatus status)
     }
 }
 
-void sensor_log_status_change(BusInterface *bus, SensorStatus status)
+void sensor_log_status_change(pm_sensor *p)
 {
-    LogPriority prio = sensor_status_log_priority(status);
+    LogPriority prio = sensor_status_log_priority(p->priv.sensorStatus);
     const char *text = "";
-    switch(status) {
+    switch(p->priv.sensorStatus) {
     case SENSOR_UNKNOWN:
         text = "not found";
         break;
@@ -103,15 +100,9 @@ void sensor_log_status_change(BusInterface *bus, SensorStatus status)
     default:
         assert(0);
     }
-    const char *bus_type_str = "";
-    switch (bus->type) {
-    case BUS_IIC: bus_type_str = "IIC"; break;
-    case BUS_SPI: bus_type_str = "SPI"; break;
-    default: assert(0);
-    }
     log_printf(prio, "Sensor %s on %s %d.%02X",
                text,
-               bus_type_str,
-               bus->bus_number,
-               bus->address);
+               bus_type_str(p->dev.bus.type),
+               p->dev.bus.bus_number,
+               p->dev.bus.address);
 }

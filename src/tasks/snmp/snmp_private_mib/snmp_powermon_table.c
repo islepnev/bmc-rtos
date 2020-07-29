@@ -145,7 +145,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 2: {/* sensor I2C bus address */
-        *(s32_t *)value = s->bus.address;
+        *(s32_t *)value = s->dev.bus.address;
         return sizeof(s32_t);
     }
     case 3: {/* sensor name */
@@ -155,32 +155,31 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return (s16_t)len;
     }
     case 4: {/* sensor optional */
-//        *(s32_t *)value = s->isOptional ? 1 : 2;
-//        return sizeof(s32_t);
-        return snmp_encode_truthvalue((s32_t *)value, s->isOptional);
-
+        //        *(s32_t *)value = s->isOptional ? 1 : 2;
+        //        return sizeof(s32_t);
+        return snmp_encode_truthvalue((s32_t *)value, s->priv.isOptional);
     }
     case 5: {/* sensor state */
         *(s32_t *)value = pm_sensor_status(s);
         return sizeof(s32_t);
     }
     case 6: {/* nominal voltage */
-        *(s32_t *)value = s->busNomVoltage * 1000;
+        *(s32_t *)value = s->priv.busNomVoltage * 1000;
         return sizeof(s32_t);
     }
     case 7: {/* voltage sensor value */
-        *(s32_t *)value = s->busVoltage * 1000;
+        *(s32_t *)value = s->priv.busVoltage * 1000;
         return sizeof(s32_t);
     }
     case 8: {/* current sensor value */
-        return snmp_encode_truthvalue((s32_t *)value, s->hasShunt);
+        return snmp_encode_truthvalue((s32_t *)value, s->priv.hasShunt);
     }
     case 9: {/* current sensor value */
-        *(s32_t *)value = s->current * 1000;
+        *(s32_t *)value = s->priv.current * 1000;
         return sizeof(s32_t);
     }
     case 10: {/* peak current sensor value */
-        *(s32_t *)value = s->currentMax * 1000;
+        *(s32_t *)value = s->priv.currentMax * 1000;
         return sizeof(s32_t);
     }
     default:

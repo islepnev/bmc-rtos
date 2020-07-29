@@ -54,14 +54,14 @@ void dev_tmp421_run(Dev_tmp421 *p)
         if (dev_tmp421_detect(p)) {
             d->state = TMP421_STATE_RUN;
             p->dev.device_status = DEVICE_NORMAL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             break;
         } else {
             d->state = TMP421_STATE_ERROR;
         }
         if (stateTicks(d) > 2000) {
             p->dev.device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = TMP421_STATE_ERROR;
             break;
         }
@@ -70,7 +70,7 @@ void dev_tmp421_run(Dev_tmp421 *p)
     case TMP421_STATE_RUN:
         if (! dev_tmp421_read(p)) {
             p->dev.device_status = DEVICE_FAIL;
-            dev_log_status_change(&p->dev.bus, p->dev.device_status);
+            dev_log_status_change(&p->dev);
             d->state = TMP421_STATE_ERROR;
             break;
         }

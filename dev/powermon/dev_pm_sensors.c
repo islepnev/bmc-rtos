@@ -33,7 +33,7 @@
 const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;
 const int ERROR_COUNT_LIMIT = 3;
 
-void struct_pm_sensor_clear_minmax(pm_sensor *d)
+void struct_pm_sensor_clear_minmax(pm_sensor_priv *d)
 {
     d->busVoltageMin = 0;
     d->busVoltageMax = 0;
@@ -42,7 +42,7 @@ void struct_pm_sensor_clear_minmax(pm_sensor *d)
     d->powerMax = 0;
 }
 
-void struct_pm_sensor_clear_measurements(pm_sensor *d)
+void struct_pm_sensor_clear_measurements(pm_sensor_priv *d)
 {
     d->sensorStatus = SENSOR_UNKNOWN;
     d->busVoltage = 0;
@@ -52,37 +52,38 @@ void struct_pm_sensor_clear_measurements(pm_sensor *d)
 
 void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 {
-    d->bus.type = BUS_IIC;
-    d->bus.bus_number = sensorBusNumber(index);
-    d->bus.address = sensorBusAddress(index);
-    d->index = index;
-    d->deviceStatus = DEVICE_UNKNOWN;
-    d->sensorStatus = SENSOR_UNKNOWN;
-    d->rampState = RAMP_NONE;
-    d->lastStatusUpdatedTick = 0;
-    d->isOptional = monIsOptional(index);
-    d->hasShunt = monShuntVal(index) > 1e-6;
-    d->shuntVal = monShuntVal(index);
-    d->busNomVoltage = monVoltageNom(index);
+    d->dev.bus.type = BUS_IIC;
+    d->dev.bus.bus_number = sensorBusNumber(index);
+    d->dev.bus.address = sensorBusAddress(index);
+    d->dev.device_status = DEVICE_UNKNOWN;
+    pm_sensor_priv *sensor = &d->priv;
+    sensor->index = index;
+    sensor->sensorStatus = SENSOR_UNKNOWN;
+    sensor->rampState = RAMP_NONE;
+    sensor->lastStatusUpdatedTick = 0;
+    sensor->isOptional = monIsOptional(index);
+    sensor->hasShunt = monShuntVal(index) > 1e-6;
+    sensor->shuntVal = monShuntVal(index);
+    sensor->busNomVoltage = monVoltageNom(index);
     const double current_max = 16; // amperers
-    d->current_lsb = current_max / 32768.0;
-    d->cal = 0.00512 / (d->current_lsb * d->shuntVal);
-    d->label = monLabel(index);
-    struct_pm_sensor_clear_measurements(d);
-    struct_pm_sensor_clear_minmax(d);
+    sensor->current_lsb = current_max / 32768.0;
+    sensor->cal = 0.00512 / (sensor->current_lsb * sensor->shuntVal);
+    sensor->label = monLabel(index);
+    struct_pm_sensor_clear_measurements(&d->priv);
+    struct_pm_sensor_clear_minmax(&d->priv);
 }
 
 static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
 {
-    DeviceStatus oldStatus = d->deviceStatus;
+    DeviceStatus oldStatus = d->dev.device_status;
     if (oldStatus != status) {
-        d->deviceStatus = status;
-        d->lastStatusUpdatedTick = osKernelSysTick();
-        dev_log_status_change(&d->bus, d->deviceStatus);
+        d->dev.device_status = status;
+        d->priv.lastStatusUpdatedTick = osKernelSysTick();
+        dev_log_status_change(&d->dev);
     }
 }
 
-static void pm_sensor_set_readVoltage(pm_sensor *d, double value)
+static void pm_sensor_set_readVoltage(pm_sensor_priv *d, double value)
 {
     d->busVoltage = value;
     if (value > d->busVoltageMax)
@@ -91,7 +92,7 @@ static void pm_sensor_set_readVoltage(pm_sensor *d, double value)
         d->busVoltageMin = value;
 }
 
-static void pm_sensor_set_readCurrent(pm_sensor *d, double value)
+static void pm_sensor_set_readCurrent(pm_sensor_priv *d, double value)
 {
     d->current = value;
     if (value > d->currentMax)
@@ -100,7 +101,7 @@ static void pm_sensor_set_readCurrent(pm_sensor *d, double value)
         d->currentMin = value;
 }
 
-static void pm_sensor_set_readPower(pm_sensor *d, double value)
+static void pm_sensor_set_readPower(pm_sensor_priv *d, double value)
 {
     d->power = value;
     if (value > d->powerMax)
@@ -109,16 +110,16 @@ static void pm_sensor_set_readPower(pm_sensor *d, double value)
 
 void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
 {
-    SensorStatus oldStatus = d->sensorStatus;
+    SensorStatus oldStatus = d->priv.sensorStatus;
     if (oldStatus != status) {
         if (false)
-            sensor_log_status_change(&d->bus, status);
-        d->sensorStatus = status;
-        d->lastStatusUpdatedTick = osKernelSysTick();
+            sensor_log_status_change(d);
+        d->priv.sensorStatus = status;
+        d->priv.lastStatusUpdatedTick = osKernelSysTick();
     }
 }
 
-uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor *d)
+uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor_priv *d)
 {
     return osKernelSysTick() - d->lastStatusUpdatedTick;
 }
@@ -152,38 +153,38 @@ static bool pm_sensor_write_conf(pm_sensor *d)
 {
     uint16_t data;
     data = default_configreg().raw;
-    return ina226_i2c_Write(&d->bus, INA226_REG_CONFIG, data)
-           && ina226_i2c_Write(&d->bus, INA226_REG_CAL, d->cal);
+    return ina226_i2c_Write(&d->dev.bus, INA226_REG_CONFIG, data)
+           && ina226_i2c_Write(&d->dev.bus, INA226_REG_CAL, d->priv.cal);
 }
 
 DeviceStatus pm_sensor_detect(pm_sensor *d)
 {
-    d->lastStatusUpdatedTick = osKernelSysTick();
+    d->priv.lastStatusUpdatedTick = osKernelSysTick();
     uint16_t manuf_id;
     uint16_t device_id;
     int detected =(
         // ina226_i2c_Detect(&d->bus)
-        ina226_i2c_Read(&d->bus, INA226_REG_MANUFACTURER_ID, &manuf_id)
+        ina226_i2c_Read(&d->dev.bus, INA226_REG_MANUFACTURER_ID, &manuf_id)
         && (manuf_id == INA226_MANUFACTURER_ID)
-        && ina226_i2c_Read(&d->bus, INA226_REG_DEVICE_ID, &device_id)
+        && ina226_i2c_Read(&d->dev.bus, INA226_REG_DEVICE_ID, &device_id)
         && (device_id == INA226_DEVICE_ID)
         && pm_sensor_write_conf(d)
         );
     pm_sensor_set_deviceStatus(d, detected ? DEVICE_NORMAL : DEVICE_FAIL);
-    return d->deviceStatus;
+    return d->dev.device_status;
 }
 
 SensorStatus pm_sensor_compute_status(const pm_sensor *d)
 {
-    if (d->deviceStatus != DEVICE_NORMAL) {
+    if (d->dev.device_status != DEVICE_NORMAL) {
         return SENSOR_UNKNOWN;
     }
-
-    double V = d->busVoltage;
-    double VMinWarn = d->busNomVoltage * (1-monVoltageMarginWarn(d->index));
-    double VMaxWarn = d->busNomVoltage * (1+monVoltageMarginWarn(d->index));
-    double VMinCrit = d->busNomVoltage * (1-monVoltageMarginCrit(d->index));
-    double VMaxCrit = d->busNomVoltage * (1+monVoltageMarginCrit(d->index));
+    const pm_sensor_priv *sensor = &d->priv;
+    double V = d->priv.busVoltage;
+    double VMinWarn = sensor->busNomVoltage * (1-monVoltageMarginWarn(sensor->index));
+    double VMaxWarn = sensor->busNomVoltage * (1+monVoltageMarginWarn(sensor->index));
+    double VMinCrit = sensor->busNomVoltage * (1-monVoltageMarginCrit(sensor->index));
+    double VMaxCrit = sensor->busNomVoltage * (1+monVoltageMarginCrit(sensor->index));
     int VNorm = (V > VMinWarn) && (V < VMaxWarn);
     int VWarn = (V > VMinCrit) && (V < VMaxCrit);
     if (VNorm && VWarn) {
@@ -210,17 +211,17 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     int err = 0;
     while (1) {
         if (err > 0)
-            log_printf(LOG_WARNING, "Sensor %s read error, retry %d", d->label, err);
+            log_printf(LOG_WARNING, "Sensor %s read error, retry %d", d->priv.label, err);
         if (1
 //                && ina226_i2c_Read(&d->bus, INA226_REG_MASK, &rawMask)
 //                && (rawMask & 0x0400)
-            && ina226_i2c_Read(&d->bus, INA226_REG_BUS_VOLT, &rawVoltage)
-                && ina226_i2c_Read(&d->bus, INA226_REG_SHUNT_VOLT, &rawShuntVoltage)
+            && ina226_i2c_Read(&d->dev.bus, INA226_REG_BUS_VOLT, &rawVoltage)
+                && ina226_i2c_Read(&d->dev.bus, INA226_REG_SHUNT_VOLT, &rawShuntVoltage)
 #if INA226_USE_INTERNAL_CALC
-                && ina226_i2c_Read(&d->bus, INA226_REG_CURRENT, &rawCurrent)
-                && ina226_i2c_Read(&d->bus, INA226_REG_POWER, &rawPower)
+                && ina226_i2c_Read(&d->dev.bus, INA226_REG_CURRENT, &rawCurrent)
+                && ina226_i2c_Read(&d->dev.bus, INA226_REG_POWER, &rawPower)
 #endif
-                && ina226_i2c_Read(&d->bus, INA226_REG_CONFIG, &configreg.raw)
+                && ina226_i2c_Read(&d->dev.bus, INA226_REG_CONFIG, &configreg.raw)
                 && (configreg.raw == default_configreg().raw)) {
             break;
         }
@@ -228,25 +229,25 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
         if (err >= ERROR_COUNT_LIMIT) {
             pm_sensor_set_deviceStatus(d, DEVICE_FAIL);
             pm_sensor_set_sensorStatus(d, SENSOR_UNKNOWN);
-            struct_pm_sensor_clear_measurements(d);
-            return d->deviceStatus;
+            struct_pm_sensor_clear_measurements(&d->priv);
+            return d->dev.device_status;
         }
     }
     const double readVoltage  = (int16_t)rawVoltage * 1.25e-3;
-    pm_sensor_set_readVoltage(d, readVoltage);
+    pm_sensor_set_readVoltage(&d->priv, readVoltage);
 #if INA226_USE_INTERNAL_CALC
     pm_sensor_set_readCurrent(d, d->current_lsb * (int16_t)rawCurrent);
     pm_sensor_set_readPower(d, (int16_t)rawPower * d->current_lsb * 25.0);
 #else
     const double shuntVoltage = (int16_t)rawShuntVoltage * 2.5e-6;
     double readCurrent = 0;
-    if (d->shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
-        readCurrent = shuntVoltage / d->shuntVal;
-    pm_sensor_set_readCurrent(d, readCurrent);
-    pm_sensor_set_readPower(d, readCurrent * readVoltage);
+    if (d->priv.shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
+        readCurrent = shuntVoltage / d->priv.shuntVal;
+    pm_sensor_set_readCurrent(&d->priv, readCurrent);
+    pm_sensor_set_readPower(&d->priv, readCurrent * readVoltage);
 #endif
     pm_sensor_set_sensorStatus(d, pm_sensor_compute_status(d));
-    return d->deviceStatus;
+    return d->dev.device_status;
 }
 
 double get_sensor_power_w(const pm_sensor *d)
@@ -254,7 +255,7 @@ double get_sensor_power_w(const pm_sensor *d)
     SensorStatus sensor_status = pm_sensor_status(d);
     int sensor_present = ((sensor_status == SENSOR_NORMAL) || (sensor_status == SENSOR_WARNING));
     if (sensor_present)
-        return d->busVoltage * d->current;
+        return d->priv.busVoltage * d->priv.current;
     else
         return 0;
 }

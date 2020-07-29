@@ -25,9 +25,9 @@ SensorStatus pm_sensors_getStatus(const Dev_powermon_priv *priv)
     SensorStatus maxStatus = SENSOR_NORMAL;
     for (int i=0; i < POWERMON_SENSORS; i++) {
         const pm_sensor *sensor = &priv->sensors[i];
-        if (sensor->isOptional)
+        if (sensor->priv.isOptional)
             continue;
-        DeviceStatus deviceStatus = sensor->deviceStatus;
+        DeviceStatus deviceStatus = sensor->dev.device_status;
         if (deviceStatus != DEVICE_NORMAL)
             maxStatus = SENSOR_CRITICAL;
         int isOn = monIsOn(priv->sw, (SensorIndex)i);
