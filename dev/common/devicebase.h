@@ -15,24 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICELIST_H
-#define DEVICELIST_H
+#ifndef DEVICEBASE_H
+#define DEVICEBASE_H
 
 #include "dev_common_types.h"
-#include "devicebase.h"
 
-enum { DEVICE_LIST_SIZE = 16 };
-typedef struct DeviceList {
-    int count;
-    struct DeviceBase *list[DEVICE_LIST_SIZE];
-} DeviceList;
+typedef struct DeviceBase {
+    DeviceClass class;
+    DeviceStatus device_status;
+    SensorStatus sensor;
+    BusInterface bus;
+    void *priv;
+    struct DeviceBase *parent;
+    struct DeviceBase *children;
+    struct DeviceBase *next;
+} DeviceBase;
 
-extern DeviceList deviceList;
 
-void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass class, const BusInterface bus);
-DeviceBase *find_device(DeviceClass class);
-const DeviceBase *find_device_const(DeviceClass class);
-void *device_priv(DeviceBase *d);
-const void *device_priv_const(const DeviceBase *d);
-
-#endif // DEVICELIST_H
+#endif // DEVICEBASE_H
