@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_MAX31725_IMPL_H
-#define APP_TASK_MAX31725_IMPL_H
+#ifndef DEV_MAX31725_FSM_H
+#define DEV_MAX31725_FSM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,4 +29,4 @@ void dev_max31725_run(struct Dev_max31725 *p);
 }
 #endif
 
-#endif // APP_TASK_MAX31725_IMPL_H
+#endif // DEV_MAX31725_FSM_H
