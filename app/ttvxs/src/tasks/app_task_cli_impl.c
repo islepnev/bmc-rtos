@@ -1,42 +1,23 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019-2020 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "app_task_cli_impl.h"
 
-#include <stdio.h>
-#include <stdint.h>
-
-#include "microrl.h"
 #include "app_shared_data.h"
-#include "logbuffer.h"
-#include "debug_helpers.h"
-
-// print callback for microrl library
-static void print (const char * str)
-{
-    fprintf (stdout, "%s", str);
-}
-
-// execute callback for microrl library
-// do what you want here, but don't write to argv!!! read only!!
-int execute (int argc, const char * const * argv)
-{
-    return 0;
-}
 
 void cycle_display_mode(void)
 {
@@ -67,40 +48,11 @@ void cycle_display_mode(void)
     }
 }
 
-static void screen_handle_key(char ch)
+void screen_handle_key(char ch)
 {
 }
 
-void cliTask(void const *arg)
+bool app_handle_escape_seq(const char *str)
 {
-    (void) arg;
-
-    static microrl_t rl;
-    static microrl_t * prl = &rl;
-    microrl_init (prl, print);
-    microrl_set_execute_callback (prl, execute);
-    setvbuf(stdin, NULL, _IONBF, 0);
-    for( ;; )
-    {
-        char ch = getchar();
-        switch(ch) {
-        case ' ':
-        case '\r':
-        case '\n':
-            cycle_display_mode();
-            break;
-        case 'p':
-        case 'P':
-            enable_power = !enable_power;
-            if (enable_power)
-                log_put(LOG_INFO, "Received command power ON");
-            else
-                log_put(LOG_INFO, "Received command power OFF");
-            break;
-        default:
-            screen_handle_key(ch);
-            break;
-        }
-//        microrl_insert_char (prl, ch);
-    }
+    return false;
 }

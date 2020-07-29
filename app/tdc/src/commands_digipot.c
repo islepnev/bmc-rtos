@@ -111,24 +111,27 @@ static void digipot_action_minus(void)
     schedule_display_refresh();
 }
 
+bool digipot_handle_escape_seq(const char *str)
+{
+    if (0 == strncmp(str, "[A", 3)) {
+        digipot_action_up();
+        return true;
+    }
+    if (0 == strncmp(str, "[B", 3)) {
+        digipot_action_down();
+        return true;
+    }
+    return false;
+}
+
 void digipot_screen_handle_key(const char ch)
 {
-    if (keybuf_len == 0 && ch == '\x1B') {
-        put_keybuf(ch);
-        schedule_display_refresh();
-        return;
-    }
-    if (keybuf_len == 1 && keybuf[0] == '\x1B' && ch == '[') {
-        put_keybuf(ch);
-        schedule_display_refresh();
-        return;
-    }
     put_keybuf(ch);
     schedule_display_refresh();
-    if (0 == strncmp(keybuf, "\x1B[A", 3) || ch == 'u' || ch == 'U') {
+    if (ch == 'u' || ch == 'U') {
         digipot_action_up();
     }
-    if (0 == strncmp(keybuf, "\x1B[B", 3) || ch == 'd' || ch == 'D') {
+    if (ch == 'd' || ch == 'D') {
         digipot_action_down();
     }
     if (ch == '0') {

@@ -26,6 +26,9 @@ display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
 int enable_stats_display = 1;
 
+int screen_width = 100;
+int screen_height = 35;
+
 Devices* getDevices(void)
 {
     return &dev;

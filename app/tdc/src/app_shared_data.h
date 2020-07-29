@@ -40,6 +40,9 @@ extern display_mode_t display_mode;
 extern int enable_power;
 extern int enable_stats_display;
 
+extern int screen_width;
+extern int screen_height;
+
 struct Devices;
 struct Dev_thset;
 struct Dev_sfpiic;

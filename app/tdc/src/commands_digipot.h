@@ -18,7 +18,18 @@
 #ifndef COMMANDS_DIGIPOT_H
 #define COMMANDS_DIGIPOT_H
 
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool digipot_handle_escape_seq(const char *str);
 void digipot_screen_handle_key(const char ch);
 //void pot_debug(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // COMMANDS_DIGIPOT_H

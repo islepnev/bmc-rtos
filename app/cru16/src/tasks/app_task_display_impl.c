@@ -184,6 +184,12 @@ static void print_header(void)
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
+static void print_footer(void)
+{
+    print_goto(screen_height, 1);
+    printf(ANSI_BGR_BLUE ANSI_GRAY "Test" ANSI_CLEAR_EOL ANSI_CLEAR);
+}
+
 void print_system_status(const Devices *dev)
 {
     print_goto(DISPLAY_SYS_STATUS_Y, 1);
@@ -471,6 +477,9 @@ void display_task_run(void)
     default:
         break;
     }
+    print_get_screen_size();
+    print_footer();
+    print_goto(screen_height-1, 1);
     printf(ANSI_SHOW_CURSOR); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
     displayUpdateCount++;

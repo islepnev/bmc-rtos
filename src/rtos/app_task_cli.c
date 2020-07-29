@@ -17,7 +17,7 @@
 
 #include "app_task_cli.h"
 
-#include "app_task_cli_impl.h"
+#include "cli.h"
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "logbuffer.h"

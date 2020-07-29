@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "display.h"
+#ifndef CLI_H
+#define CLI_H
 
-#include <stdio.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void print_clear_eol(void)
-{
-    printf("%s\n", ANSI_CLEAR_EOL);
+void cliTask(void const *arg);
+
+#ifdef __cplusplus
 }
+#endif
 
-void print_clearbox(int line1, int height)
-{
-    for(int i=line1; i<line1+height; i++)
-        printf("\x1B[%d;H\x1B[K", i);
-}
-
-void print_goto(int line, int col)
-{
-    printf("\x1B[%d;%dH", line, col);
-}
-
-void print_get_screen_size(void)
-{
-    printf(CSI "r" CSI "999;999H"); // move to 999:999
-    printf(CSI "6n");
-}
+#endif // CLI_H

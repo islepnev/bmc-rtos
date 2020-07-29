@@ -28,6 +28,9 @@ display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
 int enable_stats_display = 1;
 
+int screen_width = 100;
+int screen_height = 35;
+
 int get_mcb_pcb_ver(void)
 {
     Devices* d = getDevices();

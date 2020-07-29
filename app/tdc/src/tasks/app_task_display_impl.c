@@ -125,7 +125,7 @@ static void print_log_entry(uint32_t index)
 
 #define DISPLAY_PLL_DETAIL_Y 2
 
-#define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
+//#define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
 
 static void print_uptime_str(void)
 {
@@ -164,6 +164,12 @@ static void print_header(void)
                ANSI_BGR_BLUE);
     }
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+}
+
+static void print_footer(void)
+{
+    print_goto(screen_height, 1);
+    printf(ANSI_BGR_BLUE ANSI_GRAY "Test" ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
 void print_system_status(const Devices *dev)
@@ -272,7 +278,8 @@ static void print_log_messages(void)
 {
     //    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
         print_goto(DISPLAY_LOG_Y, 1);
-        print_log_lines(DISPLAY_LOG_H);
+        if (screen_height > DISPLAY_LOG_Y + 1)
+            print_log_lines(screen_height - 1 - DISPLAY_LOG_Y);
 }
 
 static void display_log(void)
@@ -280,7 +287,8 @@ static void display_log(void)
     print_goto(2, 1);
     printf("Log messages\n" ANSI_CLEAR_EOL);
     print_goto(3, 1);
-    print_log_lines(DISPLAY_HEIGHT - 3);
+    if (screen_height > 3 + 1)
+        print_log_lines(screen_height - 1 - 3);
 }
 
 static void display_pot(const Devices * dev)
@@ -448,6 +456,9 @@ void display_task_run(void)
     default:
         break;
     }
+    print_get_screen_size();
+    print_footer();
+    print_goto(screen_height-1, 1);
     printf(ANSI_SHOW_CURSOR); // show cursor
     printf("%s", ANSI_CLEAR_EOL);
     displayUpdateCount++;
@@ -457,5 +468,6 @@ void display_task_init(void)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
+    print_get_screen_size();
     printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
 }

@@ -4,6 +4,8 @@
 /* Terminal control ANSI escape codes */
 #define CSI "\x1B["
 #define RIS "\x1B" "c"
+//#define DSR "\x1B6n\x1B8"
+#define DSR "\0337\033[r\033[999;999H\033[6n\0338"
 
 //#define ANSI_CLEARTERM CSI "2J"
 #define ANSI_CLEARTERM RIS

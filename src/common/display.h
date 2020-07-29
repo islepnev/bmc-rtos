@@ -42,6 +42,7 @@ extern "C" {
 void print_clear_eol(void);
 void print_clearbox(int line1, int height);
 void print_goto(int line, int col);
+void print_get_screen_size(void);
 
 #ifdef __cplusplus
 }
