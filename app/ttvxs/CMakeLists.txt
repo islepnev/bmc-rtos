@@ -53,6 +53,7 @@ file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/max31725/*.c
     ${MY_LIB_DIR}/dev/powermon/*.c
     ${MY_LIB_DIR}/dev/therm/*.c
+    ${MY_LIB_DIR}/dev/tmp421/*.c
     ${MY_LIB_DIR}/dev/ttvxs_clkmux/*.c
     ${MY_LIB_DIR}/dev/vxsiicm/*.c
 )
@@ -66,8 +67,6 @@ file(GLOB Drivers_SRCS
     ${MY_LIB_DIR}/drivers/ad9516/*.c
     ${MY_LIB_DIR}/drivers/ad9545/*.c
     ${MY_LIB_DIR}/drivers/at24c/*.c
-    ${MY_LIB_DIR}/drivers/mcp23017/*.c
-    ${MY_LIB_DIR}/drivers/max31725/*.c
     ${MY_LIB_DIR}/drivers/bus/*.c
     ${MY_LIB_DIR}/drivers/bus/impl/*.c
     ${MY_LIB_DIR}/drivers/debug_helpers.c
@@ -85,10 +84,13 @@ file(GLOB Drivers_SRCS
     ${MY_LIB_DIR}/drivers/i2c_util.c
     ${MY_LIB_DIR}/drivers/ina226/*.c
     ${MY_LIB_DIR}/drivers/led_gpio_hal.c
+    ${MY_LIB_DIR}/drivers/max31725/*.c
+    ${MY_LIB_DIR}/drivers/mcp23017/*.c
     ${MY_LIB_DIR}/drivers/mcp23017_i2c_hal.c
     ${MY_LIB_DIR}/drivers/os_serial_tty.c
     ${MY_LIB_DIR}/drivers/powermon_i2c_driver.c
     ${MY_LIB_DIR}/drivers/rtc_util.c
+    ${MY_LIB_DIR}/drivers/tmp421/*.c
 )
 
 #add_library(drivers STATIC ${Drivers_SRCS})
