@@ -23,6 +23,7 @@
 #include "app_shared_data.h"
 #include "at24c/dev_at24c.h"
 #include "dev_common_types.h"
+#include "display.h"
 #include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
@@ -60,5 +61,5 @@ void dev_eeprom_config_print(void)
     const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);
 
     printf("EEPROM config:  %s", sensor_status_ansi_str(get_eepromConfig_status()));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
 }
