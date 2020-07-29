@@ -22,6 +22,8 @@
 #include "dev_thset.h"
 #include "fpga/dev_fpga.h"
 #include "system_status_common.h"
+#include "powermon/dev_powermon.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "vxsiics/dev_vxsiics_stats.h"
 
 DeviceStatus getDeviceStatus(const Devices *d)

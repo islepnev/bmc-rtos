@@ -31,6 +31,7 @@
 #include "bsp_powermon.h"
 #include "cmsis_os.h"
 #include "cru16_clkmux/dev_ttvxs_clkmux.h"
+#include "cru16_clkmux/dev_ttvxs_clkmux_types.h"
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"

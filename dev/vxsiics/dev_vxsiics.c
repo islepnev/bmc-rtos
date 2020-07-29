@@ -25,13 +25,14 @@
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "dev_vxsiics_stats.h"
+#include "devices_types.h"
+#include "fpga/dev_fpga_types.h"
 #include "i2c.h"
 #include "ipmi_sensors.h"
 #include "led_gpio_hal.h"
 #include "logbuffer.h"
 #include "stm32f7xx_ll_i2c.h"
 #include "system_status.h"
-#include "devices_types.h"
 #include "version.h"
 
 #define SLAVE_OWN_ADDRESS 0x33

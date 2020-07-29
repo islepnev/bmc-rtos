@@ -17,9 +17,11 @@
 
 #include "system_status.h"
 
+#include "ad9516/dev_auxpll_types.h"
 #include "app_shared_data.h"
-#include "devices_types.h"
 #include "dev_thset.h"
+#include "devices_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "system_status_common.h"
 
 DeviceStatus getDeviceStatus(const Devices *d)

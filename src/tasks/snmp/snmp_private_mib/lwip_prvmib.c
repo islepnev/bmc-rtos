@@ -52,19 +52,22 @@
 
 #include "lwip/apps/snmp_table.h"
 #include "lwip/apps/snmp_scalar.h"
+
 #include "app_shared_data.h"
 #include "dev_common_types.h"
-#include "devices_types.h"
 #include "dev_pm_sensors_config.h"
+#include "devices_types.h"
+#include "fpga/dev_fpga_types.h"
 #include "powermon/dev_pm_sensors_types.h"
-#include "snmp_powermon_table.h"
-#include "snmp_sfp_table.h"
+#include "powermon/dev_powermon_types.h"
+#include "rtc_util.h"
 #include "snmp_boards_table.h"
 #include "snmp_ipmi_sensors_table.h"
-#include "version.h"
+#include "snmp_powermon_table.h"
+#include "snmp_sfp_table.h"
 #include "system_status.h"
 #include "system_status_common.h"
-#include "rtc_util.h"
+#include "version.h"
 
 static s16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value)
 {

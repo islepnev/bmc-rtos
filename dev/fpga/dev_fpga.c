@@ -24,6 +24,7 @@
 #include "devices_types.h"
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"
+#include "powermon/dev_powermon_types.h"
 #include "spi.h"
 #include "stm32f7xx_hal_def.h"
 #include "system_status.h"
