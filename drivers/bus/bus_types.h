@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 typedef enum BusType {
+    BUS_NONE,
     BUS_SPI,
     BUS_IIC
 } BusType;
@@ -34,6 +35,8 @@ typedef struct BusInterface {
     int bus_number;
     BusIndex address;
 } BusInterface;
+
+extern const BusInterface null_bus_info;
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,26 +15,10 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_THSET_TYPES_H
-#define DEV_THSET_TYPES_H
+#include "bus_types.h"
 
-#include <stdint.h>
-
-#include "dev_common_types.h"
-#include "ipmi_sensor_types.h"
-
-typedef enum {
-    THSET_STATE_0,
-    THSET_STATE_1,
-    THSET_STATE_2,
-} thset_state_t;
-
-enum {DEV_THSET_MAX_COUNT = 8};
-
-typedef struct Dev_thset {
-    thset_state_t state;
-    int count;
-    GenericSensor sensors[DEV_THSET_MAX_COUNT];
-} Dev_thset;
-
-#endif // DEV_THSET_TYPES_H
+const BusInterface null_bus_info = {
+    .type = BUS_NONE,
+    .bus_number = 0,
+    .address = 0
+};

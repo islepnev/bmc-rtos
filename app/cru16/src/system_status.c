@@ -19,7 +19,7 @@
 
 #include "ad9516/dev_auxpll_types.h"
 #include "app_shared_data.h"
-#include "dev_thset.h"
+#include "thset/dev_thset.h"
 #include "devices_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status_common.h"
@@ -49,7 +49,7 @@ encoded_system_status_t encode_system_status(const Devices *dev)
     code.w = 0;
     code.b.system = getSystemStatus() & 0xF;
     code.b.pm =  getPowermonStatus() & 0xF;
-    code.b.therm = dev_thset_thermStatus(&dev->thset) & 0xF;
+    code.b.therm = dev_thset_thermStatus() & 0xF;
     code.b.misc = getMiscStatus(dev) & 0xF;
     code.b.fpga = getFpgaStatus() & 0xF;
     code.b.pll = getPllStatus() & 0xF;
@@ -60,7 +60,7 @@ SensorStatus getSystemStatus(void)
 {
     const Devices *d = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus();
-    const SensorStatus temperatureStatus = dev_thset_thermStatus(&d->thset);
+    const SensorStatus temperatureStatus = dev_thset_thermStatus();
     const SensorStatus miscStatus = getMiscStatus(d);
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();

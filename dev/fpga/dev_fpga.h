@@ -26,14 +26,13 @@ extern "C" {
 #endif
 
 struct Dev_fpga;
-struct Dev_thset;
 struct Devices;
 
 bool fpgaDetect(struct Dev_fpga *d);
 bool fpga_check_live_magic(void);
 bool fpga_test(void);
 bool fpgaWriteBmcVersion(void);
-bool fpgaWriteBmcTemperature(const struct Dev_thset *thset);
+bool fpgaWriteBmcTemperature(void);
 bool fpgaWritePllStatus(void);
 bool fpgaWriteSystemStatus(const struct Devices *d);
 

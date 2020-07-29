@@ -31,8 +31,6 @@
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
-#include "dev_thset.h"
-#include "dev_thset_types.h"
 #include "devices_types.h"
 #include "digipot/dev_digipot.h"
 #include "display.h"
@@ -49,6 +47,7 @@
 #include "powermon/dev_powermon_types.h"
 #include "stm32f7xx_hal.h"
 #include "system_status.h"
+#include "thset/dev_thset_print.h"
 #include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
@@ -199,20 +198,10 @@ static void print_sensors(void)
     }
 }
 
-static void print_thset(const Dev_thset *d)
+static void print_thset(void)
 {
     print_goto(DISPLAY_TEMP_Y, 1);
-    printf("Temp: ");
-    for (int i=0; i < d->count; i++) {
-        if (d->sensors[i].hdr.b.state == DEVICE_NORMAL)
-            printf("%5.1f", d->sensors[i].value);
-        else
-            printf(" --- ");
-        printf(" ");
-    }
-    const SensorStatus status = dev_thset_thermStatus(d);
-    printf("%s", sensor_status_ansi_str(status));
-    print_clear_eol();
+    print_thset_box();
 }
 
 static void devPrintStatus(const Devices *d)
@@ -341,7 +330,7 @@ static void display_summary(const Devices * dev)
     if (enable_stats_display) {
         print_sensors();
     }
-    print_thset(&dev->thset);
+    print_thset();
     print_main(dev);
     print_fpga();
     print_pll();

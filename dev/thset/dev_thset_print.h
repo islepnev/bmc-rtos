@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,20 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_THERM_TYPES_H
-#define DEV_THERM_TYPES_H
+#ifndef DEV_THSET_PRINT_H
+#define DEV_THSET_PRINT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    THERM_MAX31725,
-    THERM_TMP421
-} ThermType;
+void print_thset_box(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_THERM_TYPES_H
+#endif // DEV_THSET_PRINT_H

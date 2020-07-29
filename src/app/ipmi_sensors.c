@@ -23,6 +23,7 @@
 #include "app_shared_data.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_config.h"
+#include "thset/dev_thset_types.h"
 #include "devices_types.h"
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_powermon.h"
@@ -55,12 +56,14 @@ void sync_ipmi_sensors(void)
         }
     }
 
-    assert(index + dev->thset.count < MAX_SENSOR_COUNT);
-    // Temperature sensors
-    const Dev_thset *thset = &dev->thset;
-    for (int i=0; i<thset->count; i++) {
-        GenericSensor *gs = &ipmi_sensors.sensors[index++];
-        *gs = thset->sensors[i];
+    const Dev_thset_priv *thset = get_thset_priv_const();
+    if (thset) {
+        assert(index + thset->count < MAX_SENSOR_COUNT);
+        // Temperature sensors
+        for (int i=0; i<thset->count; i++) {
+            GenericSensor *gs = &ipmi_sensors.sensors[index++];
+            *gs = thset->sensors[i];
+        }
     }
 
     assert(index + 2 < MAX_SENSOR_COUNT);

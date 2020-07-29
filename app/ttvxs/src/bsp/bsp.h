@@ -45,8 +45,6 @@ extern "C" {
 #define ad9516_spi hspi2
 #endif
 
-#define DEV_THERM_COUNT 1
-
 #define AUXPLL_AD9516_OUT6_ENABLE 1
 #define AUXPLL_AD9516_OUT7_ENABLE 0
 #define AUXPLL_AD9516_OUT8_ENABLE 1

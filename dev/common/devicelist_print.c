@@ -37,6 +37,7 @@ const char *device_class_str(DeviceClass class)
     case DEV_CLASS_AD9545: return "AD9545";
     case DEV_CLASS_POWERMON: return "PowerMon";
     case DEV_CLASS_SFP: return "SFP";
+    case DEV_CLASS_THSET: return "Thermometers";
     case DEV_CLASS_ADT7301: return "ADT7301";
     case DEV_CLASS_MAX31725: return "MAX31725";
     case DEV_CLASS_TMP421: return "TMP421";
@@ -51,6 +52,7 @@ const char *device_class_str(DeviceClass class)
 const char *bus_type_str(BusType type)
 {
     switch (type) {
+    case BUS_NONE: return "";
     case BUS_IIC: return "IIC";
     case BUS_SPI: return "SPI";
     default: assert(0); return "?";
@@ -70,11 +72,16 @@ void devicelist_print(DeviceBase *d, int depth)
         str[len++] = ' ';
         str[len++] = ' ';
     }
-    printf("%s %s %d.%02X    %s '%s'%s%s\n",
-           str,
-           bus_type_str(bus->type),
-           bus->bus_number,
-           bus->address,
+    printf("%s ", str);
+    if (d->bus.type == BUS_NONE)
+        printf("--------");
+    else
+        printf("%s %d.%02X",
+               bus_type_str(bus->type),
+               bus->bus_number,
+               bus->address
+               );
+    printf("    %s '%s'%s%s\n",
            device_class_str(d->device_class),
            d->name,
            deviceStatusResultStr(d->device_status),

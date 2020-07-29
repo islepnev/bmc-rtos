@@ -67,6 +67,7 @@
 #include "snmp_sfp_table.h"
 #include "system_status.h"
 #include "system_status_common.h"
+#include "thset/dev_thset_types.h"
 #include "version.h"
 
 static s16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value)
@@ -141,7 +142,10 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
 {
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
-    s32_t t = (s32_t)getDevicesConst()->thset.sensors[0].value * 100;
+    const Dev_thset_priv *p = get_thset_priv_const();
+    if (!p || !p->count)
+        return 0;
+    s32_t t = (s32_t)p->sensors[0].value * 100;
     *uint_ptr = (s32_t)(t);
     return sizeof(*uint_ptr);
 }

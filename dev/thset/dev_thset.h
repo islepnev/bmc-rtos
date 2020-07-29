@@ -15,33 +15,30 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// CRU16 board specific definitions
+#ifndef DEV_THSET_H
+#define DEV_THSET_H
 
-#ifndef DEV_THERM_CONFIG_H
-#define DEV_THERM_CONFIG_H
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "therm/dev_therm_types.h"
-#include "bus/bus_types.h"
+#include "dev_common_types.h"
+#include "dev_thset_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {THERM_SENSORS = 2};
+bool dev_thset_add(Dev_thset *d, const char *name);
 
-typedef enum {
-    THERM_VCXO,
-    THERM_FPGA_DIE
-} ThermIndex;
-
-BusType thermBusType(ThermIndex index);
-int thermBusIndex(ThermIndex index);
-int thermBusAddress(ThermIndex index);
-ThermType thermType(ThermIndex index);
-const char *thermLabel(ThermIndex index);
+void dev_thset_run(Dev_thset *d);
+SensorStatus dev_thset_thermStatus(void);
+//int16_t adt7301_convert_temp_adt7301_scale32(int16_t raw);
+//thset_state_t thermal_shutdown_check(Dev_thset *d);
+void clear_thermal_shutdown(void);
+thset_state_t get_thset_state(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_THERM_CONFIG_H
+#endif // DEV_THSET_H

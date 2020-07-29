@@ -15,43 +15,42 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_shared_data.h"
+#ifndef DEV_THSET_TYPES_H
+#define DEV_THSET_TYPES_H
 
-#include "devices_types.h"
+#include <stdint.h>
 
-static Devices dev = {};
-bool system_power_present = false;
-int enable_pll_run = 0;
-display_mode_t display_mode = DISPLAY_SUMMARY;
-int enable_power = 1;
-int enable_stats_display = 1;
+#include "dev_common_types.h"
+#include "devicebase.h"
+#include "ipmi_sensor_types.h"
 
-Devices* getDevices(void)
-{
-    return &dev;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    THSET_STATE_0,
+    THSET_STATE_1,
+    THSET_STATE_2,
+} thset_state_t;
+
+enum {DEV_THSET_MAX_COUNT = 8};
+
+typedef struct Dev_thset_priv {
+    thset_state_t state;
+    int count;
+    GenericSensor sensors[DEV_THSET_MAX_COUNT];
+} Dev_thset_priv;
+
+typedef struct Dev_thset {
+    DeviceBase dev;
+    Dev_thset_priv priv;
+} Dev_thset;
+
+const Dev_thset_priv *get_thset_priv_const(void);
+
+#ifdef __cplusplus
 }
+#endif
 
-const Devices* getDevicesConst(void)
-{
-    return &dev;
-}
-
-Dev_sfpiic *get_dev_sfpiic(void)
-{
-    return &dev.sfpiic;
-}
-
-static int display_refresh_flag = 0;
-
-void schedule_display_refresh(void)
-{
-    display_refresh_flag = 1;
-}
-
-int read_display_refresh(void)
-{
-    // FIXME: make atomic
-    int value = display_refresh_flag;
-    display_refresh_flag = 0;
-    return value;
-}
+#endif // DEV_THSET_TYPES_H

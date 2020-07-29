@@ -20,7 +20,7 @@
 #include "ad9545/dev_ad9545.h"
 #include "app_shared_data.h"
 #include "dev_fpga_types.h"
-#include "dev_thset_types.h"
+#include "thset/dev_thset_types.h"
 #include "devices_types.h"
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"
@@ -139,11 +139,15 @@ bool fpgaWriteBmcVersion(void)
     return true;
 }
 
-bool fpgaWriteBmcTemperature(const Dev_thset *thset)
+bool fpgaWriteBmcTemperature(void)
 {
+    const Dev_thset_priv *p = get_thset_priv_const();
+    if (!p)
+        return false;
+
     for (int i=0; i<4; i++) {
-        int16_t v = (i < thset->count && thset->sensors[i].hdr.b.state == DEVICE_NORMAL)
-                        ? (thset->sensors[i].value * 32)
+        int16_t v = (i < p->count && p->sensors[i].hdr.b.state == DEVICE_NORMAL)
+                        ? (p->sensors[i].value * 32)
                         : 0x8000;
         if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, v))
             return false;

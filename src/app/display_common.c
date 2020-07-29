@@ -31,4 +31,3 @@ void display_devices(void)
     devicelist_print(deviceList.list[0], 0);
     printf(ANSI_CLEAR_EOL);
 }
-

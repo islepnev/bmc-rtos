@@ -42,11 +42,6 @@ const Devices* getDevicesConst(void)
     return &dev;
 }
 
-Dev_thset *get_dev_thset(void)
-{
-    return &dev.thset;
-}
-
 Dev_sfpiic *get_dev_sfpiic(void)
 {
     return &dev.sfpiic;

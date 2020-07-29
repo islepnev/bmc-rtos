@@ -153,7 +153,7 @@ void fpga_task_run(Dev_fpga *d)
             state = FPGA_STATE_STANDBY;
         if ((!fpga_check_live_magic()) ||
             (!fpgaWriteBmcVersion()) ||
-            (!fpgaWriteBmcTemperature(get_dev_thset())) ||
+            (!fpgaWriteBmcTemperature()) ||
             (!fpgaWritePllStatus()) ||
             (!fpgaWriteSystemStatus(getDevicesConst())) ||
             (!fpgaWriteSensors())

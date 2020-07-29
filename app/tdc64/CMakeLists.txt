@@ -44,7 +44,7 @@ file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/fpga/*.c
     ${MY_LIB_DIR}/dev/max31725/*.c
     ${MY_LIB_DIR}/dev/powermon/*.c
-    ${MY_LIB_DIR}/dev/therm/*.c
+    ${MY_LIB_DIR}/dev/thset/*.c
     ${MY_LIB_DIR}/dev/tmp421/*.c
     ${MY_LIB_DIR}/dev/ttvxs_clkmux/*.c
     ${MY_LIB_DIR}/dev/vxsiics/*.c

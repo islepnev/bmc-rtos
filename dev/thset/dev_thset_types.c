@@ -15,43 +15,14 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_shared_data.h"
+#include "dev_thset_types.h"
 
-#include "devices_types.h"
+#include "devicelist.h"
 
-static Devices dev = {};
-bool system_power_present = false;
-int enable_pll_run = 0;
-display_mode_t display_mode = DISPLAY_SUMMARY;
-int enable_power = 1;
-int enable_stats_display = 1;
-
-Devices* getDevices(void)
+const Dev_thset_priv *get_thset_priv_const(void)
 {
-    return &dev;
-}
-
-const Devices* getDevicesConst(void)
-{
-    return &dev;
-}
-
-Dev_sfpiic *get_dev_sfpiic(void)
-{
-    return &dev.sfpiic;
-}
-
-static int display_refresh_flag = 0;
-
-void schedule_display_refresh(void)
-{
-    display_refresh_flag = 1;
-}
-
-int read_display_refresh(void)
-{
-    // FIXME: make atomic
-    int value = display_refresh_flag;
-    display_refresh_flag = 0;
-    return value;
+    const DeviceBase *d = find_device_const(DEV_CLASS_THSET);
+    if (!d || !d->priv)
+        return 0;
+    return (const Dev_thset_priv *)device_priv_const(d);
 }

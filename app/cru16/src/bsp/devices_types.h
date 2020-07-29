@@ -19,7 +19,6 @@
 #define DEVICES_TYPES_H
 
 #include "dev_sfpiic_types.h"
-#include "dev_thset_types.h"
 
 typedef struct Dev_sdcard {
     int detect_b;
@@ -31,7 +30,6 @@ enum {
 };
 
 typedef struct Devices {
-    Dev_thset thset;
     Dev_sfpiic sfpiic;
     Dev_sdcard sd;
     int pen_b;

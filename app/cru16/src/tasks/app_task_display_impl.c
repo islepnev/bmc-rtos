@@ -36,8 +36,7 @@
 #include "dev_common_types.h"
 #include "dev_mcu.h"
 #include "dev_sfpiic_print.h"
-#include "dev_thset.h"
-#include "dev_thset_types.h"
+#include "thset/dev_thset_print.h"
 #include "devices_types.h"
 #include "display.h"
 #include "display_common.h"
@@ -212,20 +211,10 @@ static void print_sensors(void)
     }
 }
 
-static void print_thset(const Dev_thset *d)
+static void print_thset(void)
 {
     print_goto(DISPLAY_TEMP_Y, 1);
-    printf("Temp: ");
-    for (int i=0; i<d->count; i++) {
-        if (d->sensors[i].hdr.b.state == DEVICE_NORMAL)
-            printf("%5.1f", d->sensors[i].value);
-        else
-            printf(" --- ");
-        printf(" ");
-    }
-    const SensorStatus status = dev_thset_thermStatus(d);
-    printf("%s", sensor_status_ansi_str(status));
-    print_clear_eol();
+    print_thset_box();
 }
 
 static void print_main(const Devices *dev)
@@ -312,7 +301,7 @@ static void display_summary(const Devices * dev)
     if (enable_stats_display) {
         print_sensors();
     }
-    print_thset(&dev->thset);
+    print_thset();
     print_main(dev);
     print_ttvxs_clkmux();
     print_fpga();

@@ -25,8 +25,8 @@
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "dev_thset.h"
-#include "dev_thset_types.h"
+#include "thset/dev_thset.h"
+#include "thset/dev_thset_types.h"
 #include "powermon/dev_powermon.h"
 #include "devicebase.h"
 #include "digipot/dev_digipot_fsm.h"
@@ -54,12 +54,6 @@ static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
     }
 };
 
-static BusInterface powermon_bus_info = {
-    .type = BUS_IIC,
-    .bus_number = 4,
-    .address = 0
-};
-
 static BusInterface tdc72_adt7301_bus_info = {
     .type = BUS_SPI,
     .bus_number = 4,
@@ -75,23 +69,27 @@ static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 #endif
 static Dev_digipots digipots = {0};
 
+static Dev_thset thset = {0};
+
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info, "Power Monitor");
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, null_bus_info, "Power Monitor");
+    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
+
 #ifdef BOARD_TDC64
     const char *therm_name[TDC64_MAX31725_COUNT] = {"TDC-A", "TDC-B"};
     for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
-        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_MAX31725, tdc64_max31725_bus_info[i], therm_name[i]);
+        create_device(&thset.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_MAX31725, tdc64_max31725_bus_info[i], therm_name[i]);
     }
 #endif
 #ifdef BOARD_TDC72
     const char *therm_name[TDC72_ADT7301_COUNT] = {"PLL", "TDC-A", "TDC-B", "TDC-C"};
     for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
         tdc72_adt7301_bus_info.address = i;
-        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_ADT7301, tdc72_adt7301_bus_info, therm_name[i]);
+        create_device(&thset.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_ADT7301, tdc72_adt7301_bus_info, therm_name[i]);
     }
 #endif
-    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info, "DigiPots");
+    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, null_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
 }
@@ -99,17 +97,14 @@ static void local_init(DeviceBase *parent)
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    Dev_thset *thset = get_dev_thset();
-    Dev_thset zz = {0};
-    *thset = zz;
 #ifdef BOARD_TDC72
     for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
-        dev_thset_add(thset, therm[i].dev.name);
+        dev_thset_add(&thset, therm[i].dev.name);
     }
 #endif
 #ifdef BOARD_TDC64
     for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
-        dev_thset_add(thset, therm[i].dev.name);
+        dev_thset_add(&thset, therm[i].dev.name);
     }
 #endif
     while (1)
@@ -118,22 +113,23 @@ static void start_task_powermon( void const *arg)
 #ifdef BOARD_TDC72
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
             dev_adt7301_run(&therm[i]);
-            thset->sensors[i].value = therm[i].priv.temp;
-            thset->sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+            thset.priv.sensors[i].value = therm[i].priv.temp;
+            thset.priv.sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         }
-        thset->count = TDC72_ADT7301_COUNT;
-        dev_thset_run(thset);
+        thset.priv.count = TDC72_ADT7301_COUNT;
+        dev_thset_run(&thset);
 #endif
 #ifdef BOARD_TDC64
         for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
             dev_max31725_run(&therm[i]);
-            thset->sensors[i].value = therm[i].priv.temp;
-            thset->sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+            thset.priv.sensors[i].value = therm[i].priv.temp;
+            thset.priv.sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         }
-        thset->count = TDC64_MAX31725_COUNT;
-        dev_thset_run(thset);
+        thset.priv.count = TDC64_MAX31725_COUNT;
+        dev_thset_run(&thset);
 #endif
         dev_digipot_run(&digipots);
+        dev_thset_run(&thset);
         task_powermon_run(&pm);
         sync_ipmi_sensors();
 

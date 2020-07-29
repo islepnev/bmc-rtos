@@ -19,11 +19,12 @@
 
 #include <string.h>
 
-#include "dev_thset_types.h"
-#include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
 #include "bsp_thset.h"
+#include "cmsis_os.h"
+#include "dev_thset_types.h"
+#include "devicelist.h"
 #include "logbuffer.h"
+#include "stm32f7xx_hal.h"
 
 static const uint32_t thermReadInterval = 300;
 static uint32_t thermReadTick = 0;
@@ -38,15 +39,15 @@ static const int16_t tempMaxWarn = 60;
 
 bool dev_thset_add(Dev_thset *d, const char *name)
 {
-    if (d->count >= DEV_THSET_MAX_COUNT)
+    if (d->priv.count >= DEV_THSET_MAX_COUNT)
         return false;
-    int i = d->count;
-    GenericSensor *sensor = &d->sensors[i];
+    int i = d->priv.count;
+    GenericSensor *sensor = &d->priv.sensors[i];
     sensor->hdr.raw = 0;
     sensor->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
     if (name)
         generic_sensor_set_name(sensor, name);
-    d->count++;
+    d->priv.count++;
     return true;
 }
 
@@ -60,6 +61,15 @@ bool dev_thset_add(Dev_thset *d, const char *name)
 //        d->th[i].rawTemp = rawTemp;
 //    }
 //}
+
+thset_state_t get_thset_state(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_THSET);
+    if (!d || !d->priv)
+        return THSET_STATE_0;
+    const Dev_thset_priv *priv = (const Dev_thset_priv *)device_priv_const(d);
+    return priv->state;
+}
 
 SensorStatus dev_thset_sensor_status(const GenericSensor *d)
 {
@@ -75,11 +85,16 @@ SensorStatus dev_thset_sensor_status(const GenericSensor *d)
     return SENSOR_NORMAL;
 }
 
-SensorStatus dev_thset_thermStatus(const Dev_thset *d)
+SensorStatus dev_thset_thermStatus(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_THSET);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_thset_priv *priv = (const Dev_thset_priv *)device_priv_const(d);
+
     SensorStatus maxStatus = SENSOR_UNKNOWN;
-    for (int i=0; i < d->count; i++) {
-        const SensorStatus status = dev_thset_sensor_status(&d->sensors[i]);
+    for (int i=0; i < priv->count; i++) {
+        const SensorStatus status = dev_thset_sensor_status(&priv->sensors[i]);
         if (status > maxStatus)
             maxStatus = status;
     }
@@ -89,8 +104,9 @@ SensorStatus dev_thset_thermStatus(const Dev_thset *d)
 static uint32_t thermal_shutdown_start_tick = 0;
 static const int thermal_shutdown_min_period_ticks = 5000;
 
-void dev_thset_run(Dev_thset *d)
+void dev_thset_run(Dev_thset *p)
 {
+    Dev_thset_priv *d = &p->priv;
     int valid_count = 0;
     int critical_count = 0;
     for (int i=0; i < d->count; i++) {
@@ -143,7 +159,12 @@ void dev_thset_run(Dev_thset *d)
     }
 }
 
-void clear_thermal_shutdown(Dev_thset *d)
+void clear_thermal_shutdown(void)
 {
-    d->state = THSET_STATE_0;
+    DeviceBase *d = find_device(DEV_CLASS_THSET);
+    if (!d || !d->priv)
+        return;
+    Dev_thset_priv *priv = (Dev_thset_priv *)device_priv(d);
+
+    priv->state = THSET_STATE_0;
 }

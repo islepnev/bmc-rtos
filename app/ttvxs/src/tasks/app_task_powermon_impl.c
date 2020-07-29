@@ -29,7 +29,7 @@
 #include "powermon/dev_powermon.h"
 #include "dev_common_types.h"
 #include "powermon/dev_powermon_types.h"
-#include "dev_thset.h"
+#include "thset/dev_thset.h"
 #include "logbuffer.h"
 #include "app_shared_data.h"
 #include "bsp.h"
@@ -177,7 +177,7 @@ void task_powermon_run (Dev_powermon *pm)
     const int power_critical_failure = get_critical_power_failure(priv->sensors);
 
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
-    if (THSET_STATE_2 == get_dev_thset()->state) {
+    if (THSET_STATE_2 == get_thset_state()) {
         change_state(priv, PM_STATE_OVERHEAT);
     }
     switch (priv->pmState) {
@@ -252,11 +252,11 @@ void task_powermon_run (Dev_powermon *pm)
 
     case PM_STATE_OVERHEAT:
         if (!enable_power) {
-            clear_thermal_shutdown(get_dev_thset());
+            clear_thermal_shutdown();
             change_state(priv, PM_STATE_OFF);
             break;
         }
-        if (THSET_STATE_0 == get_dev_thset()->state)
+        if (THSET_STATE_0 == get_thset_state())
             change_state(priv, PM_STATE_STANDBY);
         break;
     case PM_STATE_PWRFAIL:
@@ -303,5 +303,4 @@ void task_powermon_run (Dev_powermon *pm)
     } else {
         clearOldSensorStatus();
     }
-    dev_thset_run(get_dev_thset());
 }
