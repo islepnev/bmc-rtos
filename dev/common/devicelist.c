@@ -55,11 +55,9 @@ DeviceBase *find_device(DeviceClass class)
 {
     for (int i=0; i<deviceList.count; i++) {
         if (deviceList.list[i]->class == class) {
-            assert(deviceList.list[i]);
             return deviceList.list[i];
         }
     }
-    assert(0);
     return 0;
 }
 
