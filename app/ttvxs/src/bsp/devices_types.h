@@ -18,15 +18,9 @@
 #ifndef DEVICES_TYPES_H
 #define DEVICES_TYPES_H
 
-#include "eeprom_config/dev_eeprom_config.h"
-#include "fpga/dev_fpga_types.h"
-#include "ad9545/dev_ad9545.h"
-#include "ad9516/dev_auxpll_types.h"
 #include "dev_thset_types.h"
 #include "dev_sfpiic_types.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
-#include "powermon/dev_powermon_types.h"
-#include "dev_leds_types.h"
 
 typedef struct Dev_sdcard {
     DeviceBase dev;

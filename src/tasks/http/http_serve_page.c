@@ -30,10 +30,11 @@
 #include "http_app.h"
 #include "http_app_log.h"
 
-#include "version.h"
 #include "app_shared_data.h"
-#include "system_status.h"
 #include "devices_types.h"
+#include "powermon/dev_powermon_types.h"
+#include "system_status.h"
+#include "version.h"
 
 #define RETURN_IF(x) { int ret = x; if (ret) return ret; }
 

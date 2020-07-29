@@ -62,6 +62,7 @@ SensorStatus getSystemStatus(void)
     const SensorStatus miscStatus = getMiscStatus(d);
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
+    const SensorStatus ad9516Status = get_auxpll_sensor_status();
     SensorStatus systemStatus = SENSOR_NORMAL;
     if (powermonStatus > systemStatus)
         systemStatus = powermonStatus;
@@ -73,5 +74,7 @@ SensorStatus getSystemStatus(void)
         systemStatus = fpgaStatus;
     if (pllStatus > systemStatus)
         systemStatus = pllStatus;
+    if (ad9516Status > systemStatus)
+        systemStatus = ad9516Status;
     return systemStatus;
 }

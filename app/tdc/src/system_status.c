@@ -90,10 +90,8 @@ SensorStatus getSystemStatus()
         systemStatus = pllStatus;
     if (digipotStatus > systemStatus)
         systemStatus = digipotStatus;
-#ifdef BOARD_TDC64
     if (ad9516Status > systemStatus)
         systemStatus = ad9516Status;
-#endif
 
 //    if (vxsiicStatus > systemStatus)
 //        systemStatus = vxsiicStatus;

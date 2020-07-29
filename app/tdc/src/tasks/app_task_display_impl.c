@@ -21,35 +21,35 @@
 
 #include "app_task_display_impl.h"
 
+#include "ad9516/dev_auxpll_print.h"
 #include "ad9545/ad9545_print.h"
+#include "ad9545/dev_ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "bsp_powermon.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "ad9545/dev_ad9545_print.h"
-#include "ad9516/dev_auxpll_print.h"
 #include "dev_common_types.h"
-#include "fpga/dev_fpga_types.h"
-#include "fpga/dev_fpga_print.h"
 #include "dev_mcu.h"
-#include "powermon/dev_pm_sensors_types.h"
-#include "digipot/dev_digipot.h"
-#include "powermon/dev_powermon.h"
-#include "powermon/dev_powermon_types.h"
-#include "powermon/dev_powermon_display.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
+#include "digipot/dev_digipot.h"
 #include "display.h"
 #include "display_common.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "fpga/dev_fpga_print.h"
+#include "fpga/dev_fpga_types.h"
+#include "freertos_stats.h"
 #include "logbuffer.h"
 #include "logentry.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_display.h"
+#include "powermon/dev_powermon_types.h"
+#include "stm32f7xx_hal.h"
 #include "system_status.h"
 #include "version.h"
-
-#include "freertos_stats.h"
-#include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -214,7 +214,7 @@ static void devPrintStatus(const Devices *d)
 {
     printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
     print_clear_eol();
-    printf("EEPROM config: %s", deviceStatusResultStr(d->eeprom_config.dev.device_status));
+    dev_eeprom_config_print();
     print_clear_eol();
     //    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.dev.device_status));
     //    print_clear_eol();
@@ -298,17 +298,24 @@ static void display_pot(const Devices * dev)
     printf("\n");
     printf("   adjustment ");
     pm_sensor_print_header();
+    const DeviceBase *d = find_device_const(DEV_CLASS_POWERMON);
+    const Dev_powermon_priv *pm = d ? (Dev_powermon_priv *)device_priv_const(d) : 0;
+
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         const Dev_ad5141 *p = &dev->pots.pot[i];
-        const pm_sensor *sensor = &dev->pm.priv.sensors[p->sensorIndex];
-        const int isOn = monIsOn(dev->pm.priv.sw_state, p->sensorIndex);
         printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->deviceStatus == DEVICE_NORMAL)
             printf("%3u ", p->value);
         else
             printf("?   ");
-        printf("%10s", sensor->label);
-        pm_sensor_print_values(sensor, isOn);
+        if (pm && (int)p->sensorIndex > 0 && (int)p->sensorIndex < POWERMON_SENSORS) {
+            const pm_sensor *sensor = &pm->sensors[p->sensorIndex];
+            const int isOn = monIsOn(pm->sw_state, p->sensorIndex);
+            printf("%10s", sensor->label);
+            pm_sensor_print_values(sensor, isOn);
+        } else {
+            printf("<no sensor>");
+        }
         printf("%s\n", ANSI_CLEAR_EOL);
     }
 //    pot_debug();
@@ -328,7 +335,9 @@ static void display_summary(const Devices * dev)
     print_main(dev);
     print_fpga();
     print_pll();
+#ifdef BOARD_TDC64
     print_auxpll();
+#endif
     print_log_messages();
 }
 

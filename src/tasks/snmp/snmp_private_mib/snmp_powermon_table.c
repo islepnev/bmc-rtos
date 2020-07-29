@@ -25,11 +25,13 @@
 
 #include "lwip/apps/snmp_table.h"
 #include "lwip/apps/snmp_scalar.h"
+
 #include "app_shared_data.h"
 #include "dev_common_types.h"
-#include "devices_types.h"
 #include "dev_pm_sensors_config.h"
+#include "devices_types.h"
 #include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon_types.h"
 
 #define SENSOR_COUNT POWERMON_SENSORS
 

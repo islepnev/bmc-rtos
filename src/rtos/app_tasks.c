@@ -54,9 +54,6 @@ void create_tasks(void)
     create_task_auxpll(&topdevice);
 #endif
     create_task_pll(&topdevice);
-#if defined(BOARD_TDC64)
-    create_task_auxpll(&topdevice);
-#endif
     create_task_fpga(&topdevice);
 #if defined(BOARD_TTVXS)
     create_task_vxsiicm();

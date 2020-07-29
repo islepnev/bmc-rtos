@@ -18,15 +18,8 @@
 #ifndef DEVICES_TYPES_H
 #define DEVICES_TYPES_H
 
-#include "ad9516/dev_auxpll_types.h"
-#include "ad9545/dev_ad9545.h"
-#include "eeprom_config/dev_eeprom_config.h"
-#include "dev_leds_types.h"
 #include "dev_sfpiic_types.h"
 #include "dev_thset_types.h"
-#include "fpga/dev_fpga_types.h"
-#include "powermon/dev_powermon_types.h"
-#include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 
 typedef struct Dev_sdcard {
     int detect_b;
@@ -40,8 +33,6 @@ enum {
 typedef struct Devices {
     Dev_thset thset;
     Dev_sfpiic sfpiic;
-    Dev_eeprom_config eeprom_config;
-    Dev_powermon pm;
     Dev_sdcard sd;
     int pen_b;
     uint32_t pcb_ver;

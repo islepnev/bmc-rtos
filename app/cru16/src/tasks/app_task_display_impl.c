@@ -22,38 +22,40 @@
 
 #include "app_task_display_impl.h"
 
+#include "ad9516/dev_auxpll_print.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "ad9545/ad9545_print.h"
+#include "ad9545/dev_ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "bsp_powermon.h"
+#include "cmsis_os.h"
+#include "cru16_clkmux/dev_ttvxs_clkmux.h"
 #include "debug_helpers.h"
-#include "ad9545/dev_ad9545_print.h"
-#include "ad9516/dev_auxpll_print.h"
 #include "dev_common_types.h"
-#include "fpga/dev_fpga_types.h"
-#include "fpga/dev_fpga_print.h"
 #include "dev_mcu.h"
-#include "powermon/dev_pm_sensors_types.h"
-#include "powermon/dev_powermon.h"
-#include "powermon/dev_powermon_types.h"
 #include "dev_sfpiic_print.h"
-#include "powermon/dev_powermon_display.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
 #include "devices_types.h"
 #include "display.h"
 #include "display_common.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "ethernetif.h"
+#include "fpga/dev_fpga_print.h"
+#include "fpga/dev_fpga_types.h"
+#include "freertos_stats.h"
 #include "logbuffer.h"
 #include "logentry.h"
-#include "system_status.h"
-#include "version.h"
-
-#include "freertos_stats.h"
-#include "cmsis_os.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_display.h"
+#include "powermon/dev_powermon_types.h"
+#include "rtc_util.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_rtc.h"
-#include "rtc_util.h"
-#include "ethernetif.h"
+#include "system_status.h"
+#include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -65,8 +67,7 @@ static void devPrintStatus(const struct Devices *d)
     printf("%s\n", ANSI_CLEAR_EOL);
 //    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiic), deviceStatusResultStr(d->vxsiic.dev.device_status));
 //    printf("%s\n", ANSI_CLEAR_EOL);
-    printf("EEPROM config:  %s", deviceStatusResultStr(d->eeprom_config.dev.device_status));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    dev_eeprom_config_print();
 }
 
 static const char *auxpllStateStr(AuxPllState state)
