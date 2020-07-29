@@ -38,7 +38,7 @@ bool dev_max31725_detect(Dev_max31725 *d)
 {
     uint16_t data;
     if (// ! max31725_detect(&d->bus) ||
-        ! max31725_read(&d->bus, MAX31725_REG_THYST, &data))
+        ! max31725_read(&d->dev.bus, MAX31725_REG_THYST, &data))
         return false;
     if (data != MAX31725_REG_THYST_POR) {
         return false;
@@ -49,9 +49,9 @@ bool dev_max31725_detect(Dev_max31725 *d)
 bool dev_max31725_read(Dev_max31725 *d)
 {
     uint16_t data;
-    if (! max31725_read(&d->bus, 0, &data))
+    if (! max31725_read(&d->dev.bus, 0, &data))
         return false;
 
-    d->temp = (int16_t)data/256.0 + 64.0;
+    d->priv.temp = (int16_t)data/256.0 + 64.0;
     return true;
 }

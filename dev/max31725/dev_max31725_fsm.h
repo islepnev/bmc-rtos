@@ -22,9 +22,8 @@
 extern "C" {
 #endif
 
-#include "max31725/dev_max31725.h"
-
-void dev_max31725_run(Dev_max31725 *d);
+struct Dev_max31725;
+void dev_max31725_run(struct Dev_max31725 *p);
 
 #ifdef __cplusplus
 }

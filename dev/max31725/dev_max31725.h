@@ -23,6 +23,7 @@
 
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
+#include "devicelist.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,12 +37,15 @@ typedef enum {
     MAX31725_STATE_ERROR
 } dev_max31725_state_t;
 
-typedef struct Dev_max31725 {
-    BusInterface bus;
-    DeviceStatus device_status;
+typedef struct Dev_max31725_priv {
     dev_max31725_state_t state;
     uint32_t state_start_tick;
     double temp;
+} Dev_max31725_priv;
+
+typedef struct Dev_max31725 {
+    DeviceBase dev;
+    Dev_max31725_priv priv;
 } Dev_max31725;
 
 bool dev_max31725_detect(Dev_max31725 *d);

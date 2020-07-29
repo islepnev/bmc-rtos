@@ -26,18 +26,19 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t stateTicks(Dev_max31725 *d)
+static uint32_t stateTicks(Dev_max31725_priv *p)
 {
-    return osKernelSysTick() - d->state_start_tick;
+    return osKernelSysTick() - p->state_start_tick;
 }
 
-void dev_max31725_run(Dev_max31725 *d)
+void dev_max31725_run(Dev_max31725 *p)
 {
+    Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
 #ifdef BOARD_TTVXS
     if (!enable_power || !system_power_present) {
         if (d->state != MAX31725_STATE_SHUTDOWN) {
             d->state = MAX31725_STATE_SHUTDOWN;
-            d->device_status = DEVICE_UNKNOWN;
+            p->dev.device_status = DEVICE_UNKNOWN;
             log_put(LOG_INFO, "MAX31725 shutdown");
         }
         return;
@@ -50,26 +51,26 @@ void dev_max31725_run(Dev_max31725 *d)
         break;
     }
     case MAX31725_STATE_RESET: {
-        if (dev_max31725_detect(d)) {
+        if (dev_max31725_detect(p)) {
             d->state = MAX31725_STATE_RUN;
-            d->device_status = DEVICE_NORMAL;
-            dev_log_status_change(&d->bus, d->device_status);
+            p->dev.device_status = DEVICE_NORMAL;
+            dev_log_status_change(&p->dev.bus, p->dev.device_status);
             break;
         } else {
             d->state = MAX31725_STATE_ERROR;
         }
         if (stateTicks(d) > 2000) {
-            d->device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&d->bus, d->device_status);
+            p->dev.device_status = DEVICE_UNKNOWN;
+            dev_log_status_change(&p->dev.bus, p->dev.device_status);
             d->state = MAX31725_STATE_ERROR;
             break;
         }
         break;
     }
     case MAX31725_STATE_RUN:
-        if (! dev_max31725_read(d)) {
-            d->device_status = DEVICE_FAIL;
-            dev_log_status_change(&d->bus, d->device_status);
+        if (! dev_max31725_read(p)) {
+            p->dev.device_status = DEVICE_FAIL;
+            dev_log_status_change(&p->dev.bus, p->dev.device_status);
             d->state = MAX31725_STATE_ERROR;
             break;
         }

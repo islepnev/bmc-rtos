@@ -47,17 +47,17 @@ static BusInterface powermon_bus_info = {
 };
 
 static Dev_powermon pm = {0};
+static Dev_max31725 therm1 = {0};
 
 static void local_init(DeviceBase *parent)
 {
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
+    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, ttvxs_max31725_bus_info);
 }
 
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    Dev_max31725 therm1;
-    therm1.bus = ttvxs_max31725_bus_info;
     while (1)
     {
         task_sfpiic_run();

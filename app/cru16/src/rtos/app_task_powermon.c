@@ -24,6 +24,7 @@
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "devicelist.h"
+#include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon_types.h"
 
@@ -44,17 +45,17 @@ static BusInterface powermon_bus_info = {
 };
 
 static Dev_powermon pm = {0};
+static Dev_max31725 therm1 = {0};
 
 static void local_init(DeviceBase *parent)
 {
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
+    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, cru16_max31725_bus_info);
 }
 
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    Dev_max31725 therm1 = {0};
-    therm1.bus = cru16_max31725_bus_info;
     while (1)
     {
         task_sfpiic_run();

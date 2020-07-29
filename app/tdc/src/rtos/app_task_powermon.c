@@ -56,19 +56,21 @@ static BusInterface powermon_bus_info = {
 };
 
 static Dev_powermon pm = {0};
+static Dev_max31725 therm1 = {0};
+static Dev_max31725 therm2 = {0};
 
 static void local_init(DeviceBase *parent)
 {
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
+#ifdef BOARD_TDC64
+    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, tdc64_max31725_1_bus_info);
+    create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_THERM, tdc64_max31725_2_bus_info);
+#endif
 }
 
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    static Dev_max31725 therm1;
-    static Dev_max31725 therm2;
-    therm1.bus = tdc64_max31725_1_bus_info;
-    therm2.bus = tdc64_max31725_2_bus_info;
     Dev_thset *thset = get_dev_thset();
     Dev_thset zz = {0};
     *thset = zz;
@@ -80,11 +82,11 @@ static void start_task_powermon( void const *arg)
         // task_sfpiic_run(); // broken on tdc64
 #ifdef BOARD_TDC64
         dev_max31725_run(&therm1);
-        thset->sensors[0].value = therm1.temp;
-        thset->sensors[0].hdr.b.state = (therm1.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[0].value = therm1.priv.temp;
+        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         dev_max31725_run(&therm2);
-        thset->sensors[1].value = therm2.temp;
-        thset->sensors[1].hdr.b.state = (therm2.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[1].value = therm2.priv.temp;
+        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         dev_thset_run(thset);
 #endif
         task_digipot_run();
