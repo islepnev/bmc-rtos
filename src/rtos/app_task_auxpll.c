@@ -40,7 +40,7 @@ static Dev_auxpll d = {0};
 
 static void local_init(DeviceBase *parent) {
 //    init_auxpll_setup(&d.priv.setup);
-    create_device(parent, &d.dev, &d.priv, DEV_CLASS_AUXPLL, auxpll_bus_info);
+    create_device(parent, &d.dev, &d.priv, DEV_CLASS_AD9516, auxpll_bus_info, "Aux PLL");
 }
 
 static void auxpllTask(void const *arg)

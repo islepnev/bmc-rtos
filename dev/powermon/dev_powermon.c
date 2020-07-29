@@ -41,7 +41,7 @@ void create_sensor_subdevices(Dev_powermon *d)
             .bus_number = sensorBusNumber(i),
             .address = sensorBusAddress(i)
         };
-        create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus_info);
+        create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus_info, sensor->priv.label);
     }
 }
 

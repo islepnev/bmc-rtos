@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,24 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICELIST_H
-#define DEVICELIST_H
+#include "ipmi_sensor_types.h"
 
-#include "dev_common_types.h"
-#include "devicebase.h"
+#include <string.h>
 
-enum { DEVICE_LIST_SIZE = 32 };
-typedef struct DeviceList {
-    int count;
-    struct DeviceBase *list[DEVICE_LIST_SIZE];
-} DeviceList;
-
-extern DeviceList deviceList;
-
-void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass device_class, const BusInterface bus, const char *name);
-DeviceBase *find_device(DeviceClass device_class);
-const DeviceBase *find_device_const(DeviceClass device_class);
-void *device_priv(DeviceBase *d);
-const void *device_priv_const(const DeviceBase *d);
-
-#endif // DEVICELIST_H
+void generic_sensor_set_name(GenericSensor *sensor, const char *name)
+{
+    strncpy(sensor->name, name, sizeof(sensor->name) - 1);
+    sensor->name[sizeof(sensor->name) - 1] = '0';
+}

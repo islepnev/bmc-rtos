@@ -21,7 +21,7 @@
 
 SensorStatus get_auxpll_sensor_status(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9516);
     if (!d || !d->priv)
         return SENSOR_UNKNOWN;
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);

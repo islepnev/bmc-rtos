@@ -55,7 +55,7 @@ DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
 
 void dev_eeprom_config_print(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM_CONFIG);
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM);
     if (!d || !d->priv)
         return;
     const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);

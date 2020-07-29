@@ -54,12 +54,13 @@ void dev_log_status_change(const DeviceBase *dev)
     default:
         assert(0);
     }
-    log_printf(prio, "Device %s on %s %d.%02X (%s)",
+    log_printf(prio, "Device %s on %s %d.%02X %s '%s'",
                text,
                bus_type_str(dev->bus.type),
                dev->bus.bus_number,
                dev->bus.address,
-               device_class_str(dev->device_class)
+               device_class_str(dev->device_class),
+               dev->name
                );
 }
 

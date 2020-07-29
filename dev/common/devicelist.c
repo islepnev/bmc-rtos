@@ -18,6 +18,7 @@
 #include "devicelist.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "dev_common_types.h"
 
@@ -36,10 +37,12 @@ static void add_child(DeviceBase *list, DeviceBase *d)
     p->next = d;
 }
 
-void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass device_class, const BusInterface bus)
+void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass device_class, const BusInterface bus, const char *name)
 {
     d->device_class = device_class;
     d->bus = bus;
+    strncpy(d->name, name, sizeof(d->name) - 1);
+    d->name[sizeof(d->name)-1] = '0';
     d->priv = priv;
     d->parent = parent;
     if (parent) {

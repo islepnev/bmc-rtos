@@ -38,7 +38,7 @@ void create_digipots_subdevices(Dev_digipots *d)
             .bus_number = potBusNumber(i),
             .address = potBusAddress(i)
         };
-        create_device(&d->dev, &pot->dev, &pot->priv, DEV_CLASS_AD5141, bus_info);
+        create_device(&d->dev, &pot->dev, &pot->priv, DEV_CLASS_AD5141, bus_info, potLabel(i));
         d->priv.count++;
     }
 }

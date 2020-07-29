@@ -38,7 +38,7 @@ static Dev_fpga d = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info);
+    create_device(parent, &d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info, "FPGA");
 }
 
 static void start_fpga_thread(void const *arg)

@@ -35,7 +35,7 @@ static char *auxpllStateStr(AuxPllState auxpllState)
 
 void auxpllPrintStatus()
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9516);
     if (!d || !d->priv)
         return;
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
@@ -56,7 +56,7 @@ void auxpllPrintStatus()
 
 void auxpllPrint(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_AUXPLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9516);
     if (!d || !d->priv)
         return;
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);

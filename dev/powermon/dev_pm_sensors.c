@@ -83,7 +83,8 @@ static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
     if (oldStatus != status) {
         d->dev.device_status = status;
         d->priv.lastStatusUpdatedTick = osKernelSysTick();
-        dev_log_status_change(&d->dev);
+        if (status != DEVICE_NORMAL)
+            dev_log_status_change(&d->dev);
     }
 }
 

@@ -42,7 +42,7 @@ static const char *dev_ad9545_state_str(ad9545_state_t state)
 
 void dev_ad9545_verbose_status(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
@@ -56,7 +56,7 @@ void dev_ad9545_verbose_status(void)
 
 void dev_ad9545_print_box(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);

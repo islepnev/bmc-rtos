@@ -153,7 +153,7 @@ bool fpgaWriteBmcTemperature(const Dev_thset *thset)
 
 bool fpgaWritePllStatus(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
     const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);

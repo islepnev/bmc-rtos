@@ -24,10 +24,10 @@
 const char *potLabel(PotIndex index)
 {
     switch (index) {
-    case POT_TDC_A: return "TDC_A";
-    case POT_TDC_B: return "TDC_B";
-    case POT_TDC_C: return "TDC_C";
-    case POT_TDC_D: return "TDC_D";
+    case POT_TDC_A: return "TDC-A";
+    case POT_TDC_B: return "TDC-B";
+    case POT_TDC_C: return "TDC-C";
+    case POT_TDC_D: return "TDC-D";
     }
     return "";
 }

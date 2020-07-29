@@ -41,9 +41,11 @@ bool dev_thset_add(Dev_thset *d, const char *name)
     if (d->count >= DEV_THSET_MAX_COUNT)
         return false;
     int i = d->count;
-    d->sensors[i].hdr.raw = 0;
-    d->sensors[i].hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-    strncpy(d->sensors[i].name, name, SENSOR_NAME_SIZE-1);
+    GenericSensor *sensor = &d->sensors[i];
+    sensor->hdr.raw = 0;
+    sensor->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
+    if (name)
+        generic_sensor_set_name(sensor, name);
     d->count++;
     return true;
 }

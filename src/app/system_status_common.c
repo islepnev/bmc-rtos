@@ -24,7 +24,7 @@
 
 SensorStatus get_eepromConfig_status(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM_CONFIG);
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM);
     if (!d || !d->priv)
         return SENSOR_UNKNOWN;
     const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);
@@ -45,7 +45,7 @@ SensorStatus getFpgaStatus(void)
 
 bool getPllLockState(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)d->priv;
@@ -56,7 +56,7 @@ bool getPllLockState(void)
 
 SensorStatus getPllStatus(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_PLL);
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return SENSOR_UNKNOWN;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)d->priv;

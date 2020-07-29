@@ -37,6 +37,8 @@
 #define ANSI_COL20     CSI "20G"
 #define ANSI_COL30     CSI "30G"
 #define ANSI_COL40     CSI "40G"
+#define ANSI_COL50     CSI "50G"
+#define ANSI_COL60     CSI "60G"
 
 #define ANSI_SHOW_CURSOR CSI"?25h"
 #define ANSI_HIDE_CURSOR CSI"?25l"

@@ -61,9 +61,9 @@ static Dev_tmp421 therm2 = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
-    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, cru16_max31725_bus_info);
-    create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_THERM, ttvxs_tmp421_bus_info);
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info, "Power Monitor");
+    create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, cru16_max31725_bus_info, "VCXO temperature");
+    create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
 }
 
 static void start_task_powermon( void const *arg)
@@ -74,19 +74,19 @@ static void start_task_powermon( void const *arg)
     *thset = zz;
     dev_thset_add(thset, "VCXO");
     dev_thset_add(thset, "FPGA");
-    dev_thset_add(thset, "TMP421");
+    dev_thset_add(thset, "Board");
     thset->count = 3;
-    thset->sensors[0].value = therm1.priv.temp;
-    thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-    thset->sensors[1].value = therm2.priv.temp;
-    thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-    thset->sensors[2].value = therm2.priv.temp_internal;
-    thset->sensors[2].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
     while (1)
     {
         task_sfpiic_run();
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);
+        thset->sensors[0].value = therm1.priv.temp;
+        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[1].value = therm2.priv.temp;
+        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[2].value = therm2.priv.temp_internal;
+        thset->sensors[2].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         task_powermon_run(&pm);
         sync_ipmi_sensors();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);

@@ -61,9 +61,9 @@ static Dev_ttvxs_clkmux clkmux = {0};
 
 static void local_init(DeviceBase *parent) {
     init_ad9545_setup(&pll.priv.setup);
-    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_PLL, pll_bus_info);
-    create_device(parent, &clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info);
-    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM_CONFIG, eeprom_config_bus_info);
+    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9545, pll_bus_info, "Main PLL");
+    create_device(parent, &clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info, "Clock Mux");
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, eeprom_config_bus_info, "EEPROM-Config");
 }
 
 static void pllTask(void const *arg)

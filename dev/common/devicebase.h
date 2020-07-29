@@ -19,12 +19,14 @@
 #define DEVICEBASE_H
 
 #include "dev_common_types.h"
+enum { DEVICE_NAME_LEN = 16 };
 
 typedef struct DeviceBase {
     DeviceClass device_class;
     DeviceStatus device_status;
     SensorStatus sensor;
     BusInterface bus;
+    char name[DEVICE_NAME_LEN+1];
     void *priv;
     struct DeviceBase *parent;
     struct DeviceBase *children;

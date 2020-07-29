@@ -77,19 +77,21 @@ static Dev_digipots digipots = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info);
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, powermon_bus_info, "Power Monitor");
 #ifdef BOARD_TDC64
+    const char *therm_name[TDC64_MAX31725_COUNT] = {"TDC-A", "TDC-B"};
     for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
-        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_THERM, tdc64_max31725_bus_info[i]);
+        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_MAX31725, tdc64_max31725_bus_info[i], therm_name[i]);
     }
 #endif
 #ifdef BOARD_TDC72
+    const char *therm_name[TDC72_ADT7301_COUNT] = {"PLL", "TDC-A", "TDC-B", "TDC-C"};
     for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
         tdc72_adt7301_bus_info.address = i;
-        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_THERM, tdc72_adt7301_bus_info);
+        create_device(&pm.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_ADT7301, tdc72_adt7301_bus_info, therm_name[i]);
     }
 #endif
-    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info);
+    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
 }
@@ -101,14 +103,14 @@ static void start_task_powermon( void const *arg)
     Dev_thset zz = {0};
     *thset = zz;
 #ifdef BOARD_TDC72
-    dev_thset_add(thset, "PLL");
-    dev_thset_add(thset, "TDC-A");
-    dev_thset_add(thset, "TDC-B");
-    dev_thset_add(thset, "TDC-C");
+    for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
+        dev_thset_add(thset, therm[i].dev.name);
+    }
 #endif
 #ifdef BOARD_TDC64
-    dev_thset_add(thset, "TDC-A");
-    dev_thset_add(thset, "TDC-B");
+    for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
+        dev_thset_add(thset, therm[i].dev.name);
+    }
 #endif
     while (1)
     {
@@ -127,9 +129,9 @@ static void start_task_powermon( void const *arg)
             dev_max31725_run(&therm[i]);
             thset->sensors[i].value = therm[i].priv.temp;
             thset->sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-            dev_thset_run(thset);
         }
         thset->count = TDC64_MAX31725_COUNT;
+        dev_thset_run(thset);
 #endif
         dev_digipot_run(&digipots);
         task_powermon_run(&pm);

@@ -29,13 +29,13 @@ const char *psw_label(PowerSwitchIndex index)
 {
     switch(index) {
     case PSW_5V:       return "5V";
-    case PSW_3V3:      return "3V3";
-    case PSW_1V5:      return "1V5";
-    case PSW_1V0:  return "1V0";
-    case PSW_TDC_A:  return "TDC_A";
-    case PSW_TDC_B:  return "TDC_B";
-    case PSW_TDC_C:  return "TDC_C";
-    case PSW_TDC_D:  return "TDC_D";
+    case PSW_3V3:      return "3.3V";
+    case PSW_1V5:      return "1.5V";
+    case PSW_1V0:  return "1.0V";
+    case PSW_TDC_A:  return "TDC-A";
+    case PSW_TDC_B:  return "TDC-B";
+    case PSW_TDC_C:  return "TDC-C";
+    case PSW_TDC_D:  return "TDC-D";
     }
     return "???";
 }
@@ -43,8 +43,8 @@ const char *psw_label(PowerSwitchIndex index)
 const char *pgood_label(PowerGoodIndex index)
 {
     switch(index) {
-    case PGOOD_1V5:       return "1V5";
-    case PGOOD_1V0:  return "1V0_CORE";
+    case PGOOD_1V5:       return "1.5V";
+    case PGOOD_1V0:  return "1.0V_CORE";
     }
     return "???";
 }
