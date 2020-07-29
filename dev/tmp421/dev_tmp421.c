@@ -68,14 +68,17 @@ bool dev_tmp421_detect(Dev_tmp421 *d)
 
 bool dev_tmp421_read(Dev_tmp421 *d)
 {
-    uint8_t data1;
-    uint8_t data2;
-    if (! tmp421_read(&d->dev.bus, TMP421_REG_REMOTE_TEMP_1_HI, &data1) ||
-        ! tmp421_read(&d->dev.bus, TMP421_REG_REMOTE_TEMP_1_LO, &data2)
+    uint8_t data1, data2, data3, data4;
+    if (! tmp421_read(&d->dev.bus, TMP421_REG_LOCAL_TEMP_HI, &data1) ||
+        ! tmp421_read(&d->dev.bus, TMP421_REG_LOCAL_TEMP_LO, &data2) ||
+        ! tmp421_read(&d->dev.bus, TMP421_REG_REMOTE_TEMP_1_HI, &data3) ||
+        ! tmp421_read(&d->dev.bus, TMP421_REG_REMOTE_TEMP_1_LO, &data4)
         ) {
         return false;
     }
-    d->priv.rawTemp = (uint16_t)data1 << 8 | data2;
-    d->priv.temp = 1.*d->priv.rawTemp/256;
+    int16_t rawTemp = (uint16_t)data1 << 8 | data2;
+    d->priv.temp_internal = (double)rawTemp/256.0;
+    rawTemp = (uint16_t)data3 << 8 | data4;
+    d->priv.temp = (double)rawTemp/256.0;
     return true;
 }

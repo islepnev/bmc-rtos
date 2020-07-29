@@ -74,7 +74,7 @@ void dev_tmp421_run(Dev_tmp421 *p)
             d->state = TMP421_STATE_ERROR;
             break;
         }
-        log_printf(LOG_INFO, "TMP421 temperature %.2f", d->temp);
+        // log_printf(LOG_INFO, "TMP421 temperature %.2f", d->temp);
         d->state = TMP421_STATE_PAUSE;
         break;
     case TMP421_STATE_PAUSE:

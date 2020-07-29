@@ -24,13 +24,15 @@
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "devicelist.h"
+#include "dev_thset.h"
+#include "dev_thset_types.h"
+#include "devicebase.h"
+#include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon_types.h"
 #include "tmp421/dev_tmp421.h"
 #include "tmp421/dev_tmp421_fsm.h"
-
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
@@ -39,7 +41,7 @@ static const uint32_t powermonTaskLoopDelay = 10;
 static BusInterface ttvxs_max31725_bus_info = {
     .type = BUS_IIC,
     .bus_number = 2,
-    .address = 0x56
+    .address = 0x52
 };
 
 static BusInterface ttvxs_tmp421_bus_info = {
@@ -68,12 +70,27 @@ static void local_init(DeviceBase *parent)
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
+    Dev_thset *thset = get_dev_thset();
+    Dev_thset zz = {0};
+    *thset = zz;
+    dev_thset_add(thset, "VCXO");
+    dev_thset_add(thset, "FPGA");
+    dev_thset_add(thset, "TMP421");
+
     while (1)
     {
         task_sfpiic_run();
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);
+        thset->count = 3;
+        thset->sensors[0].value = therm1.priv.temp;
+        thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[1].value = therm2.priv.temp;
+        thset->sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset->sensors[2].value = therm2.priv.temp_internal;
+        thset->sensors[2].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         task_powermon_run(&pm);
+        sync_ipmi_sensors();
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;

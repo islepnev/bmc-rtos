@@ -74,7 +74,7 @@ void dev_max31725_run(Dev_max31725 *p)
             d->state = MAX31725_STATE_ERROR;
             break;
         }
-        log_printf(LOG_INFO, "MAX31725 temperature %f", d->temp);
+        // log_printf(LOG_INFO, "MAX31725 temperature %.2f", d->temp);
         d->state = MAX31725_STATE_PAUSE;
         break;
     case MAX31725_STATE_PAUSE:

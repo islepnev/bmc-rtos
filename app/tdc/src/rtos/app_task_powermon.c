@@ -27,7 +27,7 @@
 #include "debug_helpers.h"
 #include "dev_thset.h"
 #include "dev_thset_types.h"
-#include "devicelist.h"
+#include "devicebase.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
@@ -81,6 +81,7 @@ static void start_task_powermon( void const *arg)
     {
         // task_sfpiic_run(); // broken on tdc64
 #ifdef BOARD_TDC64
+        thset->count = 2;
         dev_max31725_run(&therm1);
         thset->sensors[0].value = therm1.priv.temp;
         thset->sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;

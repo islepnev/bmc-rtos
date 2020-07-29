@@ -39,7 +39,7 @@ typedef enum {
 typedef struct Dev_tmp421_priv {
     dev_tmp421_state_t state;
     uint32_t state_start_tick;
-    uint16_t rawTemp;
+    double temp_internal;
     double temp;
 } Dev_tmp421_priv;
 
