@@ -22,28 +22,35 @@
 #include "bsp_digipot.h"
 #include "devicelist.h"
 
-void dev_digipots_priv_init(Dev_digipots_priv *d)
+void create_digipots_subdevices(Dev_digipots *d)
 {
+    d->priv.count = 0;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 zz = {0};
-        d->pot[i] = zz;
-        d->pot[i].index = i;
-        d->pot[i].deviceStatus = DEVICE_UNKNOWN;
-        d->pot[i].sensorIndex = potSensorIndex(i);
-        d->pot[i].bus.type = BUS_IIC;
-        d->pot[i].bus.bus_number = potBusNumber(i);
-        d->pot[i].bus.address = potBusAddress(i);
+        Dev_ad5141 *pot = &d->priv.pot[i];
+        *pot = zz;
+        pot->priv.index = i;
+        pot->dev.parent = &d->dev;
+        pot->dev.device_status = DEVICE_UNKNOWN;
+        pot->priv.sensorIndex = potSensorIndex(i);
+        BusInterface bus_info = {
+            .type = BUS_IIC,
+            .bus_number = potBusNumber(i),
+            .address = potBusAddress(i)
+        };
+        create_device(&d->dev, &pot->dev, &pot->priv, DEV_CLASS_AD5141, bus_info);
+        d->priv.count++;
     }
 }
 
 SensorStatus get_digipot_sensor_status(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOT);
+    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
     if (!d || !d->priv)
         return SENSOR_UNKNOWN;
     const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (priv->pot[i].deviceStatus != DEVICE_NORMAL)
+        if (priv->pot[i].dev.device_status != DEVICE_NORMAL)
             return SENSOR_CRITICAL;
     }
     return SENSOR_NORMAL;

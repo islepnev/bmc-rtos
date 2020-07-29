@@ -29,15 +29,19 @@
 extern "C" {
 #endif
 
-typedef struct Dev_ad5141 {
-    BusInterface bus;
+typedef struct Dev_ad5141_priv {
     PotIndex index;
     SensorIndex sensorIndex;
-    DeviceStatus deviceStatus;
     uint8_t value;
+} Dev_ad5141_priv;
+
+typedef struct Dev_ad5141 {
+    DeviceBase dev;
+    Dev_ad5141_priv priv;
 } Dev_ad5141;
 
 typedef struct Dev_digipots_priv {
+    unsigned int count;
     Dev_ad5141 pot[DEV_DIGIPOT_COUNT];
 } Dev_digipots_priv;
 
@@ -46,7 +50,7 @@ typedef struct Dev_digipots {
     Dev_digipots_priv priv;
 } Dev_digipots;
 
-void dev_digipots_priv_init(Dev_digipots_priv *d);
+void create_digipots_subdevices(Dev_digipots *d);
 SensorStatus get_digipot_sensor_status(void);
 
 #ifdef __cplusplus

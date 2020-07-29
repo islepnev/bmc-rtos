@@ -27,9 +27,10 @@ const char *device_class_str(DeviceClass class)
     switch (class) {
     case DEV_CLASS_0: return "none";
     case DEV_CLASS_VIRTUAL: return "Virtual";
+    case DEV_CLASS_AD5141: return "AD5141";
     case DEV_CLASS_AUXPLL: return "AuxPLL";
     case DEV_CLASS_CLKMUX: return "clkmux";
-    case DEV_CLASS_DIGIPOT: return "DigiPot";
+    case DEV_CLASS_DIGIPOTS: return "DigiPots";
     case DEV_CLASS_EEPROM_CONFIG: return "EEPROM-Config";
     case DEV_CLASS_FPGA: return "FPGA";
     case DEV_CLASS_PLL: return "PLL";
@@ -61,10 +62,10 @@ void devicelist_print(DeviceBase *d, int depth)
     const BusInterface *bus = &d->bus;
     enum {BUFSZ = 16};
     char str[BUFSZ+1] = {0};
-    int i=0;
-    while (i<depth && i < BUFSZ) {
-        str[i++] = ' ';
-        str[i++] = ' ';
+    int len = 0;
+    for (int i=0; i<depth && len < BUFSZ; i++) {
+        str[len++] = ' ';
+        str[len++] = ' ';
     }
     printf("%s %s %d.%02X    %s%s\n",
            str,

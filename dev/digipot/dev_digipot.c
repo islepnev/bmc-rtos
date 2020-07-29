@@ -26,33 +26,33 @@
 
 void dev_ad5141_reset(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_reset(&d->bus);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_reset(&d->dev.bus);
 }
 
 void dev_ad5141_inc(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_inc_rdac(&d->bus);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_inc_rdac(&d->dev.bus);
 }
 
 void dev_ad5141_dec(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_dec_rdac(&d->bus);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_dec_rdac(&d->dev.bus);
 }
 
 void dev_ad5141_write(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_copy_rdac_to_eeprom(&d->bus);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_copy_rdac_to_eeprom(&d->dev.bus);
 }
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    bool detected = ad5141_nop(&d->bus);
-    d->deviceStatus = detected ? DEVICE_NORMAL : DEVICE_UNKNOWN;
-    return d->deviceStatus;
+    bool detected = ad5141_nop(&d->dev.bus);
+    d->dev.device_status = detected ? DEVICE_NORMAL : DEVICE_UNKNOWN;
+    return d->dev.device_status;
 }
 
 int digipot_detect(Dev_digipots *d)
@@ -65,6 +65,7 @@ int digipot_detect(Dev_digipots *d)
             count++;
         }
     }
+    d->priv.count = count;
     return count;
 }
 
@@ -72,9 +73,9 @@ void digipot_read_rdac_all(Dev_digipots *d)
 {
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 *p = &d->priv.pot[i];
-        if (p->deviceStatus != DEVICE_NORMAL)
+        if (p->dev.device_status != DEVICE_NORMAL)
             continue;
-        if (! ad5141_read_rdac(&p->bus, &p->value))
+        if (! ad5141_read_rdac(&p->dev.bus, &p->priv.value))
             break;
     }
 }

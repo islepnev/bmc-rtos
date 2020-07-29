@@ -57,21 +57,21 @@ static int force_refresh = 0;
 
 static void print_pm_pots(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOT);
+    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
     if (!d || !d->priv)
         return;
     const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
 
     printf("POTS: ");
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (priv->pot[i].deviceStatus == DEVICE_NORMAL)
-            printf("%3u ", priv->pot[i].value);
+        if (priv->pot[i].dev.device_status == DEVICE_NORMAL)
+            printf("%3u ", priv->pot[i].priv.value);
         else
             printf("?   ");
     }
     bool Ok = true;
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (priv->pot[0].deviceStatus != DEVICE_NORMAL)
+        if (priv->pot[0].dev.device_status != DEVICE_NORMAL)
         Ok = false;
     }
     if (Ok) {
@@ -306,7 +306,7 @@ static void display_pot(const Devices * dev)
     const DeviceBase *dev_pm = find_device_const(DEV_CLASS_POWERMON);
     const Dev_powermon_priv *pm = dev_pm ? (Dev_powermon_priv *)device_priv_const(dev_pm) : 0;
 
-    const DeviceBase *dev_dp = find_device_const(DEV_CLASS_DIGIPOT);
+    const DeviceBase *dev_dp = find_device_const(DEV_CLASS_DIGIPOTS);
     if (!dev_dp || !dev_dp->priv)
         return;
     const Dev_digipots_priv *dp = (const Dev_digipots_priv *)device_priv_const(dev_dp);
@@ -314,13 +314,13 @@ static void display_pot(const Devices * dev)
     for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         const Dev_ad5141 *p = &dp->pot[i];
         printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
-        if (p->deviceStatus == DEVICE_NORMAL)
-            printf("%3u ", p->value);
+        if (p->dev.device_status == DEVICE_NORMAL)
+            printf("%3u ", p->priv.value);
         else
             printf("?   ");
-        if (pm && (int)p->sensorIndex > 0 && (int)p->sensorIndex < POWERMON_SENSORS) {
-            const pm_sensor *sensor = &pm->sensors[p->sensorIndex];
-            const int isOn = monIsOn(pm->sw_state, p->sensorIndex);
+        if (pm && (int)p->priv.sensorIndex > 0 && (int)p->priv.sensorIndex < POWERMON_SENSORS) {
+            const pm_sensor *sensor = &pm->sensors[p->priv.sensorIndex];
+            const int isOn = monIsOn(pm->sw_state, p->priv.sensorIndex);
             printf("%10s", sensor->label);
             pm_sensor_print_values(sensor, isOn);
         } else {

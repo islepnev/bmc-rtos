@@ -69,8 +69,8 @@ static void local_init(DeviceBase *parent)
     create_device(parent, &therm1.dev, &therm1.priv, DEV_CLASS_THERM, tdc64_max31725_1_bus_info);
     create_device(parent, &therm2.dev, &therm2.priv, DEV_CLASS_THERM, tdc64_max31725_2_bus_info);
 #endif
-    create_device(parent, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOT, powermon_bus_info);
-    dev_digipots_priv_init(&digipots.priv);
+    create_device(parent, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, powermon_bus_info);
+    create_digipots_subdevices(&digipots);
 }
 
 static void start_task_powermon( void const *arg)
