@@ -35,7 +35,7 @@
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
-#include "dev_sfpiic_print.h"
+#include "sfpiic/dev_sfpiic_print.h"
 #include "thset/dev_thset_print.h"
 #include "devices_types.h"
 #include "display.h"
@@ -63,10 +63,7 @@ static int force_refresh = 0;
 
 static void devPrintStatus(const struct Devices *d)
 {
-    printf("SFP I2C mux:    %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
-    printf("%s\n", ANSI_CLEAR_EOL);
-//    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiic), deviceStatusResultStr(d->vxsiic.dev.device_status));
-//    printf("%s\n", ANSI_CLEAR_EOL);
+    dev_sfpiic_print();
     dev_eeprom_config_print();
 }
 
@@ -464,7 +461,7 @@ void display_task_run(void)
 //        display_boards(d);
 //        break;
     case DISPLAY_SFP_DETAIL:
-        sfpPrintStatus(&d->sfpiic);
+        sfpPrintStatus();
         break;
     case DISPLAY_TASKS:
         display_tasks();

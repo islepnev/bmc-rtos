@@ -32,6 +32,7 @@
 
 #include "app_shared_data.h"
 #include "devices_types.h"
+#include "ipmi_sensor_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
 #include "version.h"

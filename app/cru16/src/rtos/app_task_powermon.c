@@ -19,7 +19,7 @@
 
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "app_task_sfpiic_impl.h"
+#include "sfpiic/dev_sfpiic_fsm.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
@@ -30,6 +30,8 @@
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon_types.h"
+#include "sfpiic/dev_sfpiic_fsm.h"
+#include "sfpiic/dev_sfpiic_types.h"
 #include "tmp421/dev_tmp421.h"
 #include "tmp421/dev_tmp421_fsm.h"
 
@@ -53,6 +55,7 @@ static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
 static Dev_thset thset = {0};
+static Dev_sfpiic sfpiic = {0};
 
 static void local_init(DeviceBase *parent)
 {
@@ -60,6 +63,7 @@ static void local_init(DeviceBase *parent)
     create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
     create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, cru16_max31725_bus_info, "VCXO temperature");
     create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
+    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
 }
 
 static void start_task_powermon( void const *arg)
@@ -71,7 +75,7 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
-        task_sfpiic_run();
+        task_sfpiic_run(&sfpiic);
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);
         thset.priv.sensors[0].value = therm1.priv.temp;

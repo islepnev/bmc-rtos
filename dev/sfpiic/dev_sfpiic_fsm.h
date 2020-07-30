@@ -17,6 +17,15 @@
 #ifndef APP_TASK_SFPIIC_IMPL_H
 #define APP_TASK_SFPIIC_IMPL_H
 
-void task_sfpiic_run(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct Dev_sfpiic;
+void task_sfpiic_run(struct Dev_sfpiic *d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // APP_TASK_SFPIIC_IMPL_H

@@ -20,7 +20,7 @@
 #include "app_shared_data.h"
 #include "digipot/dev_digipot_types.h"
 #include "app_task_powermon_impl.h"
-#include "app_task_sfpiic_impl.h"
+#include "sfpiic/dev_sfpiic_fsm.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
@@ -37,6 +37,8 @@
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon_types.h"
+#include "sfpiic/dev_sfpiic_fsm.h"
+#include "sfpiic/dev_sfpiic_types.h"
 
 osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
@@ -66,8 +68,8 @@ static BusInterface tdc72_adt7301_bus_info = {
 static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 #endif
 static Dev_digipots digipots = {0};
-
 static Dev_thset thset = {0};
+static Dev_sfpiic sfpiic = {0};
 
 static void local_init(DeviceBase *parent)
 {
@@ -90,6 +92,7 @@ static void local_init(DeviceBase *parent)
     create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, null_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
+    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
 }
 
 static void start_task_powermon( void const *arg)
@@ -107,7 +110,7 @@ static void start_task_powermon( void const *arg)
 #endif
     while (1)
     {
-        // task_sfpiic_run(); // broken on tdc64
+        task_sfpiic_run(&sfpiic); // broken on tdc64
 #ifdef BOARD_TDC72
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
             dev_adt7301_run(&therm[i]);

@@ -17,7 +17,9 @@
 #ifndef SYSTEM_STATUS_H
 #define SYSTEM_STATUS_H
 
-#include "devices_types.h"
+#include <stdint.h>
+
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +32,7 @@ typedef union
       SensorStatus system:4;
       SensorStatus pm:4;
       SensorStatus therm:4;
-      SensorStatus misc:4;
+      SensorStatus sfpiic:4;
       SensorStatus fpga:4;
       SensorStatus pll:4;
       SensorStatus r1:4;
@@ -39,11 +41,11 @@ typedef union
   uint32_t w;
 } encoded_system_status_t;
 
-SensorStatus getMiscStatus(const Devices *d);
-SensorStatus pollVxsiicStatus(Devices *dev);
-DeviceStatus getDeviceStatus(const Devices *d);
+struct Devices;
+SensorStatus pollVxsiicStatus(struct Devices *dev);
+DeviceStatus getDeviceStatus(void);
 SensorStatus getSystemStatus(void);
-encoded_system_status_t encode_system_status(const Devices *dev);
+encoded_system_status_t encode_system_status(void);
 
 #ifdef __cplusplus
 }

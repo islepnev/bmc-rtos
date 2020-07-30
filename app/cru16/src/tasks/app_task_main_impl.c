@@ -75,7 +75,7 @@ void task_main_run(void)
         if (pmState != PM_STATE_RUN) {
             state = MAIN_STATE_INIT;
         }
-        if (getDeviceStatus(getDevicesConst()) == DEVICE_NORMAL)
+        if (getDeviceStatus() == DEVICE_NORMAL)
             state = MAIN_STATE_RUN;
         if (stateTicks() > MAIN_DETECT_TIMEOUT_TICKS) {
             log_printf(LOG_ERR, "DETECT timeout");
@@ -83,7 +83,7 @@ void task_main_run(void)
         }
         break;
     case MAIN_STATE_RUN:
-        if (getDeviceStatus(getDevicesConst()) != DEVICE_NORMAL)
+        if (getDeviceStatus() != DEVICE_NORMAL)
             state = MAIN_STATE_ERROR;
         if (pmState != PM_STATE_RUN) {
             state = MAIN_STATE_INIT;

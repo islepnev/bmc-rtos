@@ -39,11 +39,6 @@ const Devices* getDevicesConst(void)
     return &dev;
 }
 
-Dev_sfpiic *get_dev_sfpiic(void)
-{
-    return &dev.sfpiic;
-}
-
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

@@ -36,7 +36,7 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
 {
     sfpiic_stats_t zz = {0};
     for (int i=0; i<SFPIIC_CH_CNT; i++) {
-        d->status.sfp[i].iic_stats = zz;
+        d->priv.status.sfp[i].iic_stats = zz;
     }
 }
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
@@ -58,7 +58,7 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
         }
-        sfpiic_ch_status_t *status = &d->status.sfp[ch];
+        sfpiic_ch_status_t *status = &d->priv.status.sfp[ch];
         if (dev_sfpiic_ch_update(d, ch)) {
             status->present = 1;
             if (!sfp_old_present[ch])
@@ -71,5 +71,27 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
         sfp_old_present[ch] = status->present;
     }
     return d->dev.device_status;
+}
+
+const Dev_sfpiic_priv *get_sfpiic_priv_const(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_SFPIIC);
+    if (!d || !d->priv)
+        return 0;
+    return (const Dev_sfpiic_priv *)device_priv_const(d);
+}
+
+SensorStatus get_sfpiic_sensor_status(void)
+{
+    const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
+    if (!priv)
+        return SENSOR_UNKNOWN;
+    SensorStatus status = SENSOR_NORMAL;
+    for (int i=0; i<SFPIIC_CH_CNT; i++) {
+        const SensorStatus sfp_status = priv->status.sfp[i].system_status;
+        if (sfp_status > status)
+            status = sfp_status;
+    }
+    return status;
 }
 

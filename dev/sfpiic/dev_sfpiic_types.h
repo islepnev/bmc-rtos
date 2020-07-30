@@ -60,9 +60,13 @@ struct sfpiic_status_t {
 
 typedef struct sfpiic_status_t sfpiic_status_t;
 
+typedef struct Dev_sfpiic_priv {
+    sfpiic_status_t status;
+} Dev_sfpiic_priv;
+
 typedef struct Dev_sfpiic {
     DeviceBase dev;
-    sfpiic_status_t status;
+    Dev_sfpiic_priv priv;
 } Dev_sfpiic;
 
 #endif // DEV_SFPIIC_TYPES_H

@@ -48,13 +48,10 @@ extern int screen_height;
 
 struct Devices;
 struct Dev_thset;
-struct Dev_sfpiic;
 
 int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
-
-struct Dev_sfpiic *get_dev_sfpiic(void);
 
 void schedule_display_refresh(void);
 int read_display_refresh(void);

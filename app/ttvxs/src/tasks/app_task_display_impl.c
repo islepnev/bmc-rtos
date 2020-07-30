@@ -49,6 +49,7 @@
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
 #include "rtc_util.h"
+#include "sfpiic/dev_sfpiic_print.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_rtc.h"
 #include "system_status.h"
@@ -61,11 +62,10 @@ static int force_refresh = 0;
 
 static void devPrintStatus(const struct Devices *d)
 {
-    printf("SFP I2C mux:    %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    dev_sfpiic_print();
+    dev_eeprom_config_print();
     printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiicm), deviceStatusResultStr(d->vxsiicm.dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
-    dev_eeprom_config_print();
 }
 
 static const char *auxpllStateStr(AuxPllState state)

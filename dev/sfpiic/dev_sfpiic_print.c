@@ -16,9 +16,14 @@
 */
 
 #include "dev_sfpiic_print.h"
+
 #include <stdio.h>
 
-void sfpPrintSummaryHeader()
+#include "dev_sfpiic.h"
+#include "dev_sfpiic_types.h"
+#include "display.h"
+
+void sfpPrintSummaryHeader(void)
 {
     printf("\n"
            "Port "
@@ -29,7 +34,7 @@ void sfpPrintSummaryHeader()
            "\n");
 }
 
-void sfpPrintSummaryStatus(const Dev_sfpiic *d)
+void sfpPrintSummaryStatus(const Dev_sfpiic_priv *d)
 {
     sfpPrintSummaryHeader();
     for(int row=0; row<SFPIIC_CH_CNT; ++row) {
@@ -65,7 +70,7 @@ void sfpPrintSummaryStatus(const Dev_sfpiic *d)
     }
 }
 
-void sfpPrintChannelHeader()
+void sfpPrintChannelHeader(void)
 {
     printf("\n"
            "Port ch "
@@ -73,7 +78,7 @@ void sfpPrintChannelHeader()
            "\n");
 }
 
-void sfpPrintChannelStatus(const Dev_sfpiic *d)
+static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
 {
     int print_header = 1;
     for(int row=3; row<SFPIIC_CH_CNT; ++row) {
@@ -99,9 +104,21 @@ void sfpPrintChannelStatus(const Dev_sfpiic *d)
     }
 }
 
-void sfpPrintStatus(const Dev_sfpiic *d)
-{
+void sfpPrintStatus(void)
+{    
+    const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
+    if (!priv)
+        return;
     printf("SFP status:\n");
-    sfpPrintSummaryStatus(d);
-    sfpPrintChannelStatus(d);
+    sfpPrintSummaryStatus(priv);
+    sfpPrintChannelStatus(priv);
+}
+
+void dev_sfpiic_print(void)
+{
+    const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
+    if (!priv)
+        return;
+    printf("SFPIIC:  %s", sensor_status_ansi_str(get_sfpiic_sensor_status()));
+    print_clear_eol();
 }

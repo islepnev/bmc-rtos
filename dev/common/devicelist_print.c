@@ -37,6 +37,7 @@ const char *device_class_str(DeviceClass class)
     case DEV_CLASS_AD9545: return "AD9545";
     case DEV_CLASS_POWERMON: return "PowerMon";
     case DEV_CLASS_SFP: return "SFP";
+    case DEV_CLASS_SFPIIC: return "SFPIIC";
     case DEV_CLASS_THSET: return "Thermometers";
     case DEV_CLASS_ADT7301: return "ADT7301";
     case DEV_CLASS_MAX31725: return "MAX31725";

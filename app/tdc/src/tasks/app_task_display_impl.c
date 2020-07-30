@@ -45,6 +45,7 @@
 #include "powermon/dev_powermon.h"
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
+#include "sfpiic/dev_sfpiic_print.h"
 #include "stm32f7xx_hal.h"
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
@@ -212,14 +213,8 @@ static void print_thset(void)
 
 static void devPrintStatus(const Devices *d)
 {
-    printf("SFP IIC:   %s", deviceStatusResultStr(d->sfpiic.dev.device_status));
-    print_clear_eol();
+    dev_sfpiic_print();
     dev_eeprom_config_print();
-    print_clear_eol();
-    //    printf("EEPROM VXS PB: %s", deviceStatusResultStr(d->eeprom_vxspb.dev.device_status));
-    //    print_clear_eol();
-    //    printf("PLL I2C:       %s", deviceStatusResultStr(d->pll.dev.device_status));
-    //    print_clear_eol();
 }
 
 static void print_main(const Devices *dev)

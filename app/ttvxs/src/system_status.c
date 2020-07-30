@@ -27,10 +27,6 @@
 DeviceStatus getDeviceStatus(const Devices *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    if ((d->sfpiic.dev.device_status == DEVICE_FAIL) ||
-        (d->vxsiicm.dev.device_status == DEVICE_FAIL)
-        )
-        status = DEVICE_FAIL;
     for (int i=0; i<deviceList.count; i++)
         if (deviceList.list[i]->device_status == DEVICE_FAIL)
             status = DEVICE_FAIL;
@@ -39,8 +35,6 @@ DeviceStatus getDeviceStatus(const Devices *d)
 
 SensorStatus getMiscStatus(const Devices *d)
 {
-    if (d->sfpiic.dev.device_status != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
     if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
     return SENSOR_NORMAL;
@@ -48,10 +42,9 @@ SensorStatus getMiscStatus(const Devices *d)
 
 SensorStatus getSystemStatus(void)
 {
-    const Devices *d = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus();
     const SensorStatus temperatureStatus = dev_thset_thermStatus();
-    const SensorStatus miscStatus = getMiscStatus(d);
+    const SensorStatus sfpiicStatus = get_sfpiic_sensor_status();
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
     const SensorStatus ad9516Status = get_auxpll_sensor_status();
@@ -60,8 +53,8 @@ SensorStatus getSystemStatus(void)
         systemStatus = powermonStatus;
     if (temperatureStatus > systemStatus)
         systemStatus = temperatureStatus;
-    if (miscStatus > systemStatus)
-        systemStatus = miscStatus;
+    if (sfpiicStatus > systemStatus)
+        systemStatus = sfpiicStatus;
     if (fpgaStatus > systemStatus)
         systemStatus = fpgaStatus;
     if (pllStatus > systemStatus)

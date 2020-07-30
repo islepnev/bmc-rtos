@@ -18,11 +18,11 @@
 #ifndef DEVICES_TYPES_H
 #define DEVICES_TYPES_H
 
+#include <stdint.h>
+
 //#include "dev_eeprom_vxspb.h"
-#include "dev_sfpiic_types.h"
 
 typedef struct Devices {
-    Dev_sfpiic sfpiic;
     // Dev_eeprom_vxspb eeprom_vxspb;
     uint32_t pcb_ver;
 } Devices;

@@ -52,11 +52,6 @@ Dev_vxsiicm *get_dev_vxsiicm(void)
     return &dev.vxsiicm;
 }
 
-Dev_sfpiic *get_dev_sfpiic(void)
-{
-    return &dev.sfpiic;
-}
-
 static int display_refresh_flag = 0;
 
 void schedule_display_refresh(void)

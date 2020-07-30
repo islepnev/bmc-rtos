@@ -15,12 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef DEV_SFPIIC_H
 #define DEV_SFPIIC_H
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "dev_common_types.h"
 
 #ifdef __cplusplus
@@ -32,6 +32,9 @@ struct Dev_sfpiic;
 void dev_sfpiic_init(struct Dev_sfpiic *d);
 DeviceStatus dev_sfpiic_detect(struct Dev_sfpiic *d);
 DeviceStatus dev_sfpiic_update(struct Dev_sfpiic *d);
+struct Dev_sfpiic_priv;
+const struct Dev_sfpiic_priv *get_sfpiic_priv_const(void);
+SensorStatus get_sfpiic_sensor_status(void);
 
 #ifdef __cplusplus
 }

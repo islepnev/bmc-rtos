@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_sfpiic_impl.h"
+#include "dev_sfpiic_fsm.h"
 #include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
@@ -46,9 +46,8 @@ static void struct_sfpiic_init(Dev_sfpiic *d)
     d->dev.device_status = DEVICE_UNKNOWN;
 }
 
-void task_sfpiic_run(void)
+void task_sfpiic_run(Dev_sfpiic *d)
 {
-    Dev_sfpiic *d = get_dev_sfpiic();
     switch (state) {
     case SFPIIC_STATE_RESET: {
         struct_sfpiic_init(d);

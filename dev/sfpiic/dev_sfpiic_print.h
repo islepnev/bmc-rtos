@@ -14,9 +14,18 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_SFPIIC_IMPL_H
-#define APP_TASK_SFPIIC_IMPL_H
+#ifndef DEV_SFPIIC_PRINT_H
+#define DEV_SFPIIC_PRINT_H
 
-void task_sfpiic_run(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // APP_TASK_SFPIIC_IMPL_H
+void sfpPrintStatus(void);
+void dev_sfpiic_print(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_SFPIIC_PRINT_H

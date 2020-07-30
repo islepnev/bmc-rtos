@@ -27,9 +27,6 @@
 extern "C" {
 #endif
 
-struct Devices;
-struct Dev_fpga;
-
 typedef union
 {
   struct
@@ -37,7 +34,7 @@ typedef union
       SensorStatus system:4;
       SensorStatus pm:4;
       SensorStatus therm:4;
-      SensorStatus misc:4;
+      SensorStatus sfpiic:4;
       SensorStatus fpga:4;
       SensorStatus pll:4;
       SensorStatus r1:4;
@@ -46,10 +43,10 @@ typedef union
   uint32_t w;
 } encoded_system_status_t;
 
-DeviceStatus getDeviceStatus(const struct Devices *d);
+DeviceStatus getDeviceStatus(void);
 SensorStatus getSystemStatus(void);
 
-encoded_system_status_t encode_system_status(const struct Devices *dev);
+encoded_system_status_t encode_system_status(void);
 
 #ifdef __cplusplus
 }
