@@ -19,6 +19,7 @@
 #define DISPLAY_COMMON_H
 
 void display_devices(void);
+void print_footer_line(void);
 
 #endif // DISPLAY_COMMON_H
 

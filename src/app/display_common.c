@@ -31,3 +31,8 @@ void display_devices(void)
     devicelist_print(deviceList.list[0], 0);
     printf(ANSI_CLEAR_EOL);
 }
+
+void print_footer_line(void)
+{
+    printf(ANSI_BGR_BLUE ANSI_GRAY "SPACE: next page   P: switch power" ANSI_CLEAR_EOL ANSI_CLEAR);
+}

@@ -16,9 +16,12 @@
 */
 
 #include "dev_auxpll_print.h"
+
 #include <stdio.h>
-#include "dev_auxpll_types.h"
+
 #include "ansi_escape_codes.h"
+#include "dev_auxpll_types.h"
+#include "display.h"
 
 static char *auxpllStateStr(AuxPllState auxpllState)
 {
@@ -57,14 +60,15 @@ void auxpllPrintStatus()
 void auxpllPrint(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9516);
-    if (!d || !d->priv)
+    if (!d || !d->priv) {
         return;
+    }
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
 
     printf("PLL AD9516:   %s %s",
            auxpllStateStr(priv->fsm_state),
            sensor_status_ansi_str(get_auxpll_sensor_status()));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    print_clear_eol();
     printf("  ");
     auxpllPrintStatus();
 }

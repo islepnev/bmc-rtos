@@ -112,13 +112,17 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_TEMP_H 1
 #define DISPLAY_TEMP_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
 #define DISPLAY_MAIN_Y (0 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y)
-#define DISPLAY_MAIN_H 3
+#define DISPLAY_MAIN_H 2
 #define DISPLAY_FPGA_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
 #define DISPLAY_FPGA_H 1
 #define DISPLAY_PLL_Y (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H)
 #define DISPLAY_AUXPLL_Y (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H)
+#ifdef BOARD_TDC64
 #define DISPLAY_AUXPLL_H 2
-#define DISPLAY_LOG_Y (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
+#else
+#define DISPLAY_AUXPLL_H 0
+#endif
+#define DISPLAY_LOG_Y (0 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
 #define DISPLAY_LOG_H 5
 #define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
@@ -170,7 +174,7 @@ static void print_header(void)
 static void print_footer(void)
 {
     print_goto(screen_height, 1);
-    printf(ANSI_BGR_BLUE ANSI_GRAY "Test" ANSI_CLEAR_EOL ANSI_CLEAR);
+    print_footer_line();
 }
 
 void print_system_status(const Devices *dev)
