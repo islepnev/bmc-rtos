@@ -19,20 +19,23 @@
 
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "sfpiic/dev_sfpiic_fsm.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "thset/dev_thset.h"
-#include "thset/dev_thset_types.h"
-#include "powermon/dev_powermon.h"
 #include "devicebase.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
+#include "powermon/dev_powermon.h"
 #include "powermon/dev_powermon_types.h"
 #include "sfpiic/dev_sfpiic_fsm.h"
+#include "sfpiic/dev_sfpiic_fsm.h"
 #include "sfpiic/dev_sfpiic_types.h"
+#include "thset/dev_thset.h"
+#include "thset/dev_thset_types.h"
 #include "tmp421/dev_tmp421.h"
 #include "tmp421/dev_tmp421_fsm.h"
 
@@ -43,7 +46,7 @@ static const uint32_t powermonTaskLoopDelay = 10;
 static BusInterface cru16_max31725_bus_info = {
     .type = BUS_IIC,
     .bus_number = 2,
-    .address = 0x52
+    .address = 0x56
 };
 
 static BusInterface ttvxs_tmp421_bus_info = {
@@ -52,11 +55,18 @@ static BusInterface ttvxs_tmp421_bus_info = {
     .address = 0x1C
 };
 
+static BusInterface config_eeprom_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x57
+};
+
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
 static Dev_thset thset = {0};
 static Dev_sfpiic sfpiic = {0};
+static Dev_eeprom_config eeprom = {0};
 
 static void local_init(DeviceBase *parent)
 {
@@ -66,6 +76,7 @@ static void local_init(DeviceBase *parent)
     create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
     create_sensor_subdevices(&pm);
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, config_eeprom_bus_info, "Board config");
 }
 
 static void start_task_powermon( void const *arg)
@@ -77,6 +88,7 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
+        dev_eeprom_config_run(&eeprom);
         task_sfpiic_run(&sfpiic);
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);

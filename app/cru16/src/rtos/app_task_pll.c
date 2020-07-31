@@ -49,7 +49,7 @@ static BusInterface clkmux_bus_info = {
 };
 
 // mezzanine eeprom
-static BusInterface eeprom_config_bus_info = {
+static BusInterface mcb_eeprom_bus_info = {
     .type = BUS_IIC,
     .bus_number = 3,
     .address = 0x50
@@ -63,7 +63,7 @@ static void local_init(DeviceBase *parent) {
     init_ad9545_setup(&pll.priv.setup);
     create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9545, pll_bus_info, "Main PLL");
     create_device(parent, &clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info, "Clock Mux");
-    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, eeprom_config_bus_info, "EEPROM-Config");
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, mcb_eeprom_bus_info, "MCB config");
 }
 
 static void pllTask(void const *arg)
