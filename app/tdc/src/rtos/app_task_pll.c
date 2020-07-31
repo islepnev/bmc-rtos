@@ -22,11 +22,12 @@
 #include "ad9545/ad9545.h"
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
-#include "eeprom_config/dev_eeprom_config_fsm.h"
+#include "app_shared_data.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config_fsm.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = 400 };
@@ -60,7 +61,14 @@ static void pllTask(void const *arg)
     ad9545_gpio_init(&pll.dev.bus);
 
     while(1) {
+#ifdef BOARD_TDC72
+        if (system_power_present) // issue #688
+            dev_eeprom_config_run(&eeprom);
+        else
+            eeprom.dev.device_status = DEVICE_UNKNOWN;
+#else
         dev_eeprom_config_run(&eeprom);
+#endif
         dev_ad9545_run(&pll);
         osDelay(pllTaskLoopDelay);
     }
