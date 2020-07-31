@@ -51,15 +51,6 @@ static bool vxsiic_select_pp(Dev_vxsiicm *d, uint8_t pp)
     return vxsiic_mux_select(subdevice, channel);
 }
 
-void dev_vxsiicm_init(void)
-{
-    Dev_vxsiicm *d = get_dev_vxsiicm();
-//    iic_stats_t zz = {0};
-//    for (int i=0; i<VXSIIC_SLOTS; i++) {
-//        d->status.slot[i]..iic_stats = zz;
-//    }
-}
-
 DeviceStatus dev_vxsiicm_detect(Dev_vxsiicm *d)
 {
     DeviceStatus status = DEVICE_NORMAL;

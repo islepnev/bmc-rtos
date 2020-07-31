@@ -23,12 +23,8 @@ extern "C" {
 #endif
 
 struct Devices;
-struct Dev_vxsiicm;
-
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
-
-struct Dev_vxsiicm *get_dev_vxsiicm(void);
 
 #ifdef __cplusplus
 }

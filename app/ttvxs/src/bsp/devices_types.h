@@ -18,7 +18,9 @@
 #ifndef DEVICES_TYPES_H
 #define DEVICES_TYPES_H
 
-#include "vxsiicm/dev_vxsiicm_types.h"
+#include <stdint.h>
+
+#include "devicebase.h"
 
 typedef struct Dev_sdcard {
     DeviceBase dev;
@@ -31,7 +33,6 @@ enum {
 };
 
 typedef struct Devices {
-    Dev_vxsiicm vxsiicm;
     Dev_sdcard sd;
     int pen_b;
     uint32_t pcb_ver;

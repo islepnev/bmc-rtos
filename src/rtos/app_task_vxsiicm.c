@@ -19,32 +19,39 @@
 
 #include "cmsis_os.h"
 #include "app_tasks.h"
+#include "bus/bus_types.h"
+#include "debug_helpers.h"
 #include "vxsiicm/dev_vxsiicm.h"
 #include "vxsiicm/dev_vxsiicm_fsm.h"
-#include "debug_helpers.h"
+#include "vxsiicm/dev_vxsiicm_types.h"
 
 osThreadId vxsiicThreadId = NULL;
 enum { vxsiicThreadStackSize = 1000 };
 static const uint32_t vxsiicTaskLoopDelay = 10;
 
+static Dev_vxsiicm vxsiicm = {0};
+
+static void local_init(DeviceBase *parent) {
+    //    init_auxpll_setup(&d.priv.setup);
+    create_device(parent, &vxsiicm.dev, &vxsiicm.priv, DEV_CLASS_VXSIICM, null_bus_info, "VXS IIC Master");
+}
+
 static void start_thread_vxsiicm( void const *arg)
 {
     (void) arg;
 
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    dev_vxsiicm_init();
-
     while (1)
     {
-        dev_vxsiicm_run();
+        dev_vxsiicm_run(&vxsiicm);
         osDelay(vxsiicTaskLoopDelay);
     }
 }
 
 osThreadDef(vxsiicm, start_thread_vxsiicm,    osPriorityNormal, 1, vxsiicThreadStackSize);
 
-void create_task_vxsiicm(void)
+void create_task_vxsiicm(DeviceBase *parent)
 {
+    local_init(parent);
     vxsiicThreadId = osThreadCreate(osThread (vxsiicm), NULL);
     if (vxsiicThreadId == NULL) {
         debug_print("Failed to create vxsiicm thread\n");

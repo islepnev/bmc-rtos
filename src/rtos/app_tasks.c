@@ -56,7 +56,7 @@ void create_tasks(void)
     create_task_pll(&topdevice);
     create_task_fpga(&topdevice);
 #if defined(BOARD_TTVXS)
-    create_task_vxsiicm();
+    create_task_vxsiicm(&topdevice);
 #else
     create_task_vxsiics();
 #endif

@@ -34,12 +34,12 @@ DeviceStatus getDeviceStatus(void)
     return status;
 }
 
-SensorStatus get_vxsiicm_sensor_status(const Devices *d)
-{
-    if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
-        return SENSOR_CRITICAL;
-    return SENSOR_NORMAL;
-}
+//SensorStatus get_vxsiicm_sensor_status(const Devices *d)
+//{
+//    if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
+//        return SENSOR_CRITICAL;
+//    return SENSOR_NORMAL;
+//}
 
 SensorStatus getSystemStatus(void)
 {

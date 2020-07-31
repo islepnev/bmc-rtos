@@ -29,7 +29,8 @@ typedef enum {
     VXSIIC_STATE_ERROR,
 } vxsiic_state_t;
 
-void dev_vxsiicm_run(void);
+struct Dev_vxsiicm;
+void dev_vxsiicm_run(struct Dev_vxsiicm *d);
 
 #ifdef __cplusplus
 }

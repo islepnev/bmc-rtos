@@ -57,6 +57,7 @@
 #include "system_status.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 #include "version.h"
+#include "vxsiicm/dev_vxsiicm_print.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
@@ -67,9 +68,7 @@ static void devPrintStatus(void)
 {
     dev_sfpiic_print();
     dev_eeprom_config_print();
-    const Dev_vxsiicm *vxsiicm = get_dev_vxsiicm();
-    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm), deviceStatusResultStr(vxsiicm->dev.device_status));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    dev_vxsiicm_print();
 }
 
 static const char *auxpllStateStr(AuxPllState state)

@@ -25,8 +25,6 @@ extern "C" {
 #endif
 
 struct Dev_vxsiicm;
-
-void dev_vxsiicm_init(void);
 DeviceStatus dev_vxsiicm_detect(struct Dev_vxsiicm *d);
 DeviceStatus dev_vxsiicm_read(struct Dev_vxsiicm *d);
 

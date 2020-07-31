@@ -30,11 +30,11 @@ const char * vxsiic_map_slot_to_label[VXSIIC_SLOTS] = {
     "13", "14", "15", "16", "17", "18", "19", "20", "21"
 };
 
-uint8_t get_vxsiic_board_count(const Dev_vxsiicm *d)
+uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d)
 {
     uint8_t count = 0;
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &d->priv.status.slot[i];
+        const vxsiic_slot_status_t *status = &d->status.slot[i];
         if (status->present)
             count++;
     }

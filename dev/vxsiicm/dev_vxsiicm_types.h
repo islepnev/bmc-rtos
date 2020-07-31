@@ -88,7 +88,7 @@ typedef struct vxsiic_pp_mcu_sensors {
     GenericSensor sensors[MAX_SENSOR_COUNT];
 } vxsiic_pp_mcu_sensors;
 
-struct vxsiic_slot_status_t {
+typedef struct vxsiic_slot_status_t {
    int present;
    SensorStatus system_status;
    uint32_t ioexp;
@@ -98,15 +98,11 @@ struct vxsiic_slot_status_t {
    vxsiic_pp_mcu_sensors mcu_sensors;
    iic_stats_t iic_master_stats;
    vxsiic_pp_state_t pp_state;
-};
+} vxsiic_slot_status_t;
 
-typedef struct vxsiic_slot_status_t vxsiic_slot_status_t;
-
-struct vxsiic_status_t {
+typedef struct vxsiic_status_t {
    vxsiic_slot_status_t slot[VXSIIC_SLOTS];
-};
-
-typedef struct vxsiic_status_t vxsiic_status_t;
+} vxsiic_status_t;
 
 typedef struct Dev_vxsiicm_priv {
     DeviceBase dev;
@@ -131,7 +127,7 @@ void struct_vxs_i2c_init(Dev_vxsiicm *d);
 
 extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
 extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
-uint8_t get_vxsiic_board_count(const Dev_vxsiicm *d);
+uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d);
 
 #ifdef __cplusplus
 }

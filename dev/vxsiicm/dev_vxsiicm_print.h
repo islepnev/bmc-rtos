@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "devices.h"
+#ifndef DEV_VXSIICM_PRINT_H
+#define DEV_VXSIICM_PRINT_H
 
-#include "devices_types.h"
+#include "dev_common_types.h"
 
-static Devices dev = {0};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-Devices* getDevices(void)
-{
-    return &dev;
+struct Dev_vxsiicm;
+DeviceStatus dev_vxsiicm_print();
+
+#ifdef __cplusplus
 }
+#endif
 
-const Devices* getDevicesConst(void)
-{
-    return &dev;
-}
+#endif // DEV_VXSIICM_PRINT_H

@@ -36,6 +36,7 @@
 #include "ipmi_sensor_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
+#include "vxsiicm/dev_vxsiicm_types.h"
 #include "version.h"
 
 #define RETURN_IF(x) { int ret = x; if (ret) return ret; }
@@ -207,9 +208,11 @@ int http_serve_sensors(struct http_server_t *server)
     if (ret != 0)
         return ret;
 
-    const Dev_vxsiicm *d = &getDevicesConst()->vxsiicm;
-    for (uint32_t pp=0; pp<VXSIIC_SLOTS; pp++) {
-        const vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
+    const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
+
+    for (uint32_t pp=0; vxsiicm && pp<VXSIIC_SLOTS; pp++) {
+        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[pp];
         if (!status->present)
             continue;
         uint16_t sensor_count = status->mcu_sensors.count;
@@ -271,9 +274,11 @@ int http_serve_boards(struct http_server_t *server)
     strcpy(buf, "<table>\n");
     RETURN_IF(http_server_write(server, buf));
 
-    const Dev_vxsiicm *d = &getDevicesConst()->vxsiicm;
-    for (uint32_t pp=0; pp<VXSIIC_SLOTS; pp++) {
-        const vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
+    const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
+
+    for (uint32_t pp=0; vxsiicm && pp<VXSIIC_SLOTS; pp++) {
+        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[pp];
         if (!status->present)
             continue;
         uint16_t sensor_count = status->mcu_sensors.count;

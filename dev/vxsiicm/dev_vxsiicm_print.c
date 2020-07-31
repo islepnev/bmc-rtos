@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "dev_vxsiicm.h"
+
+#include <stdio.h>
+#include <stdint.h>
+
+#include "dev_vxsiic_pp.h"
+#include "dev_vxsiicm_types.h"
 #include "devices.h"
+#include "display.h"
 
-#include "devices_types.h"
-
-static Devices dev = {0};
-
-Devices* getDevices(void)
+void dev_vxsiicm_print(void)
 {
-    return &dev;
-}
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
+    if (!d || !d->priv)
+        return;
+    const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
 
-const Devices* getDevicesConst(void)
-{
-    return &dev;
+    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm), deviceStatusResultStr(vxsiicm->dev.device_status));
+    print_clear_eol();
 }

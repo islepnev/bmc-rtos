@@ -35,10 +35,15 @@ void display_boards(int y)
     print_goto(2, 1);
     printf("Boards\n" ANSI_CLEAR_EOL);
     printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
+
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
+    if (!d || !d->priv)
+        return;
+    const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
+
     int line = 0;
-    /*
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &dev->vxsiic.status.slot[i];
+        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[i];
         const char *label = vxsiic_map_slot_to_label[i];
         if (0 == status->present)
             printf("%2s" ANSI_CLEAR_EOL "\n", label);
@@ -48,21 +53,21 @@ void display_boards(int y)
                    (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
                    (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
                    status->iic_master_stats.errors,
-                   status->iic_stats.errors,
-                   (uint16_t)(status->bmc_ver >> 16),
-                   (uint16_t)status->bmc_ver,
-                   status->module_id & 0xFF,
-                   status->uptime,
-                   sensor_status_str(status->enc_status.b.system),
-                   sensor_status_str(status->enc_status.b.pm),
-                   sensor_status_str(status->enc_status.b.therm),
-                   sensor_status_str(status->enc_status.b.misc),
-                   sensor_status_str(status->enc_status.b.fpga),
-                   sensor_status_str(status->enc_status.b.pll)
+                   status->mcu_info.iic_stats.errors,
+                   (uint16_t)(status->mcu_info.bmc_ver >> 16),
+                   (uint16_t)status->mcu_info.bmc_ver,
+                   status->mcu_info.module_id & 0xFF,
+                   status->mcu_info.uptime,
+                   sensor_status_str(status->mcu_info.enc_status.b.system),
+                   sensor_status_str(status->mcu_info.enc_status.b.pm),
+                   sensor_status_str(status->mcu_info.enc_status.b.therm),
+                   sensor_status_str(status->mcu_info.enc_status.b.misc),
+                   sensor_status_str(status->mcu_info.enc_status.b.fpga),
+                   sensor_status_str(status->mcu_info.enc_status.b.pll)
                    );
         line++;
     }
-    */
+
     print_clearbox(4+line, VXSIIC_SLOTS-line);
 #endif
 }

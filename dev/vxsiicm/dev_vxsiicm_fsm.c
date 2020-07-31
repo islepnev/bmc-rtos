@@ -38,9 +38,8 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
-void dev_vxsiicm_run(void)
+void dev_vxsiicm_run(Dev_vxsiicm *d)
 {
-    Dev_vxsiicm *d = get_dev_vxsiicm();
     switch (state) {
     case VXSIIC_STATE_RESET: {
         struct_vxs_i2c_init(d);
