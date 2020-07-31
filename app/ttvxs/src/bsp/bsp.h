@@ -53,7 +53,7 @@ extern "C" {
 uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
-void bsp_smbus_reset(void);
+void sfpiic_switch_enable(bool enable);
 
 #ifdef __cplusplus
 }
