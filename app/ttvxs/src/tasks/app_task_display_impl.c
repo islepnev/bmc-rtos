@@ -91,7 +91,11 @@ static const char *auxpllStateStr(AuxPllState state)
 #define DISPLAY_TEMP_H 1
 #define DISPLAY_TEMP_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
 #define DISPLAY_MAIN_Y (0 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y)
+#ifdef BOARD_TTVXS
+#define DISPLAY_MAIN_H 4
+#else
 #define DISPLAY_MAIN_H 3
+#endif
 #define DISPLAY_CLKMUX_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
 #define DISPLAY_CLKMUX_H 1
 #define DISPLAY_FPGA_Y (0 + DISPLAY_CLKMUX_Y + DISPLAY_CLKMUX_H)

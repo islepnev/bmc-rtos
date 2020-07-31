@@ -116,3 +116,15 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
 //    debug_printf("%s: %ld ticks\n", __func__, ticks);
     return d->dev.device_status;
 }
+
+SensorStatus dev_vxsiicm_sensor_status(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
+    if (!d)
+        return SENSOR_UNKNOWN;
+    // const Dev_vxsiicm_priv *priv = (const Dev_vxsiicm_priv *)device_priv_const(d);
+
+    if (d->device_status != DEVICE_NORMAL)
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}

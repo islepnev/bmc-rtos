@@ -44,22 +44,6 @@ enum {VXSIIC_PP_IOEXP_BIT_DONE  = 0x2};
 enum {VXSIIC_PP_IOEXP_BIT_INITB = 0x4};
 enum {VXSIIC_PP_IOEXP_BIT_PGOOD = 0x8};
 
-typedef union
-{
-  struct
-  {
-      SensorStatus system:4;
-      SensorStatus pm:4;
-      SensorStatus therm:4;
-      SensorStatus misc:4;
-      SensorStatus fpga:4;
-      SensorStatus pll:4;
-      SensorStatus r1:4;
-      SensorStatus r2:4;
-  } b;
-  uint32_t w;
-} encoded_system_status_t;
-
 //typedef enum {
 //    VXSIIC_PP_STATE_UNKNOWN,
 //    VXSIIC_PP_STATE_READY,

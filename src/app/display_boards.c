@@ -61,7 +61,7 @@ void display_boards(int y)
                    sensor_status_str(status->mcu_info.enc_status.b.system),
                    sensor_status_str(status->mcu_info.enc_status.b.pm),
                    sensor_status_str(status->mcu_info.enc_status.b.therm),
-                   sensor_status_str(status->mcu_info.enc_status.b.misc),
+                   sensor_status_str(status->mcu_info.enc_status.b.sfpiic),
                    sensor_status_str(status->mcu_info.enc_status.b.fpga),
                    sensor_status_str(status->mcu_info.enc_status.b.pll)
                    );

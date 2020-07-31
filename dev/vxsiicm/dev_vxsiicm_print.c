@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "dev_vxsiic_pp.h"
+#include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"
 #include "devices.h"
 #include "display.h"
@@ -32,6 +32,7 @@ void dev_vxsiicm_print(void)
         return;
     const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
 
-    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm), deviceStatusResultStr(vxsiicm->dev.device_status));
+    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm),
+           sensor_status_ansi_str(dev_vxsiicm_sensor_status()));
     print_clear_eol();
 }

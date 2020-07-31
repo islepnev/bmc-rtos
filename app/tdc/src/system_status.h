@@ -25,22 +25,6 @@
 extern "C" {
 #endif
 
-typedef union
-{
-  struct
-  {
-      SensorStatus system:4;
-      SensorStatus pm:4;
-      SensorStatus therm:4;
-      SensorStatus sfpiic:4;
-      SensorStatus fpga:4;
-      SensorStatus pll:4;
-      SensorStatus r1:4;
-      SensorStatus r2:4;
-  } b;
-  uint32_t w;
-} encoded_system_status_t;
-
 struct Devices;
 SensorStatus pollVxsiicStatus(struct Devices *dev);
 DeviceStatus getDeviceStatus(void);

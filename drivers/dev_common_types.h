@@ -20,6 +20,8 @@
 
 #include "bus/bus_types.h"
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +32,23 @@ typedef enum {
     SENSOR_WARNING  = 2,
     SENSOR_CRITICAL = 3
 } SensorStatus;
+
+typedef union
+{
+  struct
+  {
+      SensorStatus system:4;
+      SensorStatus pm:4;
+      SensorStatus therm:4;
+      SensorStatus sfpiic:4;
+      SensorStatus fpga:4;
+      SensorStatus pll:4;
+      SensorStatus r1:4;
+      SensorStatus r2:4;
+  } b;
+  uint32_t w;
+} encoded_system_status_t;
+
 
 typedef enum {
     DEVICE_UNKNOWN = 0,

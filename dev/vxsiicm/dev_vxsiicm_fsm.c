@@ -38,12 +38,14 @@ static uint32_t stateTicks(void)
     return osKernelSysTick() - stateStartTick;
 }
 
+
 void dev_vxsiicm_run(Dev_vxsiicm *d)
 {
     switch (state) {
     case VXSIIC_STATE_RESET: {
         struct_vxs_i2c_init(d);
         DeviceStatus status = dev_vxsiicm_detect(d);
+        d->dev.device_status = status;
         if (status == DEVICE_NORMAL)
             state = VXSIIC_STATE_RUN;
         break;
@@ -60,6 +62,7 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
         }
         break;
     case VXSIIC_STATE_ERROR:
+        d->dev.device_status = DEVICE_FAIL;
         if (old_state != state) {
             log_printf(LOG_ERR, "VXS IIC error");
         }
@@ -68,6 +71,8 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
         }
         break;
     }
+    d->dev.sensor = dev_vxsiicm_sensor_status();
+
     if (old_state != state) {
         old_state = state;
         stateStartTick = osKernelSysTick();
