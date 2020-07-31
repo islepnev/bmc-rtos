@@ -45,7 +45,7 @@ static const uint32_t powermonTaskLoopDelay = 10;
 static BusInterface cru16_max31725_bus_info = {
     .type = BUS_IIC,
     .bus_number = 2,
-    .address = 0x56
+    .address = 0x52
 };
 
 static BusInterface ttvxs_tmp421_bus_info = {
