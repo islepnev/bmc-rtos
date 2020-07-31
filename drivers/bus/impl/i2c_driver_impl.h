@@ -1,5 +1,5 @@
 /*
-**    Generic interrupt mode SPI driver
+**    Generic interrupt mode I2C driver
 **
 **    Copyright 2019 Ilja Slepnev
 **

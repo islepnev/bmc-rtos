@@ -20,8 +20,6 @@
 #ifndef I2C_DRIVER_CALLBACKS_H
 #define I2C_DRIVER_CALLBACKS_H
 
-#include "stm32f7xx_hal_def.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

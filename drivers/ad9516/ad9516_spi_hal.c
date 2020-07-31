@@ -50,14 +50,14 @@ static bool ad9516_read1_duplex(uint16_t reg, uint8_t *data)
     tx[1] = reg & 0xFF;
     tx[2] = 0;
     set_csb(0);
-    volatile HAL_StatusTypeDef ret = spi_driver_tx_rx(&ad9516_spi, tx, rx, Size, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx_rx(&ad9516_spi, tx, rx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
-    if (ret == HAL_OK) {
+    if (ret) {
         if (data) {
             *data = rx[2];
         }
     }
-    return ret == HAL_OK;
+    return ret;
 }
 
 static bool ad9516_write1_internal(uint16_t reg, uint8_t data)
@@ -69,9 +69,9 @@ static bool ad9516_write1_internal(uint16_t reg, uint8_t data)
     tx[1] = reg & 0xFF;
     tx[2] = data;
     set_csb(0);
-    volatile HAL_StatusTypeDef ret = spi_driver_tx(&ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx(&ad9516_spi, tx, Size, SPI_TIMEOUT_MS);
     set_csb(1);
-    return HAL_OK == ret;
+    return ret;
 }
 
 void ad9516_test_loop(void)

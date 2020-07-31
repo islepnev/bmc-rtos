@@ -1,5 +1,5 @@
 /*
-**    Generic interrupt mode SPI driver
+**    Generic interrupt mode I2C driver
 **
 **    Copyright 2019 Ilja Slepnev
 **
@@ -51,27 +51,27 @@ osSemaphoreDef(i2c3_dev_sem);
 osSemaphoreDef(i2c4_dev_sem);
 
 // transfer error flags
-bool transfer_error[I2C_BUS_COUNT] = {0};
+static bool i2c_driver_transfer_error[I2C_BUS_COUNT] = {0};
 
-void clear_transfer_error(struct __I2C_HandleTypeDef *hi2c)
+void i2c_driver_clear_transfer_error(struct __I2C_HandleTypeDef *hi2c)
 {
     int index = hi2c_index(hi2c);
     if (index == 0 || index > I2C_BUS_COUNT) return;
-    transfer_error[index-1] = 0;
+    i2c_driver_transfer_error[index-1] = 0;
 }
 
-void raise_transfer_error(struct __I2C_HandleTypeDef *hi2c)
+void i2c_driver_raise_transfer_error(struct __I2C_HandleTypeDef *hi2c)
 {
     int index = hi2c_index(hi2c);
     if (index == 0 || index > I2C_BUS_COUNT) return;
-    transfer_error[index-1] = true;
+    i2c_driver_transfer_error[index-1] = true;
 }
 
-bool is_transfer_ok(struct __I2C_HandleTypeDef *hi2c)
+bool i2c_driver_is_transfer_ok(struct __I2C_HandleTypeDef *hi2c)
 {
     int index = hi2c_index(hi2c);
     if (index == 0 || index > I2C_BUS_COUNT) return false;
-    return 0 == transfer_error[index-1];
+    return 0 == i2c_driver_transfer_error[index-1];
 }
 
 bool i2c_driver_util_init(void)
@@ -110,7 +110,7 @@ bool i2c_driver_util_init(void)
     return true;
 }
 
-SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
+SemaphoreHandle_t i2c_driver_it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
 {
     if (hi2c == &hi2c1)
         return i2c1_it_sem;
@@ -124,7 +124,7 @@ SemaphoreHandle_t it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
     return NULL;
 }
 
-SemaphoreHandle_t dev_sem_by_index(int index)
+SemaphoreHandle_t i2c_driver_dev_sem_by_index(int index)
 {
     assert(index >=1 && index <= I2C_BUS_COUNT);
     switch (index) {
@@ -165,25 +165,25 @@ struct __I2C_HandleTypeDef * hi2c_handle(BusIndex index)
     return NULL;
 }
 
-int32_t wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
+int32_t i2c_driver_wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec)
 {
-    SemaphoreHandle_t sem = it_sem_by_hi2c(hi2c);
+    SemaphoreHandle_t sem = i2c_driver_it_sem_by_hi2c(hi2c);
     if (sem)
         return osSemaphoreWait(sem, millisec);
     else
         return osErrorValue;
 }
 
-void release_it_sem(struct __I2C_HandleTypeDef *hi2c)
+void i2c_driver_release_it_sem(struct __I2C_HandleTypeDef *hi2c)
 {
-    SemaphoreHandle_t sem = it_sem_by_hi2c(hi2c);
+    SemaphoreHandle_t sem = i2c_driver_it_sem_by_hi2c(hi2c);
     if (sem)
         osSemaphoreRelease(sem);
 }
 
-int32_t wait_dev_sem(int index, uint32_t millisec)
+int32_t i2c_driver_wait_dev_sem(int index, uint32_t millisec)
 {
-    SemaphoreHandle_t sem = dev_sem_by_index(index);
+    SemaphoreHandle_t sem = i2c_driver_dev_sem_by_index(index);
     assert(sem);
     if (!sem)
         return osErrorValue;
@@ -193,9 +193,9 @@ int32_t wait_dev_sem(int index, uint32_t millisec)
     return  ret;
 }
 
-void release_dev_sem(int index)
+void i2c_driver_release_dev_sem(int index)
 {
-    SemaphoreHandle_t sem = dev_sem_by_index(index);
+    SemaphoreHandle_t sem = i2c_driver_dev_sem_by_index(index);
     assert(sem);
     if (sem)
         osSemaphoreRelease(sem);

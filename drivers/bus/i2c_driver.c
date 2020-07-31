@@ -48,39 +48,39 @@ bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, ui
 bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hi2c_index(hi2c);
-    if (osOK != wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
         return false;
     bool ret = i2c_driver_read_internal(hi2c, DevAddress, pData, Size, millisec);
-    release_dev_sem(dev_index);
+    i2c_driver_release_dev_sem(dev_index);
     return ret;
 }
 
 bool i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hi2c_index(hi2c);
-    if (osOK != wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
         return false;
     bool ret = i2c_driver_write_internal(hi2c, DevAddress, pData, Size, millisec);
-    release_dev_sem(dev_index);
+    i2c_driver_release_dev_sem(dev_index);
     return ret;
 }
 
 bool i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hi2c_index(hi2c);
-    if (osOK != wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
         return false;
     bool ret = i2c_driver_mem_read_internal(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, millisec);
-    release_dev_sem(dev_index);
+    i2c_driver_release_dev_sem(dev_index);
     return ret;
 }
 
 bool i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hi2c_index(hi2c);
-    if (osOK != wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
         return false;
     bool ret = i2c_driver_mem_write_internal(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, millisec);
-    release_dev_sem(dev_index);
+    i2c_driver_release_dev_sem(dev_index);
     return ret;
 }

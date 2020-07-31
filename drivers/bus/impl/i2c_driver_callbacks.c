@@ -24,31 +24,31 @@
 
 void HAL_I2C_MasterTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    release_it_sem(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }
 
 void HAL_I2C_MasterRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    release_it_sem(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }
 
 void HAL_I2C_MemTxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    release_it_sem(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }
 
 void HAL_I2C_MemRxCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    release_it_sem(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }
 
 void HAL_I2C_ErrorCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    raise_transfer_error(hi2c);
-    release_it_sem(hi2c);
+    i2c_driver_raise_transfer_error(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }
 
 void HAL_I2C_AbortCpltCallback(struct __I2C_HandleTypeDef *hi2c)
 {
-    release_it_sem(hi2c);
+    i2c_driver_release_it_sem(hi2c);
 }

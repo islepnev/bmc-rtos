@@ -1,4 +1,6 @@
 /*
+**    Generic interrupt mode SPI driver
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,25 +17,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SPI_DRIVER_H
-#define SPI_DRIVER_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef SPI_DRIVER_CALLBACKS_H
+#define SPI_DRIVER_CALLBACKS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct __SPI_HandleTypeDef;
-
-void spi_driver_init(void);
-bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi);
-bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
-bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
+void HAL_SPI_TxCpltCallback(struct __SPI_HandleTypeDef *hspi);
+void HAL_SPI_RxCpltCallback(struct __SPI_HandleTypeDef *hspi);
+void HAL_SPI_TxRxCpltCallback(struct __SPI_HandleTypeDef *hspi);
+void HAL_SPI_ErrorCallback(struct __SPI_HandleTypeDef *hspi);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // SPI_DRIVER_H
+#endif // SPI_DRIVER_CALLBACKS_H

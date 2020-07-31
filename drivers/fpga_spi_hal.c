@@ -17,11 +17,12 @@
 
 #include "fpga_spi_hal.h"
 #include <stdint.h>
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal.h"
+
 #include "spi.h"
 #include "bus/spi_driver.h"
 #include "bsp.h"
+#include "bsp_pin_defs.h"
+#include "gpio.h"
 #include "led_gpio_hal.h"
 #include "bsp_pin_defs.h"
 #include "logbuffer.h"
@@ -41,7 +42,7 @@ typedef enum {
  */
 void fpga_spi_hal_spi_nss_b(NssState state)
 {
-    HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, (state == NSS_DEASSERT) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    write_gpio_pin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, (state == NSS_DEASSERT) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 /**
@@ -58,13 +59,13 @@ bool fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
     txBuf[0] = (0x8000 | (addr & 0x7FFF));
     txBuf[1] = 0;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = spi_driver_tx_rx(&fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx_rx(&fpga_spi, (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-    if ((HAL_OK == ret) && data) {
+    if (ret && data) {
         uint16_t result = rxBuf[1];
         *data = result;
     }
-    return HAL_OK == ret;
+    return ret;
 }
 
 /**
@@ -80,13 +81,13 @@ bool fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
     txBuf[0] = (0x0000 | (addr & 0x7FFF));
     txBuf[1] = data;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    HAL_StatusTypeDef ret = spi_driver_tx(&fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx(&fpga_spi, (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-    if (HAL_OK != ret) {
-        log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error %d\n", ret);
+    if (! ret) {
+        log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error\n");
         return ret;
     }
-    return HAL_OK == ret;
+    return ret;
 }
 
 void fpga_enable_interface(void)

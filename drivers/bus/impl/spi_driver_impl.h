@@ -1,4 +1,6 @@
 /*
+**    Generic interrupt mode SPI driver
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,11 +17,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SPI_DRIVER_H
-#define SPI_DRIVER_H
+#ifndef SPI_DRIVER_IMPL_H
+#define SPI_DRIVER_IMPL_H
 
 #include <stdbool.h>
-#include <stdint.h>
+#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,13 +29,13 @@ extern "C" {
 
 struct __SPI_HandleTypeDef;
 
-void spi_driver_init(void);
-bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi);
-bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
-bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
+void i2c_driver_log_error(const char *title, struct __SPI_HandleTypeDef *hspi);
+void i2c_driver_reset_internal(struct __SPI_HandleTypeDef *hspi);
+bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
+bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // SPI_DRIVER_H
+#endif // SPI_DRIVER_IMPL_H

@@ -19,177 +19,50 @@
 
 #include "spi_driver.h"
 
-#include "spi.h"
-#include "log/logbuffer.h"
 #include "cmsis_os.h"
 #include "error_handler.h"
+#include "impl/spi_driver_impl.h"
+#include "impl/spi_driver_util.h"
+#include "log/logbuffer.h"
+#include "spi.h"
+
 
 #define USE_INTERRUPT_MODE_SPI
 
-osSemaphoreId spi1_sem;
-osSemaphoreId spi2_sem;
-osSemaphoreId spi3_sem;
-osSemaphoreId spi4_sem;
-osSemaphoreId spi5_sem;
-osSemaphoreDef(spi1_sem);
-osSemaphoreDef(spi2_sem);
-osSemaphoreDef(spi3_sem);
-osSemaphoreDef(spi4_sem);
-osSemaphoreDef(spi5_sem);
-
 void spi_driver_init(void)
 {
-    // Create and take the semaphore
-    spi1_sem = osSemaphoreCreate(osSemaphore(spi1_sem), 1);
-    spi2_sem = osSemaphoreCreate(osSemaphore(spi2_sem), 1);
-    spi3_sem = osSemaphoreCreate(osSemaphore(spi3_sem), 1);
-    spi4_sem = osSemaphoreCreate(osSemaphore(spi4_sem), 1);
-    spi5_sem = osSemaphoreCreate(osSemaphore(spi5_sem), 1);
-    if (NULL == spi1_sem
-            || NULL == spi2_sem
-            || NULL == spi3_sem
-            || NULL == spi4_sem
-            || NULL == spi5_sem
-            ) {
+    if (! spi_driver_util_init())
         Error_Handler();
-    }
-
-    osSemaphoreWait(spi1_sem, osWaitForever);
-    osSemaphoreWait(spi2_sem, osWaitForever);
-    osSemaphoreWait(spi3_sem, osWaitForever);
-    osSemaphoreWait(spi4_sem, osWaitForever);
-    osSemaphoreWait(spi5_sem, osWaitForever);
 }
 
-void spi_driver_reset(struct __SPI_HandleTypeDef *handle)
+bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi)
 {
-    __HAL_SPI_DISABLE(handle);
-    handle->ErrorCode = HAL_SPI_ERROR_NONE;
-    handle->State = HAL_SPI_STATE_READY;
-    __HAL_SPI_ENABLE(handle);
+    return  HAL_SPI_STATE_READY == HAL_SPI_GetState(hspi);
 }
 
-static SemaphoreHandle_t sem_by_hspi(struct __SPI_HandleTypeDef *hspi)
-{
-    if (hspi == &hspi1)
-        return spi1_sem;
-    if (hspi == &hspi2)
-        return spi2_sem;
-    if (hspi == &hspi3)
-        return spi3_sem;
-    if (hspi == &hspi4)
-        return spi4_sem;
-    if (hspi == &hspi5)
-        return spi5_sem;
-    return NULL;
-}
+// Device-locked functions
 
-int hspi_index(struct __SPI_HandleTypeDef *hspi)
-{
-    if (hspi == &hspi1)
-        return 1;
-    if (hspi == &hspi2)
-        return 2;
-    if (hspi == &hspi3)
-        return 3;
-    if (hspi == &hspi4)
-        return 4;
-    if (hspi == &hspi5)
-        return 5;
-    return 0;
-}
-
-static int32_t spi_driver_wait_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
-{
-    SemaphoreHandle_t sem = sem_by_hspi(hspi);
-    if (sem) {
-        int32_t result = osSemaphoreWait(sem, millisec);
-        if (result != osOK) {
-            log_printf(LOG_WARNING, "%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
-        }
-        return result;
-    }
-    else {
-        Error_Handler();
-        return -1;
-    }
-}
-
-void spi_driver_release_sem(struct __SPI_HandleTypeDef *hspi)
-{
-    SemaphoreHandle_t sem = sem_by_hspi(hspi);
-    if (sem) {
-        int32_t result = osSemaphoreRelease(sem);
-        if (result != osOK) {
-            log_printf(LOG_WARNING, "%s: SPI%d error %d\n", __func__, hspi_index(hspi), result);
-        }
-    } else {
-        Error_Handler();
-    }
-}
-
-void HAL_SPI_TxCpltCallback(struct __SPI_HandleTypeDef *hspi)
-{
-    spi_driver_release_sem(hspi);
-}
-
-void HAL_SPI_RxCpltCallback(struct __SPI_HandleTypeDef *hspi)
-{
-    spi_driver_release_sem(hspi);
-}
-
-void HAL_SPI_TxRxCpltCallback(struct __SPI_HandleTypeDef *hspi)
-{
-    spi_driver_release_sem(hspi);
-}
-
-void HAL_SPI_ErrorCallback(struct __SPI_HandleTypeDef *hspi)
-{
-    if (!hspi)
-        Error_Handler();
-    log_printf(LOG_WARNING, "%s SPI%d error, code %d\n", __func__, hspi_index(hspi), hspi->ErrorCode);
-    // reinitialize SPI
-    spi_driver_reset(hspi);
-    spi_driver_release_sem(hspi);
-}
 #ifdef USE_INTERRUPT_MODE_SPI
-HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
-    if (!hspi)
-        Error_Handler();
-    HAL_StatusTypeDef ret = HAL_OK;
-    ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
-    if (ret != HAL_OK) {
-        log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
-                     (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
-        return ret;
-    }
-    int32_t status = spi_driver_wait_sem(hspi, millisec);
-    if (status != osOK) {
-        log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
-        return HAL_TIMEOUT;
-    }
+    int dev_index = hspi_index(hspi);
+    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
+    bool ret = spi_driver_tx_rx_internal(hspi, txBuf, rxBuf, Size, millisec);
+    spi_driver_release_dev_sem(dev_index);
     return ret;
 }
 
-HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
+bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
 {
-    if (!hspi)
-        Error_Handler();
-    HAL_StatusTypeDef ret = HAL_OK;
-    ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
-    if (ret != HAL_OK) {
-        log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
-                     (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
-        return ret;
-    }
-    int32_t status = spi_driver_wait_sem(hspi, millisec);
-    if (status != osOK) {
-        log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
-        return HAL_TIMEOUT;
-    }
+    int dev_index = hspi_index(hspi);
+    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
+    bool ret = spi_driver_tx_internal(hspi, txBuf, Size, millisec);
+    spi_driver_release_dev_sem(dev_index);
     return ret;
 }
+
 #else
 HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {

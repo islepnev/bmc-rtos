@@ -1,5 +1,5 @@
 /*
-**    Generic interrupt mode SPI driver
+**    Generic interrupt mode I2C driver
 **
 **    Copyright 2019 Ilja Slepnev
 **
@@ -19,7 +19,7 @@
 
 #include "i2c_driver_impl.h"
 
-#include "assert.h"
+#include <assert.h>
 
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
@@ -58,17 +58,16 @@ void i2c_driver_reset_internal(struct __I2C_HandleTypeDef *hi2c)
     __HAL_I2C_ENABLE(hi2c);
 }
 
-
 static bool i2c_driver_wait_complete(const char *title, struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint32_t millisec)
 {
-    int32_t status = wait_it_sem(hi2c, millisec);
+    int32_t status = i2c_driver_wait_it_sem(hi2c, millisec);
     if (status != osOK) {
         log_printf(LOG_CRIT, "%s: I2C %d.%02X timeout\n", title, hi2c_index(hi2c), DevAddress >> 1);
         HAL_I2C_Master_Abort_IT(hi2c, DevAddress);
         i2c_driver_reset_internal(hi2c);
         return false;
     }
-    if (! is_transfer_ok(hi2c)) {
+    if (! i2c_driver_is_transfer_ok(hi2c)) {
         log_printf(LOG_CRIT, "%s: I2C %d.%02X transfer failed\n", title, hi2c_index(hi2c), DevAddress >> 1);
         return false;
     }
@@ -86,7 +85,7 @@ static bool i2c_driver_check_hal_ret(const char *title, struct __I2C_HandleTypeD
 
 static bool i2c_driver_before_hal_call(const char *title, struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress)
 {
-    clear_transfer_error(hi2c);
+    i2c_driver_clear_transfer_error(hi2c);
     if (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance)) {
         log_printf(LOG_CRIT, "%s: I2C %d.%02X bus busy\n",
                    title, hi2c_index(hi2c), DevAddress >> 1);
