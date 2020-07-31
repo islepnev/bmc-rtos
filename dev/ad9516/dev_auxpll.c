@@ -23,7 +23,6 @@
 #include "ad9516/ad9516_status.h"
 #include "ad9516_regs.h"
 #include "ansi_escape_codes.h"
-#include "app_shared_data.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "dev_auxpll_types.h"
@@ -184,10 +183,10 @@ err:
 OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
 {
     // output drivers
-    ad9516_write1(0x140, AUXPLL_AD9516_OUT6_ENABLE ? 0x42 : 0x43); // OUT6
-    ad9516_write1(0x141, AUXPLL_AD9516_OUT7_ENABLE ? 0x42 : 0x43); // OUT7
-    ad9516_write1(0x142, AUXPLL_AD9516_OUT8_ENABLE ? 0x42 : 0x43); // OUT8, Enable, LVDS
-    ad9516_write1(0x143, AUXPLL_AD9516_OUT9_ENABLE ? 0x42 : 0x43); // OUT9
+    ad9516_write1(0x140, d->priv.enable_out_6 ? 0x42 : 0x43); // OUT6
+    ad9516_write1(0x141, d->priv.enable_out_7 ? 0x42 : 0x43); // OUT7
+    ad9516_write1(0x142, d->priv.enable_out_8 ? 0x42 : 0x43); // OUT8, Enable, LVDS
+    ad9516_write1(0x143, d->priv.enable_out_9 ? 0x42 : 0x43); // OUT9
 
     // output dividers
     ad9516_write1(0x199, 0);

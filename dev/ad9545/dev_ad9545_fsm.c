@@ -18,7 +18,6 @@
 #include "dev_ad9545_fsm.h"
 #include <string.h>
 #include "ad9545/ad9545.h"
-#include "app_shared_data.h" // required for enable_power, system_power_present
 #include "cmsis_os.h"
 #include "dev_ad9545.h"
 #include "logbuffer.h"
@@ -35,10 +34,10 @@ static uint32_t stateTicks(Dev_ad9545_priv *p)
 4. Configure the output drivers
 5. Configure the status pins (optional)
 */
-void dev_ad9545_run(Dev_ad9545 *d)
+void dev_ad9545_run(Dev_ad9545 *d, bool enable)
 {
     BusInterface *bus = &d->dev.bus;
-    if (!enable_power || !system_power_present) {
+    if (!enable) {
         if (d->priv.fsm_state != PLL_STATE_INIT) {
             d->priv.fsm_state = PLL_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;

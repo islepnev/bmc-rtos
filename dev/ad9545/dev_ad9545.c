@@ -16,8 +16,8 @@
 */
 
 #include "dev_ad9545.h"
+
 #include <string.h>
-#include "app_shared_data.h"
 
 #include "ad9545/ad9545.h"
 

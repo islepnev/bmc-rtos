@@ -18,7 +18,9 @@
 #ifndef APP_TASK_AUXPLL_IMPL_H
 #define APP_TASK_AUXPLL_IMPL_H
 
+#include <stdbool.h>
+
 struct Dev_auxpll;
-void auxpll_task_run(struct Dev_auxpll *d);
+void auxpll_task_run(struct Dev_auxpll *d, bool enable);
 
 #endif // APP_TASK_AUXPLL_IMPL_H

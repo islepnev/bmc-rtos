@@ -17,7 +17,9 @@
 #ifndef DEV_AUXPLL_TYPES_H
 #define DEV_AUXPLL_TYPES_H
 
+#include <stdbool.h>
 #include <stdint.h>
+
 #include "devicelist.h"
 #include "ad9516/ad9516_status.h"
 
@@ -38,6 +40,10 @@ typedef struct Dev_auxpll_priv {
     AD9516_Status status;
     AuxPllState fsm_state;
     uint32_t recoveryCount;
+    bool enable_out_6;
+    bool enable_out_7;
+    bool enable_out_8;
+    bool enable_out_9;
 } Dev_auxpll_priv;
 
 typedef struct Dev_auxpll {

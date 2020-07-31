@@ -18,6 +18,8 @@
 #ifndef DEV_AD9545_FSM_H
 #define DEV_AD9545_FSM_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +36,7 @@ typedef enum {
 } ad9545_state_t;
 
 struct Dev_ad9545;
-void dev_ad9545_run(struct Dev_ad9545 *dev);
+void dev_ad9545_run(struct Dev_ad9545 *dev, bool enable);
 
 #ifdef __cplusplus
 }

@@ -69,7 +69,8 @@ static void pllTask(void const *arg)
 #else
         dev_eeprom_config_run(&eeprom);
 #endif
-        dev_ad9545_run(&pll);
+        bool power_on = enable_power && system_power_present;
+        dev_ad9545_run(&pll, power_on);
         osDelay(pllTaskLoopDelay);
     }
 }

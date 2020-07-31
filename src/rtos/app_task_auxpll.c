@@ -19,8 +19,10 @@
 
 #include <stdint.h>
 
+#include "bsp.h"
 #include "cmsis_os.h"
 #include "app_tasks.h"
+#include "app_shared_data.h"
 #include "ad9516/dev_auxpll_types.h"
 #include "ad9516/app_task_auxpll_impl.h"
 #include "bus/bus_types.h"
@@ -38,8 +40,13 @@ static BusInterface auxpll_bus_info = {
 
 static Dev_auxpll d = {0};
 
-static void local_init(DeviceBase *parent) {
-//    init_auxpll_setup(&d.priv.setup);
+static void local_init(DeviceBase *parent)
+{
+    d.priv.enable_out_6 = AUXPLL_AD9516_OUT6_ENABLE;
+    d.priv.enable_out_7 = AUXPLL_AD9516_OUT7_ENABLE;
+    d.priv.enable_out_8 = AUXPLL_AD9516_OUT8_ENABLE;
+    d.priv.enable_out_9 = AUXPLL_AD9516_OUT9_ENABLE;
+
     create_device(parent, &d.dev, &d.priv, DEV_CLASS_AD9516, auxpll_bus_info, "Aux PLL");
 }
 
@@ -47,7 +54,8 @@ static void auxpllTask(void const *arg)
 {
     (void) arg;
     while(1) {
-        auxpll_task_run(&d);
+        bool enable = enable_power && system_power_present;
+        auxpll_task_run(&d, enable);
         osDelay(auxpllTaskLoopDelay);
     }
 }

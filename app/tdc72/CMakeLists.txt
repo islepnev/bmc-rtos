@@ -39,8 +39,8 @@ file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9516/*.c
     ${MY_LIB_DIR}/dev/ad9545/*.c
     ${MY_LIB_DIR}/dev/adt7301/*.c
-    ${MY_LIB_DIR}/dev/common/*.c
     ${MY_LIB_DIR}/dev/clkmux/*.c
+    ${MY_LIB_DIR}/dev/common/*.c
     ${MY_LIB_DIR}/dev/digipot/*.c
     ${MY_LIB_DIR}/dev/eeprom_config/*.c
     ${MY_LIB_DIR}/dev/fpga/*.c

@@ -17,7 +17,6 @@
 
 #include "app_task_auxpll_impl.h"
 #include "cmsis_os.h"
-#include "app_shared_data.h"
 #include "bsp.h"
 #include "dev_auxpll.h"
 #include "ad9516/ad9516_spi_hal.h"
@@ -36,9 +35,8 @@ void auxpll_clear_status(Dev_auxpll *d)
 
 static int old_enable = 0;
 
-void auxpll_task_run(Dev_auxpll *d)
+void auxpll_task_run(Dev_auxpll *d, bool enable)
 {
-    bool enable = enable_power && system_power_present;
     if (old_enable != enable) {
         old_enable = enable;
     }
