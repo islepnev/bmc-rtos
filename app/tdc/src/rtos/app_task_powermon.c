@@ -128,7 +128,8 @@ static void start_task_powermon( void const *arg)
 #endif
 #ifdef BOARD_TDC64
         for (int i=0; i<TDC64_MAX31725_COUNT; i++) {
-            dev_max31725_run(&therm[i]);
+            bool power_on = enable_power && system_power_present;
+            dev_max31725_run(&therm[i], power_on);
             thset.priv.sensors[i].value = therm[i].priv.temp;
             thset.priv.sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         }

@@ -91,7 +91,8 @@ static void start_task_powermon( void const *arg)
         sfpiic_switch_enable(true);
         task_sfpiic_run(&sfpiic);
         sfpiic_switch_enable(false);
-        dev_max31725_run(&therm1);
+        bool power_on = enable_power && system_power_present;
+        dev_max31725_run(&therm1, power_on);
         dev_tmp421_run(&therm2);
         thset.priv.sensors[0].value = therm2.priv.temp_internal;
         thset.priv.sensors[0].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;

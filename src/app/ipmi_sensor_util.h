@@ -15,12 +15,15 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef IPMI_SENSOR_UTIL_H
+#define IPMI_SENSOR_UTIL_H
+
 #include "ipmi_sensor_types.h"
 
-#include <string.h>
+enum { IIC_SENSORS_MAP_START = 0x1000 };
+//enum { IIC_SENSORS_MAP_INCR  = 0x40 };
+enum { IIC_SENSORS_MAP_SIZE_BYTES = sizeof(GenericSensor) * MAX_SENSOR_COUNT };
 
-void generic_sensor_set_name(GenericSensor *sensor, const char *name)
-{
-    strncpy(sensor->name, name, sizeof(sensor->name) - 1);
-    sensor->name[sizeof(sensor->name) - 1] = '\0';
-}
+// void generic_sensor_set_name(GenericSensor *sensor, const char *name);
+
+#endif // IPMI_SENSOR_UTIL_H

@@ -17,8 +17,6 @@
 
 #include "dev_max31725.h"
 
-#include "app_shared_data.h"
-#include "devices_types.h"
 #include "log/log.h"
 #include "max31725/max31725_i2c_hal.h"
 

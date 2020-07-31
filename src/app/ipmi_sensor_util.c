@@ -15,20 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_MAX31725_FSM_H
-#define DEV_MAX31725_FSM_H
+#include "ipmi_sensor_util.h"
 
-#include <stdbool.h>
+#include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Dev_max31725;
-void dev_max31725_run(struct Dev_max31725 *p, bool enable);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEV_MAX31725_FSM_H
+//void generic_sensor_set_name(GenericSensor *sensor, const char *name)
+//{
+//    strncpy(sensor->name, name, sizeof(sensor->name) - 1);
+//    sensor->name[sizeof(sensor->name) - 1] = '\0';
+//}

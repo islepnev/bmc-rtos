@@ -29,6 +29,7 @@
 #include "fpga/dev_fpga_types.h"
 #include "i2c.h"
 #include "ipmi_sensors.h"
+#include "ipmi_sensor_util.h"
 #include "led_gpio_hal.h"
 #include "logbuffer.h"
 #include "stm32f7xx_ll_i2c.h"

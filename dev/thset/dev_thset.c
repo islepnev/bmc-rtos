@@ -45,8 +45,11 @@ bool dev_thset_add(Dev_thset *d, const char *name)
     GenericSensor *sensor = &d->priv.sensors[i];
     sensor->hdr.raw = 0;
     sensor->hdr.b.type = IPMI_SENSOR_TEMPERATURE;
-    if (name)
-        generic_sensor_set_name(sensor, name);
+    if (name) {
+        strncpy(sensor->name, name, sizeof(sensor->name) - 1);
+        sensor->name[sizeof(sensor->name) - 1] = '\0';
+        // generic_sensor_set_name(sensor, name);
+    }
     d->priv.count++;
     return true;
 }

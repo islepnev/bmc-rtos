@@ -18,9 +18,7 @@
 
 #include "dev_adt7301.h"
 
-#include "i2c.h"
-#include "adt7301/adt7301_spi_hal.h"
-
+#include "adt7301_spi_hal.h"
 
 bool dev_adt7301_detect(Dev_adt7301 *d)
 {

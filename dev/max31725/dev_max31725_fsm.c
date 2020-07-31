@@ -19,7 +19,6 @@
 
 #include "cmsis_os.h"
 #include "dev_max31725.h"
-#include "app_shared_data.h"
 #include "log.h"
 #include "device_status_log.h"
 
@@ -31,12 +30,12 @@ static uint32_t stateTicks(Dev_max31725_priv *p)
     return osKernelSysTick() - p->state_start_tick;
 }
 
-void dev_max31725_run(Dev_max31725 *p)
+void dev_max31725_run(Dev_max31725 *p, bool enable)
 {
     Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
 #ifdef BOARD_TTVXS
     // issue #657
-    if (!enable_power || !system_power_present) {
+    if (!enable) {
         if (d->state != MAX31725_STATE_SHUTDOWN) {
             d->state = MAX31725_STATE_SHUTDOWN;
             p->dev.device_status = DEVICE_UNKNOWN;
