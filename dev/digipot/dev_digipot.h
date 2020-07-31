@@ -27,8 +27,6 @@
 extern "C" {
 #endif
 
-extern int digipot_screen_selected;
-
 int digipot_detect(Dev_digipots *d);
 void digipot_read_rdac_all(Dev_digipots *d);
 void dev_ad5141_reset(Dev_ad5141 *d);

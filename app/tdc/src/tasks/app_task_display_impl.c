@@ -33,6 +33,7 @@
 #include "dev_mcu.h"
 #include "devices_types.h"
 #include "digipot/dev_digipot.h"
+#include "digipot/dev_digipot_print.h"
 #include "display.h"
 #include "display_common.h"
 #include "display_log.h"
@@ -186,43 +187,6 @@ static void print_auxpll(void)
     auxpllPrint();
 }
 
-static void display_pot(void)
-{
-    print_goto(2, 1);
-    printf("Voltage adjustments\n" ANSI_CLEAR_EOL);
-    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom\n" ANSI_CLEAR_EOL);
-    print_goto(4, 1);
-    printf("\n");
-    printf("   adjustment ");
-    pm_sensor_print_header();
-    const DeviceBase *dev_pm = find_device_const(DEV_CLASS_POWERMON);
-    const Dev_powermon_priv *pm = dev_pm ? (Dev_powermon_priv *)device_priv_const(dev_pm) : 0;
-
-    const DeviceBase *dev_dp = find_device_const(DEV_CLASS_DIGIPOTS);
-    if (!dev_dp || !dev_dp->priv)
-        return;
-    const Dev_digipots_priv *dp = (const Dev_digipots_priv *)device_priv_const(dev_dp);
-
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        const Dev_ad5141 *p = &dp->pot[i];
-        printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
-        if (p->dev.device_status == DEVICE_NORMAL)
-            printf("%3u ", p->priv.value);
-        else
-            printf("?   ");
-        if (pm && (int)p->priv.sensorIndex > 0 && (int)p->priv.sensorIndex < POWERMON_SENSORS) {
-            const pm_sensor *sensor = &pm->sensors.arr[p->priv.sensorIndex];
-            const int isOn = monIsOn(pm->sw_state, p->priv.sensorIndex);
-            printf("%10s", sensor->priv.label);
-            pm_sensor_print_values(sensor, isOn);
-        } else {
-            printf("<no sensor>");
-        }
-        printf("%s\n", ANSI_CLEAR_EOL);
-    }
-//    pot_debug();
-}
-
 static int old_enable_stats_display = 0;
 
 static void display_summary(void)
@@ -304,7 +268,7 @@ void display_task_run(void)
         display_log(3, screen_height-1-3);
         break;
     case DISPLAY_DIGIPOT:
-        display_pot();
+        display_digipots();
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail();

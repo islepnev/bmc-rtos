@@ -46,9 +46,10 @@ file(GLOB_RECURSE Dev_HEADERS
 file(GLOB Dev_SRCS
     ${MY_LIB_DIR}/dev/ad9516/*.c
     ${MY_LIB_DIR}/dev/ad9545/*.c
+    ${MY_LIB_DIR}/dev/adt7301/*.c
     ${MY_LIB_DIR}/dev/common/*.c
     ${MY_LIB_DIR}/dev/cru16_clkmux/*.c
-#    ${MY_LIB_DIR}/dev/digipot/*.c
+    ${MY_LIB_DIR}/dev/digipot/*.c
     ${MY_LIB_DIR}/dev/eeprom_config/*.c
     ${MY_LIB_DIR}/dev/fpga/*.c
     ${MY_LIB_DIR}/dev/max31725/*.c
@@ -67,6 +68,7 @@ file(GLOB Drivers_SRCS
     ${MY_LIB_DIR}/drivers/ad5141/*.c
     ${MY_LIB_DIR}/drivers/ad9516/*.c
     ${MY_LIB_DIR}/drivers/ad9545/*.c
+    ${MY_LIB_DIR}/drivers/adt7301/*.c
     ${MY_LIB_DIR}/drivers/at24c/*.c
     ${MY_LIB_DIR}/drivers/bus/*.c
     ${MY_LIB_DIR}/drivers/bus/impl/*.c

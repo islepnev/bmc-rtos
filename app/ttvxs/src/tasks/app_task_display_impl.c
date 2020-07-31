@@ -71,19 +71,6 @@ static void devPrintStatus(void)
     dev_vxsiicm_print();
 }
 
-static const char *auxpllStateStr(AuxPllState state)
-{
-    switch(state) {
-    case AUXPLL_STATE_INIT:    return "INIT";
-    case AUXPLL_STATE_RESET:    return "RESET";
-    case AUXPLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
-    case AUXPLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
-    case AUXPLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case AUXPLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
-    default: return "?";
-    }
-}
-
 #define DISPLAY_SYS_STATUS_Y 2
 #define DISPLAY_SYS_STATUS_H 1
 #define DISPLAY_POWERMON_Y (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H)

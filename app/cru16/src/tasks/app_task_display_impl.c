@@ -36,6 +36,8 @@
 #include "dev_common_types.h"
 #include "dev_mcu.h"
 #include "devices_types.h"
+#include "digipot/dev_digipot.h"
+#include "digipot/dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_common.h"
@@ -67,19 +69,6 @@ static void devPrintStatus(void)
 {
     dev_sfpiic_print();
     dev_eeprom_config_print();
-}
-
-static const char *auxpllStateStr(AuxPllState state)
-{
-    switch(state) {
-    case AUXPLL_STATE_INIT:    return "INIT";
-    case AUXPLL_STATE_RESET:    return "RESET";
-    case AUXPLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
-    case AUXPLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
-    case AUXPLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case AUXPLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
-    default: return "?";
-    }
 }
 
 #define DISPLAY_SYS_STATUS_Y 2
@@ -261,6 +250,9 @@ void display_task_run(void)
         break;
     case DISPLAY_LOG:
         display_log(3, screen_height-1-3);
+        break;
+    case DISPLAY_DIGIPOT:
+        display_digipots();
         break;
     case DISPLAY_PLL_DETAIL:
         display_pll_detail();

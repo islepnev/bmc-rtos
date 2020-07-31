@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,12 +14,20 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef COMMANDS_H
-#define COMMANDS_H
 
-#include "cmsis_os.h"
+#ifndef DEV_DIGIPOT_PRINT_H
+#define DEV_DIGIPOT_PRINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void commands_init(void);
+extern int digipot_screen_selected;
 
-#endif // COMMANDS_H
+void display_digipots(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_DIGIPOT_PRINT_H
