@@ -35,6 +35,7 @@ void dev_max31725_run(Dev_max31725 *p)
 {
     Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
 #ifdef BOARD_TTVXS
+    // issue #657
     if (!enable_power || !system_power_present) {
         if (d->state != MAX31725_STATE_SHUTDOWN) {
             d->state = MAX31725_STATE_SHUTDOWN;

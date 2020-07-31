@@ -34,16 +34,6 @@ static uint32_t stateTicks(Dev_tmp421_priv *p)
 void dev_tmp421_run(Dev_tmp421 *p)
 {
     Dev_tmp421_priv *d = (Dev_tmp421_priv *)&p->priv;
-#ifdef BOARD_TTVXS
-    if (!enable_power || !system_power_present) {
-        if (d->state != TMP421_STATE_SHUTDOWN) {
-            d->state = TMP421_STATE_SHUTDOWN;
-            p->dev.device_status = DEVICE_UNKNOWN;
-            log_put(LOG_INFO, "TMP421 shutdown");
-        }
-        return;
-    }
-#endif
     dev_tmp421_state_t old_state = d->state;
     switch (d->state) {
     case TMP421_STATE_SHUTDOWN: {
