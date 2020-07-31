@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "bsp_powermon.h"
+#include "bsp_digipot.h"
 #include "commands_digipot.h"
 #include "devicebase.h"
 #include "digipot/dev_digipot_types.h"
@@ -44,9 +45,9 @@ void display_digipots(void)
         return;
     const Dev_digipots_priv *dp = (const Dev_digipots_priv *)device_priv_const(dev_dp);
 
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
+    for (uint i=0; i<dp->count; i++) {
         const Dev_ad5141 *p = &dp->pot[i];
-        printf(" %s %s  ", (i == digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
+        printf(" %s %s  ", (i == (uint)digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
         if (p->dev.device_status == DEVICE_NORMAL)
             printf("%3u ", p->priv.value);
         else

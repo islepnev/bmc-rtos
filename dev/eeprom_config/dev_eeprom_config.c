@@ -20,13 +20,9 @@
 #include <stdio.h>
 
 #include "ansi_escape_codes.h"
-#include "app_shared_data.h"
 #include "at24c/dev_at24c.h"
 #include "dev_common_types.h"
 #include "display.h"
-#include "display_common.h"
-#include "bsp.h"
-#include "i2c.h"
 #include "bus/i2c_driver.h"
 #include "bus/bus_types.h"
 #include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
@@ -54,7 +50,3 @@ DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
     return d->dev.device_status;
 }
 
-void dev_eeprom_config_print(void)
-{
-    display_device_sensor_ansi_str("EEPROM[config]", DEV_CLASS_EEPROM);
-}

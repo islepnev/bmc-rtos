@@ -99,6 +99,7 @@ file(GLOB Src_SOURCES
     ${MY_SRC_DIR}/common/log/*.c
     ${MY_SRC_DIR}/config/*.c
 #    ${MY_SRC_DIR}/eth/*.c
+    ${MY_SRC_DIR}/ipc/*.c
     ${MY_SRC_DIR}/rtos/*.c
     ${MY_SRC_DIR}/system/init/*.c
     ${MY_SRC_DIR}/tasks/base/*.c
@@ -142,6 +143,7 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_SRC_DIR}/app
     ${MY_SRC_DIR}/common
 #    ${MY_SRC_DIR}/eth
+    ${MY_SRC_DIR}/ipc
     ${MY_SRC_DIR}/rtos
     ${MY_SRC_DIR}/system/init
     ${MY_SRC_DIR}/tasks

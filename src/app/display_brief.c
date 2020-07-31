@@ -36,7 +36,7 @@
 #include "dev_mcu.h"
 #include "devices_types.h"
 #include "digipot/dev_digipot.h"
-#include "digipot/dev_digipot_print.h"
+#include "dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_brief.h"
@@ -65,14 +65,14 @@ void print_pm_pots(void)
     const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
 
     printf("POTS: ");
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
+    for (uint i=0; i<priv->count; i++) {
         if (priv->pot[i].dev.device_status == DEVICE_NORMAL)
             printf("%3u ", priv->pot[i].priv.value);
         else
             printf("?   ");
     }
     bool Ok = true;
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
+    for (uint i=0; i<priv->count; i++) {
         if (priv->pot[0].dev.device_status != DEVICE_NORMAL)
         Ok = false;
     }

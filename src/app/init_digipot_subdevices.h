@@ -1,6 +1,4 @@
 /*
-**    Digital Potentiometers
-**
 **    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -17,19 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_digipot_types.h"
+#ifndef INIT_DIGIPOT_SUBDEVICES_H
+#define INIT_DIGIPOT_SUBDEVICES_H
 
-#include "devicelist.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-SensorStatus get_digipot_sensor_status(void)
-{
-    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
-    if (!d || !d->priv)
-        return SENSOR_UNKNOWN;
-    const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
-    for (unsigned int i=0; i<priv->count; i++) {
-        if (priv->pot[i].dev.device_status != DEVICE_NORMAL)
-            return SENSOR_CRITICAL;
-    }
-    return SENSOR_NORMAL;
+struct Dev_digipots;
+void create_digipots_subdevices(struct Dev_digipots *d);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // INIT_DIGIPOT_SUBDEVICES_H

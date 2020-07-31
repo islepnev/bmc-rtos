@@ -26,6 +26,7 @@ void print_footer_line(void);
 SensorStatus get_device_sensor_status(DeviceClass device_class);
 const char *device_sensor_status_ansi_str(DeviceClass device_class);
 void display_device_sensor_ansi_str(const char *name, DeviceClass device_class);
+void dev_eeprom_config_print(void);
 
 #endif // DISPLAY_COMMON_H
 

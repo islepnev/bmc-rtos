@@ -28,8 +28,6 @@ typedef enum {
     UNUSED
 } PotIndex;
 
-enum {DEV_DIGIPOT_COUNT = 0};
-
 const char *potLabel(PotIndex index);
 int potBusNumber(PotIndex index);
 int potBusAddress(PotIndex index);

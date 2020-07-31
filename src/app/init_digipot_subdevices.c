@@ -17,19 +17,28 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_digipot_types.h"
+#include "digipot/dev_digipot_types.h"
 
+#include "bsp_digipot.h"
 #include "devicelist.h"
 
-SensorStatus get_digipot_sensor_status(void)
+void create_digipots_subdevices(Dev_digipots *d)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
-    if (!d || !d->priv)
-        return SENSOR_UNKNOWN;
-    const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
-    for (unsigned int i=0; i<priv->count; i++) {
-        if (priv->pot[i].dev.device_status != DEVICE_NORMAL)
-            return SENSOR_CRITICAL;
+    d->priv.count = 0;
+    for (int i=0; i<MAX_DIGIPOT_COUNT; i++) {
+        Dev_ad5141 zz = {0};
+        Dev_ad5141 *pot = &d->priv.pot[i];
+        *pot = zz;
+        pot->priv.index = i;
+        pot->dev.parent = &d->dev;
+        pot->dev.device_status = DEVICE_UNKNOWN;
+        pot->priv.sensorIndex = potSensorIndex(i);
+        BusInterface bus_info = {
+            .type = BUS_IIC,
+            .bus_number = potBusNumber(i),
+            .address = potBusAddress(i)
+        };
+        create_device(&d->dev, &pot->dev, &pot->priv, DEV_CLASS_AD5141, bus_info, potLabel(i));
+        d->priv.count++;
     }
-    return SENSOR_NORMAL;
 }

@@ -19,13 +19,8 @@
 
 #include "dev_digipot.h"
 #include "dev_digipot_commands.h"
-#include "bsp_digipot.h"
 #include "dev_common_types.h"
 #include "logbuffer.h"
-#include "app_shared_data.h"
-#include "bsp.h"
-#include "error_handler.h"
-#include "commands.h"
 
 #include "cmsis_os.h"
 

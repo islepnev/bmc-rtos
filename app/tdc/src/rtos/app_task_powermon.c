@@ -31,6 +31,7 @@
 #include "devicebase.h"
 #include "digipot/dev_digipot_fsm.h"
 #include "digipot/dev_digipot_types.h"
+#include "init_digipot_subdevices.h"
 #include "ipmi_sensors.h"
 #include "adt7301/dev_adt7301.h"
 #include "adt7301/dev_adt7301_fsm.h"

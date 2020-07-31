@@ -18,7 +18,6 @@
 
 #include "dev_adt7301.h"
 
-#include "devices_types.h"
 #include "i2c.h"
 #include "adt7301/adt7301_spi_hal.h"
 

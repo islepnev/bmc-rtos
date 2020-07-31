@@ -19,7 +19,6 @@
 #define DEV_DIGIPOT_H
 
 #include <stdint.h>
-#include "bsp_digipot.h"
 #include "bus/bus_types.h"
 #include "dev_digipot_types.h"
 

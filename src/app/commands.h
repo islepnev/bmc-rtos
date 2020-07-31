@@ -19,21 +19,16 @@
 #define COMMANDS_H
 
 #include "cmsis_os.h"
+#include "ipc.h"
 
-typedef enum {
-    COMMAND_DIGIPOTS_RESET = 1,
-    COMMAND_DIGIPOTS_INC,
-    COMMAND_DIGIPOTS_DEC,
-    COMMAND_DIGIPOTS_WRITE
-} command_id_t;
-
-typedef struct {
-    command_id_t command_id;
-    uint8_t arg;
-} CommandDigipots;
-
-osMailQId mq_cmd_digipots_id;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void commands_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // COMMANDS_H

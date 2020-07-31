@@ -17,7 +17,6 @@
 
 #include "adt7301_spi_hal.h"
 
-#include "bsp_thset.h"
 #include "spi.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"

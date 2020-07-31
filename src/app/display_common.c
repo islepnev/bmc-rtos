@@ -148,3 +148,8 @@ void print_footer_line(void)
 {
     printf(ANSI_BGR_BLUE ANSI_GRAY "SPACE: next page   P: switch power" ANSI_CLEAR_EOL ANSI_CLEAR);
 }
+
+void dev_eeprom_config_print(void)
+{
+    display_device_sensor_ansi_str("EEPROM[config]", DEV_CLASS_EEPROM);
+}

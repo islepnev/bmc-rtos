@@ -19,13 +19,13 @@
 #define DEV_DIGIPOT_COMMANDS
 
 #include "dev_digipot_types.h"
-#include "commands.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void digipot_process_command(Dev_digipots_priv *d, const CommandDigipots *cmd);
+struct CommandDigipots;
+void digipot_process_command(Dev_digipots_priv *d, const struct CommandDigipots *cmd);
 void digipot_check_mail(Dev_digipots_priv *d);
 
 #ifdef __cplusplus

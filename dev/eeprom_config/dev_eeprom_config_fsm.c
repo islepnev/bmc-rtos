@@ -17,8 +17,7 @@
 
 #include "dev_eeprom_config_fsm.h"
 #include "cmsis_os.h"
-#include "eeprom_config/dev_eeprom_config.h"
-#include "app_shared_data.h"
+#include "dev_eeprom_config.h"
 #include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;

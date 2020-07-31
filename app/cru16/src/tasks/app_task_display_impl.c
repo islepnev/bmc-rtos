@@ -37,7 +37,7 @@
 #include "dev_mcu.h"
 #include "devices_types.h"
 #include "digipot/dev_digipot.h"
-#include "digipot/dev_digipot_print.h"
+#include "dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_brief.h"

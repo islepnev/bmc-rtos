@@ -17,15 +17,14 @@
 
 #include "dev_digipot_commands.h"
 
-#include "dev_digipot.h"
-#include "error_handler.h"
-#include "commands.h"
+#include <assert.h>
 
-#include "cmsis_os.h"
+#include "dev_digipot.h"
+#include "ipc.h"
 
 void digipot_process_command(Dev_digipots_priv *d, const CommandDigipots *cmd)
 {
-    if (!cmd || cmd->arg >= DEV_DIGIPOT_COUNT)
+    if (!cmd || cmd->arg >= MAX_DIGIPOT_COUNT)
         return;
     Dev_ad5141 *p = &d->pot[cmd->arg];
     switch (cmd->command_id) {
@@ -50,16 +49,18 @@ static const int POT_MAX_MAIL_BATCH = 10;
 
 void digipot_check_mail(Dev_digipots_priv *d)
 {
+    assert(mq_cmd_digipots_id);
     if (!mq_cmd_digipots_id)
-        Error_Handler();
+        return;
     for (int i=0; i<POT_MAX_MAIL_BATCH; i++) {
         osEvent event = osMailGet(mq_cmd_digipots_id, 0);
         if (osEventMail != event.status) {
             return;
         }
         CommandDigipots *mail = (CommandDigipots *) event.value.p;
+        assert(mail);
         if (!mail)
-            Error_Handler();
+            return;
         digipot_process_command(d, mail);
         osMailFree(mq_cmd_digipots_id, mail);
     }

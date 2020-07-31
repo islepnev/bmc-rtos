@@ -46,7 +46,6 @@ typedef struct Dev_eeprom_config {
 
 DeviceStatus dev_eeprom_config_detect(struct Dev_eeprom_config *d);
 DeviceStatus dev_eeprom_config_read(struct Dev_eeprom_config *d);
-void dev_eeprom_config_print(void);
 
 #ifdef __cplusplus
 }

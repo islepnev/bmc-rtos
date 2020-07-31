@@ -56,7 +56,7 @@ int digipot_screen_selected = 0;
 
 static void digipot_action_down(void)
 {
-    if (digipot_screen_selected+1 < DEV_DIGIPOT_COUNT)
+    if (digipot_screen_selected+1 < MAX_DIGIPOT_COUNT)
         digipot_screen_selected++;
     else
         digipot_screen_selected = 0;
@@ -68,7 +68,7 @@ static void digipot_action_up(void)
     if (digipot_screen_selected > 0)
         digipot_screen_selected--;
     else
-        digipot_screen_selected = DEV_DIGIPOT_COUNT-1;
+        digipot_screen_selected = MAX_DIGIPOT_COUNT-1;
     schedule_display_refresh();
 }
 
