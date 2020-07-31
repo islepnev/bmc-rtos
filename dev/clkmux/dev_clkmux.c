@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,20 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_VXSIICM_PRINT_H
-#define DEV_VXSIICM_PRINT_H
+#include "dev_clkmux.h"
 
-#include "dev_common_types.h"
+#include "devicebase.h"
+#include "devicelist.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SensorStatus get_clkmux_sensor_status(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_CLKMUX);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
 
-struct Dev_vxsiicm;
-DeviceStatus dev_vxsiicm_print(void);
-
-#ifdef __cplusplus
+    switch (d->device_status) {
+    case DEVICE_NORMAL:
+        return SENSOR_NORMAL;
+    case DEVICE_FAIL:
+        return SENSOR_CRITICAL;
+    case DEVICE_UNKNOWN:
+        return SENSOR_UNKNOWN;
+    default:
+        return SENSOR_UNKNOWN;
+    }
 }
-#endif
-
-#endif // DEV_VXSIICM_PRINT_H

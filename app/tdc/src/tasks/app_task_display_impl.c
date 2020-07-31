@@ -15,19 +15,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "app_task_display_impl.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "app_task_display_impl.h"
+#include <time.h>
 
 #include "ad9516/dev_auxpll_print.h"
+#include "ad9516/dev_auxpll_types.h"
 #include "ad9545/ad9545_print.h"
 #include "ad9545/dev_ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "bsp_powermon.h"
 #include "cmsis_os.h"
+#include "cru16_clkmux/dev_cru16_clkmux.h"
+#include "cru16_clkmux/dev_cru16_clkmux_types.h"
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
@@ -35,6 +39,8 @@
 #include "digipot/dev_digipot.h"
 #include "digipot/dev_digipot_print.h"
 #include "display.h"
+#include "display_boards.h"
+#include "display_brief.h"
 #include "display_common.h"
 #include "display_log.h"
 #include "display_tasks.h"
@@ -55,31 +61,6 @@
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
-
-static void print_pm_pots(void)
-{
-    const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
-    if (!d || !d->priv)
-        return;
-    const Dev_digipots_priv *priv = (const Dev_digipots_priv *)device_priv_const(d);
-
-    printf("POTS: ");
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (priv->pot[i].dev.device_status == DEVICE_NORMAL)
-            printf("%3u ", priv->pot[i].priv.value);
-        else
-            printf("?   ");
-    }
-    bool Ok = true;
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        if (priv->pot[0].dev.device_status != DEVICE_NORMAL)
-        Ok = false;
-    }
-    if (Ok) {
-        printf(Ok ? STR_RESULT_NORMAL : STR_RESULT_WARNING);
-    }
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
 
 #define DISPLAY_SYS_STATUS_Y 2
 #define DISPLAY_SYS_STATUS_H 1
@@ -103,30 +84,9 @@ static void print_pm_pots(void)
 #define DISPLAY_LOG_Y (0 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
 
 #define DISPLAY_TASKS_Y 2
+#define DISPLAY_BOARDS_Y 3
 
 #define DISPLAY_PLL_DETAIL_Y 2
-
-static void print_footer(void)
-{
-    print_goto(screen_height, 1);
-    print_footer_line();
-}
-
-static void print_system_status(void)
-{
-    print_goto(DISPLAY_SYS_STATUS_Y, 1);
-    const SensorStatus systemStatus = getSystemStatus();
-    printf("System status: %s",
-           sensor_status_ansi_str(systemStatus));
-    print_clear_eol();
-
-}
-
-static void print_powermon(void)
-{
-    print_goto(DISPLAY_POWERMON_Y, 1);
-    print_powermon_box();
-}
 
 static void print_digipots(void)
 {
@@ -142,12 +102,6 @@ static void print_sensors(void)
         print_goto(DISPLAY_SENSORS_Y, 1);
         print_sensors_box();
     }
-}
-
-static void print_thset(void)
-{
-    print_goto(DISPLAY_TEMP_Y, 1);
-    print_thset_box();
 }
 
 static void devPrintStatus(void)
@@ -169,53 +123,25 @@ static void print_main(void)
 //    }
 }
 
-static void print_fpga(void)
-{
-    print_goto(DISPLAY_FPGA_Y, 1);
-    dev_fpga_print_box();
-}
-
-static void print_pll(void)
-{
-    print_goto(DISPLAY_PLL_Y, 1);
-    dev_ad9545_print_box();
-}
-
-static void print_auxpll(void)
-{
-    print_goto(DISPLAY_AUXPLL_Y, 1);
-    auxpllPrint();
-}
-
 static int old_enable_stats_display = 0;
 
 static void display_summary(void)
 {
-    print_system_status();
-    print_powermon();
+    print_system_status(DISPLAY_SYS_STATUS_Y);
+    print_powermon(DISPLAY_POWERMON_Y);
     print_digipots();
     if (enable_stats_display) {
         print_sensors();
     }
-    print_thset();
+    print_thset(DISPLAY_TEMP_Y);
     print_main();
-    print_fpga();
-    print_pll();
+    print_fpga(DISPLAY_FPGA_Y);
+    print_pll(DISPLAY_PLL_Y);
 #ifdef BOARD_TDC64
-    print_auxpll();
+    print_auxpll(DISPLAY_AUXPLL_Y);
 #endif
     print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y);
 }
-
-
-static void display_pll_detail(void)
-{
-    print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
-    print_goto(DISPLAY_PLL_DETAIL_Y, 1);
-    dev_ad9545_verbose_status();
-}
-
-static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
 
@@ -224,29 +150,18 @@ void display_task_run(void)
     uint32_t tick = osKernelSysTick();
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
         schedule_display_refresh();
-    if (old_display_mode != display_mode)
-        schedule_display_refresh();
-    int need_refresh = read_display_refresh();
-    if (!need_refresh)
+    const bool repaint_flag = read_display_repaint();
+    const bool refresh_flag = repaint_flag || read_display_refresh();
+    if (!refresh_flag)
         return;
     old_tick = tick;
 
-    int need_clear_screen =
-        display_mode == DISPLAY_NONE ||
-        display_mode == DISPLAY_LOG ||
-        display_mode == DISPLAY_DIGIPOT ||
-        display_mode == DISPLAY_TASKS ||
-        display_mode == DISPLAY_DEVICES;
-
-    if (need_clear_screen) {
-        if (old_display_mode != display_mode) {
+    if (repaint_flag) {
             printf(ANSI_CLEARTERM);
             printf(ANSI_GOHOME ANSI_CLEAR);
             print_header();
             printf(ANSI_SHOW_CURSOR);
-        }
     }
-    old_display_mode = display_mode;
     if (display_mode == DISPLAY_NONE)
         return;
     if (enable_stats_display && !old_enable_stats_display) {
@@ -271,7 +186,14 @@ void display_task_run(void)
         display_digipots();
         break;
     case DISPLAY_PLL_DETAIL:
-        display_pll_detail();
+        display_pll_detail(DISPLAY_PLL_DETAIL_Y);
+        display_auxpll_detail(DISPLAY_AUXPLL_Y);
+        break;
+    case DISPLAY_BOARDS:
+        display_boards(DISPLAY_BOARDS_Y);
+        break;
+    case DISPLAY_SFP_DETAIL:
+        sfpPrintStatus();
         break;
     case DISPLAY_TASKS:
         display_tasks(DISPLAY_TASKS_Y);

@@ -16,22 +16,3 @@
 */
 
 #include "dev_cru16_clkmux_types.h"
-
-SensorStatus get_cru16_clkmux_sensor_status(void)
-{
-    const DeviceBase *d = find_device_const(DEV_CLASS_CLKMUX);
-    if (!d || !d->priv)
-        return SENSOR_UNKNOWN;
-    const Dev_cru16_clkmux_priv *priv = (const Dev_cru16_clkmux_priv *)device_priv_const(d);
-
-    switch (d->device_status) {
-    case DEVICE_NORMAL:
-        return SENSOR_NORMAL;
-    case DEVICE_FAIL:
-        return SENSOR_CRITICAL;
-    case DEVICE_UNKNOWN:
-        return SENSOR_UNKNOWN;
-    default:
-        return SENSOR_UNKNOWN;
-    }
-}

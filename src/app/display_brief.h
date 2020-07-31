@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,20 +15,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_VXSIICM_PRINT_H
-#define DEV_VXSIICM_PRINT_H
-
-#include "dev_common_types.h"
+#ifndef DISPLAY_BRIEF_H
+#define DISPLAY_BRIEF_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_vxsiicm;
-DeviceStatus dev_vxsiicm_print(void);
+#define DISPLAY_AUXPLL_DETAIL_H 3
+
+void print_pm_pots(void);
+void print_footer(void);
+void print_system_status(int y);
+void display_pll_detail(int y);
+void display_auxpll_detail(int y);
+void print_powermon(int y);
+void print_pll(int y);
+void print_auxpll(int y);
+void print_thset(int y);
+void print_fpga(int y);
+void print_ttvxs_clkmux(int y);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_VXSIICM_PRINT_H
+#endif // DISPLAY_BRIEF_H

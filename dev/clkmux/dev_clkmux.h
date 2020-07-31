@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,20 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_VXSIICM_PRINT_H
-#define DEV_VXSIICM_PRINT_H
-
-#include "dev_common_types.h"
+#ifndef DEV_CLKMUX_H
+#define DEV_CLKMUX_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_vxsiicm;
-DeviceStatus dev_vxsiicm_print(void);
+#include "dev_common_types.h"
+
+SensorStatus get_clkmux_sensor_status(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_VXSIICM_PRINT_H
+#endif // DEV_CLKMUX_H

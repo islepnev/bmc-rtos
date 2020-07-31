@@ -41,8 +41,6 @@ typedef struct Dev_cru16_clkmux {
     Dev_cru16_clkmux_priv priv;
 } Dev_cru16_clkmux;
 
-SensorStatus get_cru16_clkmux_sensor_status(void);
-
 #ifdef __cplusplus
 }
 #endif

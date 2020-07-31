@@ -15,12 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "app_task_display_impl.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#include "app_task_display_impl.h"
 
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9516/dev_auxpll_types.h"
@@ -40,6 +40,7 @@
 #include "digipot/dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
+#include "display_brief.h"
 #include "display_common.h"
 #include "display_log.h"
 #include "display_tasks.h"
@@ -96,28 +97,6 @@ static void devPrintStatus(void)
 #define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
 #define DISPLAY_AUXPLL_DETAIL_H 3
 
-static void print_footer(void)
-{
-    print_goto(screen_height, 1);
-    print_footer_line();
-}
-
-static void print_system_status(void)
-{
-    print_goto(DISPLAY_SYS_STATUS_Y, 1);
-    const SensorStatus systemStatus = getSystemStatus();
-    printf("System status: %s",
-           sensor_status_ansi_str(systemStatus));
-    print_clear_eol();
-
-}
-
-static void print_powermon(void)
-{
-    print_goto(DISPLAY_POWERMON_Y, 1);
-    print_powermon_box();
-}
-
 static void print_sensors(void)
 {
     const PmState pmState = get_powermon_state();
@@ -127,12 +106,6 @@ static void print_sensors(void)
         print_goto(DISPLAY_SENSORS_Y, 1);
         print_sensors_box();
     }
-}
-
-static void print_thset(void)
-{
-    print_goto(DISPLAY_TEMP_Y, 1);
-    print_thset_box();
 }
 
 static void print_main(void)
@@ -148,64 +121,24 @@ static void print_main(void)
 //    }
 }
 
-static void print_ttvxs_clkmux(void)
-{
-    print_goto(DISPLAY_CLKMUX_Y, 1);
-    printf("CLKMUX");
-    printf("%s", sensor_status_ansi_str(get_cru16_clkmux_sensor_status()));
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
-
-static void print_fpga(void)
-{
-    print_goto(DISPLAY_FPGA_Y, 1);
-    dev_fpga_print_box();
-}
-
-static void print_pll(void)
-{
-    print_goto(DISPLAY_PLL_Y, 1);
-    dev_ad9545_print_box();
-}
-
-static void print_auxpll(void)
-{
-    print_goto(DISPLAY_AUXPLL_Y, 1);
-    auxpllPrint();
-}
-
 static int old_enable_stats_display = 0;
 
 static void display_summary(void)
 {
-    print_system_status();
-    print_powermon();
+    print_system_status(DISPLAY_SYS_STATUS_Y);
+    print_powermon(DISPLAY_POWERMON_Y);
     if (enable_stats_display) {
         print_sensors();
     }
-    print_thset();
+    print_thset(DISPLAY_TEMP_Y);
     print_main();
-    print_ttvxs_clkmux();
-    print_fpga();
-    print_pll();
-    print_auxpll();
+    print_ttvxs_clkmux(DISPLAY_CLKMUX_Y);
+    print_fpga(DISPLAY_FPGA_Y);
+    print_pll(DISPLAY_PLL_Y);
+    print_auxpll(DISPLAY_AUXPLL_Y);
     print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y);
 }
 
-static void display_pll_detail(void)
-{
-    print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
-    print_goto(DISPLAY_PLL_DETAIL_Y, 1);
-    dev_ad9545_verbose_status();
-}
-
-static void display_auxpll_detail(void)
-{
-    print_clearbox(DISPLAY_AUXPLL_DETAIL_Y, DISPLAY_AUXPLL_DETAIL_H);
-    print_goto(DISPLAY_AUXPLL_DETAIL_Y, 1);
-    printf(" --- AD9516 Status ---\n");
-    auxpllPrintStatus();
-}
 
 uint32_t old_tick = 0;
 static struct tm old_tm = {0};
@@ -255,8 +188,8 @@ void display_task_run(void)
         display_digipots();
         break;
     case DISPLAY_PLL_DETAIL:
-        display_pll_detail();
-        display_auxpll_detail();
+        display_pll_detail(DISPLAY_PLL_DETAIL_Y);
+        display_auxpll_detail(DISPLAY_AUXPLL_DETAIL_Y);
         break;
     case DISPLAY_BOARDS:
         display_boards(DISPLAY_BOARDS_Y);
@@ -287,5 +220,6 @@ void display_task_init(void)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
+    print_get_screen_size();
     printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
 }
