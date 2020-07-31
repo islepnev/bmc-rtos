@@ -34,7 +34,7 @@ uint8_t get_vxsiic_board_count(const Dev_vxsiicm *d)
 {
     uint8_t count = 0;
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &d->status.slot[i];
+        const vxsiic_slot_status_t *status = &d->priv.status.slot[i];
         if (status->present)
             count++;
     }
@@ -46,6 +46,6 @@ void struct_vxs_i2c_init(Dev_vxsiicm *d)
     d->dev.device_status = DEVICE_UNKNOWN;
     for (int i=0; i<VXSIIC_SLOTS; i++) {
         vxsiic_slot_status_t zz = {0};
-        d->status.slot[i] = zz;
+        d->priv.status.slot[i] = zz;
     }
 }

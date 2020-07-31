@@ -135,19 +135,19 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(*uint_ptr);
         break;
     case 3: {/* boardPresent */
-        return snmp_encode_truthvalue((s32_t *)value, (u32_t)vxsiicm->status.slot[i].present);
+        return snmp_encode_truthvalue((s32_t *)value, (u32_t)vxsiicm->priv.status.slot[i].present);
     }
     case 4: {/* boardStatus */
-        *uint_ptr = (u32_t)vxsiicm->status.slot[i].system_status;
+        *uint_ptr = (u32_t)vxsiicm->priv.status.slot[i].system_status;
         return sizeof(*uint_ptr);
         break;
     }
     case 5: // boardId
-        *uint_ptr = (u32_t)vxsiicm->status.slot[i].mcu_info.module_id;
+        *uint_ptr = (u32_t)vxsiicm->priv.status.slot[i].mcu_info.module_id;
         return sizeof(*uint_ptr);
         break;
     case 6: {/* boardName */
-        const char *name = vxsiicm->status.slot[i].module_id_str;
+        const char *name = vxsiicm->priv.status.slot[i].module_id_str;
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;

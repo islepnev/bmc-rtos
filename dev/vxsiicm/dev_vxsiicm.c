@@ -108,7 +108,7 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
         }
-        vxsiic_slot_status_t *status = &d->status.slot[pp];
+        vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
         if (dev_vxsiic_read_pp(d, pp)) {
             status->present = 1;
             if (!old_present[pp])

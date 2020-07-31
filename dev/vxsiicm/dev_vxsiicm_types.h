@@ -108,9 +108,14 @@ struct vxsiic_status_t {
 
 typedef struct vxsiic_status_t vxsiic_status_t;
 
-typedef struct Dev_vxsiicm {
+typedef struct Dev_vxsiicm_priv {
     DeviceBase dev;
     vxsiic_status_t status;
+} Dev_vxsiicm_priv;
+
+typedef struct Dev_vxsiicm {
+    DeviceBase dev;
+    Dev_vxsiicm_priv priv;
 } Dev_vxsiicm;
 
 void struct_vxs_i2c_init(Dev_vxsiicm *d);

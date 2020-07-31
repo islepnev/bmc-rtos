@@ -38,7 +38,7 @@ static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
             log_printf(LOG_NOTICE, "EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
         }
     }
-    d->status.slot[pp].pp_state.eeprom_found = ok;
+    d->priv.status.slot[pp].pp_state.eeprom_found = ok;
     return ok;
 }
 
@@ -46,12 +46,12 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
 {
     uint8_t addr = 0;
     uint8_t data = 0;
+    vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
     bool ret = vxsiic_read_pp_ioexp(pp, addr, &data);
-    d->status.slot[pp].pp_state.gpio_found = ret;
+    status->pp_state.gpio_found = ret;
 //    if (ret) {
 //        log_printf(LOG_DEBUG, "IOEXP at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, data);
 //    }
-    vxsiic_slot_status_t *status = &d->status.slot[pp];
     status->ioexp = data;
     return ret;
 }
@@ -68,11 +68,11 @@ static bool dev_vxsiic_write_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint
 
 static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
 {
-    vxsiic_slot_status_t *status = &d->status.slot[pp];
+    vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
     uint32_t addr = 0;
     uint32_t data = 0;
     bool ret = dev_vxsiic_read_pp_mcu_4(d, pp, addr, &status->mcu_info.magic);
-    d->status.slot[pp].pp_state.mcu_found = ret;
+    status->pp_state.mcu_found = ret;
     if (!ret)
         goto err;
     if (status->mcu_info.magic != BMC_MAGIC)
@@ -93,16 +93,16 @@ static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
     status->mcu_info.iic_stats.ops = map[4];
     status->mcu_info.iic_stats.errors = map[5];
     status->mcu_info.uptime = map[6];
-    d->status.slot[pp].pp_state.mcu_info_ok = true;
+    status->pp_state.mcu_info_ok = true;
     return true;
 err:
-    d->status.slot[pp].pp_state.mcu_info_ok = false;
+    status->pp_state.mcu_info_ok = false;
     return false;
 }
 
 static bool dev_vxsiic_read_pp_mcu(Dev_vxsiicm *d, int pp)
 {
-    vxsiic_slot_status_t *status = &d->status.slot[pp];
+    vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
     uint32_t data = 0;
 
     if (! dev_vxsiic_read_pp_mcu_info(d, pp))
@@ -126,11 +126,11 @@ static bool dev_vxsiic_read_pp_mcu(Dev_vxsiicm *d, int pp)
         buf.name[SENSOR_NAME_SIZE-1] = '\0';
         memcpy(&status->mcu_sensors.sensors[i], &buf, sizeof(buf));
     }
-    d->status.slot[pp].pp_state.mcu_sensors_ok = true;
+    status->pp_state.mcu_sensors_ok = true;
     return true;
 err:
     {
-    d->status.slot[pp].pp_state.mcu_sensors_ok = false;
+    status->pp_state.mcu_sensors_ok = false;
 //        vxsiic_slot_status_t zz = {0};
 //        *status = zz;
     }
@@ -144,7 +144,7 @@ bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp)
     bool eeprom = dev_vxsiic_read_pp_eeprom(d, pp);
     bool ioexp =  dev_vxsiic_read_pp_ioexp(d, pp);
     bool found = (eeprom || ioexp);
-    vxsiic_slot_status_t *status = &d->status.slot[pp];
+    vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
     bool mcu = found && dev_vxsiic_read_pp_mcu(d, pp);
     bool ok = eeprom && ioexp && mcu;
     if (found) {
