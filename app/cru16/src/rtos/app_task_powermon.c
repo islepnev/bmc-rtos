@@ -25,6 +25,7 @@
 #include "debug_helpers.h"
 #include "thset/dev_thset.h"
 #include "thset/dev_thset_types.h"
+#include "powermon/dev_powermon.h"
 #include "devicebase.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
@@ -63,6 +64,7 @@ static void local_init(DeviceBase *parent)
     create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
     create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, cru16_max31725_bus_info, "VCXO temperature");
     create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
+    create_sensor_subdevices(&pm);
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
 }
 
@@ -87,6 +89,7 @@ static void start_task_powermon( void const *arg)
         dev_thset_run(&thset);
         task_powermon_run(&pm);
         sync_ipmi_sensors();
+
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;
