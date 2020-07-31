@@ -35,18 +35,15 @@
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
-#include "sfpiic/dev_sfpiic_print.h"
-#include "thset/dev_thset_print.h"
 #include "devices_types.h"
 #include "display.h"
+#include "display_boards.h"
 #include "display_common.h"
 #include "display_log.h"
 #include "display_tasks.h"
 #include "eeprom_config/dev_eeprom_config.h"
-#include "ethernetif.h"
 #include "fpga/dev_fpga_print.h"
 #include "fpga/dev_fpga_types.h"
-#include "freertos_stats.h"
 #include "logbuffer.h"
 #include "logentry.h"
 #include "powermon/dev_pm_sensors_types.h"
@@ -54,9 +51,11 @@
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
 #include "rtc_util.h"
+#include "sfpiic/dev_sfpiic_print.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_rtc.h"
 #include "system_status.h"
+#include "thset/dev_thset_print.h"
 #include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
@@ -102,12 +101,11 @@ static const char *auxpllStateStr(AuxPllState state)
 #define DISPLAY_LOG_Y (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
 
 #define DISPLAY_TASKS_Y 2
+#define DISPLAY_BOARDS_Y 3
 
 #define DISPLAY_PLL_DETAIL_Y 2
 #define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
 #define DISPLAY_AUXPLL_DETAIL_H 3
-
-#define DISPLAY_HEIGHT 30 // (DISPLAY_PLL_Y + DISPLAY_PLL_H)
 
 static void print_footer(void)
 {
@@ -205,42 +203,6 @@ static void display_summary(void)
     print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y);
 }
 
-#ifdef BOARD_TTVXS
-static void display_boards(const Devices * dev)
-{
-    print_goto(2, 1);
-    printf("Boards\n" ANSI_CLEAR_EOL);
-    printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
-    int line = 0;
-    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &dev->vxsiic.status.slot[i];
-        const char *label = vxsiic_map_slot_to_label[i];
-        if (0 == status->present)
-            printf("%2s" ANSI_CLEAR_EOL "\n", label);
-        else
-            printf("%2s  %s%s %4lu %4lu %2u.%-2u  %02lX %7lu  %s  %s  %s  %s  %s  %s" ANSI_CLEAR_EOL "\n",
-                   label,
-                   (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
-                   (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
-                   status->iic_master_stats.errors,
-                   status->iic_stats.errors,
-                   (uint16_t)(status->bmc_ver >> 16),
-                   (uint16_t)status->bmc_ver,
-                   status->module_id & 0xFF,
-                   status->uptime,
-                   sensor_status_str(status->enc_status.b.system),
-                   sensor_status_str(status->enc_status.b.pm),
-                   sensor_status_str(status->enc_status.b.therm),
-                   sensor_status_str(status->enc_status.b.misc),
-                   sensor_status_str(status->enc_status.b.fpga),
-                   sensor_status_str(status->enc_status.b.pll)
-                   );
-        line++;
-    }
-    print_clearbox(4+line, VXSIIC_SLOTS-line);
-}
-#endif
-
 static void display_pll_detail(void)
 {
     print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
@@ -304,9 +266,9 @@ void display_task_run(void)
         display_pll_detail();
         display_auxpll_detail();
         break;
-//    case DISPLAY_BOARDS:
-//        display_boards(d);
-//        break;
+    case DISPLAY_BOARDS:
+        display_boards(DISPLAY_BOARDS_Y);
+        break;
     case DISPLAY_SFP_DETAIL:
         sfpPrintStatus();
         break;

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 #include "thset/dev_thset_types.h"
 #include "powermon/dev_powermon.h"
 #include "devicebase.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
@@ -53,20 +55,28 @@ static BusInterface ttvxs_tmp421_bus_info = {
     .address = 0x1C
 };
 
+static BusInterface config_eeprom_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x57
+};
+
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
 static Dev_thset thset = {0};
 static Dev_sfpiic sfpiic = {0};
+static Dev_eeprom_config eeprom = {0};
 
 static void local_init(DeviceBase *parent)
 {
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, null_bus_info, "Power Monitor");
     create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
-    create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, ttvxs_max31725_bus_info, "VCXO thermometer");
-    create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board thermometers");
+    create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, ttvxs_max31725_bus_info, "VCXO temperature");
+    create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
     create_sensor_subdevices(&pm);
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, config_eeprom_bus_info, "Board config");
 }
 
 static void start_task_powermon( void const *arg)
@@ -78,6 +88,7 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
+        dev_eeprom_config_run(&eeprom);
         sfpiic_switch_enable(true);
         task_sfpiic_run(&sfpiic);
         sfpiic_switch_enable(false);

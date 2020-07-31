@@ -67,8 +67,7 @@ bool fpga_done_pin_present(void)
     return true;
 }
 
-void bsp_smbus_reset(void)
+void sfpiic_switch_enable(bool enable)
 {
-    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  0);
-    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  1);
+    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  !enable);
 }

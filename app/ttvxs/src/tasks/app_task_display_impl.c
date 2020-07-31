@@ -59,6 +59,7 @@
 #include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
+const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
@@ -66,7 +67,7 @@ static void devPrintStatus(void)
 {
     dev_sfpiic_print();
     dev_eeprom_config_print();
-    const Dev_vxsiicm *vxsiicm= get_dev_vxsiicm();
+    const Dev_vxsiicm *vxsiicm = get_dev_vxsiicm();
     printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm), deviceStatusResultStr(vxsiicm->dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
@@ -187,7 +188,6 @@ static void print_auxpll(void)
     auxpllPrint();
 }
 
-
 static int old_enable_stats_display = 0;
 
 static void display_summary(void)
@@ -217,10 +217,9 @@ static void display_auxpll_detail(void)
 {
     print_clearbox(DISPLAY_AUXPLL_DETAIL_Y, DISPLAY_AUXPLL_DETAIL_H);
     print_goto(DISPLAY_AUXPLL_DETAIL_Y, 1);
+    printf(" --- AD9516 Status ---\n");
     auxpllPrintStatus();
 }
-
-static display_mode_t old_display_mode = DISPLAY_NONE;
 
 uint32_t old_tick = 0;
 static struct tm old_tm = {0};
@@ -233,29 +232,19 @@ void display_task_run(void)
     int time_updated = old_tm.tm_sec != tm.tm_sec;
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
         schedule_display_refresh();
-    if (old_display_mode != display_mode)
-        schedule_display_refresh();
-    int need_refresh = read_display_refresh();
-    if (!need_refresh)
+    const bool repaint_flag = read_display_repaint();
+    const bool refresh_flag = repaint_flag || read_display_refresh();
+    if (!refresh_flag)
         return;
     old_tick = tick;
     old_tm = tm;
 
-    int need_clear_screen =
-        display_mode == DISPLAY_NONE ||
-        display_mode == DISPLAY_LOG ||
-        display_mode == DISPLAY_TASKS ||
-        display_mode == DISPLAY_BOARDS ||
-        display_mode == DISPLAY_DEVICES;
-    if (need_clear_screen) {
-        if (old_display_mode != display_mode) {
+    if (repaint_flag) {
             printf(ANSI_CLEARTERM);
             printf(ANSI_GOHOME ANSI_CLEAR);
             print_header();
             printf(ANSI_SHOW_CURSOR);
-        }
     }
-    old_display_mode = display_mode;
     if (display_mode == DISPLAY_NONE)
         return;
     if (enable_stats_display && !old_enable_stats_display) {
@@ -282,6 +271,9 @@ void display_task_run(void)
         break;
     case DISPLAY_BOARDS:
         display_boards(DISPLAY_BOARDS_Y);
+        break;
+    case DISPLAY_SFP_DETAIL:
+        sfpPrintStatus();
         break;
     case DISPLAY_TASKS:
         display_tasks(DISPLAY_TASKS_Y);

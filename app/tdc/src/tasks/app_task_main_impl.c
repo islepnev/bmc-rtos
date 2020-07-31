@@ -18,8 +18,10 @@
 #include "app_task_main_impl.h"
 
 #include "app_shared_data.h"
+#include "device_status_log.h"
 #include "devices_types.h"
 #include "led_gpio_hal.h"
+#include "log/log.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
 
@@ -30,6 +32,8 @@ void task_main_init(void)
 
 }
 
+SensorStatus old_status = SENSOR_UNKNOWN;
+
 void task_main_run(void)
 {
     mainloopCount++;
@@ -37,6 +41,18 @@ void task_main_run(void)
     enable_pll_run = (pmState == PM_STATE_RUN);
 
     const SensorStatus systemStatus = getSystemStatus();
+    if (old_status != systemStatus) {
+        LogPriority prio = sensor_status_log_priority(systemStatus);
+        log_printf(prio, "System status is %s", sensor_status_text(systemStatus));
+        old_status = systemStatus;
+    }
+
+
+    // read SD card status
+    // getDevices()->sd.detect_b = HAL_GPIO_ReadPin(uSD_Detect_GPIO_Port, uSD_Detect_Pin);
+    // read other signals
+    // getDevices()->pen_b = HAL_GPIO_ReadPin(PEN_B_GPIO_Port, PEN_B_Pin);
+
     led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);
     led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);
     led_set_state(LED_GREEN, systemStatus == SENSOR_NORMAL);

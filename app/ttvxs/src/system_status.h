@@ -24,9 +24,7 @@
 extern "C" {
 #endif
 
-struct Devices;
-
-DeviceStatus getDeviceStatus(const struct Devices *d);
+DeviceStatus getDeviceStatus(void);
 SensorStatus getSystemStatus(void);
 
 #ifdef __cplusplus

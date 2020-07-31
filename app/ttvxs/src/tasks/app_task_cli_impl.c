@@ -32,6 +32,9 @@ void cycle_display_mode(void)
         display_mode = DISPLAY_PLL_DETAIL;
         break;
     case DISPLAY_PLL_DETAIL:
+        display_mode = DISPLAY_SFP_DETAIL;
+        break;
+    case DISPLAY_SFP_DETAIL:
         display_mode = DISPLAY_TASKS;
         break;
     case DISPLAY_TASKS:
@@ -46,6 +49,7 @@ void cycle_display_mode(void)
     default:
         break;
     }
+    schedule_display_repaint();
 }
 
 void screen_handle_key(char ch)

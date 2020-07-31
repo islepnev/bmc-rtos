@@ -24,7 +24,6 @@
 #include "debug_helpers.h"
 #include "devicebase.h"
 #include "eeprom_config/dev_eeprom_config.h"
-#include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ipmi_sensors.h"
 #include "max31725/dev_max31725.h"
@@ -89,7 +88,9 @@ static void start_task_powermon( void const *arg)
     while (1)
     {
         dev_eeprom_config_run(&eeprom);
+        sfpiic_switch_enable(true);
         task_sfpiic_run(&sfpiic);
+        sfpiic_switch_enable(false);
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);
         thset.priv.sensors[0].value = therm2.priv.temp_internal;

@@ -25,7 +25,7 @@
 #include "system_status_common.h"
 #include "thset/dev_thset.h"
 
-DeviceStatus getDeviceStatus(const Devices *d)
+DeviceStatus getDeviceStatus(void)
 {
     DeviceStatus status = DEVICE_NORMAL;
     for (int i=0; i<deviceList.count; i++)
@@ -34,7 +34,7 @@ DeviceStatus getDeviceStatus(const Devices *d)
     return status;
 }
 
-SensorStatus getMiscStatus(const Devices *d)
+SensorStatus get_vxsiicm_sensor_status(const Devices *d)
 {
     if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;

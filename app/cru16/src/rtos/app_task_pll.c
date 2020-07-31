@@ -29,7 +29,6 @@
 #include "cru16_clkmux/dev_ttvxs_clkmux_types.h"
 #include "debug_helpers.h"
 #include "eeprom_config/dev_eeprom_config.h"
-#include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 
 osThreadId pllThreadId = NULL;
@@ -59,7 +58,8 @@ static Dev_ad9545 pll = {0};
 static Dev_eeprom_config eeprom = {0};
 static Dev_ttvxs_clkmux clkmux = {0};
 
-static void local_init(DeviceBase *parent) {
+static void local_init(DeviceBase *parent)
+{
     init_ad9545_setup(&pll.priv.setup);
     create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9545, pll_bus_info, "Main PLL");
     create_device(parent, &clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info, "Clock Mux");

@@ -76,17 +76,17 @@ bool pm_read_liveInsert(Dev_powermon_priv *p)
 
 bool get_critical_power_valid(const pm_sensors_arr *sensors)
 {
-    SensorStatus status = SENSOR_NORMAL;
     if (0 == sensors->count)
-        return SENSOR_UNKNOWN;
+        return false;
     for (int i=0; i < sensors->count; i++) {
         const pm_sensor *sensor = &sensors->arr[i];
-        if (!sensor->priv.isOptional)
-            if (pm_sensor_status(sensor) > status) {
-                status = pm_sensor_status(sensor);
-            }
+        if (!sensor->priv.isOptional) {
+            SensorStatus s = pm_sensor_status(sensor);
+            if (s == SENSOR_UNKNOWN || s == SENSOR_CRITICAL)
+                return false;
+        }
     }
-    return status <= SENSOR_WARNING;
+    return true;
 }
 
 bool get_critical_power_failure(const pm_sensors_arr *sensors)
