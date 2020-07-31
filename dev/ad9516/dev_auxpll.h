@@ -34,7 +34,7 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
 bool auxpllSoftwareReset(void);
 //OpStatusTypeDef auxpllSetupSysclk(Dev_auxpll *d);
 //OpStatusTypeDef auxpllCalibrateSysclk(Dev_auxpll *d);
-OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d);
+bool auxpllReadStatus(Dev_auxpll *d);
 //OpStatusTypeDef auxpllReadSysclkStatus(Dev_auxpll *d);
 
 #ifdef __cplusplus

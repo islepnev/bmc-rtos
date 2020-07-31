@@ -116,7 +116,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
             d->priv.fsm_state != AUXPLL_STATE_FATAL) {
     }
     if (d->priv.fsm_state == AUXPLL_STATE_RUN) {
-        if (DEV_OK != auxpllReadStatus(d)) {
+        if (! auxpllReadStatus(d)) {
             d->priv.fsm_state = AUXPLL_STATE_ERROR;
         }
     } else {

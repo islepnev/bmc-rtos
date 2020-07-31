@@ -46,17 +46,10 @@ static void DEBUG_PRINT_RET(const char *func, int ret)
            func, ret, ad9516_spi.ErrorCode);
 }
 
-static HAL_StatusTypeDef pllIoUpdate(Dev_auxpll *d)
+static bool pllIoUpdate(Dev_auxpll *d)
 {
     uint8_t data = 1;
-    HAL_StatusTypeDef ret = ad9516_write1(0x232, data);
-    if (ret != HAL_OK)
-        goto err;
-//    osDelay(1);
-    return ret;
-err:
-//    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return (HAL_OK == ad9516_write1(0x232, data));
 }
 
 bool auxpllSoftwareReset(void)
@@ -122,28 +115,20 @@ err:
     return ret;
 }
 */
-OpStatusTypeDef auxpllReadStatus(Dev_auxpll *d)
+bool auxpllReadStatus(Dev_auxpll *d)
 {
-    HAL_StatusTypeDef ret = HAL_ERROR;
-
     uint8_t data = 0;
-    ret = ad9516_read1(AD9516_REG1_PART_ID, &data);
-    if (ret != HAL_OK)
-        goto err;
+    if (HAL_OK != ad9516_read1(AD9516_REG1_PART_ID, &data))
+        return false;
     if (data != AD9516_PART_ID)
-        goto err;
+        return false;
 
-    ret = pllIoUpdate(d);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw);
-    if (ret != HAL_OK)
-        goto err;
+    if (!pllIoUpdate(d))
+        return false;
+    if (HAL_OK != ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
+        return false;
 
-    return DEV_OK;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return DEV_ERROR;
+    return true;
 }
 
 static HAL_StatusTypeDef auxpllReadAllRegisters_unused(Dev_auxpll *d)
@@ -180,7 +165,7 @@ err:
     return ret;
 }
 
-OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
+static bool auxpll_output_setup(Dev_auxpll *d)
 {
     // output drivers
     ad9516_write1(0x140, d->priv.enable_out_6 ? 0x42 : 0x43); // OUT6
@@ -200,7 +185,7 @@ OpStatusTypeDef auxpll_output_setup(Dev_auxpll *d)
     ad9516_write1(0x1A1, 0x20); // bypass 4.2
 
     pllIoUpdate(d);
-    return DEV_OK;
+    return true;
 }
 
 //const int auxpll_vco_div_map[8] = {2, 3, 4, 5, 6, 0, 0, 0};
