@@ -17,7 +17,6 @@ struct link_str {
     osSemaphoreId semaphore;
 };
 
-void get_mac_address(uint8_t buf[6]);
 err_t ethernetif_init(struct netif *netif);
 void ethernetif_set_link(void const *argument);
 void ethernetif_update_config(struct netif *netif);

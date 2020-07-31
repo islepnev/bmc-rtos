@@ -50,20 +50,8 @@
 #include "netif/ethernet.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
+#include "mac_address.h"
 #include <string.h>
-
-void get_mac_address(uint8_t buf[6])
-{
-    // construct MAC address from UUID
-    uint32_t uniq = (HAL_GetUIDw0() ^ HAL_GetUIDw1() ^ HAL_GetUIDw2()) & 0xFFFFFFul;
-
-    buf[0] = 0x02;
-    buf[1] = 0xA6;
-    buf[2] = 0xB8;
-    buf[3] = (uniq >> 16) & 0xFF;
-    buf[4] = (uniq >> 8) & 0xFF;
-    buf[5] = uniq & 0xFF;
-}
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

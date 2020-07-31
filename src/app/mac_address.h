@@ -15,12 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DISPLAY_COMMON_H
-#define DISPLAY_COMMON_H
+#ifndef MAC_ADDRESS_H
+#define MAC_ADDRESS_H
 
-void display_devices(void);
-void print_header(void);
-void print_footer_line(void);
+#include <stdint.h>
 
-#endif // DISPLAY_COMMON_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void get_mac_address(uint8_t buf[6]);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // MAC_ADDRESS_H
 

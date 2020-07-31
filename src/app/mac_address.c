@@ -15,12 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DISPLAY_COMMON_H
-#define DISPLAY_COMMON_H
+#include "mac_address.h"
 
-void display_devices(void);
-void print_header(void);
-void print_footer_line(void);
+#include "stm32f7xx_hal.h"
 
-#endif // DISPLAY_COMMON_H
+void get_mac_address(uint8_t buf[6])
+{
+    // construct MAC address from UUID
+    uint32_t uniq = (HAL_GetUIDw0() ^ HAL_GetUIDw1() ^ HAL_GetUIDw2()) & 0xFFFFFFul;
 
+    buf[0] = 0x02;
+    buf[1] = 0xA6;
+    buf[2] = 0xB8;
+    buf[3] = (uniq >> 16) & 0xFF;
+    buf[4] = (uniq >> 8) & 0xFF;
+    buf[5] = uniq & 0xFF;
+}

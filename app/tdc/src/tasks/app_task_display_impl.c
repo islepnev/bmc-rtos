@@ -35,10 +35,11 @@
 #include "digipot/dev_digipot.h"
 #include "display.h"
 #include "display_common.h"
+#include "display_log.h"
+#include "display_tasks.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_print.h"
 #include "fpga/dev_fpga_types.h"
-#include "freertos_stats.h"
 #include "logbuffer.h"
 #include "logentry.h"
 #include "powermon/dev_pm_sensors_types.h"
@@ -49,7 +50,6 @@
 #include "stm32f7xx_hal.h"
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
-#include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
@@ -80,29 +80,6 @@ static void print_pm_pots(void)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-
-static void print_log_entry(uint32_t index)
-{
-    struct LogEntry ent;
-    log_get(index, &ent);
-    const char *prefix = "";
-    const char *suffix = ANSI_CLEAR_EOL ANSI_CLEAR;
-    switch (ent.priority) {
-    case LOG_EMERG: prefix = ANSI_PUR; break;
-    case LOG_ALERT: prefix = ANSI_PUR; break;
-    case LOG_CRIT: prefix = ANSI_PUR; break;
-    case LOG_ERR: prefix = ANSI_RED; break;
-    case LOG_WARNING: prefix = ANSI_YELLOW; break;
-    case LOG_NOTICE: break;
-    case LOG_INFO: break;
-    case LOG_DEBUG: break;
-    default: prefix = ANSI_PUR; break;
-    }
-    printf("%s%8ld.%03ld %s%s", prefix,
-           ent.tick/1000, ent.tick%1000, ent.str, suffix);
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
-
 #define DISPLAY_SYS_STATUS_Y 2
 #define DISPLAY_SYS_STATUS_H 1
 #define DISPLAY_POWERMON_Y (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H)
@@ -123,53 +100,10 @@ static void print_log_entry(uint32_t index)
 #define DISPLAY_AUXPLL_H 0
 #endif
 #define DISPLAY_LOG_Y (0 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H)
-#define DISPLAY_LOG_H 5
-#define DISPLAY_STATS_Y (0 + DISPLAY_LOG_Y + DISPLAY_LOG_H)
 
 #define DISPLAY_TASKS_Y 2
 
 #define DISPLAY_PLL_DETAIL_Y 2
-
-//#define DISPLAY_HEIGHT (DISPLAY_PLL_Y + DISPLAY_PLL_H)
-
-static void print_uptime_str(void)
-{
-    uint32_t ss = osKernelSysTick() / osKernelSysTickFrequency;
-    uint16_t dd = ss / 86400;
-    ss -= dd*86400;
-    uint16_t hh = ss / 3600;
-    ss -= hh*3600;
-    uint16_t mm = ss / 60;
-    ss -= mm*60;
-    if (dd > 1)
-        printf("%u days ", dd);
-    if (dd == 1)
-        printf("%u day ", dd);
-    printf("%2u:%02u:%02lu", hh, mm, ss);
-}
-
-static char statsBuffer[1000];
-
-static void print_header(void)
-{
-    // Title
-    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
-    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
-    printf(" %lu%%", freertos_get_cpu_load_percent());
-    if (display_mode == DISPLAY_NONE) {
-        printf("     display refresh paused");
-    } else {
-        printf("     Uptime: ");
-        print_uptime_str();
-        printf("     %s%s%s%s%s",
-               ANSI_BOLD ANSI_BLINK,
-               enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
-               ANSI_BGR_BLUE " ",
-               enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
-               ANSI_BGR_BLUE);
-    }
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-}
 
 static void print_footer(void)
 {
@@ -252,44 +186,6 @@ static void print_auxpll(void)
     auxpllPrint();
 }
 
-static void print_log_lines(int count)
-{
-    uint32_t max_count = count;
-    if (max_count > LOG_BUF_SIZE)
-        max_count = LOG_BUF_SIZE;
-    volatile const uint32_t log_count = log_get_count();
-    volatile const uint32_t log_wptr = log_get_wptr();
-    volatile const uint32_t log_start = (log_count > max_count) ? (log_wptr + LOG_BUF_SIZE - max_count) % LOG_BUF_SIZE : 0;
-    if (log_start <= log_wptr) {
-        for (uint32_t i=log_start; i<log_wptr; i++)
-            print_log_entry(i);
-    } else {
-        for (uint32_t i=log_start; i<LOG_BUF_SIZE; i++)
-            print_log_entry(i);
-        for (uint32_t i=0; i<log_wptr; i++)
-            print_log_entry(i);
-    }
-    for (uint32_t i=log_count; i<max_count; i++)
-        print_clear_eol();
-}
-
-static void print_log_messages(void)
-{
-    //    print_clearbox(DISPLAY_LOG_Y, DISPLAY_LOG_H);
-        print_goto(DISPLAY_LOG_Y, 1);
-        if (screen_height > DISPLAY_LOG_Y + 1)
-            print_log_lines(screen_height - 1 - DISPLAY_LOG_Y);
-}
-
-static void display_log(void)
-{
-    print_goto(2, 1);
-    printf("Log messages\n" ANSI_CLEAR_EOL);
-    print_goto(3, 1);
-    if (screen_height > 3 + 1)
-        print_log_lines(screen_height - 1 - 3);
-}
-
 static void display_pot(void)
 {
     print_goto(2, 1);
@@ -344,39 +240,9 @@ static void display_summary(void)
 #ifdef BOARD_TDC64
     print_auxpll();
 #endif
-    print_log_messages();
+    print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y);
 }
 
-static void display_tasks(void)
-{
-    print_clearbox(DISPLAY_TASKS_Y, uxTaskGetNumberOfTasks());
-    print_goto(DISPLAY_TASKS_Y, 1);
-    printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u", tskKERNEL_VERSION_NUMBER,
-           __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
-           osCMSIS >> 16, osCMSIS & 0xFFFF
-           );
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX",
-           HAL_GetDEVID(), HAL_GetREVID(),
-           HAL_GetHalVersion(),
-           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
-           );
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-    char *buf = statsBuffer;
-    strcpy(buf, "Task");
-    buf += strlen(buf);
-    for(int i = strlen("Task"); i < ( configMAX_TASK_NAME_LEN - 3 ); i++) {
-        *buf = ' ';
-        buf++;
-        *buf = '\0';
-    }
-    const char *hdr = "  Abs Time      % Time\r\n****************************************" ANSI_CLEAR_EOL "\n";
-    strcpy(buf, hdr);
-    buf += strlen(hdr);
-    vTaskGetRunTimeStats(buf);
-    printf("%s", statsBuffer);
-    printf(ANSI_CLEAR_EOL);
-}
 
 static void display_pll_detail(void)
 {
@@ -435,7 +301,7 @@ void display_task_run(void)
         display_summary();
         break;
     case DISPLAY_LOG:
-        display_log();
+        display_log(3, screen_height-1-3);
         break;
     case DISPLAY_DIGIPOT:
         display_pot();
@@ -444,7 +310,7 @@ void display_task_run(void)
         display_pll_detail();
         break;
     case DISPLAY_TASKS:
-        display_tasks();
+        display_tasks(DISPLAY_TASKS_Y);
         break;
     case DISPLAY_DEVICES:
         display_devices();

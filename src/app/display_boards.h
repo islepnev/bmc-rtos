@@ -15,12 +15,9 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DISPLAY_COMMON_H
-#define DISPLAY_COMMON_H
+#ifndef DISPLAY_BOARDS_H
+#define DISPLAY_BOARDS_H
 
-void display_devices(void);
-void print_header(void);
-void print_footer_line(void);
+void display_boards(int y);
 
-#endif // DISPLAY_COMMON_H
-
+#endif // DISPLAY_BOARDS_H

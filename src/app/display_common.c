@@ -18,11 +18,19 @@
 #include "display_common.h"
 
 #include <stdio.h>
+#include <time.h>
 
 #include "ansi_escape_codes.h"
+#include "app_shared_data.h"
+#include "cmsis_os.h"
 #include "devicelist.h"
 #include "devicelist_print.h"
 #include "display.h"
+#include "mac_address.h"
+#include "freertos_stats.h"
+#include "rtc_util.h"
+#include "stm32f7xx_hal.h"
+#include "version.h"
 
 void display_devices(void)
 {
@@ -30,6 +38,80 @@ void display_devices(void)
     printf("Device list" ANSI_CLEAR_EOL "\n");
     devicelist_print(deviceList.list[0], 0);
     printf(ANSI_CLEAR_EOL);
+}
+
+static void print_uptime_str(void)
+{
+    uint32_t ss = osKernelSysTick() / osKernelSysTickFrequency;
+    uint16_t dd = ss / 86400;
+    ss -= dd*86400;
+    uint16_t hh = ss / 3600;
+    ss -= hh*3600;
+    uint16_t mm = ss / 60;
+    ss -= mm*60;
+    if (dd > 1)
+        printf("%u days ", dd);
+    if (dd == 1)
+        printf("%u day ", dd);
+    printf("%2u:%02u:%02lu", hh, mm, ss);
+}
+
+static void print_rtc_str(void)
+{
+    struct tm tm;
+    get_rtc_tm(&tm);
+    char buf[32];
+    strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &tm);
+    printf("%s", buf);
+}
+
+void print_header_tdc(void)
+{
+    // Title
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
+    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
+    printf(" %lu%%", freertos_get_cpu_load_percent());
+
+    printf("     Uptime: ");
+    print_uptime_str();
+    printf("     %s%s%s%s%s",
+           ANSI_BOLD ANSI_BLINK,
+           enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
+           ANSI_BGR_BLUE " ",
+           enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
+           ANSI_BGR_BLUE);
+
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+}
+
+void print_header(void)
+{
+    // Title
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
+#ifdef HAL_ETH_MODULE_ENABLED
+    uint8_t macaddress[6];
+    get_mac_address(macaddress);
+    printf("  MAC:%02X:%02X:%02X:%02X:%02X:%02X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
+#endif
+    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
+    printf(" %lu%%", freertos_get_cpu_load_percent());
+    if (display_mode == DISPLAY_NONE) {
+        printf("     display refresh paused");
+    } else {
+        printf("     Uptime: ");
+        print_uptime_str();
+#ifdef HAL_RTC_MODULE_ENABLED
+        printf("   ");
+        print_rtc_str();
+#endif
+        printf("     %s%s%s%s%s",
+               ANSI_BOLD ANSI_BLINK,
+               enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ",
+               ANSI_BGR_BLUE " ",
+               enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
+               ANSI_BGR_BLUE);
+    }
+    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
 void print_footer_line(void)

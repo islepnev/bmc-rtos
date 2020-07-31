@@ -15,12 +15,10 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DISPLAY_COMMON_H
-#define DISPLAY_COMMON_H
+#ifndef DISPLAY_LOG_H
+#define DISPLAY_LOG_H
 
-void display_devices(void);
-void print_header(void);
-void print_footer_line(void);
+void display_log(int y, int count);
+void print_log_messages(int y, int count);
 
-#endif // DISPLAY_COMMON_H
-
+#endif // DISPLAY_LOG_H
