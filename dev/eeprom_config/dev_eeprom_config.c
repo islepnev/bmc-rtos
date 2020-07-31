@@ -26,7 +26,6 @@
 #include "bus/i2c_driver.h"
 #include "bus/bus_types.h"
 #include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
-#include "system_status_common.h"
 
 DeviceStatus dev_eeprom_config_detect(Dev_eeprom_config *d)
 {

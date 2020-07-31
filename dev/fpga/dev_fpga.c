@@ -19,7 +19,7 @@
 
 #include "../ad9545/dev_ad9545.h"
 #include "dev_fpga_types.h"
-#include "../thset/dev_thset_types.h"
+#include "thset/dev_thset_types.h"
 #include "devices_types.h"
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"

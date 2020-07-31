@@ -23,7 +23,6 @@
 
 #include "bus/bus_types.h"
 #include "devicelist.h"
-#include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_types.h"
 #include "bsp_powermon_types.h"
 

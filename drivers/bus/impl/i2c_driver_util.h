@@ -22,11 +22,12 @@
 
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "i2c.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct __I2C_HandleTypeDef;
 
 void raise_transfer_error(struct __I2C_HandleTypeDef *hi2c);
 void clear_transfer_error(struct __I2C_HandleTypeDef *hi2c);
