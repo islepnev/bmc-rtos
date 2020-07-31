@@ -72,21 +72,21 @@ static void local_init(DeviceBase *parent)
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-    dev_thset_add(&thset, "VCXO");
-    dev_thset_add(&thset, "FPGA");
     dev_thset_add(&thset, "Board");
+    dev_thset_add(&thset, "FPGA");
+    dev_thset_add(&thset, "VCXO");
     thset.priv.count = 3;
     while (1)
     {
         task_sfpiic_run(&sfpiic);
         dev_max31725_run(&therm1);
         dev_tmp421_run(&therm2);
-        thset.priv.sensors[0].value = therm1.priv.temp;
-        thset.priv.sensors[0].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset.priv.sensors[0].value = therm2.priv.temp_internal;
+        thset.priv.sensors[0].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         thset.priv.sensors[1].value = therm2.priv.temp;
         thset.priv.sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        thset.priv.sensors[2].value = therm2.priv.temp_internal;
-        thset.priv.sensors[2].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset.priv.sensors[2].value = therm1.priv.temp;
+        thset.priv.sensors[2].hdr.b.state = (therm1.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         dev_thset_run(&thset);
         task_powermon_run(&pm);
         sync_ipmi_sensors();
