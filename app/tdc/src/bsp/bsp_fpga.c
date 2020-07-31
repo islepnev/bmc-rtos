@@ -29,30 +29,30 @@ bool fpgaWriteSensors(void)
         return false;
     const pm_sensors_arr *sensors = &p->sensors;
     uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.current * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.current * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.current * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.current * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.current * 1000)))
         return false;
 #ifdef BOARD_TDC64
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.busVoltage * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.busVoltage * 1000)))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.current * 1000)))
+    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.current * 1000)))
     return false;
 #endif
     return true;

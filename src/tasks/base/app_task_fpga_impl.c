@@ -105,7 +105,7 @@ void fpga_task_run(Dev_fpga *d)
         }
         if (fpga_done) {
             if (fpga_done_pin_present()) {
-                const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
+                const uint32_t tick_freq_hz = 1000U / osKernelSysTickFrequency;
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
                 if (fpga_loaded)
                     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
@@ -129,7 +129,7 @@ void fpga_task_run(Dev_fpga *d)
                 ) {
             state = FPGA_STATE_RUN;
             if (! fpga_done_pin_present()) {
-                const uint32_t tick_freq_hz = 1000U / HAL_GetTickFreq();
+                const uint32_t tick_freq_hz = 1000U / osKernelSysTickFrequency;
                 const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
                 if (fpga_loaded)
                     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);

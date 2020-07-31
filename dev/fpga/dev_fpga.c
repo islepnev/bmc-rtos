@@ -32,16 +32,12 @@
 
 static uint16_t live_magic = 0x55AA;
 
-static HAL_StatusTypeDef fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)
+static bool fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    ret = fpga_spi_hal_write_reg(addr, wdata);
-    if (ret != HAL_OK)
-        return ret;
-    ret = fpga_spi_hal_read_reg(addr, rdata);
-    if (ret != HAL_OK)
-        return ret;
-    return ret;
+    return fpga_spi_hal_write_reg(addr, wdata) &&
+           fpga_spi_hal_read_reg(addr, rdata) &&
+           rdata &&
+           (wdata == *rdata);
 }
 
 static void fpga_write_live_magic(void)
@@ -79,13 +75,13 @@ bool fpga_test(void)
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
-    if (HAL_OK != fpga_spi_hal_write_reg(addr1, wdata1))
+    if (! fpga_spi_hal_write_reg(addr1, wdata1))
         goto err;
-    if (HAL_OK != fpga_spi_hal_write_reg(addr2, wdata2))
+    if (! fpga_spi_hal_write_reg(addr2, wdata2))
         goto err;
-    if (HAL_OK != fpga_spi_hal_read_reg(addr1, &rdata1))
+    if (! fpga_spi_hal_read_reg(addr1, &rdata1))
         goto err;
-    if (HAL_OK != fpga_spi_hal_read_reg(addr2, &rdata2))
+    if (! fpga_spi_hal_read_reg(addr2, &rdata2))
         goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
@@ -105,7 +101,7 @@ bool fpgaDetect(Dev_fpga *d)
 {
     int err = 0;
     for (int i=0; i<FPGA_REG_COUNT; i++) {
-        if (HAL_OK != fpga_spi_hal_read_reg(i, &d->priv.regs[i])) {
+        if (! fpga_spi_hal_read_reg(i, &d->priv.regs[i])) {
             err++;
             break;
         }
@@ -131,9 +127,9 @@ bool fpgaDetect(Dev_fpga *d)
 
 bool fpgaWriteBmcVersion(void)
 {
-    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
         return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
         return false;
     return true;
 }
@@ -148,7 +144,7 @@ bool fpgaWriteBmcTemperature(void)
         int16_t v = (i < p->count && p->sensors[i].hdr.b.state == DEVICE_NORMAL)
                         ? (p->sensors[i].value * 32)
                         : 0x8000;
-        if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, v))
+        if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, v))
             return false;
     }
     return true;
@@ -168,7 +164,7 @@ bool fpgaWritePllStatus(void)
         if (priv->status.sysclk.b.pll0_locked)
             data |= 0x1;
     }
-    if (HAL_OK != fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data))
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data))
         return false;
     return true;
 }
@@ -178,16 +174,13 @@ bool fpgaWriteSystemStatus(void)
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
     data = getSystemStatus();
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data);
-    if (HAL_OK != ret)
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data))
         return false;
     data = getPowermonStatus();
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data);
-    if (HAL_OK != ret)
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data))
         return false;
     data = getPllStatus();
-    ret = fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data);
-    if (HAL_OK != ret)
+    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data))
         return false;
     return true;
 }

@@ -50,7 +50,7 @@ void fpga_spi_hal_spi_nss_b(NssState state)
  * @param data pointer to 16-bit destination
  * @return @arg HAL_OK on success
  */
-HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
+bool fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
 {
     enum {Size = 2}; // number of 16-bit words
     uint16_t txBuf[2];
@@ -64,7 +64,7 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
         uint16_t result = rxBuf[1];
         *data = result;
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
 /**
@@ -73,7 +73,7 @@ HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data)
  * @param data 16-bit data to write
  * @return @arg HAL_OK on success
  */
-HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
+bool fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
 {
     enum {Size = 2};
     uint16_t txBuf[2];
@@ -86,7 +86,7 @@ HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data)
         log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error %d\n", ret);
         return ret;
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
 void fpga_enable_interface(void)

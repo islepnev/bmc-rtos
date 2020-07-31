@@ -18,12 +18,12 @@
 #ifndef FPGA_SPI_HAL_H
 #define FPGA_SPI_HAL_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
-#include "stm32f7xx_hal.h"
 
 enum {
     FPGA_SPI_ADDR_0 = 0,
@@ -44,8 +44,8 @@ enum {
     FPGA_SPI_ADDR_F = 0xF
 };
 
-HAL_StatusTypeDef fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
-HAL_StatusTypeDef fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
+bool fpga_spi_hal_read_reg(uint16_t addr, uint16_t *data);
+bool fpga_spi_hal_write_reg(uint16_t addr, uint16_t data);
 void fpga_enable_interface(void);
 void fpga_disable_interface(void);
 
