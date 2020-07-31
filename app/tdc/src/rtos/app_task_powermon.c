@@ -110,7 +110,9 @@ static void start_task_powermon( void const *arg)
 #endif
     while (1)
     {
+        sfpiic_switch_enable(true);
         task_sfpiic_run(&sfpiic); // broken on tdc64
+        sfpiic_switch_enable(false);
 #ifdef BOARD_TDC72
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
             dev_adt7301_run(&therm[i]);

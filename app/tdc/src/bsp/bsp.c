@@ -67,8 +67,7 @@ bool fpga_done_pin_present(void)
 }
 #endif
 
-void bsp_smbus_reset(void)
+void sfpiic_switch_enable(bool enable)
 {
-    write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  0);
-    write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  1);
+    write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin,  !enable);
 }
