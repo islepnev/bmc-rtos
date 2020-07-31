@@ -15,23 +15,36 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_ttvxs_clkmux_types.h"
+#ifndef DEV_CRU16_CLKMUX_TYPES_H
+#define DEV_CRU16_CLKMUX_TYPES_H
 
-SensorStatus get_clkmux_sensor_status(void)
-{
-    const DeviceBase *d = find_device_const(DEV_CLASS_CLKMUX);
-    if (!d || !d->priv)
-        return SENSOR_UNKNOWN;
-    const Dev_ttvxs_clkmux_priv *priv = (const Dev_ttvxs_clkmux_priv *)device_priv_const(d);
+#include <stdint.h>
 
-    switch (d->device_status) {
-    case DEVICE_NORMAL:
-        return SENSOR_NORMAL;
-    case DEVICE_FAIL:
-        return SENSOR_CRITICAL;
-    case DEVICE_UNKNOWN:
-        return SENSOR_UNKNOWN;
-    default:
-        return SENSOR_UNKNOWN;
-    }
+#include "devicelist.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    CRU16_PLL_SOURCE_DIV3 = 0,
+    CRU16_PLL_SOURCE_FMC = 1,
+    CRU16_PLL_SOURCE_EXT = 2,
+} cru16_pll_source_t;
+
+typedef struct Dev_cru16_clkmux_priv {
+    cru16_pll_source_t pll_source;
+} Dev_cru16_clkmux_priv;
+
+typedef struct Dev_cru16_clkmux {
+    DeviceBase dev;
+    Dev_cru16_clkmux_priv priv;
+} Dev_cru16_clkmux;
+
+SensorStatus get_cru16_clkmux_sensor_status(void);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // DEV_CRU16_CLKMUX_TYPES_H

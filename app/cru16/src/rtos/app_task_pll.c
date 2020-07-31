@@ -22,11 +22,11 @@
 #include "ad9545/ad9545.h"
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
-#include "app_task_clkmux_impl.h"
 #include "app_tasks.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "cru16_clkmux/dev_ttvxs_clkmux_types.h"
+#include "cru16_clkmux/dev_cru16_clkmux_fsm.h"
+#include "cru16_clkmux/dev_cru16_clkmux_types.h"
 #include "debug_helpers.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
@@ -56,7 +56,7 @@ static BusInterface mcb_eeprom_bus_info = {
 
 static Dev_ad9545 pll = {0};
 static Dev_eeprom_config eeprom = {0};
-static Dev_ttvxs_clkmux clkmux = {0};
+static Dev_cru16_clkmux clkmux = {0};
 
 static void local_init(DeviceBase *parent)
 {

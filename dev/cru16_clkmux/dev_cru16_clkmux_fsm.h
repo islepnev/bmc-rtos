@@ -15,36 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_TTVXS_CLKMUX_TYPES_H
-#define DEV_TTVXS_CLKMUX_TYPES_H
-
-#include <stdint.h>
-
-#include "devicelist.h"
+#ifndef DEV_CRU16_CLKMUX_IMPL
+#define DEV_CRU16_CLKMUX_IMPL
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    TTVXS_PLL_SOURCE_DIV3 = 0,
-    TTVXS_PLL_SOURCE_FMC = 1,
-    TTVXS_PLL_SOURCE_EXT = 2,
-} ttvxs_pll_source_t;
-
-typedef struct Dev_ttvxs_clkmux_priv {
-    ttvxs_pll_source_t pll_source;
-} Dev_ttvxs_clkmux_priv;
-
-typedef struct Dev_ttvxs_clkmux {
-    DeviceBase dev;
-    Dev_ttvxs_clkmux_priv priv;
-} Dev_ttvxs_clkmux;
-
-SensorStatus get_clkmux_sensor_status(void);
+struct Dev_cru16_clkmux;
+void task_clkmux_run(struct Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_TTVXS_CLKMUX_TYPES_H
+#endif // DEV_CRU16_CLKMUX_IMPL

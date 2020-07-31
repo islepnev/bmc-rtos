@@ -30,8 +30,8 @@
 #include "app_shared_data.h"
 #include "bsp_powermon.h"
 #include "cmsis_os.h"
-#include "cru16_clkmux/dev_ttvxs_clkmux.h"
-#include "cru16_clkmux/dev_ttvxs_clkmux_types.h"
+#include "cru16_clkmux/dev_cru16_clkmux.h"
+#include "cru16_clkmux/dev_cru16_clkmux_types.h"
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
@@ -152,7 +152,7 @@ static void print_ttvxs_clkmux(void)
 {
     print_goto(DISPLAY_CLKMUX_Y, 1);
     printf("CLKMUX");
-    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status()));
+    printf("%s", sensor_status_ansi_str(get_cru16_clkmux_sensor_status()));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 

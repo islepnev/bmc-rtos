@@ -15,12 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_ttvxs_clkmux.h"
+#include "dev_cru16_clkmux.h"
 #include <string.h>
 #include <stdint.h>
 #include "stm32f7xx_hal_def.h"
 
-#include "dev_ttvxs_clkmux_types.h"
+#include "dev_cru16_clkmux_types.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
 
 typedef union {
@@ -46,7 +46,7 @@ typedef union {
     uint8_t all;
 } clkmux_gpiob;
 
-void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
+void dev_clkmux_set_pll_source(Dev_cru16_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -68,7 +68,7 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 */
-void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
+void dev_clkmux_set_crsw1(Dev_cru16_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -96,7 +96,7 @@ void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 }
 
 /*
-void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
+void dev_clkmux_set_crsw2(Dev_cru16_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
@@ -122,7 +122,7 @@ void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 }
 */
 
-DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
+DeviceStatus dev_cru16_clkmux_detect(Dev_cru16_clkmux *d)
 {
     if (!mcp23017_detect()) {
         goto unknown;
@@ -156,7 +156,7 @@ unknown:
     return DEVICE_UNKNOWN;
 }
 
-DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
+DeviceStatus dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d)
 {
     dev_clkmux_set_pll_source(d);
     dev_clkmux_set_crsw1(d);

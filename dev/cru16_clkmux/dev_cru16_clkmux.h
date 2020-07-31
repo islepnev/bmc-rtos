@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_TTVXS_CLKMUX_H
-#define DEV_TTVXS_CLKMUX_H
+#ifndef DEV_CRU16_CLKMUX_H
+#define DEV_CRU16_CLKMUX_H
 
 #include "dev_common_types.h"
 
@@ -24,13 +24,13 @@
 extern "C" {
 #endif
 
-struct Dev_ttvxs_clkmux;
+struct Dev_cru16_clkmux;
 
-DeviceStatus dev_ttvxs_clkmux_detect(struct Dev_ttvxs_clkmux *d);
-DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d);
+DeviceStatus dev_cru16_clkmux_detect(struct Dev_cru16_clkmux *d);
+DeviceStatus dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_TTVXS_CLKMUX_H
+#endif // DEV_CRU16_CLKMUX_H
