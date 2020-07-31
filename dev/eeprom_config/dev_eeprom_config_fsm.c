@@ -37,11 +37,11 @@ void dev_eeprom_config_run(Dev_eeprom_config *d)
         DeviceStatus status = dev_eeprom_config_detect(d);
         if (status == DEVICE_NORMAL) {
             d->priv.fsm_state = EEPROM_CONFIG_STATE_RUN;
-            log_printf(LOG_INFO, "Configuration EEPROM Ok");
+            log_printf(LOG_INFO, "%s EEPROM Ok", d->dev.name);
             break;
         }
         if (stateTicks(d) > 2000) {
-            log_put(LOG_ERR, "Configuration EEPROM not found");
+            log_printf(LOG_ERR, "%s EEPROM not found", d->dev.name);
             d->priv.fsm_state = EEPROM_CONFIG_STATE_ERROR;
             break;
         }
@@ -61,7 +61,7 @@ void dev_eeprom_config_run(Dev_eeprom_config *d)
         break;
     case EEPROM_CONFIG_STATE_ERROR:
         if (old_state != d->priv.fsm_state) {
-            log_printf(LOG_ERR, "Configuration EEPROM error");
+            log_printf(LOG_ERR, "%s: EEPROM error", d->dev.name);
         }
         if (stateTicks(d) > ERROR_DELAY_TICKS) {
             d->priv.fsm_state = EEPROM_CONFIG_STATE_RESET;
