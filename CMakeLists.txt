@@ -37,6 +37,8 @@ set(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fstack-protector-all -fstack-usage -Wstack-usage=250")
 # Extra warnings
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wpedantic -Wextra -Wstrict-prototypes -Wdouble-promotion -Wswitch-enum -Wno-unused -Wno-unused-parameter")
+# treat as errors
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Werror=implicit-function-declaration -Werror=incompatible-pointer-types")
 
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -u_printf_float")
 
