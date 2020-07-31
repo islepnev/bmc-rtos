@@ -24,7 +24,6 @@
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_config.h"
 #include "thset/dev_thset_types.h"
-#include "devices_types.h"
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_powermon.h"
 #include "system_status.h"
@@ -35,7 +34,6 @@ IpmiSensors ipmi_sensors = {0};
 void sync_ipmi_sensors(void)
 {
     uint32_t index = 0;
-    const Devices *dev = getDevices();
     // Power monitors
     const Dev_powermon_priv *pm = get_powermon_priv_const();
     const pm_sensors_arr *sensors = &pm->sensors;

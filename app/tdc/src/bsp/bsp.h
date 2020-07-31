@@ -63,6 +63,7 @@ typedef enum {
     PCB_VER_TDC64VHLE_V2 = 1,
 } pcb_version_t;
 
+extern int pcb_version;
 uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);

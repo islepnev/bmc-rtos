@@ -156,7 +156,7 @@ void fpga_task_run(Dev_fpga *d)
             (!fpgaWriteBmcVersion()) ||
             (!fpgaWriteBmcTemperature()) ||
             (!fpgaWritePllStatus()) ||
-            (!fpgaWriteSystemStatus(getDevicesConst())) ||
+            (!fpgaWriteSystemStatus()) ||
             (!fpgaWriteSensors())
             ) {
             log_printf(LOG_ERR, "FPGA SPI error");

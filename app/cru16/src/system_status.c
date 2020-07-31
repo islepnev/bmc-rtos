@@ -49,7 +49,6 @@ encoded_system_status_t encode_system_status(void)
 
 SensorStatus getSystemStatus(void)
 {
-    const Devices *d = getDevicesConst();
     const SensorStatus powermonStatus = getPowermonStatus();
     const SensorStatus temperatureStatus = dev_thset_thermStatus();
     const SensorStatus sfpiicStatus = get_sfpiic_sensor_status();

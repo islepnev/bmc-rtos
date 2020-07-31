@@ -24,7 +24,7 @@
 
 #include "lwip/apps/snmp_table.h"
 #include "lwip/apps/snmp_scalar.h"
-#include "app_shared_data.h"
+#include "devices.h"
 #include "dev_common_types.h"
 #include "devices_types.h"
 
@@ -121,7 +121,7 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
         return 0;
     if (i >= VXSIIC_SLOTS)
         return 0;
-    const Devices *dev = getDevicesConst();
+    const Dev_vxsiicm *vxsiicm = get_dev_vxsiicm();
     u32_t col = SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id);
     u32_t *uint_ptr = (u32_t*)value;
     switch (col)
@@ -135,19 +135,19 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(*uint_ptr);
         break;
     case 3: {/* boardPresent */
-        return snmp_encode_truthvalue((s32_t *)value, (u32_t)dev->vxsiicm.status.slot[i].present);
+        return snmp_encode_truthvalue((s32_t *)value, (u32_t)vxsiicm->status.slot[i].present);
     }
     case 4: {/* boardStatus */
-        *uint_ptr = (u32_t)dev->vxsiicm.status.slot[i].system_status;
+        *uint_ptr = (u32_t)vxsiicm->status.slot[i].system_status;
         return sizeof(*uint_ptr);
         break;
     }
     case 5: // boardId
-        *uint_ptr = (u32_t)dev->vxsiicm.status.slot[i].mcu_info.module_id;
+        *uint_ptr = (u32_t)vxsiicm->status.slot[i].mcu_info.module_id;
         return sizeof(*uint_ptr);
         break;
     case 6: {/* boardName */
-        const char *name = dev->vxsiicm.status.slot[i].module_id_str;
+        const char *name = vxsiicm->status.slot[i].module_id_str;
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;

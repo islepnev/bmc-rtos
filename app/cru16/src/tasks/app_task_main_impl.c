@@ -21,6 +21,7 @@
 #include "bsp_pin_defs.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "devices.h"
 #include "devices_types.h"
 #include "led_gpio_hal.h"
 #include "logbuffer.h"

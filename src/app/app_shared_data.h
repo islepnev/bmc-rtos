@@ -27,8 +27,10 @@ extern "C" {
 typedef enum {
     DISPLAY_SUMMARY,
     DISPLAY_LOG,
+    DISPLAY_BOARDS,
     DISPLAY_DIGIPOT,
     DISPLAY_PLL_DETAIL,
+    DISPLAY_SFP_DETAIL,
     DISPLAY_TASKS,
     DISPLAY_DEVICES,
     DISPLAY_NONE,
@@ -42,12 +44,6 @@ extern int enable_stats_display;
 
 extern int screen_width;
 extern int screen_height;
-
-struct Devices;
-struct Dev_thset;
-
-struct Devices* getDevices(void);
-const struct Devices* getDevicesConst(void);
 
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);

@@ -118,7 +118,6 @@ sfp_table_get_value(struct snmp_node_instance* instance, void* value)
     u32_t i = instance->reference.u32;
     if (i >= SFP_COUNT)
         return 0;
-    const Devices *dev = getDevicesConst();
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
     case 2: {/* sfp name */

@@ -21,12 +21,13 @@
 #include "lwip/apps/snmp_core.h"
 #include "lwip/apps/snmp_scalar.h"
 #include "lwip/apps/snmp_table.h"
+
 #include "dev_common_types.h"
-#include "ipmi_sensor_types.h"
 #include "dev_pm_sensors_config.h"
-#include "vxsiicm/dev_vxsiicm_types.h"
+#include "devices.h"
 #include "devices_types.h"
-#include "app_shared_data.h"
+#include "ipmi_sensor_types.h"
+#include "vxsiicm/dev_vxsiicm_types.h"
 
 /* list of allowed value ranges for incoming OID */
 static const struct snmp_oid_range ipmiSensorTable_oid_ranges[] = {
@@ -60,8 +61,8 @@ ipmiSensorTable_get_cell_value_core(u32_t board_index, u32_t sensor_index, const
     if (sensor_index == 0 || sensor_index > MAX_SENSOR_COUNT)
         return SNMP_ERR_NOSUCHINSTANCE;
 
-    const Devices *dev = getDevicesConst();
-    const struct GenericSensor *sensor_ptr = &dev->vxsiicm.status.slot[board_index-1].mcu_sensors.sensors[sensor_index-1];
+    const Dev_vxsiicm *vxsiicm = get_dev_vxsiicm();
+    const struct GenericSensor *sensor_ptr = &vxsiicm->status.slot[board_index-1].mcu_sensors.sensors[sensor_index-1];
 
     /* value */
     switch (*column) {
@@ -126,14 +127,14 @@ ipmiSensorTable_get_next_cell_instance_and_value(const u32_t *column, struct snm
   snmp_next_oid_init(&state, row_oid->id, row_oid->len, result_temp, LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges));
 
   /* iterate over all possible OIDs to find the next one */
-  Devices *dev = getDevices();
+  const Dev_vxsiicm *vxsiicm = get_dev_vxsiicm();
   for (size_t i = 0; i < VXSIIC_SLOTS; i++) {
-//      u32_t boardIndex = (u32_t)vxsiic_map_slot_to_number[i];
-      if (!dev->vxsiicm.status.slot[i].present)
+      //      u32_t boardIndex = (u32_t)vxsiic_map_slot_to_number[i];
+      if (!vxsiicm->status.slot[i].present)
           continue;
       for (size_t j = 0; j < MAX_SENSOR_COUNT; j++)
       {
-          struct GenericSensor *sensor_ptr = &dev->vxsiicm.status.slot[i].mcu_sensors.sensors[j];
+          const GenericSensor *sensor_ptr = &vxsiicm->status.slot[i].mcu_sensors.sensors[j];
           if (sensor_ptr->hdr.b.state == SENSOR_UNKNOWN) continue;
           u32_t test_oid[LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges)];
           const u8_t board_index = i+1;

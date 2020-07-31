@@ -62,7 +62,7 @@ const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
-static void devPrintStatus(const struct Devices *d)
+static void devPrintStatus(void)
 {
     dev_sfpiic_print();
     dev_eeprom_config_print();
@@ -188,7 +188,7 @@ static void print_footer(void)
     print_footer_line();
 }
 
-void print_system_status(const Devices *dev)
+static void print_system_status(void)
 {
     print_goto(DISPLAY_SYS_STATUS_Y, 1);
     const SensorStatus systemStatus = getSystemStatus();
@@ -221,13 +221,13 @@ static void print_thset(void)
     print_thset_box();
 }
 
-static void print_main(const Devices *dev)
+static void print_main(void)
 {
     print_goto(DISPLAY_MAIN_Y, 1);
 //    if (getMainState() == MAIN_STATE_RUN) {
 //        printf("Main state:     %s", mainStateStr(getMainState()));
         print_clear_eol();
-        devPrintStatus(dev);
+        devPrintStatus();
 //        printf("%s\n", ANSI_CLEAR_EOL);
 //    } else {
 //        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
@@ -298,15 +298,15 @@ static void display_log(void)
 
 static int old_enable_stats_display = 0;
 
-static void display_summary(const Devices * dev)
+static void display_summary(void)
 {
-    print_system_status(dev);
+    print_system_status();
     print_powermon();
     if (enable_stats_display) {
         print_sensors();
     }
     print_thset();
-    print_main(dev);
+    print_main();
     print_ttvxs_clkmux();
     print_fpga();
     print_pll();
@@ -381,7 +381,7 @@ static void display_tasks(void)
     printf(ANSI_CLEAR_EOL);
 }
 
-static void display_pll_detail(const Devices * dev)
+static void display_pll_detail(void)
 {
     print_clearbox(DISPLAY_PLL_DETAIL_Y, DISPLAY_PLL_DETAIL_H);
     print_goto(DISPLAY_PLL_DETAIL_Y, 1);
@@ -414,7 +414,6 @@ void display_task_run(void)
     old_tick = tick;
     old_tm = tm;
 
-    const Devices * d = getDevices();
     if (repaint_flag) {
             printf(ANSI_CLEARTERM);
             printf(ANSI_GOHOME ANSI_CLEAR);
@@ -436,13 +435,13 @@ void display_task_run(void)
     print_header();
     switch (display_mode) {
     case DISPLAY_SUMMARY:
-        display_summary(d);
+        display_summary();
         break;
     case DISPLAY_LOG:
         display_log();
         break;
     case DISPLAY_PLL_DETAIL:
-        display_pll_detail(d);
+        display_pll_detail();
         display_auxpll_detail();
         break;
 //    case DISPLAY_BOARDS:

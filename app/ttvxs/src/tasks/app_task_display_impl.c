@@ -34,6 +34,7 @@
 #include "dev_common_types.h"
 #include "dev_mcu.h"
 #include "thset/dev_thset_print.h"
+#include "devices.h"
 #include "devices_types.h"
 #include "display.h"
 #include "display_common.h"
@@ -60,11 +61,12 @@ const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
-static void devPrintStatus(const struct Devices *d)
+static void devPrintStatus(void)
 {
     dev_sfpiic_print();
     dev_eeprom_config_print();
-    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(&d->vxsiicm), deviceStatusResultStr(d->vxsiicm.dev.device_status));
+    const Dev_vxsiicm *vxsiicm= get_dev_vxsiicm();
+    printf("VXS I2C:        %d boards %s", get_vxsiic_board_count(vxsiicm), deviceStatusResultStr(vxsiicm->dev.device_status));
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
@@ -188,7 +190,7 @@ static void print_footer(void)
     print_footer_line();
 }
 
-void print_system_status(const Devices *dev)
+static void print_system_status(void)
 {
     print_goto(DISPLAY_SYS_STATUS_Y, 1);
     const SensorStatus systemStatus = getSystemStatus();
@@ -221,13 +223,13 @@ static void print_thset(void)
     print_thset_box();
 }
 
-static void print_main(const Devices *dev)
+static void print_main(void)
 {
     print_goto(DISPLAY_MAIN_Y, 1);
 //    if (getMainState() == MAIN_STATE_RUN) {
 //        printf("Main state:     %s", mainStateStr(getMainState()));
         print_clear_eol();
-        devPrintStatus(dev);
+        devPrintStatus();
 //        printf("%s\n", ANSI_CLEAR_EOL);
 //    } else {
 //        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
@@ -298,15 +300,15 @@ static void display_log(void)
 
 static int old_enable_stats_display = 0;
 
-static void display_summary(const Devices * dev)
+static void display_summary(void)
 {
-    print_system_status(dev);
+    print_system_status();
     print_powermon();
     if (enable_stats_display) {
         print_sensors();
     }
     print_thset();
-    print_main(dev);
+    print_main();
     print_ttvxs_clkmux();
     print_fpga();
     print_pll();
@@ -314,14 +316,15 @@ static void display_summary(const Devices * dev)
     print_log_messages();
 }
 
-static void display_boards(const Devices * dev)
+static void display_boards(void)
 {
     print_goto(2, 1);
     printf("Boards\n" ANSI_CLEAR_EOL);
     printf(" # eeprom  exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
     int line = 0;
+    const Dev_vxsiicm *vxsiicm= get_dev_vxsiicm();
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const vxsiic_slot_status_t *status = &dev->vxsiicm.status.slot[i];
+        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[i];
         const char *label = vxsiic_map_slot_to_label[i];
         if (0 == status->present)
             printf("%2s" ANSI_CLEAR_EOL "\n", label);
@@ -415,7 +418,6 @@ void display_task_run(void)
     old_tick = tick;
     old_tm = tm;
 
-    const Devices * d = getDevices();
     int need_clear_screen =
         display_mode == DISPLAY_NONE ||
         display_mode == DISPLAY_LOG ||
@@ -446,7 +448,7 @@ void display_task_run(void)
     print_header();
     switch (display_mode) {
     case DISPLAY_SUMMARY:
-        display_summary(d);
+        display_summary();
         break;
     case DISPLAY_LOG:
         display_log();
@@ -456,7 +458,7 @@ void display_task_run(void)
         display_auxpll_detail();
         break;
     case DISPLAY_BOARDS:
-        display_boards(d);
+        display_boards();
         break;
     case DISPLAY_TASKS:
         display_tasks();

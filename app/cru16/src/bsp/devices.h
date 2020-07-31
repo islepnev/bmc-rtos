@@ -15,28 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_FPGA_H
-#define DEV_FPGA_H
-
-#include <stdbool.h>
-#include "dev_common_types.h"
+#ifndef DEVICES_H
+#define DEVICES_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_fpga;
+struct Devices;
 
-bool fpgaDetect(struct Dev_fpga *d);
-bool fpga_check_live_magic(void);
-bool fpga_test(void);
-bool fpgaWriteBmcVersion(void);
-bool fpgaWriteBmcTemperature(void);
-bool fpgaWritePllStatus(void);
-bool fpgaWriteSystemStatus(void);
+struct Devices* getDevices(void);
+const struct Devices* getDevicesConst(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_FPGA_H
+#endif // DEVICES_H

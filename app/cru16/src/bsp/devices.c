@@ -15,25 +15,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_shared_data.h"
+#include "devices.h"
 
 #include "devices_types.h"
 
 static Devices dev = {};
-bool system_power_present = false;
-int enable_pll_run = 0;
-display_mode_t display_mode = DISPLAY_SUMMARY;
-int enable_power = 1;
-int enable_stats_display = 1;
-
-int screen_width = 100;
-int screen_height = 35;
-
-int get_mcb_pcb_ver(void)
-{
-    Devices* d = getDevices();
-    return d->pcb_ver;
-}
 
 Devices* getDevices(void)
 {
@@ -43,30 +29,4 @@ Devices* getDevices(void)
 const Devices* getDevicesConst(void)
 {
     return &dev;
-}
-
-Dev_vxsiicm *get_dev_vxsiicm(void)
-{
-    return &dev.vxsiicm;
-}
-
-static bool display_refresh_flag = 0;
-static bool display_repaint_flag = 1;
-
-void schedule_display_refresh(void)
-{
-    display_refresh_flag = 1;
-}
-
-void schedule_display_repaint(void)
-{
-    display_repaint_flag = 1;
-}
-
-bool read_display_refresh(void)
-{
-    // FIXME: make atomic
-    int value = display_refresh_flag;
-    display_refresh_flag = 0;
-    return value;
 }

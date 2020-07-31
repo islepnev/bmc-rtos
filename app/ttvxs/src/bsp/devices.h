@@ -15,49 +15,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_SHARED_DATA_H
-#define APP_SHARED_DATA_H
-
-#include <stdbool.h>
+#ifndef DEVICES_H
+#define DEVICES_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    DISPLAY_SUMMARY,
-    DISPLAY_LOG,
-//    DISPLAY_BOARDS,
-    DISPLAY_PLL_DETAIL,
-    DISPLAY_SFP_DETAIL,
-    DISPLAY_TASKS,
-    DISPLAY_DEVICES,
-    DISPLAY_NONE,
-} display_mode_t;
-
-extern bool system_power_present;
-extern int enable_pll_run;
-extern display_mode_t display_mode;
-extern int enable_power;
-extern int enable_stats_display;
-
-extern int screen_width;
-extern int screen_height;
-
 struct Devices;
-struct Dev_thset;
+struct Dev_vxsiicm;
 
-int get_mcb_pcb_ver(void);
 struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 
-void schedule_display_refresh(void);
-void schedule_display_repaint(void);
-bool read_display_refresh(void);
-bool read_display_repaint(void);
+struct Dev_vxsiicm *get_dev_vxsiicm(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_SHARED_DATA_H
+#endif // DEVICES_H

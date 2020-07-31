@@ -174,7 +174,7 @@ bool fpgaWritePllStatus(void)
     return true;
 }
 
-bool fpgaWriteSystemStatus(const Devices *d)
+bool fpgaWriteSystemStatus(void)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,4 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_FPGA_H
-#define DEV_FPGA_H
-
-#include <stdbool.h>
-#include "dev_common_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Dev_fpga;
-
-bool fpgaDetect(struct Dev_fpga *d);
-bool fpga_check_live_magic(void);
-bool fpga_test(void);
-bool fpgaWriteBmcVersion(void);
-bool fpgaWriteBmcTemperature(void);
-bool fpgaWritePllStatus(void);
-bool fpgaWriteSystemStatus(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEV_FPGA_H
+#include "devices.h"

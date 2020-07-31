@@ -15,16 +15,16 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp_tty.h"
 #include "bsp.h"
-#include "app_shared_data.h"
+#include "bsp_tty.h"
 #include "devices_types.h"
+#include "mcb.h"
 #include "stm32f7xx_ll_usart.h"
 
 void bsp_tty_setup_uart(void)
 {
-    const Devices *dev = getDevices();
-    if (dev->pcb_ver == PCB_VER_A_MCB_1_0) {
+    int pcb_ver = get_mcb_pcb_ver();
+    if (pcb_ver == PCB_VER_A_MCB_1_0) {
         LL_USART_SetRXPinLevel(TTY_USART, LL_USART_RXPIN_LEVEL_INVERTED);
         LL_USART_SetTXPinLevel(TTY_USART, LL_USART_TXPIN_LEVEL_INVERTED);
     }

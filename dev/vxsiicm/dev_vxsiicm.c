@@ -19,7 +19,7 @@
 
 #include <string.h>
 #include <stdint.h>
-#include "app_shared_data.h"
+#include "devices.h"
 #include "dev_vxsiicm_types.h"
 #include "dev_vxsiic_pp.h"
 #include "vxsiic_iic_driver.h"
