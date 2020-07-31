@@ -37,7 +37,6 @@ typedef enum {
 
 typedef struct pm_sensor_priv {
     SensorIndex index;
-    DeviceStatus deviceStatus;
     SensorStatus sensorStatus;
     RampState rampState;
     uint32_t lastStatusUpdatedTick;

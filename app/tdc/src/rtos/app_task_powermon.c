@@ -117,7 +117,8 @@ static void start_task_powermon( void const *arg)
         sfpiic_switch_enable(false);
 #ifdef BOARD_TDC72
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
-            dev_adt7301_run(&therm[i]);
+            bool power_on = enable_power && system_power_present;
+            dev_adt7301_run(&therm[i], power_on);
             thset.priv.sensors[i].value = therm[i].priv.temp;
             thset.priv.sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         }

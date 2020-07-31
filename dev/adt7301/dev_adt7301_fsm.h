@@ -18,12 +18,14 @@
 #ifndef DEV_ADT7301_FSM_H
 #define DEV_ADT7301_FSM_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct Dev_adt7301;
-void dev_adt7301_run(struct Dev_adt7301 *p);
+void dev_adt7301_run(struct Dev_adt7301 *p, bool enable);
 
 #ifdef __cplusplus
 }

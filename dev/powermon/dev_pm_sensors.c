@@ -118,7 +118,7 @@ void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
     SensorStatus oldStatus = d->priv.sensorStatus;
     if (oldStatus != status) {
         if (false)
-            sensor_log_status_change(d);
+            sensor_log_status_change(&d->dev);
         d->priv.sensorStatus = status;
         d->priv.lastStatusUpdatedTick = osKernelSysTick();
     }

@@ -17,7 +17,6 @@
 
 #include "app_task_auxpll_impl.h"
 #include "cmsis_os.h"
-#include "bsp.h"
 #include "dev_auxpll.h"
 #include "ad9516/ad9516_spi_hal.h"
 #include "logbuffer.h"

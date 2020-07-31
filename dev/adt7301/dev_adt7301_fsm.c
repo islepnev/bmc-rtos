@@ -19,7 +19,6 @@
 
 #include "cmsis_os.h"
 #include "dev_adt7301.h"
-#include "app_shared_data.h"
 #include "log.h"
 #include "device_status_log.h"
 
@@ -31,10 +30,10 @@ static uint32_t stateTicks(Dev_adt7301_priv *p)
     return osKernelSysTick() - p->state_start_tick;
 }
 
-void dev_adt7301_run(Dev_adt7301 *p)
+void dev_adt7301_run(Dev_adt7301 *p, bool enable)
 {
     Dev_adt7301_priv *d = (Dev_adt7301_priv *)&p->priv;
-    if (!enable_power || !system_power_present) {
+    if (!enable) {
         if (d->state != ADT7301_STATE_SHUTDOWN) {
             d->state = ADT7301_STATE_SHUTDOWN;
             p->dev.device_status = DEVICE_UNKNOWN;

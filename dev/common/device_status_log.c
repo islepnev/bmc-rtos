@@ -81,11 +81,11 @@ LogPriority sensor_status_log_priority(SensorStatus status)
     }
 }
 
-void sensor_log_status_change(pm_sensor *p)
+void sensor_log_status_change(const DeviceBase *p)
 {
-    LogPriority prio = sensor_status_log_priority(p->priv.sensorStatus);
+    LogPriority prio = sensor_status_log_priority(p->sensor);
     const char *text = "";
-    switch(p->priv.sensorStatus) {
+    switch(p->sensor) {
     case SENSOR_UNKNOWN:
         text = "not found";
         break;
@@ -103,7 +103,7 @@ void sensor_log_status_change(pm_sensor *p)
     }
     log_printf(prio, "Sensor %s on %s %d.%02X",
                text,
-               bus_type_str(p->dev.bus.type),
-               p->dev.bus.bus_number,
-               p->dev.bus.address);
+               bus_type_str(p->bus.type),
+               p->bus.bus_number,
+               p->bus.address);
 }
