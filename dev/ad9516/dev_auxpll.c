@@ -64,7 +64,7 @@ bool auxpllSoftwareReset(void)
     if (!ret)
         return false;
     uint8_t data = 0;
-    if (HAL_OK != ad9516_read1(AD9516_REG1_CONFIG_0, &data))
+    if (! ad9516_read1(AD9516_REG1_CONFIG_0, &data))
         return false;
     if (data != serial_config_reg.raw)
         return false;
@@ -75,7 +75,7 @@ DeviceStatus auxpllDetect(Dev_auxpll *d)
 {
     int devicePresent = 0;
     uint8_t data = 0;
-    if (HAL_OK != ad9516_read1(AD9516_REG1_PART_ID, &data))
+    if (! ad9516_read1(AD9516_REG1_PART_ID, &data))
         goto err;
     devicePresent = (data == AD9516_PART_ID);
     if (devicePresent)
@@ -108,14 +108,14 @@ err:
 bool auxpllReadStatus(Dev_auxpll *d)
 {
     uint8_t data = 0;
-    if (HAL_OK != ad9516_read1(AD9516_REG1_PART_ID, &data))
+    if (! ad9516_read1(AD9516_REG1_PART_ID, &data))
         return false;
     if (data != AD9516_PART_ID)
         return false;
 
     if (!pllIoUpdate(d))
         return false;
-    if (HAL_OK != ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
+    if (! ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
         return false;
 
     return true;

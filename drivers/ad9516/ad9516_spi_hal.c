@@ -110,9 +110,9 @@ void ad9516_test_loop(void)
     }
 }
 
-HAL_StatusTypeDef ad9516_read1(uint16_t reg, uint8_t *data)
+bool ad9516_read1(uint16_t reg, uint8_t *data)
 {
-    return ad9516_read1_duplex(reg, data);
+    return HAL_OK == ad9516_read1_duplex(reg, data);
 }
 
 HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data)
@@ -120,7 +120,8 @@ HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data)
     HAL_StatusTypeDef ret = ad9516_write1_internal(reg, data);
     ad9516_write1_internal(0x232, 1); // io update
     uint8_t readback = 0;
-    ad9516_read1(reg, &readback);
+    if (! ad9516_read1(reg, &readback))
+        return false;
     if ((reg != 0x232) && (readback != data)) {
         log_printf(LOG_ERR, "Error writing %04X: wrote %02X, read %02X", reg, data, readback);
         return HAL_ERROR;

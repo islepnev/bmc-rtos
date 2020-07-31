@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 void ad9516_test_loop(void);
-HAL_StatusTypeDef ad9516_read1(uint16_t reg, uint8_t *data);
+bool ad9516_read1(uint16_t reg, uint8_t *data);
 HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data);
 HAL_StatusTypeDef ad9516_write_config(uint8_t data);
 void ad9516_enable_interface(void);
