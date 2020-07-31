@@ -29,16 +29,6 @@
 #include "gpio.h"
 #include "logbuffer.h"
 #include "spi.h"
-#include "stm32f7xx_hal.h"
-
-//static char *OpStatusErrorStr(OpStatusTypeDef status)
-//{
-//    switch(status) {
-//    case DEV_OK: return "Success";
-//    case DEV_ERROR: return "Device error";
-//    default:return "";
-//    }
-//}
 
 static void DEBUG_PRINT_RET(const char *func, int ret)
 {
@@ -131,9 +121,8 @@ bool auxpllReadStatus(Dev_auxpll *d)
     return true;
 }
 
-static HAL_StatusTypeDef auxpllReadAllRegisters_unused(Dev_auxpll *d)
+static bool auxpllReadAllRegisters_unused(Dev_auxpll *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     typedef struct {
         uint16_t first;
         uint16_t last;
@@ -153,16 +142,12 @@ static HAL_StatusTypeDef auxpllReadAllRegisters_unused(Dev_auxpll *d)
         uint16_t last = regs[n].last;
         for (int i=first; i<=last; i++) {
             uint8_t data = 0;
-            ret = ad9516_read1(i, &data);
-            if (ret != HAL_OK)
-                goto err;
+            if (! ad9516_read1(i, &data))
+                return false;
             // log_printf(LOG_DEBUG, "0x%04X,0x%02X", i, data);
         }
     }
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
+    return true;
 }
 
 static bool auxpll_output_setup(Dev_auxpll *d)
