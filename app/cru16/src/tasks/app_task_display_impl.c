@@ -58,6 +58,7 @@
 #include "version.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
+const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
@@ -395,8 +396,6 @@ static void display_auxpll_detail(void)
     auxpllPrintStatus();
 }
 
-static display_mode_t old_display_mode = DISPLAY_NONE;
-
 uint32_t old_tick = 0;
 static struct tm old_tm = {0};
 
@@ -408,31 +407,20 @@ void display_task_run(void)
     int time_updated = old_tm.tm_sec != tm.tm_sec;
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
         schedule_display_refresh();
-    if (old_display_mode != display_mode)
-        schedule_display_refresh();
-    int need_refresh = read_display_refresh();
-    if (!need_refresh)
+    const bool repaint_flag = read_display_repaint();
+    const bool refresh_flag = repaint_flag || read_display_refresh();
+    if (!refresh_flag)
         return;
     old_tick = tick;
     old_tm = tm;
 
     const Devices * d = getDevices();
-    int need_clear_screen =
-        display_mode == DISPLAY_NONE ||
-        display_mode == DISPLAY_LOG ||
-        display_mode == DISPLAY_TASKS ||
-        display_mode == DISPLAY_SFP_DETAIL ||
-        display_mode == DISPLAY_DEVICES;
-    // display_mode == DISPLAY_BOARDS;
-    if (need_clear_screen) {
-        if (old_display_mode != display_mode) {
+    if (repaint_flag) {
             printf(ANSI_CLEARTERM);
             printf(ANSI_GOHOME ANSI_CLEAR);
             print_header();
             printf(ANSI_SHOW_CURSOR);
-        }
     }
-    old_display_mode = display_mode;
     if (display_mode == DISPLAY_NONE)
         return;
     if (enable_stats_display && !old_enable_stats_display) {

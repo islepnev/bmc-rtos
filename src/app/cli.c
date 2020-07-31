@@ -60,7 +60,7 @@ static void handle_escape_screen_pos(uint16_t row, uint16_t col)
             if (screen_width != new_screen_width || screen_height != new_screen_height) {
                 screen_width = new_screen_width;
                 screen_height = new_screen_height;
-                schedule_display_refresh();
+                schedule_display_repaint();
             }
         }
     }

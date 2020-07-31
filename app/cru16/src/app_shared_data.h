@@ -54,7 +54,9 @@ struct Devices* getDevices(void);
 const struct Devices* getDevicesConst(void);
 
 void schedule_display_refresh(void);
-int read_display_refresh(void);
+void schedule_display_repaint(void);
+bool read_display_refresh(void);
+bool read_display_repaint(void);
 
 #ifdef __cplusplus
 }

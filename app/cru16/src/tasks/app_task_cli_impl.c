@@ -46,6 +46,7 @@ void cycle_display_mode(void)
     default:
         break;
     }
+    schedule_display_repaint();
 }
 
 void screen_handle_key(char ch)
