@@ -40,9 +40,9 @@ void init_pgood(pm_pgoods pgood);
 void pm_read_pgood(pm_pgoods pgood);
 bool get_all_pgood(const pm_pgoods pgood);
 
-bool get_input_power_valid(const pm_sensors_arr sensors);
-bool get_input_power_normal(const pm_sensors_arr sensors);
-bool get_input_power_failed(const pm_sensors_arr sensors);
+bool get_input_power_valid(const pm_sensors_arr *sensors);
+bool get_input_power_normal(const pm_sensors_arr *sensors);
+bool get_input_power_failed(const pm_sensors_arr *sensors);
 
 double pm_get_power_w(const Dev_powermon_priv *p);
 double pm_get_power_max_w(const Dev_powermon_priv *p);

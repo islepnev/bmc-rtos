@@ -111,8 +111,9 @@ static void monPrintValues(const Dev_powermon_priv *p)
 {
     pm_sensor_print_header();
     {
-        for (int i=0; i<POWERMON_SENSORS; i++) {
-            pm_sensor_print(&p->sensors[i], monIsOn(p->sw, (SensorIndex)i));
+        const pm_sensors_arr *sensors = &p->sensors;
+        for (int i=0; i<sensors->count; i++) {
+            pm_sensor_print(&sensors->arr[i], monIsOn(p->sw, (SensorIndex)i));
             print_clear_eol();
         }
     }

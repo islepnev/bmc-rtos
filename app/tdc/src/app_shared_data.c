@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -39,17 +39,31 @@ const Devices* getDevicesConst(void)
     return &dev;
 }
 
-static int display_refresh_flag = 0;
+static bool display_refresh_flag = 0;
+static bool display_repaint_flag = 1;
 
 void schedule_display_refresh(void)
 {
     display_refresh_flag = 1;
 }
 
-int read_display_refresh(void)
+void schedule_display_repaint(void)
+{
+    display_repaint_flag = 1;
+}
+
+bool read_display_refresh(void)
 {
     // FIXME: make atomic
     int value = display_refresh_flag;
     display_refresh_flag = 0;
+    return value;
+}
+
+bool read_display_repaint(void)
+{
+    // FIXME: make atomic
+    int value = display_repaint_flag;
+    display_repaint_flag = 0;
     return value;
 }

@@ -51,7 +51,10 @@ typedef enum MonState {
     MON_STATE_ERROR = 3
 } MonState;
 
-typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
+typedef struct pm_sensors_arr {
+    pm_sensor arr[POWERMON_SENSORS];
+    int count;
+} pm_sensors_arr ;
 
 typedef struct Dev_powermon_priv {
     PmState pmState;

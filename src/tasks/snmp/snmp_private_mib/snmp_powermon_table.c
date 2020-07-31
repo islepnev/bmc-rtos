@@ -137,7 +137,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         *(s32_t *)value = 0;
         return 0;
     }
-    const pm_sensor *s = &priv->sensors[i];
+    const pm_sensor *s = &priv->sensors.arr[i];
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
     case 1: {/* sensor index */

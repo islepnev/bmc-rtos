@@ -315,7 +315,7 @@ static void display_pot(const Devices * dev)
         else
             printf("?   ");
         if (pm && (int)p->priv.sensorIndex > 0 && (int)p->priv.sensorIndex < POWERMON_SENSORS) {
-            const pm_sensor *sensor = &pm->sensors[p->priv.sensorIndex];
+            const pm_sensor *sensor = &pm->sensors.arr[p->priv.sensorIndex];
             const int isOn = monIsOn(pm->sw_state, p->priv.sensorIndex);
             printf("%10s", sensor->priv.label);
             pm_sensor_print_values(sensor, isOn);

@@ -17,8 +17,6 @@
 
 #include "app_shared_data.h"
 
-#include <assert.h>
-
 #include "devices_types.h"
 
 static Devices dev = {};
@@ -52,14 +50,20 @@ Dev_vxsiicm *get_dev_vxsiicm(void)
     return &dev.vxsiicm;
 }
 
-static int display_refresh_flag = 0;
+static bool display_refresh_flag = 0;
+static bool display_repaint_flag = 1;
 
 void schedule_display_refresh(void)
 {
     display_refresh_flag = 1;
 }
 
-int read_display_refresh(void)
+void schedule_display_repaint(void)
+{
+    display_repaint_flag = 1;
+}
+
+bool read_display_refresh(void)
 {
     // FIXME: make atomic
     int value = display_refresh_flag;

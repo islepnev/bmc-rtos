@@ -38,8 +38,9 @@ void sync_ipmi_sensors(void)
     const Devices *dev = getDevices();
     // Power monitors
     const Dev_powermon_priv *pm = get_powermon_priv_const();
-    for (int i=0; pm && (i<POWERMON_SENSORS); i++) {
-        const pm_sensor_priv *s = &pm->sensors[i].priv;
+    const pm_sensors_arr *sensors = &pm->sensors;
+    for (int i=0; pm && (i<sensors->count); i++) {
+        const pm_sensor_priv *s = &sensors->arr[i].priv;
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_VOLTAGE;
         gs->hdr.b.state = s->sensorStatus;

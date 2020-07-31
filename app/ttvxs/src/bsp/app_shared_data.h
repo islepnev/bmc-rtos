@@ -20,8 +20,6 @@
 
 #include <stdbool.h>
 
-#include "dev_common_types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,7 +54,9 @@ const struct Devices* getDevicesConst(void);
 struct Dev_vxsiicm *get_dev_vxsiicm(void);
 
 void schedule_display_refresh(void);
-int read_display_refresh(void);
+void schedule_display_repaint(void);
+bool read_display_refresh(void);
+bool read_display_repaint(void);
 
 #ifdef __cplusplus
 }

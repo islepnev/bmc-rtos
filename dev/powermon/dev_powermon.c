@@ -33,8 +33,9 @@ static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 
 void create_sensor_subdevices(Dev_powermon *d)
 {
+    pm_sensors_arr *sensors = &d->priv.sensors;
     for (int i=0; i<POWERMON_SENSORS; i++) {
-        pm_sensor *sensor = &d->priv.sensors[i];
+        pm_sensor *sensor = &sensors->arr[i];
         struct_pm_sensor_init(sensor, (SensorIndex)(i));
         BusInterface bus_info = {
             .type = BUS_IIC,
@@ -42,13 +43,15 @@ void create_sensor_subdevices(Dev_powermon *d)
             .address = sensorBusAddress(i)
         };
         create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus_info, sensor->priv.label);
+        sensors->count = i+1;
     }
 }
 
 void struct_powermon_sensors_clear(Dev_powermon_priv *p)
 {
-    for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear(&p->sensors[i]);
+    pm_sensors_arr *sensors = &p->sensors;
+    for (int i=0; i<sensors->count; i++) {
+        struct_pm_sensor_clear(&sensors->arr[i]);
     }
 }
 
@@ -71,21 +74,25 @@ bool pm_read_liveInsert(Dev_powermon_priv *p)
     return p->vmePresent;
 }
 
-bool get_critical_power_valid(const pm_sensors_arr sensors)
+bool get_critical_power_valid(const pm_sensors_arr *sensors)
 {
-    for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &sensors[i];
+    SensorStatus status = SENSOR_NORMAL;
+    if (0 == sensors->count)
+        return SENSOR_UNKNOWN;
+    for (int i=0; i < sensors->count; i++) {
+        const pm_sensor *sensor = &sensors->arr[i];
         if (!sensor->priv.isOptional)
-            if (!pm_sensor_isValid(sensor))
-                return false;
+            if (pm_sensor_status(sensor) > status) {
+                status = pm_sensor_status(sensor);
+            }
     }
-    return true;
+    return status <= SENSOR_WARNING;
 }
 
-bool get_critical_power_failure(const pm_sensors_arr sensors)
+bool get_critical_power_failure(const pm_sensors_arr *sensors)
 {
-    for (int i=0; i < POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &sensors[i];
+    for (int i=0; i < sensors->count; i++) {
+        const pm_sensor *sensor = &sensors->arr[i];
         if (!sensor->priv.isOptional)
             if (pm_sensor_isCritical(sensor))
                 return true;
@@ -119,25 +126,28 @@ bool update_power_switches(Dev_powermon_priv *p, bool state)
     return ok;
 }
 
-bool pm_sensors_isAllValid(const Dev_powermon *d)
-{
-    for (int i=0; i < POWERMON_SENSORS; i++)
-        if (!pm_sensor_isValid(&d->priv.sensors[i]))
-            return false;
-    return true;
-}
+//bool pm_sensors_isAllValid(const Dev_powermon *d)
+//{
+//    const pm_sensors_arr *sensors = &d->priv.sensors;
+//    for (int i=0; i < sensors->count; i++)
+//        if (!pm_sensor_isValid(&sensors->arr[i]))
+//            return false;
+//    return true;
+//}
 
 void monClearMinMax(Dev_powermon *d)
 {
-    for (int i=0; i<POWERMON_SENSORS; i++)
-        struct_pm_sensor_clear_minmax(&d->priv.sensors[i].priv);
+    pm_sensors_arr *sensors = &d->priv.sensors;
+    for (int i=0; i<sensors->count; i++)
+        struct_pm_sensor_clear_minmax(&sensors->arr[i].priv);
 }
 
 void monClearMeasurements(Dev_powermon *d)
 {
     monClearMinMax(d);
-    for (int i=0; i<POWERMON_SENSORS; i++) {
-        struct_pm_sensor_clear_measurements(&d->priv.sensors[i].priv);
+    pm_sensors_arr *sensors = &d->priv.sensors;
+    for (int i=0; i<sensors->count; i++) {
+        struct_pm_sensor_clear_measurements(&sensors->arr[i].priv);
     }
 }
 
@@ -145,9 +155,10 @@ int monDetect(Dev_powermon *d)
 {
     int count = 0;
     int errors = 0;
-    for (int i=0; i<POWERMON_SENSORS; i++) {
+    pm_sensors_arr *sensors = &d->priv.sensors;
+    for (int i=0; i<sensors->count; i++) {
         if (errors > 2) break;
-        DeviceStatus s = pm_sensor_detect(&d->priv.sensors[i]);
+        DeviceStatus s = pm_sensor_detect(&sensors->arr[i]);
         if (s == DEVICE_NORMAL) {
             count++;
         } else {
@@ -161,8 +172,9 @@ int monReadValues(Dev_powermon *d)
 {
     int ok = 0;
     int err = 0;
-    for (int i=0; i<POWERMON_SENSORS; i++) {
-        pm_sensor *sensor = &d->priv.sensors[i];
+    pm_sensors_arr *sensors = &d->priv.sensors;
+    for (int i=0; i<sensors->count; i++) {
+        pm_sensor *sensor = &sensors->arr[i];
         if (err >= 2) {
             pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
         } else {
@@ -247,10 +259,10 @@ MonState runMon(Dev_powermon *pm)
     return pm->priv.monState;
 }
 
-bool get_fpga_core_power_present(const pm_sensors_arr sensors)
+bool get_fpga_core_power_present(const pm_sensors_arr *sensors)
 {
-    SensorStatus status_1v0 = pm_sensor_status(&sensors[SENSOR_FPGA_CORE_1V0]);
-    SensorStatus status_1v8 = pm_sensor_status(&sensors[SENSOR_FPGA_1V8]);
+    SensorStatus status_1v0 = pm_sensor_status(&sensors->arr[SENSOR_FPGA_CORE_1V0]);
+    SensorStatus status_1v8 = pm_sensor_status(&sensors->arr[SENSOR_FPGA_1V8]);
     bool present_1v0 = ((status_1v0 == SENSOR_NORMAL) || (status_1v0 == SENSOR_WARNING));
     bool present_1v8 = ((status_1v8 == SENSOR_NORMAL) || (status_1v8 == SENSOR_WARNING));
     return present_1v0 && present_1v8;

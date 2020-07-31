@@ -110,8 +110,9 @@ static void log_sensor_status(const pm_sensor *p)
 
 static void log_sensors_change(const Dev_powermon *pm)
 {
-    for (int i=0; i<POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->priv.sensors[i];
+    const pm_sensors_arr *sensors = &pm->priv.sensors;
+    for (int i=0; i<sensors->count; i++) {
+        const pm_sensor *sensor = &sensors->arr[i];
         if (sensor->priv.rampState != RAMP_NONE)
             continue;
         SensorStatus status = pm_sensor_status(sensor);
@@ -124,8 +125,9 @@ static void log_sensors_change(const Dev_powermon *pm)
 
 static void log_critical_sensors(const Dev_powermon *pm)
 {
-    for (int i=0; i<POWERMON_SENSORS; i++) {
-        const pm_sensor *sensor = &pm->priv.sensors[i];
+    const pm_sensors_arr *sensors = &pm->priv.sensors;
+    for (int i=0; i<sensors->count; i++) {
+        const pm_sensor *sensor = &sensors->arr[i];
         if (sensor->priv.isOptional)
             continue;
         log_sensor_status(sensor);
@@ -157,15 +159,16 @@ void task_powermon_run (Dev_powermon *pm)
         pm_initialized = 1;
     }
     pmLoopCount++;
+    pm_sensors_arr *sensors = &priv->sensors;
     bool vmePresent = pm_read_liveInsert(priv);
     pm_read_pgood(priv->pgood);
-    const bool input_power_normal = get_input_power_normal(priv->sensors);
+    const bool input_power_normal = get_input_power_normal(sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)
             log_put(LOG_NOTICE, "Input power normal");
         old_inut_power_normal = input_power_normal;
     }
-    const int input_power_critical = get_input_power_failed(priv->sensors);
+    const int input_power_critical = get_input_power_failed(sensors);
     if (input_power_critical != old_inut_power_critical) {
         if (input_power_critical) {
             log_critical_sensors(pm);
@@ -173,8 +176,8 @@ void task_powermon_run (Dev_powermon *pm)
         }
         old_inut_power_critical = input_power_critical;
     }
-    const int power_critical_ok = get_critical_power_valid(priv->sensors);
-    const int power_critical_failure = get_critical_power_failure(priv->sensors);
+    const int power_critical_ok = get_critical_power_valid(sensors);
+    const int power_critical_failure = get_critical_power_failure(sensors);
 
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
     if (THSET_STATE_2 == get_thset_state()) {
@@ -282,7 +285,7 @@ void task_powermon_run (Dev_powermon *pm)
     }
 
     for (int i=0; i<POWERMON_SENSORS; i++)
-        priv->sensors[i].priv.rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
+        sensors->arr[i].priv.rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
     if (!enable_power)
         monClearMinMax(pm);
@@ -294,7 +297,7 @@ void task_powermon_run (Dev_powermon *pm)
         runMon(pm);
     }
 
-    system_power_present = get_critical_power_valid(priv->sensors);
+    system_power_present = get_critical_power_valid(sensors);
     bsp_update_system_powergood_pin(system_power_present);
     if ((priv->pmState == PM_STATE_RAMP)
             || (priv->pmState == PM_STATE_RUN)

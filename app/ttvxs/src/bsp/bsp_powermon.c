@@ -141,36 +141,38 @@ bool get_all_pgood(const pm_pgoods pgood)
     return true;
 }
 
-bool get_input_power_valid(const pm_sensors_arr sensors)
+bool get_input_power_valid(const pm_sensors_arr *sensors)
 {
-    return pm_sensor_isValid(&sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isValid(&sensors->arr[SENSOR_VXS_5V]);
 }
 
-bool get_input_power_normal(const pm_sensors_arr sensors)
+bool get_input_power_normal(const pm_sensors_arr *sensors)
 {
-    return pm_sensor_isNormal(&sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isNormal(&sensors->arr[SENSOR_VXS_5V]);
 }
 
-bool get_input_power_failed(const pm_sensors_arr sensors)
+bool get_input_power_failed(const pm_sensors_arr *sensors)
 {
-    return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VXS_5V]);
+    return SENSOR_CRITICAL == pm_sensor_status(&sensors->arr[SENSOR_VXS_5V]);
 }
 
 double pm_get_power_w(const Dev_powermon_priv *p)
 {
+    const pm_sensors_arr *sensors = &p->sensors;
     double mw = 0;
-    mw += get_sensor_power_w(&p->sensors[SENSOR_5VPC]);
-    mw += get_sensor_power_w(&p->sensors[SENSOR_VXS_5V]);
-    mw += get_sensor_power_w(&p->sensors[SENSOR_MCB_4V5]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_VXS_5V]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_MCB_4V5]);
     return mw;
 }
 
 double pm_get_power_max_w(const Dev_powermon_priv *p)
 {
+    const pm_sensors_arr *sensors = &p->sensors;
     double mw = 0;
-    mw += p->sensors[SENSOR_5VPC].priv.powerMax;
-    mw += p->sensors[SENSOR_VXS_5V].priv.powerMax;
-    mw += p->sensors[SENSOR_MCB_4V5].priv.powerMax;
+    mw += sensors->arr[SENSOR_5VPC].priv.powerMax;
+    mw += sensors->arr[SENSOR_VXS_5V].priv.powerMax;
+    mw += sensors->arr[SENSOR_MCB_4V5].priv.powerMax;
     return mw;
 }
 

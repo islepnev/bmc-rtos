@@ -17,16 +17,17 @@
 
 #include "system_status.h"
 
+#include "ad9516/dev_auxpll_types.h"
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "thset/dev_thset.h"
+#include "devices_types.h"
 #include "digipot/dev_digipot_types.h"
 #include "fpga/dev_fpga.h"
-#include "system_status_common.h"
 #include "powermon/dev_powermon.h"
-#include "ad9516/dev_auxpll_types.h"
+#include "sfpiic/dev_sfpiic.h"
+#include "system_status_common.h"
+#include "thset/dev_thset.h"
 #include "vxsiics/dev_vxsiics_stats.h"
-#include "devices_types.h"
 
 DeviceStatus getDeviceStatus(void)
 {

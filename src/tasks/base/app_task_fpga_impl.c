@@ -74,7 +74,8 @@ void fpga_task_run(Dev_fpga *d)
     int fpga_core_power_present = false;
     const Dev_powermon_priv *priv = get_powermon_priv_const();
     if (priv) {
-        fpga_core_power_present = get_fpga_core_power_present(priv->sensors);
+        const pm_sensors_arr *sensors = &priv->sensors;
+        fpga_core_power_present = get_fpga_core_power_present(sensors);
     }
     int fpga_power_present = enable_power && fpga_core_power_present;
     int fpga_enable = fpga_power_present && d->priv.initb;
