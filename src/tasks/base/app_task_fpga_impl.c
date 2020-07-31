@@ -18,21 +18,20 @@
 #include "app_task_fpga_impl.h"
 
 #include <stdint.h>
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal.h"
-#include "cmsis_os.h"
+
 #include "app_shared_data.h"
-#include "dev_common_types.h"
-#include "fpga/dev_fpga_types.h"
-#include "fpga/dev_fpga.h"
-#include "fpga_spi_hal.h"
-#include "powermon/dev_powermon.h"
-#include "powermon/dev_powermon_types.h"
 #include "bsp.h"
 #include "bsp_fpga.h"
 #include "bsp_pin_defs.h"
-#include "debug_helpers.h"
-#include "logbuffer.h"
+#include "cmsis_os.h"
+#include "dev_common_types.h"
+#include "fpga/dev_fpga.h"
+#include "fpga/dev_fpga_types.h"
+#include "fpga_spi_hal.h"
+#include "gpio.h"
+#include "log/log.h"
+#include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_types.h"
 
 static const uint32_t LOAD_DELAY_TICKS = 5000;
 static const uint32_t DETECT_DELAY_TICKS = 100;
@@ -65,8 +64,8 @@ void fpga_task_run(Dev_fpga *d)
 {
     const fpga_state_t old_state = state;
     if (fpga_done_pin_present()) {
-        d->priv.initb = HAL_GPIO_ReadPin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
-        d->priv.done = HAL_GPIO_ReadPin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+        d->priv.initb = read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+        d->priv.done = read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
     } else {
         d->priv.initb = 1;
         d->priv.done = 1;
@@ -95,6 +94,7 @@ void fpga_task_run(Dev_fpga *d)
             state = FPGA_STATE_LOAD;
             fpga_load_start_tick = osKernelSysTick();
         }
+        d->dev.device_status = DEVICE_UNKNOWN;
         Dev_fpga_priv zz = {0};
         d->priv = zz;
         break;
