@@ -34,7 +34,7 @@ void print_pll(int y);
 void print_auxpll(int y);
 void print_thset(int y);
 void print_fpga(int y);
-void print_ttvxs_clkmux(int y);
+void print_clkmux(int y);
 
 #ifdef __cplusplus
 }

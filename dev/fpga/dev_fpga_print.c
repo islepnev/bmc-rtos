@@ -37,5 +37,4 @@ void dev_fpga_print_box(void)
         printf("%04X", priv->id);
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     print_clear_eol();
-
 }

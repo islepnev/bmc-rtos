@@ -18,9 +18,14 @@
 #ifndef DISPLAY_COMMON_H
 #define DISPLAY_COMMON_H
 
+#include "dev_common_types.h"
+
 void display_devices(void);
 void print_header(void);
 void print_footer_line(void);
+SensorStatus get_device_sensor_status(DeviceClass device_class);
+const char *device_sensor_status_ansi_str(DeviceClass device_class);
+void display_device_sensor_ansi_str(const char *name, DeviceClass device_class);
 
 #endif // DISPLAY_COMMON_H
 

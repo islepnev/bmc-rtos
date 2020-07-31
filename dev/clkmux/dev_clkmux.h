@@ -22,9 +22,6 @@
 extern "C" {
 #endif
 
-#include "dev_common_types.h"
-
-SensorStatus get_clkmux_sensor_status(void);
 
 #ifdef __cplusplus
 }

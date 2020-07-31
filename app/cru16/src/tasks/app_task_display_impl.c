@@ -132,7 +132,7 @@ static void display_summary(void)
     }
     print_thset(DISPLAY_TEMP_Y);
     print_main();
-    print_ttvxs_clkmux(DISPLAY_CLKMUX_Y);
+    print_clkmux(DISPLAY_CLKMUX_Y);
     print_fpga(DISPLAY_FPGA_Y);
     print_pll(DISPLAY_PLL_Y);
     print_auxpll(DISPLAY_AUXPLL_Y);

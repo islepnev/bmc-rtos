@@ -143,11 +143,9 @@ void print_fpga(int y)
     dev_fpga_print_box();
 }
 
-void print_ttvxs_clkmux(int y)
+void print_clkmux(int y)
 {
     print_goto(y, 1);
-    printf("CLKMUX");
-    printf("%s", sensor_status_ansi_str(get_clkmux_sensor_status()));
-    printf("%s\n", ANSI_CLEAR_EOL);
+    display_device_sensor_ansi_str("ClkMux", DEV_CLASS_CLKMUX);
 }
 

@@ -32,6 +32,36 @@
 #include "stm32f7xx_hal.h"
 #include "version.h"
 
+SensorStatus get_device_sensor_status(DeviceClass device_class)
+{
+    const DeviceBase *d = find_device_const(device_class);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+
+    switch (d->device_status) {
+    case DEVICE_NORMAL:
+        return SENSOR_NORMAL;
+    case DEVICE_FAIL:
+        return SENSOR_CRITICAL;
+    case DEVICE_UNKNOWN:
+        return SENSOR_UNKNOWN;
+    default:
+        return SENSOR_UNKNOWN;
+    }
+}
+
+const char *device_sensor_status_ansi_str(DeviceClass device_class)
+{
+    return sensor_status_ansi_str(get_device_sensor_status(device_class));
+}
+
+void display_device_sensor_ansi_str(const char *name, DeviceClass device_class)
+{
+    printf("%s %s", name,
+           device_sensor_status_ansi_str(device_class));
+    print_clear_eol();
+}
+
 void display_devices(void)
 {
     print_goto(2, 1);

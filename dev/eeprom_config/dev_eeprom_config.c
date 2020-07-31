@@ -24,6 +24,7 @@
 #include "at24c/dev_at24c.h"
 #include "dev_common_types.h"
 #include "display.h"
+#include "display_common.h"
 #include "bsp.h"
 #include "i2c.h"
 #include "bus/i2c_driver.h"
@@ -55,11 +56,5 @@ DeviceStatus dev_eeprom_config_read(Dev_eeprom_config *d)
 
 void dev_eeprom_config_print(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM);
-    if (!d || !d->priv)
-        return;
-    const Dev_eeprom_config_priv *priv = (const Dev_eeprom_config_priv *)device_priv_const(d);
-
-    printf("EEPROM config:  %s", sensor_status_ansi_str(get_eepromConfig_status()));
-    print_clear_eol();
+    display_device_sensor_ansi_str("EEPROM[config]", DEV_CLASS_EEPROM);
 }
