@@ -24,8 +24,6 @@
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"
 #include "powermon/dev_powermon_types.h"
-#include "spi.h"
-#include "stm32f7xx_hal_def.h"
 #include "system_status.h"
 #include "system_status_common.h"
 #include "version.h"
@@ -171,7 +169,6 @@ bool fpgaWritePllStatus(void)
 
 bool fpgaWriteSystemStatus(void)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
     uint16_t data = 0;
     data = getSystemStatus();
     if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data))
