@@ -44,5 +44,5 @@ SensorStatus pm_sensor_status(const pm_sensor *d)
 {
     if (d->dev.device_status != DEVICE_NORMAL)
         return SENSOR_UNKNOWN;
-    return d->priv.sensorStatus;
+    return d->dev.sensor;
 }

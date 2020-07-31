@@ -101,7 +101,7 @@ void pm_sensor_print(const pm_sensor *d, int isOn)
     printf("%10s", d->priv.label);
     if (d->dev.device_status == DEVICE_NORMAL) {
         pm_sensor_print_values(d, isOn);
-        printf(" %s", isOn ? sensor_status_ansi_str(d->priv.sensorStatus) : STR_RESULT_OFF);
+        printf(" %s", isOn ? sensor_status_ansi_str(d->dev.sensor) : STR_RESULT_OFF);
     } else {
         printf(" %s", STR_RESULT_UNKNOWN);
     }

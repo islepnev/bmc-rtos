@@ -76,7 +76,7 @@ static void log_sensor_status(const pm_sensor *p)
     if (neg) curr = -curr;
     const int curr_int = curr;
     int curr_frac = 1000 * (curr - curr_int);
-    if (sensor->sensorStatus != SENSOR_UNKNOWN)
+    if (p->dev.sensor != SENSOR_UNKNOWN)
         snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
                  sensor->label,
                  sensor_status_text(status),

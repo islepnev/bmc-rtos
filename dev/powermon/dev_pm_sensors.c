@@ -44,7 +44,7 @@ void struct_pm_sensor_clear_minmax(pm_sensor_priv *d)
 
 void struct_pm_sensor_clear_measurements(pm_sensor_priv *d)
 {
-    d->sensorStatus = SENSOR_UNKNOWN;
+    d->valid = false;
     d->busVoltage = 0;
     d->current = 0;
     d->power = 0;
@@ -67,7 +67,6 @@ void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
 void struct_pm_sensor_clear(pm_sensor *d)
 {
     pm_sensor_priv *sensor = &d->priv;
-    sensor->sensorStatus = SENSOR_UNKNOWN;
     sensor->rampState = RAMP_NONE;
     sensor->lastStatusUpdatedTick = 0;
     const double current_max = 16; // amperers
@@ -115,11 +114,11 @@ static void pm_sensor_set_readPower(pm_sensor_priv *d, double value)
 
 void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status)
 {
-    SensorStatus oldStatus = d->priv.sensorStatus;
+    SensorStatus oldStatus = d->dev.sensor;
     if (oldStatus != status) {
         if (false)
             sensor_log_status_change(&d->dev);
-        d->priv.sensorStatus = status;
+        d->dev.sensor = status;
         d->priv.lastStatusUpdatedTick = osKernelSysTick();
     }
 }
@@ -181,7 +180,8 @@ DeviceStatus pm_sensor_detect(pm_sensor *d)
 
 SensorStatus pm_sensor_compute_status(const pm_sensor *d)
 {
-    if (d->dev.device_status != DEVICE_NORMAL) {
+    if (d->dev.device_status != DEVICE_NORMAL ||
+        !d->priv.valid) {
         return SENSOR_UNKNOWN;
     }
     const pm_sensor_priv *sensor = &d->priv;
@@ -251,6 +251,7 @@ DeviceStatus pm_sensor_read(pm_sensor *d)
     pm_sensor_set_readCurrent(&d->priv, readCurrent);
     pm_sensor_set_readPower(&d->priv, readCurrent * readVoltage);
 #endif
+    d->priv.valid = true;
     pm_sensor_set_sensorStatus(d, pm_sensor_compute_status(d));
     return d->dev.device_status;
 }

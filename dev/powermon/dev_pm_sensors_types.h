@@ -37,7 +37,6 @@ typedef enum {
 
 typedef struct pm_sensor_priv {
     SensorIndex index;
-    SensorStatus sensorStatus;
     RampState rampState;
     uint32_t lastStatusUpdatedTick;
     // uint16_t busAddress;
@@ -49,6 +48,7 @@ typedef struct pm_sensor_priv {
     uint16_t cal;
     const char *label;
     // measurements
+    bool valid;
     double busVoltage;
     //    double shuntVoltage;
     double current;

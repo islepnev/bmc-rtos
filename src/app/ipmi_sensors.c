@@ -38,17 +38,19 @@ void sync_ipmi_sensors(void)
     const Dev_powermon_priv *pm = get_powermon_priv_const();
     const pm_sensors_arr *sensors = &pm->sensors;
     for (int i=0; pm && (i<sensors->count); i++) {
-        const pm_sensor_priv *s = &sensors->arr[i].priv;
+        const pm_sensor *p = &sensors->arr[i];
+        const DeviceBase *dev = &p->dev;
+        const pm_sensor_priv *s = &p->priv;
         GenericSensor *gs = &ipmi_sensors.sensors[index++];
         gs->hdr.b.type = IPMI_SENSOR_VOLTAGE;
-        gs->hdr.b.state = s->sensorStatus;
+        gs->hdr.b.state = dev->sensor;
         gs->hdr.b.optional = s->isOptional;
         gs->value = s->busVoltage;
         strncpy(gs->name, s->label, SENSOR_NAME_SIZE-1);
         if (s->hasShunt) {
             GenericSensor *gs = &ipmi_sensors.sensors[index++];
             gs->hdr.b.type = IPMI_SENSOR_CURRENT;
-            gs->hdr.b.state = s->sensorStatus;
+            gs->hdr.b.state = dev->sensor;
             gs->hdr.b.optional = s->isOptional;
             gs->value = s->current;
             strncpy(gs->name, s->label, SENSOR_NAME_SIZE-1);
