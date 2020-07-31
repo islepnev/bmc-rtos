@@ -199,7 +199,7 @@ const int AUXPLL_PRESCALER_INDEX = 4;
 const int AUXPLL_DIST_DIV = 2;
 // r 1, p 8, a 3, b 9, vco_div 6, out_div 2, pfd 2e+07
 
-OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
+bool auxpllSetup(Dev_auxpll *d)
 {
 //    volatile const int AUXPLL_PRESCALER_DIV = auxpll_prescalerdiv_map[AUXPLL_PRESCALER];
 //    volatile const double AUXPLL_VCO_FREQ =
@@ -297,6 +297,6 @@ OpStatusTypeDef auxpllSetup(Dev_auxpll *d)
 //    pllIoUpdate(d);
 
     //auxpllReadAllRegisters_unused(d);
-    return DEV_OK;
+    return true;
 }
 

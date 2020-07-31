@@ -21,21 +21,16 @@
 #include <stdbool.h>
 
 #include "dev_common_types.h"
-#include "dev_auxpll_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DeviceStatus auxpllDetect(Dev_auxpll *d);
-OpStatusTypeDef auxpllSetup(Dev_auxpll *d);
-
-//void reset_SPI_auxpll(void);
+struct Dev_auxpll;
+DeviceStatus auxpllDetect(struct Dev_auxpll *d);
+bool auxpllSetup(struct Dev_auxpll *d);
 bool auxpllSoftwareReset(void);
-//OpStatusTypeDef auxpllSetupSysclk(Dev_auxpll *d);
-//OpStatusTypeDef auxpllCalibrateSysclk(Dev_auxpll *d);
-bool auxpllReadStatus(Dev_auxpll *d);
-//OpStatusTypeDef auxpllReadSysclkStatus(Dev_auxpll *d);
+bool auxpllReadStatus(struct Dev_auxpll *d);
 
 #ifdef __cplusplus
 }

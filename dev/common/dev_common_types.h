@@ -57,14 +57,6 @@ typedef enum {
 } DeviceStatus;
 
 typedef enum {
-    DEV_OK       = 0,
-    IIC_ERROR    = 1,
-    IIC_BUSY     = 2,
-    IIC_TIMEOUT  = 3,
-    DEV_ERROR    = 0x20U,
-} OpStatusTypeDef;
-
-typedef enum {
     DEV_CLASS_0, // no class
     DEV_CLASS_VIRTUAL, // no bus
     DEV_CLASS_AD5141,

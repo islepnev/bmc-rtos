@@ -18,6 +18,7 @@
 #include "app_task_auxpll_impl.h"
 #include "cmsis_os.h"
 #include "dev_auxpll.h"
+#include "dev_auxpll_types.h"
 #include "ad9516/ad9516_spi_hal.h"
 #include "logbuffer.h"
 
@@ -73,7 +74,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
         }
         break;
     case AUXPLL_STATE_SETUP:
-        if (DEV_OK != auxpllSetup(d)) {
+        if (! auxpllSetup(d)) {
             d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }

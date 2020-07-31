@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include "dev_common_types.h"
 #include "dev_auxpll.h"
+#include "devicebase.h"
+#include "dev_auxpll_types.h"
 
 SensorStatus get_auxpll_sensor_status(void)
 {
