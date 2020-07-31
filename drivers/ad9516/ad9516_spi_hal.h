@@ -20,7 +20,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +27,8 @@ extern "C" {
 
 void ad9516_test_loop(void);
 bool ad9516_read1(uint16_t reg, uint8_t *data);
-HAL_StatusTypeDef ad9516_write1(uint16_t reg, uint8_t data);
-HAL_StatusTypeDef ad9516_write_config(uint8_t data);
+bool ad9516_write1(uint16_t reg, uint8_t data);
+bool ad9516_write_config(uint8_t data);
 void ad9516_enable_interface(void);
 void ad9516_disable_interface(void);
 

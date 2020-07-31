@@ -39,7 +39,7 @@ static void DEBUG_PRINT_RET(const char *func, int ret)
 static bool pllIoUpdate(Dev_auxpll *d)
 {
     uint8_t data = 1;
-    return (HAL_OK == ad9516_write1(0x232, data));
+    return ad9516_write1(0x232, data);
 }
 
 bool auxpllSoftwareReset(void)
@@ -51,15 +51,15 @@ bool auxpllSoftwareReset(void)
     serial_config_reg.b.long_instr_2 = 1;
     serial_config_reg.b.sdo_active = 1;
     serial_config_reg.b.sdo_active_2 = 1;
-    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(serial_config_reg.raw))
         ret = false;
     serial_config_reg.b.softreset = 1;
     serial_config_reg.b.softreset_2 = 1;
-    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(serial_config_reg.raw))
         ret = false;
     serial_config_reg.b.softreset = 0;
     serial_config_reg.b.softreset_2 = 0;
-    if (HAL_OK != ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(serial_config_reg.raw))
         ret = false;
     if (!ret)
         return false;
@@ -88,23 +88,6 @@ err:
     return d->dev.device_status;
 }
 
-/*
-bool auxpllSoftwareReset(void)
-{
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    ret = ad9516_write1(0x0000, 0x81);
-    if (ret != HAL_OK)
-        goto err;
-    ret = ad9516_write1(0x0000, 0);
-    if (ret != HAL_OK)
-        goto err;
-
-    return ret;
-err:
-    DEBUG_PRINT_RET(__func__, ret);
-    return ret;
-}
-*/
 bool auxpllReadStatus(Dev_auxpll *d)
 {
     uint8_t data = 0;
