@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+void iic_write_callback(uint16_t addr, uint32_t data);
+void iic_read_callback(uint16_t addr, uint32_t *data);
+
 void dev_vxsiics_init(void);
 void i2c_event_interrupt_handler(void);
 void i2c_error_interrupt_handler(void);

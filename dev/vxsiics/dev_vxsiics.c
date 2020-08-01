@@ -67,7 +67,7 @@ void dev_vxsiics_init(void)
 
 static uint32_t mem_txdata = 0;
 
-static void iic_write_callback(uint16_t addr, uint32_t data)
+void iic_write_callback(uint16_t addr, uint32_t data)
 {
     // writable scratch pad
     if (addr >= MEM_START_ADDR && addr < MEM_START_ADDR + MEM_SIZE) {
@@ -75,7 +75,7 @@ static void iic_write_callback(uint16_t addr, uint32_t data)
     }
 }
 
-static void iic_read_callback(uint16_t addr, uint32_t *data)
+void iic_read_callback(uint16_t addr, uint32_t *data)
 {
     if (!data)
         return;
