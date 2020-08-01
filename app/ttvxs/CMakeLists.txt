@@ -43,58 +43,16 @@ file(GLOB_RECURSE Dev_HEADERS
     ${MY_LIB_DIR}/dev/*.h
 )
 
-file(GLOB Dev_SRCS
-    ${MY_LIB_DIR}/dev/ad9516/*.c
-    ${MY_LIB_DIR}/dev/ad9545/*.c
-    ${MY_LIB_DIR}/dev/adt7301/*.c
-    ${MY_LIB_DIR}/dev/clkmux/*.c
-    ${MY_LIB_DIR}/dev/common/*.c
-    ${MY_LIB_DIR}/dev/digipot/*.c
-    ${MY_LIB_DIR}/dev/eeprom_config/*.c
-    ${MY_LIB_DIR}/dev/fpga/*.c
-    ${MY_LIB_DIR}/dev/max31725/*.c
-    ${MY_LIB_DIR}/dev/powermon/*.c
-    ${MY_LIB_DIR}/dev/sfpiic/*.c
-    ${MY_LIB_DIR}/dev/thset/*.c
-    ${MY_LIB_DIR}/dev/tmp421/*.c
-    ${MY_LIB_DIR}/dev/ttvxs_clkmux/*.c
-    ${MY_LIB_DIR}/dev/vxsiicm/*.c
+file(GLOB_RECURSE Dev_SRCS
+    ${MY_LIB_DIR}/dev/*.c
 )
 
 file(GLOB_RECURSE Drivers_HEADERS
     ${MY_LIB_DIR}/drivers/*.h
 )
 
-file(GLOB Drivers_SRCS
-    ${MY_LIB_DIR}/drivers/ad5141/*.c
-    ${MY_LIB_DIR}/drivers/ad9516/*.c
-    ${MY_LIB_DIR}/drivers/ad9545/*.c
-    ${MY_LIB_DIR}/drivers/adt7301/*.c
-    ${MY_LIB_DIR}/drivers/at24c/*.c
-    ${MY_LIB_DIR}/drivers/bus/*.c
-    ${MY_LIB_DIR}/drivers/bus/impl/*.c
-    ${MY_LIB_DIR}/drivers/debug_helpers.c
-    ${MY_LIB_DIR}/drivers/dev_ad9545.c
-    ${MY_LIB_DIR}/drivers/dev_common_types.c
-    ${MY_LIB_DIR}/drivers/dev_eeprom.c
-    ${MY_LIB_DIR}/drivers/dev_leds.c
-    ${MY_LIB_DIR}/drivers/dev_leds_types.c
-    ${MY_LIB_DIR}/drivers/dev_mcu.c
-    ${MY_LIB_DIR}/drivers/dev_sfpiic*.c
-    ${MY_LIB_DIR}/drivers/dev_thset.c
-    ${MY_LIB_DIR}/drivers/error_handler.c
-    ${MY_LIB_DIR}/drivers/error_handler_impl.c
-    ${MY_LIB_DIR}/drivers/fpga_spi_hal.c
-    ${MY_LIB_DIR}/drivers/i2c_util.c
-    ${MY_LIB_DIR}/drivers/ina226/*.c
-    ${MY_LIB_DIR}/drivers/led_gpio_hal.c
-    ${MY_LIB_DIR}/drivers/max31725/*.c
-    ${MY_LIB_DIR}/drivers/mcp23017/*.c
-    ${MY_LIB_DIR}/drivers/mcp23017_i2c_hal.c
-    ${MY_LIB_DIR}/drivers/os_serial_tty.c
-    ${MY_LIB_DIR}/drivers/powermon_i2c_driver.c
-    ${MY_LIB_DIR}/drivers/rtc_util.c
-    ${MY_LIB_DIR}/drivers/tmp421/*.c
+file(GLOB_RECURSE Drivers_SRCS
+    ${MY_LIB_DIR}/drivers/*.c
 )
 
 #add_library(drivers STATIC ${Drivers_SRCS})
