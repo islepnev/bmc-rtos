@@ -19,9 +19,12 @@
 
 #include "bsp_sensors_config.h"
 
+#include "bus/bus_types.h"
+#include "powermon/dev_pm_sensors_types.h"
+
 const SensorIndex input_power_sensor = SENSOR_VXS_5V;
 
-bool monIsOptional(SensorIndex index)
+static bool monIsOptional(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 1;
@@ -44,7 +47,7 @@ bool monIsOptional(SensorIndex index)
     return 0;
 }
 
-double monShuntVal(SensorIndex index)
+static double monShuntVal(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 0.002;
@@ -67,7 +70,7 @@ double monShuntVal(SensorIndex index)
     return 0;
 }
 
-double monVoltageMarginWarn(SensorIndex index)
+static double monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 0.1;
@@ -90,7 +93,7 @@ double monVoltageMarginWarn(SensorIndex index)
     return 0;
 }
 
-double monVoltageMarginCrit(SensorIndex index)
+static double monVoltageMarginCrit(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 0.15;
@@ -113,7 +116,7 @@ double monVoltageMarginCrit(SensorIndex index)
     return 0;
 }
 
-double monVoltageNom(SensorIndex index)
+static double monVoltageNom(SensorIndex index)
 {
     switch(index) {
     case SENSOR_5VPC:          return 5.0;
@@ -136,13 +139,13 @@ double monVoltageNom(SensorIndex index)
     return 0;
 }
 
-int sensorBusNumber(SensorIndex index)
+static int sensorBusNumber(SensorIndex index)
 {
     (void)index;
     return 2;
 }
 
-int sensorBusAddress(SensorIndex index)
+static int sensorBusAddress(SensorIndex index)
 {
     switch (index) {
     case SENSOR_VPC_3V3:       return 0x40;
@@ -165,7 +168,7 @@ int sensorBusAddress(SensorIndex index)
     return 0;
 }
 
-const char *monLabel(SensorIndex index)
+static const char *monLabel(SensorIndex index)
 {
     switch(index) {
     case SENSOR_VPC_3V3:       return "VPC 3.3V";
@@ -186,4 +189,26 @@ const char *monLabel(SensorIndex index)
     case SENSOR_MCB_3V3:       return "MCB 3.3V";
     }
     return "???";
+}
+
+void bsp_pm_sensors_arr_init(pm_sensors_arr *arr)
+{
+    for (int i=0; i<POWERMON_SENSORS; i++) {
+        pm_sensor *d = &arr->arr[i];
+        d->dev.device_status = DEVICE_UNKNOWN;
+        d->dev.bus.type = BUS_IIC;
+        d->dev.bus.bus_number = sensorBusNumber(i);
+        d->dev.bus.address = sensorBusAddress(i);
+        pm_sensor_priv *sensor = &d->priv;
+        sensor->index = i;
+        sensor->isOptional = monIsOptional(i);
+        sensor->hasShunt = monShuntVal(i) > 1e-6;
+        sensor->shuntVal = monShuntVal(i);
+        sensor->busNomVoltage = monVoltageNom(i);
+        sensor->label = monLabel(i);
+        sensor->voltageMarginWarn = monVoltageMarginWarn(i);
+        sensor->voltageMarginCrit = monVoltageMarginCrit(i);
+        // struct_pm_sensor_clear(d);
+    }
+    arr->count = POWERMON_SENSORS;
 }

@@ -57,14 +57,8 @@ typedef enum {
 
 extern const SensorIndex input_power_sensor;
 
-bool monIsOptional(SensorIndex index);
-double monShuntVal(SensorIndex index);
-double monVoltageMarginWarn(SensorIndex index);
-double monVoltageMarginCrit(SensorIndex index);
-double monVoltageNom(SensorIndex index);
-int sensorBusNumber(SensorIndex index);
-int sensorBusAddress(SensorIndex index);
-const char *monLabel(SensorIndex index);
+struct pm_sensors_arr;
+void bsp_pm_sensors_arr_init(struct pm_sensors_arr *arr);
 
 #ifdef __cplusplus
 }

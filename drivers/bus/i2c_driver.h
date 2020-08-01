@@ -22,7 +22,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {

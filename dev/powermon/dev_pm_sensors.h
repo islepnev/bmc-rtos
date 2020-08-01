@@ -24,12 +24,11 @@
 extern "C" {
 #endif
 
-#include "bsp_sensors_config.h"
+//#include "bsp_sensors_config.h"
 #include "dev_pm_sensors_types.h"
 
 void struct_pm_sensor_clear_minmax(pm_sensor_priv *d);
 void struct_pm_sensor_clear_measurements(pm_sensor_priv *d);
-void struct_pm_sensor_init(pm_sensor *d, SensorIndex index);
 void struct_pm_sensor_clear(pm_sensor *d);
 uint32_t pm_sensor_get_sensorStatus_Duration(const pm_sensor_priv *d);
 DeviceStatus pm_sensor_detect(pm_sensor *d);

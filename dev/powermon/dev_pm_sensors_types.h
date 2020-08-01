@@ -20,7 +20,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bsp_sensors_config.h"
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
 #include "devicebase.h"
@@ -36,7 +35,7 @@ typedef enum {
 } RampState;
 
 typedef struct pm_sensor_priv {
-    SensorIndex index;
+    int index;
     RampState rampState;
     uint32_t lastStatusUpdatedTick;
     // uint16_t busAddress;
@@ -47,6 +46,8 @@ typedef struct pm_sensor_priv {
     double current_lsb;
     uint16_t cal;
     const char *label;
+    double voltageMarginWarn;
+    double voltageMarginCrit;
     // measurements
     bool valid;
     double busVoltage;
@@ -65,6 +66,12 @@ typedef struct pm_sensor {
     DeviceBase dev;
     pm_sensor_priv priv;
 } pm_sensor;
+
+enum { MAX_POWERMON_SENSORS = 16 };
+typedef struct pm_sensors_arr {
+    pm_sensor arr[MAX_POWERMON_SENSORS];
+    int count;
+} pm_sensors_arr ;
 
 bool pm_sensor_isValid(const pm_sensor *d);
 bool pm_sensor_isNormal(const pm_sensor *d);

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,42 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// CRU16 board specific definitions
+#ifndef DEV_PM_SENSORS_UTIL_H
+#define DEV_PM_SENSORS_UTIL_H
 
-#ifndef BSP_SENSORS_CONFIG_H
-#define BSP_SENSORS_CONFIG_H
+#include <stdbool.h>
+
+#include "dev_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {POWERMON_SENSORS = 14};
-#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
-
-typedef enum {
-    SENSOR_5VPC,
-    SENSOR_VME_3V3,
-    SENSOR_VME_5V,
-    SENSOR_MCB_4V5,
-    SENSOR_MCB_3V3,
-    SENSOR_5V,
-    SENSOR_1V5,
-    SENSOR_3V3,
-    SENSOR_CLK_3V3,
-    SENSOR_CLK_2V5,
-    SENSOR_FPGA_CORE_1V0,
-    SENSOR_FPGA_MGT_1V0,
-    SENSOR_FPGA_MGT_1V2,
-    SENSOR_FPGA_1V8
-} SensorIndex;
-
-extern const SensorIndex input_power_sensor;
-
-struct pm_sensors_arr;
-void bsp_pm_sensors_arr_init(struct pm_sensors_arr *arr);
+void monClearMinMax(Dev_powermon *d);
+void monClearMeasurements(Dev_powermon *d);
+int monDetect(Dev_powermon *d);
+int monReadValues(Dev_powermon *d);
+uint32_t getMonStateTicks(const Dev_powermon *pm);
+MonState runMon(Dev_powermon *pm);
+void pm_setStateStartTick(Dev_powermon *pm);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BSP_SENSORS_CONFIG_H
+#endif // DEV_PM_SENSORS_UTIL_H

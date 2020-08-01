@@ -93,3 +93,9 @@ PmState get_powermon_state(void)
     const Dev_powermon_priv *priv = get_powermon_priv_const();
     return priv ? priv->pmState : PM_STATE_OFF;
 }
+
+int get_sensor_count(void)
+{
+    const Dev_powermon_priv *priv = get_powermon_priv_const();
+    return priv ? priv->sensors.count : 0;
+}

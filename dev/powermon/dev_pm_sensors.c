@@ -50,20 +50,6 @@ void struct_pm_sensor_clear_measurements(pm_sensor_priv *d)
     d->power = 0;
 }
 
-void struct_pm_sensor_init(pm_sensor *d, SensorIndex index)
-{
-    d->dev.device_status = DEVICE_UNKNOWN;
-    pm_sensor_priv *sensor = &d->priv;
-    sensor->index = index;
-    sensor->isOptional = monIsOptional(index);
-    sensor->hasShunt = monShuntVal(index) > 1e-6;
-    sensor->shuntVal = monShuntVal(index);
-    sensor->busNomVoltage = monVoltageNom(index);
-    sensor->label = monLabel(index);
-
-    struct_pm_sensor_clear(d);
-}
-
 void struct_pm_sensor_clear(pm_sensor *d)
 {
     pm_sensor_priv *sensor = &d->priv;
@@ -186,10 +172,10 @@ SensorStatus pm_sensor_compute_status(const pm_sensor *d)
     }
     const pm_sensor_priv *sensor = &d->priv;
     double V = d->priv.busVoltage;
-    double VMinWarn = sensor->busNomVoltage * (1-monVoltageMarginWarn(sensor->index));
-    double VMaxWarn = sensor->busNomVoltage * (1+monVoltageMarginWarn(sensor->index));
-    double VMinCrit = sensor->busNomVoltage * (1-monVoltageMarginCrit(sensor->index));
-    double VMaxCrit = sensor->busNomVoltage * (1+monVoltageMarginCrit(sensor->index));
+    double VMinWarn = sensor->busNomVoltage * (1-sensor->voltageMarginWarn);
+    double VMaxWarn = sensor->busNomVoltage * (1+sensor->voltageMarginWarn);
+    double VMinCrit = sensor->busNomVoltage * (1-sensor->voltageMarginCrit);
+    double VMaxCrit = sensor->busNomVoltage * (1+sensor->voltageMarginCrit);
     int VNorm = (V > VMinWarn) && (V < VMaxWarn);
     int VWarn = (V > VMinCrit) && (V < VMaxCrit);
     if (VNorm && VWarn) {

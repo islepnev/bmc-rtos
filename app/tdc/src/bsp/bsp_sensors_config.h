@@ -20,9 +20,6 @@
 #ifndef BSP_SENSORS_CONFIG_H
 #define BSP_SENSORS_CONFIG_H
 
-#include "bsp.h"
-
-#include "bus/bus_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -57,14 +54,8 @@ typedef enum {
     SENSOR_TDC_D
 } SensorIndex;
 
-int monIsOptional(SensorIndex index);
-double monShuntVal(SensorIndex index);
-double monVoltageMarginWarn(SensorIndex index);
-double monVoltageMarginCrit(SensorIndex index);
-double monVoltageNom(SensorIndex index);
-int sensorBusNumber(SensorIndex index);
-int sensorBusAddress(SensorIndex index);
-const char *monLabel(SensorIndex index);
+struct pm_sensors_arr;
+void bsp_pm_sensors_arr_init(struct pm_sensors_arr *arr);
 
 #ifdef __cplusplus
 }

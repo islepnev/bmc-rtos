@@ -26,15 +26,10 @@
 #include "lwip/apps/snmp_table.h"
 #include "lwip/apps/snmp_scalar.h"
 
-#include "dev_common_types.h"
-#include "bsp_sensors_config.h"
-#include "devices_types.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon_types.h"
 
-#define SENSOR_COUNT POWERMON_SENSORS
-
-#define SENSOR_MAX      SENSOR_COUNT
+#define SENSOR_MAX      MAX_POWERMON_SENSORS
 
 static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
@@ -78,9 +73,11 @@ sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t r
         return SNMP_ERR_NOSUCHINSTANCE;
     }
 
+    size_t sensor_count = get_sensor_count();
+
     /* get sensor index from incoming OID */
     u32_t sensor_num = row_oid[0];
-    if (sensor_num > 0 && sensor_num <= POWERMON_SENSORS) {
+    if (sensor_num > 0 && sensor_num <= sensor_count) {
         cell_instance->reference.u32 = (u32_t)(sensor_num-1);
         return SNMP_ERR_NOERROR;
     }
@@ -102,8 +99,10 @@ sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row
     /* init struct to search next oid */
     snmp_next_oid_init(&state, row_oid->id, row_oid->len, result_temp, LWIP_ARRAYSIZE(sensor_table_oid_ranges));
 
+    size_t sensor_count = get_sensor_count();
+
     /* iterate over all possible OIDs to find the next one */
-    for (i=0; i<POWERMON_SENSORS; i++) {
+    for (i=0; i<sensor_count; i++) {
         u32_t test_oid[LWIP_ARRAYSIZE(sensor_table_oid_ranges)];
 
         test_oid[0] = i+1; // sensors[i].num;
@@ -128,7 +127,7 @@ static s16_t
 sensor_table_get_value(struct snmp_node_instance* instance, void* value)
 {
     u32_t i = instance->reference.u32;
-    if (i >= POWERMON_SENSORS)
+    if (i >= MAX_POWERMON_SENSORS)
         return 0;
 
     const Dev_powermon_priv *priv = get_powermon_priv_const();
@@ -136,6 +135,8 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         *(s32_t *)value = 0;
         return 0;
     }
+    if (i >= (u32_t)priv->sensors.count)
+        return 0;
     const pm_sensor *s = &priv->sensors.arr[i];
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
@@ -148,7 +149,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
         return sizeof(s32_t);
     }
     case 3: {/* sensor name */
-        const char *name = monLabel((SensorIndex)i);
+        const char *name = s->priv.label;
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;

@@ -21,6 +21,7 @@
 #include "bsp_pin_defs.h"
 #include "bsp_powermon.h"
 #include "bsp_powermon_types.h"
+#include "bsp_sensors_config.h"
 #include "cmsis_os.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
@@ -29,20 +30,14 @@
 #include "gpio.h"
 #include "log/log.h"
 
-static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
-
 void create_sensor_subdevices(Dev_powermon *d)
 {
     pm_sensors_arr *sensors = &d->priv.sensors;
+    bsp_pm_sensors_arr_init(sensors);
     for (int i=0; i<POWERMON_SENSORS; i++) {
         pm_sensor *sensor = &sensors->arr[i];
-        struct_pm_sensor_init(sensor, (SensorIndex)(i));
-        BusInterface bus_info = {
-            .type = BUS_IIC,
-            .bus_number = sensorBusNumber(i),
-            .address = sensorBusAddress(i)
-        };
-        create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus_info, sensor->priv.label);
+        BusInterface bus = sensor->dev.bus;
+        create_device(&d->dev, &sensor->dev, &sensor->priv, DEV_CLASS_INA226, bus, sensor->priv.label);
         sensors->count = i+1;
     }
 }
@@ -134,130 +129,6 @@ bool update_power_switches(Dev_powermon_priv *p, bool state)
 //            return false;
 //    return true;
 //}
-
-void monClearMinMax(Dev_powermon *d)
-{
-    pm_sensors_arr *sensors = &d->priv.sensors;
-    for (int i=0; i<sensors->count; i++)
-        struct_pm_sensor_clear_minmax(&sensors->arr[i].priv);
-}
-
-void monClearMeasurements(Dev_powermon *d)
-{
-    monClearMinMax(d);
-    pm_sensors_arr *sensors = &d->priv.sensors;
-    for (int i=0; i<sensors->count; i++) {
-        struct_pm_sensor_clear_measurements(&sensors->arr[i].priv);
-    }
-}
-
-int monDetect(Dev_powermon *d)
-{
-    int count = 0;
-    int errors = 0;
-    pm_sensors_arr *sensors = &d->priv.sensors;
-    for (int i=0; i<sensors->count; i++) {
-        if (errors > 2) break;
-        DeviceStatus s = pm_sensor_detect(&sensors->arr[i]);
-        if (s == DEVICE_NORMAL) {
-            count++;
-        } else {
-            errors++;
-        }
-    }
-    return count;
-}
-
-int monReadValues(Dev_powermon *d)
-{
-    int ok = 0;
-    int err = 0;
-    pm_sensors_arr *sensors = &d->priv.sensors;
-    for (int i=0; i<sensors->count; i++) {
-        pm_sensor *sensor = &sensors->arr[i];
-        if (err >= 2) {
-            pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
-        } else {
-            if (sensor->dev.device_status == DEVICE_NORMAL) {
-                DeviceStatus s = pm_sensor_read(sensor);
-                if (s == DEVICE_NORMAL)
-                    ok++;
-                else
-                    err++;
-            }
-        }
-    }
-    if (ok == 0) {
-        log_put(LOG_ERR, "No SMBus sensors read");
-    }
-    return err;
-}
-
-void pm_setStateStartTick(Dev_powermon *pm)
-{
-    pm->priv.stateStartTick = osKernelSysTick();
-}
-
-uint32_t getMonStateTicks(const Dev_powermon *pm)
-{
-    return osKernelSysTick() - pm->priv.stateStartTick;
-}
-
-int old_num_detected = 0;
-int stable_detect_count = 0;
-
-MonState runMon(Dev_powermon *pm)
-{
-    pm->priv.monCycle++;
-    const MonState oldState = pm->priv.monState;
-    switch(pm->priv.monState) {
-    case MON_STATE_INIT:
-        monClearMeasurements(pm);
-        pm->priv.monState = MON_STATE_DETECT;
-        break;
-    case MON_STATE_DETECT: {
-        const int num_detected = monDetect(pm);
-        if (num_detected == 0) {
-            pm->priv.monState = MON_STATE_INIT;
-            break;
-        }
-        if (num_detected > 0 && (old_num_detected == num_detected))
-            stable_detect_count++;
-        else
-            stable_detect_count = 0;
-        old_num_detected = num_detected;
-        if (stable_detect_count >= 2) {
-            update_board_version(num_detected);
-            log_printf(LOG_INFO, "%d sensors detected", num_detected);
-            pm->priv.monState = MON_STATE_READ;
-            break;
-        }
-
-        if (getMonStateTicks(pm) > DETECT_TIMEOUT_TICKS) {
-            log_printf(LOG_ERR, "Sensor detect timeout, %d sensors found", num_detected);
-            pm->priv.monState = MON_STATE_READ;
-        }
-        break;
-    }
-    case MON_STATE_READ:
-        if (monReadValues(pm) == 0)
-            pm->priv.monState = MON_STATE_READ;
-        else
-            pm->priv.monState = MON_STATE_ERROR;
-        break;
-    case MON_STATE_ERROR:
-        log_put(LOG_ERR, "Sensor read error");
-        pm->priv.monErrors++;
-        pm->priv.monState = MON_STATE_INIT;
-        break;
-    default:
-        break;
-    }
-    if (oldState != pm->priv.monState) {
-        pm_setStateStartTick(pm);
-    }
-    return pm->priv.monState;
-}
 
 bool get_fpga_core_power_present(const pm_sensors_arr *sensors)
 {
