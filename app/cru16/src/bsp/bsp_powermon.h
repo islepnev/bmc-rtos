@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #include "bsp_powermon_types.h"
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 #include "powermon/dev_powermon_types.h"
 
 struct pm_switches;

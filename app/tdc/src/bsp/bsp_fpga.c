@@ -17,7 +17,7 @@
 
 #include "bsp_fpga.h"
 
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 
 sensor_list_t fpga_sensor_map = {
     .count = 6,

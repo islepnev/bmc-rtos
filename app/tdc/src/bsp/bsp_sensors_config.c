@@ -17,7 +17,7 @@
 
 // TDC72VHL v4 board specific functions
 
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 
 int monIsOptional(SensorIndex index)
 {

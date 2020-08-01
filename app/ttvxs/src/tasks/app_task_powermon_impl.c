@@ -25,7 +25,6 @@
 #include "bsp_powermon.h"
 #include "cmsis_os.h"
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
 #include "log/log.h"
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_pm_sensors_types.h"

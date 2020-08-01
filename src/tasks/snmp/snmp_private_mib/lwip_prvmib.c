@@ -55,7 +55,7 @@
 
 #include "app_shared_data.h"
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 #include "devices.h"
 #include "devices_types.h"
 #include "fpga/dev_fpga_types.h"

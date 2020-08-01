@@ -21,7 +21,7 @@
 
 #include "bsp_pin_defs.h"
 #include "cmsis_os.h"
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 #include "gpio.h"
 #include "log/log.h"
 #include "powermon/dev_pm_sensors.h"

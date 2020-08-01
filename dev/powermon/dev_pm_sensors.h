@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
+#include "bsp_sensors_config.h"
 #include "dev_pm_sensors_types.h"
-#include "dev_pm_sensors_config.h"
 
 void struct_pm_sensor_clear_minmax(pm_sensor_priv *d);
 void struct_pm_sensor_clear_measurements(pm_sensor_priv *d);

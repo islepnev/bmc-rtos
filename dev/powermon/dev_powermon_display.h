@@ -18,8 +18,9 @@
 #ifndef DEV_POWERMON_DISPLAY_H
 #define DEV_POWERMON_DISPLAY_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -23,12 +23,9 @@
 #include "ad9516/ad9516_status.h"
 #include "ad9516_regs.h"
 #include "ansi_escape_codes.h"
-#include "bsp.h"
 #include "cmsis_os.h"
 #include "dev_auxpll_types.h"
-#include "gpio.h"
 #include "log/log.h"
-#include "spi.h"
 
 static bool pllIoUpdate(Dev_auxpll *d)
 {

@@ -20,9 +20,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bsp_sensors_config.h"
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
 #include "devicebase.h"
 
 #ifdef __cplusplus

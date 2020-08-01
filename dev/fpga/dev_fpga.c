@@ -202,7 +202,7 @@ static bool fpgaWriteSensorsByIndex(DeviceBase *dev, int *indices, int count)
     uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
 
     for (int i=0; i<count; i++) {
-        SensorIndex index = (SensorIndex)indices[i];
+        int index = indices[i];
         const pm_sensor_priv *p = &sensors->arr[index].priv;
         if (!fpga_spi_hal_write_reg(bus, address++,
                                     (int16_t)(p->busVoltage * 1000)) &&

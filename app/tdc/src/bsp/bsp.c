@@ -22,7 +22,7 @@
 #include <stdbool.h>
 
 #include "bsp_pin_defs.h"
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "log/log.h"

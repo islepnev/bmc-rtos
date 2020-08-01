@@ -27,7 +27,7 @@
 #include "lwip/apps/snmp_scalar.h"
 
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
+#include "bsp_sensors_config.h"
 #include "devices_types.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon_types.h"

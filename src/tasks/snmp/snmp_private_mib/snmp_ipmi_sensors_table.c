@@ -23,7 +23,6 @@
 #include "lwip/apps/snmp_table.h"
 
 #include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
 #include "devicelist.h"
 #include "devices_types.h"
 #include "ipmi_sensor_types.h"

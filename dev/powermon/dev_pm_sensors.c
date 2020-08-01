@@ -22,6 +22,7 @@
 #include "ansi_escape_codes.h"
 #include "cmsis_os.h"
 #include "dev_mcu.h"
+#include "bsp_sensors_config.h"
 #include "dev_pm_sensors_types.h"
 #include "device_status_log.h"
 #include "display.h"

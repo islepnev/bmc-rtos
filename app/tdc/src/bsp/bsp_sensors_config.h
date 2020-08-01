@@ -17,8 +17,8 @@
 
 // TDC72VHL v4 board specific definitions
 
-#ifndef DEV_PM_SENSORS_CONFIG_H
-#define DEV_PM_SENSORS_CONFIG_H
+#ifndef BSP_SENSORS_CONFIG_H
+#define BSP_SENSORS_CONFIG_H
 
 #include "bsp.h"
 
@@ -70,4 +70,4 @@ const char *monLabel(SensorIndex index);
 }
 #endif
 
-#endif // DEV_PM_SENSORS_CONFIG_H
+#endif // BSP_SENSORS_CONFIG_H

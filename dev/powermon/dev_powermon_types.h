@@ -50,8 +50,9 @@ typedef enum MonState {
     MON_STATE_ERROR = 3
 } MonState;
 
+enum { MAX_POWERMON_SENSORS = 16 };
 typedef struct pm_sensors_arr {
-    pm_sensor arr[POWERMON_SENSORS];
+    pm_sensor arr[MAX_POWERMON_SENSORS];
     int count;
 } pm_sensors_arr ;
 
