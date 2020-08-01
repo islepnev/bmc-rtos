@@ -20,9 +20,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
-#include "cmsis_os.h"
+
 #include "bsp.h"
 #include "bsp_tty.h"
+#include "cmsis_os.h"
 #include "error_handler.h"
 #include "stm32f7xx_ll_usart.h"
 

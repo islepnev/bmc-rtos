@@ -17,13 +17,13 @@
 
 #include "ad9516_spi_hal.h"
 
-#include "gpio.h"
-#include "spi.h"
-#include "bus/spi_driver.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "logbuffer.h"
+#include "bus/spi_driver.h"
 #include "cmsis_os.h"
+#include "gpio.h"
+#include "logbuffer.h"
+#include "spi.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_spi.h"
 

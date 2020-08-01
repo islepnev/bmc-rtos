@@ -16,8 +16,9 @@
 //
 
 #include "led_gpio_hal.h"
-#include "gpio.h"
+
 #include "bsp_pin_defs.h"
+#include "gpio.h"
 
 void led_all_set_state(bool state)
 {

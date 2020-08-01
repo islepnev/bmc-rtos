@@ -20,12 +20,12 @@
 #include "../ad9545/dev_ad9545.h"
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
-#include "thset/dev_thset_types.h"
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
 #include "system_status_common.h"
+#include "thset/dev_thset_types.h"
 #include "version.h"
 
 static uint16_t live_magic = 0x55AA;

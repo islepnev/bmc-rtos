@@ -20,19 +20,18 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "cmsis_os.h"
-
-#include "powermon/dev_pm_sensors_types.h"
-#include "dev_pm_sensors_config.h"
-#include "powermon/dev_pm_sensors.h"
-#include "bsp_powermon.h"
-#include "powermon/dev_powermon.h"
-#include "dev_common_types.h"
-#include "powermon/dev_powermon_types.h"
-#include "thset/dev_thset.h"
-#include "logbuffer.h"
 #include "app_shared_data.h"
 #include "bsp.h"
+#include "bsp_powermon.h"
+#include "cmsis_os.h"
+#include "dev_common_types.h"
+#include "dev_pm_sensors_config.h"
+#include "logbuffer.h"
+#include "powermon/dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon.h"
+#include "powermon/dev_powermon_types.h"
+#include "thset/dev_thset.h"
 
 static const int TEST_RESTART = 0; // debug only
 static const uint32_t INIT_TIMEOUT_TICKS = 3000;

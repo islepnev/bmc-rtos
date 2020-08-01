@@ -21,8 +21,8 @@
 #include <string.h>
 
 #include "ansi_escape_codes.h"
-#include "display.h"
 #include "cmsis_os.h"
+#include "display.h"
 #include "stm32f7xx_hal.h"
 
 static char statsBuffer[1000];

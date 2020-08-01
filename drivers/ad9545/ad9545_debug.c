@@ -15,17 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "gpio.h"
-#include "i2c.h"
+#include "ad9545.h"
+#include "ad9545_i2c_hal.h"
+#include "ad9545_print.h"
+#include "ad9545_regs.h"
+#include "ad9545_setup.h"
+#include "ad9545_status_regs.h"
+#include "ansi_escape_codes.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "ad9545_setup.h"
-#include "ad9545_i2c_hal.h"
-#include "ad9545.h"
-#include "ad9545_regs.h"
-#include "ad9545_status_regs.h"
-#include "ad9545_print.h"
-#include "ansi_escape_codes.h"
+#include "gpio.h"
+#include "i2c.h"
 #include "logbuffer.h"
 
 static bool pllIoUpdate(BusInterface *bus)

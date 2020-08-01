@@ -17,11 +17,11 @@
 
 #include "app_task_cli.h"
 
+#include "app_tasks.h"
 #include "cli.h"
 #include "cmsis_os.h"
-#include "app_tasks.h"
-#include "logbuffer.h"
 #include "debug_helpers.h"
+#include "logbuffer.h"
 
 osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };

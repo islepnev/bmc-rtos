@@ -19,15 +19,14 @@
 
 #include <assert.h>
 
-#include "dev_pm_sensors_types.h"
-#include "ina226/ina226_i2c_hal.h"
-
 #include "ansi_escape_codes.h"
-#include "display.h"
-#include "logbuffer.h"
-#include "device_status_log.h"
-#include "dev_mcu.h"
 #include "cmsis_os.h"
+#include "dev_mcu.h"
+#include "dev_pm_sensors_types.h"
+#include "device_status_log.h"
+#include "display.h"
+#include "ina226/ina226_i2c_hal.h"
+#include "logbuffer.h"
 
 //const double SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
 const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;

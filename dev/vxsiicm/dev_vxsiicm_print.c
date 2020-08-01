@@ -17,8 +17,8 @@
 
 #include "dev_vxsiicm.h"
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"

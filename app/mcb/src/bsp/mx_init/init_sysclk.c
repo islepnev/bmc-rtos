@@ -17,9 +17,9 @@
 
 #include "init_sysclk.h"
 
+#include "error_handler.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_rcc.h"
-#include "error_handler.h"
 
 void SystemClock_Config(void)
 {

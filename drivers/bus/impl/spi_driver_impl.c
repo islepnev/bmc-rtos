@@ -23,8 +23,8 @@
 
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "log/logbuffer.h"
 #include "error_handler.h"
+#include "log/logbuffer.h"
 #include "spi.h"
 #include "spi_driver_util.h"
 #include "stm32f7xx_hal_dma.h"

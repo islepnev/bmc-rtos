@@ -19,13 +19,13 @@
 
 #include <stdint.h>
 
-#include "bsp.h"
-#include "cmsis_os.h"
-#include "app_tasks.h"
-#include "app_shared_data.h"
-#include "ad9516/dev_auxpll_types.h"
 #include "ad9516/app_task_auxpll_impl.h"
+#include "ad9516/dev_auxpll_types.h"
+#include "app_shared_data.h"
+#include "app_tasks.h"
+#include "bsp.h"
 #include "bus/bus_types.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
 
 osThreadId auxpllThreadId = NULL;

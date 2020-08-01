@@ -15,13 +15,14 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "dev_powermon_display.h"
+
 #include <stdio.h>
 
-#include "dev_powermon_display.h"
-#include "dev_powermon_types.h"
-#include "bsp_powermon.h"
-#include "display.h"
 #include "ansi_escape_codes.h"
+#include "bsp_powermon.h"
+#include "dev_powermon_types.h"
+#include "display.h"
 
 const char *sensor_status_str(SensorStatus status)
 {

@@ -18,9 +18,9 @@
 #include "ad5141_i2c_hal.h"
 
 #include "bsp.h"
-#include "i2c.h"
 #include "bus/i2c_driver.h"
 #include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
+#include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 

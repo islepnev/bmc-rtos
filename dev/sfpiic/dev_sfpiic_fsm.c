@@ -16,10 +16,11 @@
 */
 
 #include "dev_sfpiic_fsm.h"
+
+#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
-#include "app_shared_data.h"
 #include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;

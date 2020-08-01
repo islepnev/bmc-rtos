@@ -19,8 +19,8 @@
 
 #include <stdbool.h>
 
-#include "gpio.h"
 #include "bsp_pin_defs.h"
+#include "gpio.h"
 
 uint32_t read_mcb_pcb_ver(void)
 {

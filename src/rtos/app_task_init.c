@@ -19,19 +19,19 @@
 
 #include <stdlib.h>
 
-#include "ad9545/ad9545_i2c_hal.h"
 #include "FreeRTOSConfig.h"
-#include "cmsis_os.h"
-#include "stm32f7xx_hal.h"
-#include "devices.h"
-#include "powermon/dev_powermon.h"
-#include "os_serial_tty.h"
+#include "ad9545/ad9545_i2c_hal.h"
 #include "ansi_escape_codes.h"
-#include "debug_helpers.h"
-#include "led_gpio_hal.h"
 #include "bsp.h"
-#include "logbuffer.h"
+#include "cmsis_os.h"
 #include "commands.h"
+#include "debug_helpers.h"
+#include "devices.h"
+#include "led_gpio_hal.h"
+#include "logbuffer.h"
+#include "os_serial_tty.h"
+#include "powermon/dev_powermon.h"
+#include "stm32f7xx_hal.h"
 
 static int test_cpu_tick(void)
 {

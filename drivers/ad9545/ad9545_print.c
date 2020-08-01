@@ -16,10 +16,12 @@
 */
 
 #include "ad9545_print.h"
+
 #include <stdio.h>
 #include <stdbool.h>
-#include "ad9545_setup_regs.h"
+
 #include "ad9545_setup.h"
+#include "ad9545_setup_regs.h"
 #include "display.h"
 
 static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, PllChannel_TypeDef channel)

@@ -17,9 +17,9 @@
 
 #include "app_task_main.h"
 
-#include "cmsis_os.h"
-#include "app_tasks.h"
 #include "app_task_main_impl.h"
+#include "app_tasks.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
 
 enum { mainThreadStackSize = threadStackSize };

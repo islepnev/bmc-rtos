@@ -19,8 +19,8 @@
 
 #include <stdio.h>
 
-#include "bsp_powermon.h"
 #include "bsp_digipot.h"
+#include "bsp_powermon.h"
 #include "commands_digipot.h"
 #include "devicebase.h"
 #include "digipot/dev_digipot_types.h"

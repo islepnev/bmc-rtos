@@ -20,9 +20,9 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "dev_ad9545.h"
 #include "ad9545/ad9545_print.h"
 #include "ansi_escape_codes.h"
+#include "dev_ad9545.h"
 #include "display.h"
 
 static const char *dev_ad9545_state_str(ad9545_state_t state)

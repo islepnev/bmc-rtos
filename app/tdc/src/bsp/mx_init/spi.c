@@ -21,10 +21,10 @@
 
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_spi.h"
-#include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_cortex.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_rcc.h"
+#include "stm32f7xx_hal_spi.h"
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;

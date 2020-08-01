@@ -16,17 +16,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "dev_vxsiic_pp.h"
 
 #include <string.h>
 #include <stdint.h>
-#include "dev_vxsiicm_types.h"
-#include "vxsiic_hal.h"
-#include "logbuffer.h"
+
+#include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "dev_vxsiicm_types.h"
 #include "ipmi_sensor_types.h"
 #include "ipmi_sensor_util.h"
-#include "cmsis_os.h"
+#include "logbuffer.h"
+#include "vxsiic_hal.h"
 
 static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
 {

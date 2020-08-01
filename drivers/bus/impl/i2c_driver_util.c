@@ -21,10 +21,10 @@
 
 #include <assert.h>
 
-#include "i2c.h"
-#include "debug_helpers.h"
 #include "cmsis_os.h"
+#include "debug_helpers.h"
 #include "error_handler.h"
+#include "i2c.h"
 #include "log/logbuffer.h"
 
 enum {I2C_BUS_COUNT = 4};

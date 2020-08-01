@@ -16,9 +16,10 @@
 */
 
 #include "dev_powermon_types.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_pm_sensors.h"
+
 #include "bsp_powermon.h"
+#include "dev_pm_sensors.h"
+#include "dev_pm_sensors_types.h"
 
 SensorStatus pm_sensors_getStatus(const Dev_powermon_priv *priv)
 {

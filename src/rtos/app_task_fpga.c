@@ -19,11 +19,11 @@
 
 #include <stdint.h>
 
+#include "app_tasks.h"
+#include "base/app_task_fpga_impl.h"
 #include "bsp.h"
 #include "cmsis_os.h"
-#include "app_tasks.h"
 #include "debug_helpers.h"
-#include "base/app_task_fpga_impl.h"
 #include "fpga/dev_fpga_types.h"
 
 osThreadId fpgaThreadId = NULL;

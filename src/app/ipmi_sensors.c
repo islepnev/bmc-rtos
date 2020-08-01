@@ -23,11 +23,11 @@
 #include "app_shared_data.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_config.h"
-#include "thset/dev_thset_types.h"
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_powermon.h"
 #include "system_status.h"
 #include "system_status_common.h"
+#include "thset/dev_thset_types.h"
 
 IpmiSensors ipmi_sensors = {0};
 

@@ -21,11 +21,11 @@
 
 #include <assert.h>
 
-#include "spi.h"
-#include "debug_helpers.h"
 #include "cmsis_os.h"
+#include "debug_helpers.h"
 #include "error_handler.h"
 #include "log/logbuffer.h"
+#include "spi.h"
 
 enum {SPI_BUS_COUNT = 5};
 

@@ -21,11 +21,11 @@
 
 #include "ansi_escape_codes.h"
 #include "at24c/dev_at24c.h"
+#include "bus/bus_types.h"
+#include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 #include "dev_common_types.h"
 #include "display.h"
-#include "bus/i2c_driver.h"
-#include "bus/bus_types.h"
-#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 
 DeviceStatus dev_eeprom_config_detect(Dev_eeprom_config *d)
 {

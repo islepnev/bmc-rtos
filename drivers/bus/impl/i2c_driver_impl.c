@@ -23,10 +23,10 @@
 
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "log/logbuffer.h"
 #include "error_handler.h"
 #include "i2c.h"
 #include "i2c_driver_util.h"
+#include "log/logbuffer.h"
 #include "stm32f7xx_ll_i2c.h"
 
 void i2c_driver_log_error(const char *title, struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress)

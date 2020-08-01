@@ -22,14 +22,14 @@
 #include <stdbool.h>
 
 #include "bsp_pin_defs.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_ll_gpio.h"
+#include "bus/i2c_driver.h"
+#include "error_handler.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "bus/i2c_driver.h"
 #include "spi.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_ll_gpio.h"
 #include "usart.h"
-#include "error_handler.h"
 
 void update_board_version(int powermon_count)
 {

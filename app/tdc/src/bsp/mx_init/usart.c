@@ -19,15 +19,14 @@
 
 #include "usart.h"
 
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_uart.h"
-#include "stm32f7xx_ll_usart.h"
-#include "stm32f7xx_ll_gpio.h"
-#include "stm32f7xx_ll_bus.h"
-
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_uart.h"
+#include "stm32f7xx_ll_bus.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_usart.h"
 
 enum {ENABLE_FPGA_UART = 0};
 

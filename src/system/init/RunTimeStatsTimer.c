@@ -16,9 +16,11 @@
 */
 
 #include "RunTimeStatsTimer.h"
+
 #include <stdint.h>
-#include "stm32f7xx_hal.h"
+
 #include "core_cm7.h"
+#include "stm32f7xx_hal.h"
 
 /* Simple shift divide for scaling to avoid an overflow occurring too soon. */
 #define runtimeSHIFT_13				13

@@ -20,10 +20,10 @@
 #include <stdio.h>
 
 #include "ansi_escape_codes.h"
-#include "log/logbuffer.h"
-#include "log/logentry.h"
 #include "devicelist_print.h"
 #include "display.h"
+#include "log/logbuffer.h"
+#include "log/logentry.h"
 
 static void print_log_entry(uint32_t index)
 {

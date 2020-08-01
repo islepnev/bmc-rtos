@@ -18,7 +18,9 @@
 */
 
 #include "bsp_digipot.h"
+
 #include <stdio.h>
+
 #include "dev_pm_sensors_config.h"
 
 const char *potLabel(PotIndex index)

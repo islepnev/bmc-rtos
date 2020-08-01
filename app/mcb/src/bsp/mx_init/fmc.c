@@ -20,10 +20,10 @@
 #include "fmc.h"
 
 /* USER CODE BEGIN 0 */
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_rcc.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_rcc.h"
 /* USER CODE END 0 */
 
 SDRAM_HandleTypeDef hsdram1;

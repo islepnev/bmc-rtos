@@ -17,11 +17,11 @@
 
 #include "dev_tmp421_fsm.h"
 
+#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "dev_tmp421.h"
-#include "app_shared_data.h"
-#include "log.h"
 #include "device_status_log.h"
+#include "log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;

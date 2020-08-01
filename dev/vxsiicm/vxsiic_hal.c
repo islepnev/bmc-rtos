@@ -14,17 +14,18 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "vxsiic_hal.h"
 
 #include <stdio.h>
 
+#include "bsp.h"
+#include "bsp_pin_defs.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "log/logbuffer.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_i2c.h"
-#include "i2c.h"
-#include "bsp.h"
-#include "gpio.h"
-#include "bsp_pin_defs.h"
-#include "log/logbuffer.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 

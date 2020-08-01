@@ -17,12 +17,10 @@
 
 #include "error_handler.h"
 
-#include "stm32f7xx_hal_conf.h"
 #include "cmsis_os.h"
-//#include "core_cm7.h"
-
 #include "debug_helpers.h"
 #include "error_handler_impl.h"
+#include "stm32f7xx_hal_conf.h"
 
 void app_exit_handler(int result)
 {

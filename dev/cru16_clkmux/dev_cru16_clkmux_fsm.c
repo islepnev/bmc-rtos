@@ -16,11 +16,12 @@
 */
 
 #include "dev_cru16_clkmux_fsm.h"
+
+#include "app_shared_data.h"
 #include "cmsis_os.h"
+#include "debug_helpers.h"
 #include "dev_cru16_clkmux.h"
 #include "dev_cru16_clkmux_types.h"
-#include "app_shared_data.h"
-#include "debug_helpers.h"
 #include "logbuffer.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;

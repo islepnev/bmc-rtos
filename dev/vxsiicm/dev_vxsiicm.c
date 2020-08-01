@@ -19,15 +19,16 @@
 
 #include <string.h>
 #include <stdint.h>
-#include "devices.h"
-#include "dev_vxsiicm_types.h"
-#include "dev_vxsiic_pp.h"
-#include "vxsiic_iic_driver.h"
-#include "vxsiic_hal.h"
-#include "logbuffer.h"
-#include "debug_helpers.h"
-#include "ipmi_sensor_types.h"
+
 #include "cmsis_os.h"
+#include "debug_helpers.h"
+#include "dev_vxsiic_pp.h"
+#include "dev_vxsiicm_types.h"
+#include "devices.h"
+#include "ipmi_sensor_types.h"
+#include "logbuffer.h"
+#include "vxsiic_hal.h"
+#include "vxsiic_iic_driver.h"
 
 // valid slot range: 2..21
 // slot 2 = array[0]

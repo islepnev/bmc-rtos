@@ -16,9 +16,10 @@
 //
 
 #include "app_task_display.h"
+
 #include "app_task_display_impl.h"
-#include "cmsis_os.h"
 #include "app_tasks.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
 
 static const uint32_t displayTaskLoopDelay = 50;

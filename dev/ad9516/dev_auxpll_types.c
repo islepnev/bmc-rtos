@@ -15,11 +15,13 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include "dev_common_types.h"
-#include "dev_auxpll.h"
-#include "devicebase.h"
 #include "dev_auxpll_types.h"
+
+#include <stdint.h>
+
+#include "dev_auxpll.h"
+#include "dev_common_types.h"
+#include "devicebase.h"
 
 SensorStatus get_auxpll_sensor_status(void)
 {

@@ -21,13 +21,13 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "bsp_pin_defs.h"
+#include "error_handler.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_ll_bus.h"
 #include "stm32f7xx_ll_gpio.h"
 #include "stm32f7xx_ll_usart.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_rcc.h"
-#include "bsp_pin_defs.h"
-#include "error_handler.h"
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart6;

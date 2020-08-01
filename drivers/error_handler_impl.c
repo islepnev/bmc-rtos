@@ -14,8 +14,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "error_handler_impl.h"
+
 #include <stdbool.h>
+
 #include "led_gpio_hal.h"
 
 static const int LED_BLINK_CPUDELAY = 200000;

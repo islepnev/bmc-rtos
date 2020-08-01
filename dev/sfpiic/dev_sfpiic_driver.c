@@ -22,8 +22,8 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bus/i2c_driver.h"
-#include "log/logbuffer.h"
 #include "i2c.h"
+#include "log/logbuffer.h"
 
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;

@@ -17,9 +17,9 @@
 
 #include "mcp23017_i2c_hal.h"
 
-#include "stm32f7xx_hal.h"
-#include "i2c.h"
 #include "bus/i2c_driver.h"
+#include "i2c.h"
+#include "stm32f7xx_hal.h"
 
 static I2C_HandleTypeDef * const hi2c = &hi2c4;
 

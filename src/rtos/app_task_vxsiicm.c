@@ -17,9 +17,9 @@
 
 #include "app_task_vxsiicm.h"
 
-#include "cmsis_os.h"
 #include "app_tasks.h"
 #include "bus/bus_types.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "vxsiicm/dev_vxsiicm.h"
 #include "vxsiicm/dev_vxsiicm_fsm.h"

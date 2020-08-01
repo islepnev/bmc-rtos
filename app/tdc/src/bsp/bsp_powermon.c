@@ -19,14 +19,13 @@
 
 #include "bsp_powermon.h"
 
-#include "dev_pm_sensors_config.h"
-#include "powermon/dev_powermon_types.h"
-#include "powermon/dev_pm_sensors_types.h"
-#include "powermon/dev_pm_sensors.h"
 #include "bsp_pin_defs.h"
-
 #include "cmsis_os.h"
+#include "dev_pm_sensors_config.h"
 #include "gpio.h"
+#include "powermon/dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "stm32f7xx_hal_gpio.h"
 
 int monIsOn(const pm_switches sw, SensorIndex index)

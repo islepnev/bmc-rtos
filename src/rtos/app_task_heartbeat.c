@@ -18,11 +18,12 @@
 #include "app_task_heartbeat.h"
 
 #include <stdint.h>
-#include "cmsis_os.h"
-#include "led_gpio_hal.h"
-#include "bsp.h"
+
 #include "app_tasks.h"
+#include "bsp.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "led_gpio_hal.h"
 
 enum { heartbeatThreadStackSize = threadStackSize };
 

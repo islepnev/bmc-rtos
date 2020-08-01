@@ -19,12 +19,13 @@
 
 #include <string.h>
 #include <stdint.h>
+
+#include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_driver.h"
 #include "dev_sfpiic_types.h"
-#include "log/logbuffer.h"
 #include "ipmi_sensor_types.h"
-#include "cmsis_os.h"
+#include "log/logbuffer.h"
 #include "sff_8436.h"
 
 static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, bool state)

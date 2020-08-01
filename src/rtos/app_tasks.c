@@ -16,13 +16,15 @@
 */
 
 #include "app_tasks.h"
-#include "bsp.h"
-#include "app_task_heartbeat.h"
-#include "app_task_powermon.h"
-#include "app_task_main.h"
-#include "app_task_display.h"
+
 #include "app_task_cli.h"
+#include "app_task_display.h"
+#include "app_task_heartbeat.h"
+#include "app_task_main.h"
 #include "app_task_pll.h"
+#include "app_task_powermon.h"
+#include "bsp.h"
+
 #if !defined(BOARD_TDC72)
 #include "app_task_auxpll.h"
 #endif
@@ -35,8 +37,9 @@
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
 #endif
-#include "devicelist.h"
+
 #include "dev_common_types.h"
+#include "devicelist.h"
 
 static DeviceBase topdevice = {0};
 

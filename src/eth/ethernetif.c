@@ -44,14 +44,15 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
+#include <string.h>
+
+#include "ethernetif.h"
 #include "lwip/opt.h"
 #include "lwip/timeouts.h"
-#include "netif/ethernet.h"
-#include "netif/etharp.h"
-#include "ethernetif.h"
 #include "mac_address.h"
-#include <string.h>
+#include "netif/etharp.h"
+#include "netif/ethernet.h"
+#include "stm32f7xx_hal.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

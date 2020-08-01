@@ -16,10 +16,11 @@
 */
 
 #include "app_task_auxpll_impl.h"
+
+#include "ad9516/ad9516_spi_hal.h"
 #include "cmsis_os.h"
 #include "dev_auxpll.h"
 #include "dev_auxpll_types.h"
-#include "ad9516/ad9516_spi_hal.h"
 #include "logbuffer.h"
 
 static uint32_t stateStartTick = 0;

@@ -16,7 +16,9 @@
 */
 
 #include "dev_ad9545_fsm.h"
+
 #include <string.h>
+
 #include "ad9545/ad9545.h"
 #include "cmsis_os.h"
 #include "dev_ad9545.h"

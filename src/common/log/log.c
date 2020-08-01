@@ -17,14 +17,15 @@
 
 #include "log.h"
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
+
 #include "cmsis_os.h"
+#include "log_prio.h"
 #include "logbuffer.h"
 #include "logentry.h"
-#include "log_prio.h"
 
 void log_printf(LogPriority priority, const char *format, ...)
 {

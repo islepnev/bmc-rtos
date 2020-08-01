@@ -16,9 +16,11 @@
 */
 
 #include "rtc_util.h"
+
 #include <time.h>
-#include "stm32f7xx_hal.h"
+
 #include "rtc.h"
+#include "stm32f7xx_hal.h"
 
 void get_rtc_tm(struct tm *tm)
 {

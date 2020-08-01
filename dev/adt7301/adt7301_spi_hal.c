@@ -17,10 +17,10 @@
 
 #include "adt7301_spi_hal.h"
 
-#include "spi.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "gpio.h"
+#include "spi.h"
 
 #ifdef BOARD_TDC72
 

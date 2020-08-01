@@ -17,12 +17,11 @@
 
 #include "dev_digipot_fsm.h"
 
+#include "cmsis_os.h"
+#include "dev_common_types.h"
 #include "dev_digipot.h"
 #include "dev_digipot_commands.h"
-#include "dev_common_types.h"
 #include "logbuffer.h"
-
-#include "cmsis_os.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 

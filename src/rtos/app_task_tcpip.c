@@ -17,11 +17,11 @@
 
 #include "app_task_tcpip.h"
 
-#include "cmsis_os.h"
 #include "app_tasks.h"
-#include "tcpip/app_task_tcpip_impl.h"
+#include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "lwipopts.h"
+#include "tcpip/app_task_tcpip_impl.h"
 
 osThreadId tcpipThreadId = NULL;
 enum { tcpipThreadStackSize = 1024+configMINIMAL_STACK_SIZE * 2 };

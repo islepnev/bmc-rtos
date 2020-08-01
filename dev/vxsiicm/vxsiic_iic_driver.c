@@ -14,10 +14,12 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "vxsiic_iic_driver.h"
+
 #include "bsp.h"
-#include "i2c.h"
 #include "bus/i2c_driver.h"
+#include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 25;
 
