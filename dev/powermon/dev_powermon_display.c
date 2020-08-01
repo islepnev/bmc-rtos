@@ -21,6 +21,7 @@
 
 #include "ansi_escape_codes.h"
 #include "bsp_powermon.h"
+#include "dev_pm_sensors.h"
 #include "dev_powermon_types.h"
 #include "display.h"
 

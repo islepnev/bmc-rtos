@@ -14,6 +14,7 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef DEV_PM_SENSORS_TYPES_H
 #define DEV_PM_SENSORS_TYPES_H
 
@@ -71,13 +72,23 @@ enum { MAX_POWERMON_SENSORS = 16 };
 typedef struct pm_sensors_arr {
     pm_sensor arr[MAX_POWERMON_SENSORS];
     int count;
-} pm_sensors_arr ;
+} pm_sensors_arr;
 
-bool pm_sensor_isValid(const pm_sensor *d);
-bool pm_sensor_isNormal(const pm_sensor *d);
-bool pm_sensor_isWarning(const pm_sensor *d);
-bool pm_sensor_isCritical(const pm_sensor *d);
-SensorStatus pm_sensor_status(const pm_sensor *d);
+typedef enum MonState {
+    MON_STATE_INIT = 0,
+    MON_STATE_DETECT = 1,
+    MON_STATE_READ = 2,
+    MON_STATE_ERROR = 3
+} MonState;
+
+typedef struct Dev_pm_sensors_priv {
+    // TODO
+} Dev_pm_sensors_priv;
+
+typedef struct Dev_pm_sensors {
+    DeviceBase dev;
+    Dev_pm_sensors_priv priv;
+} Dev_pm_sensors;
 
 #ifdef __cplusplus
 }

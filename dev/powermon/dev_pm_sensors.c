@@ -24,6 +24,7 @@
 #include "dev_mcu.h"
 #include "bsp_sensors_config.h"
 #include "dev_pm_sensors_types.h"
+#include "dev_pm_sensors_util.h"
 #include "device_status_log.h"
 #include "display.h"
 #include "ina226/ina226_i2c_hal.h"
@@ -251,3 +252,34 @@ double get_sensor_power_w(const pm_sensor *d)
     else
         return 0;
 }
+
+SensorStatus pm_sensor_status(const pm_sensor *d)
+{
+    if (d->dev.device_status != DEVICE_NORMAL)
+        return SENSOR_UNKNOWN;
+    return d->dev.sensor;
+}
+
+bool pm_sensor_isValid(const pm_sensor *d)
+{
+    return pm_sensor_isNormal(d) || pm_sensor_isWarning(d);
+}
+
+bool pm_sensor_isNormal(const pm_sensor *d)
+{
+    SensorStatus status = pm_sensor_status(d);
+    return status == SENSOR_NORMAL;
+}
+
+bool pm_sensor_isWarning(const pm_sensor *d)
+{
+    SensorStatus status = pm_sensor_status(d);
+    return status == SENSOR_WARNING;
+}
+
+bool pm_sensor_isCritical(const pm_sensor *d)
+{
+    SensorStatus status = pm_sensor_status(d);
+    return status == SENSOR_CRITICAL;
+}
+

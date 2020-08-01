@@ -43,13 +43,6 @@ typedef enum {
     PM_STATE_ERROR
 } PmState;
 
-typedef enum MonState {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-} MonState;
-
 typedef struct Dev_powermon_priv {
     PmState pmState;
     MonState monState;

@@ -36,6 +36,12 @@ DeviceStatus pm_sensor_read(pm_sensor *d);
 double get_sensor_power_w(const pm_sensor *d);
 void pm_sensor_set_sensorStatus(pm_sensor *d, SensorStatus status);
 
+SensorStatus pm_sensor_status(const pm_sensor *d);
+bool pm_sensor_isValid(const pm_sensor *d);
+bool pm_sensor_isNormal(const pm_sensor *d);
+bool pm_sensor_isWarning(const pm_sensor *d);
+bool pm_sensor_isCritical(const pm_sensor *d);
+
 #ifdef __cplusplus
 }
 #endif
