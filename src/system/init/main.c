@@ -21,6 +21,7 @@
 #include "app_tasks.h"
 #include "cmsis_os.h"
 #include "gpio.h"
+#include "hal_systick.h"
 #include "init_periph.h"
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"

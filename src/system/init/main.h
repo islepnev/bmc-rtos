@@ -22,11 +22,6 @@
 extern "C" {
 #endif
 
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_tim.h"
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
-
 #ifdef __cplusplus
 }
 #endif
