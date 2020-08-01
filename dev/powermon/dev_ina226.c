@@ -26,8 +26,6 @@
 
 const int ERROR_COUNT_LIMIT = 3;
 
-const double SENSOR_MINIMAL_SHUNT_VAL = 1.0e-6;
-
 static void pm_sensor_set_deviceStatus(pm_sensor *d, DeviceStatus status)
 {
     DeviceStatus oldStatus = d->dev.device_status;
@@ -111,7 +109,7 @@ DeviceStatus dev_ina226_read(pm_sensor *d)
 #else
     const double shuntVoltage = (int16_t)rawdata.rawShuntVoltage * 2.5e-6;
     double readCurrent = 0;
-    if (d->priv.shuntVal > SENSOR_MINIMAL_SHUNT_VAL)
+    if (d->priv.hasShunt && d->priv.shuntVal > 1e-6)
         readCurrent = shuntVoltage / d->priv.shuntVal;
     pm_sensor_set_readCurrent(&d->priv, readCurrent);
     pm_sensor_set_readPower(&d->priv, readCurrent * readVoltage);

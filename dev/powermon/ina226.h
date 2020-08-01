@@ -23,8 +23,6 @@
 
 #include "bus/bus_types.h"
 
-extern const double SENSOR_MINIMAL_SHUNT_VAL;
-
 #define INA226_USE_INTERNAL_CALC 0
 
 typedef struct ina226_rawdata_t {

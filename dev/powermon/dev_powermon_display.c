@@ -23,7 +23,6 @@
 #include "bsp_powermon.h"
 #include "dev_pm_sensors.h"
 #include "dev_powermon_types.h"
-#include "powermon/ina226.h"
 #include "display.h"
 
 const char *sensor_status_str(SensorStatus status)
@@ -89,7 +88,7 @@ void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
     case SENSOR_CRITICAL: color = sensor->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
     }
     printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", sensor->busVoltage, ANSI_CLEAR);
-    if (sensor->shuntVal > SENSOR_MINIMAL_SHUNT_VAL) {
+    if (sensor->hasShunt) {
         int backfeed = (sensor->current < -0.010);
         printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", sensor->current, backfeed ? ANSI_CLEAR : "",
                sensor->currentMax, sensor->power);
