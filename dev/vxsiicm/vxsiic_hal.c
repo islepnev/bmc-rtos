@@ -35,43 +35,47 @@ enum {
     PAYLOAD_BOARD_EEPROM_I2C_ADDRESS = 0x51
 };
 
-void vxsiic_reset_mux(void)
+void vxsiic_reset_mux(BusInterface *bus)
 {
+#ifdef BOARD_TTVXS
     write_gpio_pin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  0);
     write_gpio_pin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  1);
+#endif
 }
 
-bool vxsiic_detect_mux(void)
+bool vxsiic_detect_mux(BusInterface *bus)
 {
     for (int i=0; i<3; i++) {
-        vxsiic_reset_mux();
-        uint8_t i2c_address= PCA9548_BASE_I2C_ADDRESS + i;
+        vxsiic_reset_mux(bus);
         uint8_t data;
-        if (!vxsiic_read(i2c_address << 1, &data, 1))
+        BusInterface bus2 = *bus;
+        bus2.address = PCA9548_BASE_I2C_ADDRESS + i;
+        if (!vxsiic_read(&bus2, &data, 1))
             return false;
     }
     return true;
 }
 
-bool vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
+bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel)
 {
     assert(subdevice < 3);
     assert(channel < 8);
     uint8_t data;
     data = 1 << channel; // enable channel
-    uint8_t i2c_address = PCA9548_BASE_I2C_ADDRESS + subdevice;
-    return vxsiic_write(i2c_address << 1, &data, 1);
+    BusInterface bus2 = *bus;
+    bus2.address = PCA9548_BASE_I2C_ADDRESS + subdevice;
+    return vxsiic_write(&bus2, &data, 1);
 }
 
-bool vxsiic_get_pp_i2c_status(uint8_t pp)
-{
-    HAL_I2C_StateTypeDef state = HAL_I2C_GetState(&vxsiic_hi2c);
-    if (state != HAL_I2C_STATE_READY) {
-        log_printf(LOG_CRIT, "%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
-        return false;
-    }
-    return true;
-}
+//bool vxsiic_get_pp_i2c_status(BusInterface *bus, uint8_t pp)
+//{
+//    HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c_handle(bus->bus_number));
+//    if (state != HAL_I2C_STATE_READY) {
+//        log_printf(LOG_CRIT, "%s (port %2d) I2C not ready: state %d\n", __func__, pp, state);
+//        return false;
+//    }
+//    return true;
+//}
 
 void sprint_i2c_error(char *buf, size_t size, uint32_t code)
 {
@@ -87,27 +91,32 @@ void sprint_i2c_error(char *buf, size_t size, uint32_t code)
                                                  );
 }
 
-bool vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data)
+bool vxsiic_read_pp_eeprom(BusInterface *bus, uint8_t pp, uint16_t reg, uint8_t *data)
 {
-    uint8_t dev_address = (PAYLOAD_BOARD_EEPROM_I2C_ADDRESS << 1) | 1;
-    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_EEPROM_I2C_ADDRESS;
+    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
 }
 
-bool vxsiic_read_pp_ioexp(uint8_t pp, uint8_t reg, uint8_t *data)
+bool vxsiic_read_pp_ioexp(BusInterface *bus, uint8_t pp, uint8_t reg, uint8_t *data)
 {
-    uint8_t dev_address = (PAYLOAD_BOARD_IOEXP_I2C_ADDRESS << 1) | 1;
-    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_IOEXP_I2C_ADDRESS;
+    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
 }
 
-bool vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data)
+bool vxsiic_read_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t *data)
 {
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_MCU_I2C_ADDRESS;
     enum {Size = 4};
-    uint8_t dev_address = (PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1) | 1;
-    return vxsiic_mem_read(dev_address, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
 }
 
-bool vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data)
+bool vxsiic_write_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t data)
 {
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_MCU_I2C_ADDRESS;
     enum {Size = 4};
-    return vxsiic_mem_write(PAYLOAD_BOARD_MCU_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_write(&bus2, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
 }

@@ -45,17 +45,17 @@ static bool vxsiic_select_pp(Dev_vxsiicm *d, uint8_t pp)
     if (pp >= VXSIIC_SLOTS)
         return false;
 
-    vxsiic_reset_mux();
+    vxsiic_reset_mux(&d->dev.bus);
 
     uint8_t channel = map_slot_to_channel[pp];
     uint8_t subdevice = map_slot_to_subdevice[pp];
-    return vxsiic_mux_select(subdevice, channel);
+    return vxsiic_mux_select(&d->dev.bus, subdevice, channel);
 }
 
 DeviceStatus dev_vxsiicm_detect(Dev_vxsiicm *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    if (! vxsiic_detect_mux())
+    if (! vxsiic_detect_mux(&d->dev.bus))
         status = DEVICE_FAIL;
     d->dev.device_status = status;
     return d->dev.device_status;

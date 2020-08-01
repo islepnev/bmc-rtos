@@ -20,19 +20,21 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bus/bus_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void vxsiic_reset_mux(void);
-bool vxsiic_detect_mux(void);
-bool vxsiic_mux_select(uint8_t subdevice, uint8_t channel);
-bool vxsiic_get_pp_i2c_status(uint8_t pp);
-//bool vxsiic_detect_pp_eeprom(uint8_t pp);
-bool vxsiic_read_pp_eeprom(uint8_t pp, uint16_t reg, uint8_t *data);
-bool vxsiic_read_pp_ioexp(uint8_t pp, uint8_t reg, uint8_t *data);
-bool vxsiic_read_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t *data);
-bool vxsiic_write_pp_mcu_4(uint8_t pp, uint16_t reg, uint32_t data);
+void vxsiic_reset_mux(BusInterface *bus);
+bool vxsiic_detect_mux(BusInterface *bus);
+bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel);
+//bool vxsiic_get_pp_i2c_status(BusInterface *bus, uint8_t pp);
+//bool vxsiic_detect_pp_eeprom(BusInterface *bus, uint8_t pp);
+bool vxsiic_read_pp_eeprom(BusInterface *bus, uint8_t pp, uint16_t reg, uint8_t *data);
+bool vxsiic_read_pp_ioexp(BusInterface *bus, uint8_t pp, uint8_t reg, uint8_t *data);
+bool vxsiic_read_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t *data);
+bool vxsiic_write_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t data);
 
 #ifdef __cplusplus
 }

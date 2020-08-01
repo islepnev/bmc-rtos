@@ -19,26 +19,31 @@
 
 #include "bsp.h"
 #include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 #include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 25;
 
-bool vxsiic_read(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
+bool vxsiic_read(BusInterface *bus, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_read(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_read(hi2c_handle(bus->bus_number), DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
-bool vxsiic_write(uint16_t DevAddress, uint8_t *pData, uint16_t Size)
+bool vxsiic_write(BusInterface *bus, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_write(&vxsiic_hi2c, DevAddress, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_write(hi2c_handle(bus->bus_number), DevAddress, pData, Size, I2C_TIMEOUT_MS);
 }
 
-bool vxsiic_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
+bool vxsiic_mem_read(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_read(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_read(hi2c_handle(bus->bus_number), DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
-bool vxsiic_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
+bool vxsiic_mem_write(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_write(&vxsiic_hi2c, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_write(hi2c_handle(bus->bus_number), DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }

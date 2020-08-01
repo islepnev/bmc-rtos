@@ -34,7 +34,7 @@ static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
 {
     uint16_t addr = 0;
     uint8_t eeprom_data = 0;
-    bool ok = vxsiic_read_pp_eeprom(pp, addr, &eeprom_data);
+    bool ok = vxsiic_read_pp_eeprom(&d->dev.bus, pp, addr, &eeprom_data);
     if (ok) {
         // log_printf(LOG_DEBUG, "EEPROM at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, eeprom_data);
         if (eeprom_data != 0xFF) {
@@ -50,7 +50,7 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
     uint8_t addr = 0;
     uint8_t data = 0;
     vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
-    bool ret = vxsiic_read_pp_ioexp(pp, addr, &data);
+    bool ret = vxsiic_read_pp_ioexp(&d->dev.bus, pp, addr, &data);
     status->pp_state.gpio_found = ret;
 //    if (ret) {
 //        log_printf(LOG_DEBUG, "IOEXP at slot %2s [%04X] = %02X\n", vxsiic_map_slot_to_label[pp], addr, data);
@@ -61,12 +61,12 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
 
 static bool dev_vxsiic_read_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t *data)
 {
-    return vxsiic_read_pp_mcu_4(pp, reg, data);
+    return vxsiic_read_pp_mcu_4(&d->dev.bus, pp, reg, data);
 }
 
 static bool dev_vxsiic_write_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t data)
 {
-    return vxsiic_write_pp_mcu_4(pp, reg, data);
+    return vxsiic_write_pp_mcu_4(&d->dev.bus, pp, reg, data);
 }
 
 static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
@@ -142,8 +142,8 @@ err:
 
 bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp)
 {
-    if (! vxsiic_get_pp_i2c_status(pp))
-        return false;
+//    if (! vxsiic_get_pp_i2c_status(pp))
+//        return false;
     bool eeprom = dev_vxsiic_read_pp_eeprom(d, pp);
     bool ioexp =  dev_vxsiic_read_pp_ioexp(d, pp);
     bool found = (eeprom || ioexp);
