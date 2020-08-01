@@ -71,13 +71,16 @@ static bool handle_escape_seq(const char *str)
     size_t len = strlen(str);
     // [55;165R
     if (len >= 5 && str[0] == '[' && str[len-1] == 'R') {
-        char s1[4] = {0};
-        char s2[4] = {0};
+        enum {S_SIZE = 4};
+        char s1[S_SIZE] = {0};
+        char s2[S_SIZE] = {0};
         size_t i = 1, p1=0, p2=0;
         while (i < len-1) {
             if (! (str[i] >= '0' && str[i] <= '9'))
                 break;
             s1[p1++] = str[i];
+            if (p1 >= S_SIZE)
+                return false;
             i++;
         }
         if (str[i++] != ';')
@@ -86,6 +89,8 @@ static bool handle_escape_seq(const char *str)
             if (! (str[i] >= '0' && str[i] <= '9'))
                 break;
             s2[p2++] = str[i];
+            if (p2 >= S_SIZE)
+                return false;
             i++;
         }
         if (str[i] != 'R')
