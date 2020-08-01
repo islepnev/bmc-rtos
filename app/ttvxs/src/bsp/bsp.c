@@ -31,13 +31,6 @@
 #include "usart.h"
 #include "error_handler.h"
 
-uint32_t detect_pcb_version(void)
-{
-    bool a0 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin));
-    bool a1 = (GPIO_PIN_SET == HAL_GPIO_ReadPin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin));
-    return a1 * 2 + a0;
-}
-
 void update_board_version(int powermon_count)
 {
     // do nothing

@@ -18,7 +18,6 @@
 
 #include "dev_tmp421.h"
 
-#include "devices_types.h"
 #include "i2c.h"
 #include "tmp421/tmp421_i2c_hal.h"
 

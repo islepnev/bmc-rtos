@@ -18,13 +18,20 @@
 #ifndef MCB_H
 #define MCB_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define FPGA_SPI_BUS_INDEX 5
 
-int get_mcb_pcb_ver(void);
+enum {
+    PCB_VER_A_MCB_1_0 = 3,
+    PCB_VER_A_MCB_1_1 = 1
+};
+
+uint32_t read_mcb_pcb_ver(void) __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

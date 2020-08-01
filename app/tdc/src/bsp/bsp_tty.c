@@ -16,10 +16,6 @@
 */
 
 #include "bsp_tty.h"
-#include "bsp.h"
-#include "app_shared_data.h"
-#include "devices_types.h"
-#include "stm32f7xx_ll_usart.h"
 
 void bsp_tty_setup_uart(void)
 {

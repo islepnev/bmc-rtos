@@ -17,13 +17,14 @@
 
 #include "mcb.h"
 
-#include "devices.h"
-#include "devices_types.h"
+#include <stdbool.h>
 
-static Devices dev = {0};
+#include "gpio.h"
+#include "bsp_pin_defs.h"
 
-int get_mcb_pcb_ver(void)
+uint32_t read_mcb_pcb_ver(void)
 {
-    Devices* d = getDevices();
-    return d->pcb_ver;
+    bool a0 = read_gpio_pin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin);
+    bool a1 = read_gpio_pin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin);
+    return a1 * 2 + a0;
 }

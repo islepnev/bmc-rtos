@@ -21,7 +21,6 @@
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "thset/dev_thset_types.h"
-#include "devices_types.h"
 #include "fpga_spi_hal.h"
 #include "logbuffer.h"
 #include "powermon/dev_powermon_types.h"

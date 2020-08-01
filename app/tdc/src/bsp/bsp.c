@@ -29,12 +29,11 @@
 
 int pcb_version = 0;
 
-uint32_t detect_pcb_version(void)
+uint32_t read_pcb_version(void)
 {
     bool a0 = read_gpio_pin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin);
     bool a1 = read_gpio_pin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin);
-    pcb_version = a1 * 2 + a0;
-    return pcb_version;
+    return a1 * 2 + a0;
 }
 
 #ifdef BOARD_TDC72

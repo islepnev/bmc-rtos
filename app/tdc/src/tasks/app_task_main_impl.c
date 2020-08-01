@@ -19,7 +19,6 @@
 
 #include "app_shared_data.h"
 #include "device_status_log.h"
-#include "devices_types.h"
 #include "led_gpio_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"

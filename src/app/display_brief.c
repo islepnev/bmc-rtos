@@ -34,7 +34,6 @@
 #include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_mcu.h"
-#include "devices_types.h"
 #include "digipot/dev_digipot.h"
 #include "dev_digipot_print.h"
 #include "display.h"

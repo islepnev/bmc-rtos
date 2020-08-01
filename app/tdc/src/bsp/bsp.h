@@ -65,7 +65,7 @@ typedef enum {
 } pcb_version_t;
 
 extern int pcb_version;
-uint32_t detect_pcb_version(void);
+uint32_t read_pcb_version(void)  __attribute__((warn_unused_result));
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
 void sfpiic_switch_enable(bool enable);

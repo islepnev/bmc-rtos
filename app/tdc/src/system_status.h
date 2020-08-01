@@ -25,8 +25,8 @@
 extern "C" {
 #endif
 
-struct Devices;
-SensorStatus pollVxsiicStatus(struct Devices *dev);
+struct DeviceBase;
+SensorStatus pollVxsiicStatus(struct DeviceBase *dev);
 DeviceStatus getDeviceStatus(void);
 SensorStatus getSystemStatus(void);
 encoded_system_status_t encode_system_status(void);

@@ -20,7 +20,6 @@
 #include "ad9516/dev_auxpll_types.h"
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
-#include "devices_types.h"
 #include "digipot/dev_digipot_types.h"
 #include "fpga/dev_fpga.h"
 #include "powermon/dev_powermon.h"
@@ -38,7 +37,7 @@ DeviceStatus getDeviceStatus(void)
     return status;
 }
 
-SensorStatus pollVxsiicStatus(Devices *dev)
+SensorStatus pollVxsiicStatus(DeviceBase *dev)
 {
     static vxsiic_i2c_stats_t vxsiic_i2c_stats_save = {0};
 //    const vxsiic_i2c_stats_t * vxsiic_i2c_stats = get_vxsiic_i2c_stats_ptr();
