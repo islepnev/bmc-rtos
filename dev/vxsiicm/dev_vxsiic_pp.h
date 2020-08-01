@@ -18,7 +18,7 @@
 #define DEV_VXSIIC_PP_H
 
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
+
 #include "dev_vxsiicm_types.h"
 
 bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp);

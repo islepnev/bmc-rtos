@@ -31,10 +31,15 @@ enum { vxsiicThreadStackSize = 1000 };
 static const uint32_t vxsiicTaskLoopDelay = 10;
 
 static Dev_vxsiicm vxsiicm = {0};
+static BusInterface vxsiicm_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 1,
+    .address = 0
+};
 
 static void local_init(DeviceBase *parent) {
     //    init_auxpll_setup(&d.priv.setup);
-    create_device(parent, &vxsiicm.dev, &vxsiicm.priv, DEV_CLASS_VXSIICM, null_bus_info, "VXS IIC Master");
+    create_device(parent, &vxsiicm.dev, &vxsiicm.priv, DEV_CLASS_VXSIICM, vxsiicm_bus_info, "VXS IIC Master");
 }
 
 static void start_thread_vxsiicm( void const *arg)

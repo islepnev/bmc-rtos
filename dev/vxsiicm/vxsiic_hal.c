@@ -17,6 +17,7 @@
 
 #include "vxsiic_hal.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "bsp.h"
@@ -24,8 +25,6 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "log/log.h"
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_i2c.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 
@@ -56,8 +55,8 @@ bool vxsiic_detect_mux(void)
 
 bool vxsiic_mux_select(uint8_t subdevice, uint8_t channel)
 {
-    assert_param(subdevice < 3);
-    assert_param(channel < 8);
+    assert(subdevice < 3);
+    assert(channel < 8);
     uint8_t data;
     data = 1 << channel; // enable channel
     uint8_t i2c_address = PCA9548_BASE_I2C_ADDRESS + subdevice;
