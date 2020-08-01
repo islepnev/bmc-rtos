@@ -59,5 +59,5 @@ bool fpga_done_pin_present(void)
 
 void sfpiic_switch_enable(bool enable)
 {
-    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  !enable);
+    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin, enable);
 }
