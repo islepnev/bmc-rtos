@@ -29,7 +29,7 @@ extern "C" {
 struct Dev_auxpll;
 DeviceStatus auxpllDetect(struct Dev_auxpll *d);
 bool auxpllSetup(struct Dev_auxpll *d);
-bool auxpllSoftwareReset(void);
+bool auxpllSoftwareReset(struct Dev_auxpll *d);
 bool auxpllReadStatus(struct Dev_auxpll *d);
 
 #ifdef __cplusplus

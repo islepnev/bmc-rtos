@@ -34,7 +34,7 @@ static const uint32_t auxpllTaskLoopDelay = 10;
 
 static BusInterface auxpll_bus_info = {
     .type = BUS_SPI,
-    .bus_number = 0, // FIXME
+    .bus_number = AD9516_SPI_BUS_INDEX,
     .address = 0
 };
 

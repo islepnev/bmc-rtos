@@ -43,7 +43,7 @@ extern "C" {
 #ifdef TTVXS_1_0
 #define therm_spi hspi2
 #else
-#define ad9516_spi hspi2
+#define AD9516_SPI_BUS_INDEX 2
 #endif
 
 #define AUXPLL_AD9516_OUT6_ENABLE 0

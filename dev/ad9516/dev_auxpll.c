@@ -33,11 +33,12 @@
 static bool pllIoUpdate(Dev_auxpll *d)
 {
     uint8_t data = 1;
-    return ad9516_write1(0x232, data);
+    return ad9516_write1(&d->dev.bus, 0x232, data);
 }
 
-bool auxpllSoftwareReset(void)
+bool auxpllSoftwareReset(Dev_auxpll *d)
 {
+    BusInterface *bus = &d->dev.bus;
     bool ret = true;
     volatile AD9516_Serial_Config_REG_Type serial_config_reg;
     serial_config_reg.raw = 0;
@@ -45,20 +46,20 @@ bool auxpllSoftwareReset(void)
     serial_config_reg.b.long_instr_2 = 1;
     serial_config_reg.b.sdo_active = 1;
     serial_config_reg.b.sdo_active_2 = 1;
-    if (! ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(bus, serial_config_reg.raw))
         ret = false;
     serial_config_reg.b.softreset = 1;
     serial_config_reg.b.softreset_2 = 1;
-    if (! ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(bus, serial_config_reg.raw))
         ret = false;
     serial_config_reg.b.softreset = 0;
     serial_config_reg.b.softreset_2 = 0;
-    if (! ad9516_write_config(serial_config_reg.raw))
+    if (! ad9516_write_config(bus, serial_config_reg.raw))
         ret = false;
     if (!ret)
         return false;
     uint8_t data = 0;
-    if (! ad9516_read1(AD9516_REG1_CONFIG_0, &data))
+    if (! ad9516_read1(bus, AD9516_REG1_CONFIG_0, &data))
         return false;
     if (data != serial_config_reg.raw)
         return false;
@@ -67,9 +68,10 @@ bool auxpllSoftwareReset(void)
 
 DeviceStatus auxpllDetect(Dev_auxpll *d)
 {
+    BusInterface *bus = &d->dev.bus;
     int devicePresent = 0;
     uint8_t data = 0;
-    if (! ad9516_read1(AD9516_REG1_PART_ID, &data))
+    if (! ad9516_read1(bus, AD9516_REG1_PART_ID, &data))
         goto err;
     devicePresent = (data == AD9516_PART_ID);
     if (devicePresent)
@@ -84,15 +86,16 @@ err:
 
 bool auxpllReadStatus(Dev_auxpll *d)
 {
+    BusInterface *bus = &d->dev.bus;
     uint8_t data = 0;
-    if (! ad9516_read1(AD9516_REG1_PART_ID, &data))
+    if (! ad9516_read1(bus, AD9516_REG1_PART_ID, &data))
         return false;
     if (data != AD9516_PART_ID)
         return false;
 
     if (!pllIoUpdate(d))
         return false;
-    if (! ad9516_read1(AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
+    if (! ad9516_read1(bus, AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
         return false;
 
     return true;
@@ -100,6 +103,7 @@ bool auxpllReadStatus(Dev_auxpll *d)
 
 static bool auxpllReadAllRegisters_unused(Dev_auxpll *d)
 {
+    BusInterface *bus = &d->dev.bus;
     typedef struct {
         uint16_t first;
         uint16_t last;
@@ -119,7 +123,7 @@ static bool auxpllReadAllRegisters_unused(Dev_auxpll *d)
         uint16_t last = regs[n].last;
         for (int i=first; i<=last; i++) {
             uint8_t data = 0;
-            if (! ad9516_read1(i, &data))
+            if (! ad9516_read1(bus, i, &data))
                 return false;
             // log_printf(LOG_DEBUG, "0x%04X,0x%02X", i, data);
         }
@@ -129,22 +133,23 @@ static bool auxpllReadAllRegisters_unused(Dev_auxpll *d)
 
 static bool auxpll_output_setup(Dev_auxpll *d)
 {
+    BusInterface *bus = &d->dev.bus;
     // output drivers
-    ad9516_write1(0x140, d->priv.enable_out_6 ? 0x42 : 0x43); // OUT6
-    ad9516_write1(0x141, d->priv.enable_out_7 ? 0x42 : 0x43); // OUT7
-    ad9516_write1(0x142, d->priv.enable_out_8 ? 0x42 : 0x43); // OUT8, Enable, LVDS
-    ad9516_write1(0x143, d->priv.enable_out_9 ? 0x42 : 0x43); // OUT9
+    ad9516_write1(bus, 0x140, d->priv.enable_out_6 ? 0x42 : 0x43); // OUT6
+    ad9516_write1(bus, 0x141, d->priv.enable_out_7 ? 0x42 : 0x43); // OUT7
+    ad9516_write1(bus, 0x142, d->priv.enable_out_8 ? 0x42 : 0x43); // OUT8, Enable, LVDS
+    ad9516_write1(bus, 0x143, d->priv.enable_out_9 ? 0x42 : 0x43); // OUT9
 
     // output dividers
-    ad9516_write1(0x199, 0);
-    ad9516_write1(0x19A, 0);
-    ad9516_write1(0x19B, 0);
-    ad9516_write1(0x19C, 0x20); // bypass 3.2
-    ad9516_write1(0x19A, 0);
-    ad9516_write1(0x19E, 0);
-    ad9516_write1(0x19F, 0);
-    ad9516_write1(0x1A0, 0);
-    ad9516_write1(0x1A1, 0x20); // bypass 4.2
+    ad9516_write1(bus, 0x199, 0);
+    ad9516_write1(bus, 0x19A, 0);
+    ad9516_write1(bus, 0x19B, 0);
+    ad9516_write1(bus, 0x19C, 0x20); // bypass 3.2
+    ad9516_write1(bus, 0x19A, 0);
+    ad9516_write1(bus, 0x19E, 0);
+    ad9516_write1(bus, 0x19F, 0);
+    ad9516_write1(bus, 0x1A0, 0);
+    ad9516_write1(bus, 0x1A1, 0x20); // bypass 4.2
 
     pllIoUpdate(d);
     return true;
@@ -179,28 +184,30 @@ bool auxpllSetup(Dev_auxpll *d)
 //    volatile const double AUXPLL_DIST_FREQ = AUXPLL_VCO_FREQ / AUXPLL_VCO_DIV;
 //    assert(AUXPLL_DIST_FREQ > 249.9e6 && AUXPLL_DIST_FREQ < 250.1e6); // 250 MHz
 
+    BusInterface *bus = &d->dev.bus;
+
     // PLL normal operation (PLL on)
     AD9516_PFD_CP_REG_Type reg_pfd_cp;
     reg_pfd_cp.raw = 0x0;
     reg_pfd_cp.b.chargepump_current = 7; // 7: 4.8 mA
     reg_pfd_cp.b.chargepump_mode = 3; // 3: normal operation
     reg_pfd_cp.b.pll_powerdown = 0;
-    ad9516_write1(AD9516_REG1_PFD_CP, reg_pfd_cp.raw);
+    ad9516_write1(bus, AD9516_REG1_PFD_CP, reg_pfd_cp.raw);
 
     // PLL settings
     // Select and enable a reference input
     // set R, N (P, A, B), PFD polarity, and I CP
     // according to the intended loop configuration
     uint16_t rdiv = AUXPLL_REF_DIV;
-    ad9516_write1(0x011, rdiv & 0xFF);
-    ad9516_write1(0x012, (rdiv >> 8) & 0x3F);
+    ad9516_write1(bus, 0x011, rdiv & 0xFF);
+    ad9516_write1(bus, 0x012, (rdiv >> 8) & 0x3F);
 
     uint16_t acounter = AUXPLL_ACOUNTER;
-    ad9516_write1(0x013, acounter & 0x3F);
+    ad9516_write1(bus, 0x013, acounter & 0x3F);
 
     uint16_t bcounter = AUXPLL_BCOUNTER;
-    ad9516_write1(0x014, bcounter & 0xFF);
-    ad9516_write1(0x015, (bcounter >> 8) & 0x3F);
+    ad9516_write1(bus, 0x014, bcounter & 0xFF);
+    ad9516_write1(bus, 0x015, (bcounter >> 8) & 0x3F);
 
     AD9516_Pll_Control pll_control;
     pll_control.pll_control_1.raw = 0x06;
@@ -215,25 +222,25 @@ bool auxpllSetup(Dev_auxpll *d)
     pll_control.pll_control_1.b.prescaler_p = AUXPLL_PRESCALER_INDEX;
     pll_control.pll_control_7.b.ref1_poweron = 1;
 
-    ad9516_write1(0x016, pll_control.pll_control_1.raw);
-    ad9516_write1(0x017, pll_control.pll_control_2.raw);
-    ad9516_write1(0x018, pll_control.pll_control_3.raw);
-    ad9516_write1(0x019, pll_control.pll_control_4.raw);
-    ad9516_write1(0x01A, pll_control.pll_control_5.raw);
-    ad9516_write1(0x01B, pll_control.pll_control_6.raw);
-    ad9516_write1(0x01C, pll_control.pll_control_7.raw);
-    ad9516_write1(0x01D, pll_control.pll_control_8.raw);
+    ad9516_write1(bus, 0x016, pll_control.pll_control_1.raw);
+    ad9516_write1(bus, 0x017, pll_control.pll_control_2.raw);
+    ad9516_write1(bus, 0x018, pll_control.pll_control_3.raw);
+    ad9516_write1(bus, 0x019, pll_control.pll_control_4.raw);
+    ad9516_write1(bus, 0x01A, pll_control.pll_control_5.raw);
+    ad9516_write1(bus, 0x01B, pll_control.pll_control_6.raw);
+    ad9516_write1(bus, 0x01C, pll_control.pll_control_7.raw);
+    ad9516_write1(bus, 0x01D, pll_control.pll_control_8.raw);
 
     // reset VCO calibration
     pll_control.pll_control_3.b.vco_cal_now = 0;
-    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+    ad9516_write1(bus, 0x018, pll_control.pll_control_3.raw);
     pllIoUpdate(d);
 
     // Use the VCO divider as source for the distribution section
     AD9516_VCO_Divider_REG_Type reg_vco_div;
     reg_vco_div.raw = 0;
     reg_vco_div.b.divider = AUXPLL_VCO_DIV_INDEX;
-    ad9516_write1(AD9516_REG1_VCO_DIVIDER, reg_vco_div.raw);
+    ad9516_write1(bus, AD9516_REG1_VCO_DIVIDER, reg_vco_div.raw);
 
     // Select VCO as the source
     AD9516_Input_Clocks_REG_Type reg_clocks;
@@ -243,19 +250,19 @@ bool auxpllSetup(Dev_auxpll *d)
     reg_clocks.b.powerdown_vco_clk = 0;
     reg_clocks.b.powerdown_vco_interface = 0;
     reg_clocks.b.powerdown_clock_inp = 0;
-    ad9516_write1(AD9516_REG1_CLOCKS, reg_clocks.raw);
+    ad9516_write1(bus, AD9516_REG1_CLOCKS, reg_clocks.raw);
 
     auxpll_output_setup(d);
 
     // initiate VCO calibration
     pll_control.pll_control_3.b.vco_cal_now = 1;
-    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+    ad9516_write1(bus, 0x018, pll_control.pll_control_3.raw);
     pllIoUpdate(d);
 
 //    osDelay(100);
 //    // reset VCO calibration
 //    pll_control.pll_control_3.b.vco_cal_now = 0;
-//    ad9516_write1(0x018, pll_control.pll_control_3.raw);
+//    ad9516_write1(bus, 0x018, pll_control.pll_control_3.raw);
 //    pllIoUpdate(d);
 
     //auxpllReadAllRegisters_unused(d);

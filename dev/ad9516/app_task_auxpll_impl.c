@@ -45,7 +45,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
         if (d->priv.fsm_state != AUXPLL_STATE_INIT) {
             d->priv.fsm_state = AUXPLL_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
-            ad9516_disable_interface();
+            ad9516_disable_interface(&d->dev.bus);
             auxpll_clear_status(d);
             log_put(LOG_INFO, "PLL AD9516 shutdown");
         }
@@ -54,12 +54,12 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
     const AuxPllState old_state = d->priv.fsm_state;
     switch(d->priv.fsm_state) {
     case AUXPLL_STATE_INIT:
-        ad9516_enable_interface();
+        ad9516_enable_interface(&d->dev.bus);
         auxpll_clear_status(d);
         d->priv.fsm_state = AUXPLL_STATE_RESET;
         break;
     case AUXPLL_STATE_RESET:
-        if (!auxpllSoftwareReset()) {
+        if (!auxpllSoftwareReset(d)) {
             d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
@@ -95,7 +95,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
             break;
         }
         if (stateTicks() > 1000) {
-            ad9516_disable_interface();
+            ad9516_disable_interface(&d->dev.bus);
             d->priv.recoveryCount++;
             d->priv.fsm_state = AUXPLL_STATE_INIT;
         }

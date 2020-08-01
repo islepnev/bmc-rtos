@@ -35,8 +35,8 @@ extern "C" {
 #define hi2c_sfpiic hi2c4
 
 #define FPGA_SPI_BUS_INDEX 1
+#define AD9516_SPI_BUS_INDEX 4
 
-#define ad9516_spi hspi4
 #define therm_spi hspi4
 
 //#define ad9545_deviceAddr 0x4A
