@@ -22,8 +22,3 @@ void dev_led_set(DeviceLeds led, bool state)
 {
     led_set_state(led, state);
 }
-
-void dev_leds_toggle(DeviceLeds led)
-{
-    led_toggle(led);
-}

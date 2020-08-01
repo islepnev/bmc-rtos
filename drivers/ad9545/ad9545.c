@@ -330,23 +330,23 @@ bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup)
 void ad9545_reset(BusInterface *bus)
 {
     // toggle reset_b pin
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
+    write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 0);
+    write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 1);
 }
 
 bool ad9545_gpio_test(BusInterface *bus)
 {
-    GPIO_PinState pin_resetb = HAL_GPIO_ReadPin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
-    GPIO_PinState pin_m3 = HAL_GPIO_ReadPin(PLL_M3_GPIO_Port, PLL_M3_Pin);
-    GPIO_PinState pin_m4 = HAL_GPIO_ReadPin(PLL_M4_GPIO_Port, PLL_M4_Pin);
-    GPIO_PinState pin_m5 = HAL_GPIO_ReadPin(PLL_M5_GPIO_Port, PLL_M5_Pin);
-    GPIO_PinState pin_m6 = HAL_GPIO_ReadPin(PLL_M6_GPIO_Port, PLL_M6_Pin);
+    bool pin_resetb = read_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
+    bool pin_m3 = read_gpio_pin(PLL_M3_GPIO_Port, PLL_M3_Pin);
+    bool pin_m4 = read_gpio_pin(PLL_M4_GPIO_Port, PLL_M4_Pin);
+    bool pin_m5 = read_gpio_pin(PLL_M5_GPIO_Port, PLL_M5_Pin);
+    bool pin_m6 = read_gpio_pin(PLL_M6_GPIO_Port, PLL_M6_Pin);
     if ( 1
-        && (GPIO_PIN_SET   == pin_resetb)
-        && (GPIO_PIN_RESET == pin_m3)
-        && (GPIO_PIN_SET   == pin_m4)
-        && (GPIO_PIN_RESET == pin_m5)
-        && (GPIO_PIN_SET   == pin_m6)
+        && pin_resetb
+        && ! pin_m3
+        && pin_m4
+        && ! pin_m5
+        && pin_m6
         )
         return true;
     else {
@@ -367,7 +367,7 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_WritePin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, GPIO_PIN_SET);
+    write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 1);
     HAL_GPIO_Init(PLL_RESET_B_GPIO_Port, &GPIO_InitStruct);
 
     // input
@@ -388,7 +388,7 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Pin = PLL_M4_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_WritePin(PLL_M4_GPIO_Port, PLL_M4_Pin, GPIO_PIN_SET);
+    write_gpio_pin(PLL_M4_GPIO_Port, PLL_M4_Pin, 1);
     HAL_GPIO_Init(PLL_M4_GPIO_Port, &GPIO_InitStruct);
 
     // M5=0 - I2C address offset
@@ -397,7 +397,7 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_WritePin(PLL_M5_GPIO_Port, PLL_M5_Pin, GPIO_PIN_RESET);
+    write_gpio_pin(PLL_M5_GPIO_Port, PLL_M5_Pin, 0);
     HAL_GPIO_Init(PLL_M5_GPIO_Port, &GPIO_InitStruct);
 
     // M6=1 - I2C address offset, internal 10 kΩ pull-up resistor
@@ -406,6 +406,6 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_WritePin(PLL_M6_GPIO_Port, PLL_M6_Pin, GPIO_PIN_SET);
+    write_gpio_pin(PLL_M6_GPIO_Port, PLL_M6_Pin, 1);
     HAL_GPIO_Init(PLL_M6_GPIO_Port, &GPIO_InitStruct);
 }

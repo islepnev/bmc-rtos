@@ -39,11 +39,8 @@ void update_board_version(int powermon_count)
 /*
 void fpga_enable_interface(bool enable)
 {
-    GPIO_PinState low = GPIO_PIN_RESET;
-    GPIO_PinState high = enable ? GPIO_PIN_SET : GPIO_PIN_RESET;
-
-    HAL_GPIO_WritePin(FPGA_RX_GPIO_Port, FPGA_RX_Pin, high);
-    HAL_GPIO_WritePin(FPGA_TX_GPIO_Port, FPGA_TX_Pin, high);
+    write_gpio_pin(FPGA_RX_GPIO_Port, FPGA_RX_Pin, enable);
+    write_gpio_pin(FPGA_TX_GPIO_Port, FPGA_TX_Pin, enable);
 
     if (enable) {
         __HAL_UART_ENABLE(&huart6);

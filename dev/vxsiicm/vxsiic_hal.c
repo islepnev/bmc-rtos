@@ -17,10 +17,12 @@
 #include "vxsiic_hal.h"
 
 #include <stdio.h>
+
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "i2c.h"
 #include "bsp.h"
+#include "gpio.h"
 #include "bsp_pin_defs.h"
 #include "log/logbuffer.h"
 #include "vxsiic_hal.h"
@@ -35,8 +37,8 @@ enum {
 
 void vxsiic_reset_mux(void)
 {
-    HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  GPIO_PIN_SET);
+    write_gpio_pin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  0);
+    write_gpio_pin(I2C_RESET2_B_GPIO_Port,  I2C_RESET2_B_Pin,  1);
 }
 
 bool vxsiic_detect_mux(void)

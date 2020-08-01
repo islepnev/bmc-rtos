@@ -49,9 +49,9 @@ void task_main_run(void)
 
 
     // read SD card status
-    // getDevices()->sd.detect_b = HAL_GPIO_ReadPin(uSD_Detect_GPIO_Port, uSD_Detect_Pin);
+    // getDevices()->sd.detect_b = read_gpio_pin(uSD_Detect_GPIO_Port, uSD_Detect_Pin);
     // read other signals
-    // getDevices()->pen_b = HAL_GPIO_ReadPin(PEN_B_GPIO_Port, PEN_B_Pin);
+    // getDevices()->pen_b = read_gpio_pin(PEN_B_GPIO_Port, PEN_B_Pin);
 
     led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);
     led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);

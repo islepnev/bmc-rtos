@@ -30,8 +30,8 @@ static const int I2C_TIMEOUT_MS = 10;
 
 void sfpiic_switch_reset(void)
 {
-//    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_RESET);
-//    HAL_GPIO_WritePin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  GPIO_PIN_SET);
+//    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  0);
+//    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  1);
 }
 
 bool sfpiic_device_detect(uint16_t addr)

@@ -20,7 +20,7 @@
 #include "spi.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "stm32f7xx_hal_gpio.h"
+#include "gpio.h"
 
 #ifdef BOARD_TDC72
 
@@ -58,9 +58,9 @@ bool adt7301_read(BusInterface *bus, int16_t *data)
         break;
     }
 
-    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_RESET);
+    write_gpio_pin(port, cs_pin, 0);
     HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(&therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
-    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
+    write_gpio_pin(port, cs_pin, 1);
     if (HAL_OK != ret)
         return false;
     if (data) {
@@ -93,9 +93,9 @@ bool adt7301_read_temp(BusInterface *bus, int16_t *data)
         break;
     }
 
-    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_RESET);
+    write_gpio_pin(port, cs_pin, 0);
     HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
-    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
+    write_gpio_pin(port, cs_pin, 1);
     if (data) {
         if (ret == HAL_OK) {
             uint16_t result = SPI_receive_buffer;
