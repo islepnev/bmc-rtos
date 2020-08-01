@@ -17,8 +17,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_VXSIICS_H
-#define DEV_VXSIICS_H
+#ifndef I2C_SLAVE_DRIVER_H
+#define I2C_SLAVE_DRIVER_H
 
 #include <stdint.h>
 
@@ -29,8 +29,12 @@ extern "C" {
 void iic_write_callback(uint16_t addr, uint32_t data);
 void iic_read_callback(uint16_t addr, uint32_t *data);
 
+void i2c_slave_driver_init(void);
+void i2c_event_interrupt_handler(void);
+void i2c_error_interrupt_handler(void);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_VXSIICS_H
+#endif // I2C_SLAVE_DRIVER_H

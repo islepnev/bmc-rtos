@@ -23,7 +23,7 @@
 #include "main.h"
 #include "stm32f7xx_it.h"
 #ifndef BOARD_TTVXS
-#include "vxsiics/dev_vxsiics.h"
+#include "bus/i2c_slave_driver.h"
 #endif
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_usart.h"

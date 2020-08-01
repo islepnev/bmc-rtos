@@ -17,9 +17,9 @@
 
 #include "app_task_vxsiics.h"
 
-#include "vxsiics/dev_vxsiics.h"
+#include "bus/i2c_slave_driver.h"
 
 void create_task_vxsiics(void)
 {
-    dev_vxsiics_init();
+    i2c_slave_driver_init();
 }

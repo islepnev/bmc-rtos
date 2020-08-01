@@ -25,7 +25,7 @@
 #include "sfpiic/dev_sfpiic.h"
 #include "system_status_common.h"
 #include "thset/dev_thset.h"
-#include "vxsiics/dev_vxsiics_stats.h"
+#include "bus/dev_vxsiics_stats.h"
 
 DeviceStatus getDeviceStatus(void)
 {
