@@ -25,7 +25,7 @@
 #include "ansi_escape_codes.h"
 #include "bsp_pin_defs.h"
 #include "gpio.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint8_t AD9545_OPER_CONTROL_DEFAULT = 0x0A; // shutdown RefAA, RefBB
 

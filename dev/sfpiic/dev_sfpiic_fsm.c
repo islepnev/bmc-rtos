@@ -21,7 +21,7 @@
 #include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;

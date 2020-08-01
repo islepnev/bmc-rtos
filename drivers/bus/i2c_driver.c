@@ -25,7 +25,7 @@
 #include "i2c.h"
 #include "impl/i2c_driver_impl.h"
 #include "impl/i2c_driver_util.h"
-#include "log/logbuffer.h"
+#include "log/log.h"
 
 void i2c_driver_init(void)
 {

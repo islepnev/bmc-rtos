@@ -22,7 +22,7 @@
 #include "app_shared_data.h"
 #include "commands.h"
 #include "digipot/dev_digipot.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 enum {KEYBUF_SIZE = 3};
 static char keybuf[KEYBUF_SIZE+1] = {0};

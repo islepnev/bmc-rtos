@@ -21,7 +21,7 @@
 #include "cli.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };

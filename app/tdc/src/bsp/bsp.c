@@ -25,7 +25,7 @@
 #include "dev_pm_sensors_config.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 int pcb_version = 0;
 

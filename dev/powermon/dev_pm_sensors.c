@@ -26,7 +26,7 @@
 #include "device_status_log.h"
 #include "display.h"
 #include "ina226/ina226_i2c_hal.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 //const double SENSOR_VOLTAGE_MARGIN_WARN = 0.05;
 const double SENSOR_VOLTAGE_MARGIN_CRIT = 0.1;

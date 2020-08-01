@@ -21,7 +21,7 @@
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "fpga_spi_hal.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
 #include "system_status_common.h"

@@ -27,7 +27,7 @@
 #include "cmsis_os.h"
 #include "dev_auxpll_types.h"
 #include "gpio.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "spi.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_spi.h"

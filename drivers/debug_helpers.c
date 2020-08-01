@@ -20,7 +20,7 @@
 
 #include "ansi_escape_codes.h"
 #include "bsp_tty.h"
-#include "log/logbuffer.h"
+#include "log/log.h"
 #include "stm32f7xx_ll_usart.h"
 
 static inline void debug_send_char(const char c)

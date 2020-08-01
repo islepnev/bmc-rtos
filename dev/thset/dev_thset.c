@@ -22,7 +22,7 @@
 #include "cmsis_os.h"
 #include "dev_thset_types.h"
 #include "devicelist.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "stm32f7xx_hal.h"
 
 static const uint32_t thermReadInterval = 300;

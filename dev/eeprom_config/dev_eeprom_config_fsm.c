@@ -18,7 +18,7 @@
 #include "dev_eeprom_config_fsm.h"
 #include "cmsis_os.h"
 #include "dev_eeprom_config.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;

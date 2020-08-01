@@ -21,7 +21,7 @@
 #include "dev_common_types.h"
 #include "dev_digipot.h"
 #include "dev_digipot_commands.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 

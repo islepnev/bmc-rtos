@@ -22,7 +22,7 @@
 #include "debug_helpers.h"
 #include "dev_cru16_clkmux.h"
 #include "dev_cru16_clkmux_types.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;

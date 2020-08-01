@@ -20,8 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "logentry.h"
-//#include "logbuffer.h"
+#include "log/logentry.h"
 #include "http_server.h"
 
 #define RETURN_IF(x) { int ret = x; if (ret) return ret; }

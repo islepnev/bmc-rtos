@@ -24,8 +24,7 @@
 #include "devicelist_print.h"
 #include "devices.h"
 #include "display.h"
-#include "log/logbuffer.h"
-#include "log/logentry.h"
+#include "log/log.h"
 #include "powermon/dev_powermon_display.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
 

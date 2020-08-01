@@ -30,7 +30,7 @@
 #include "ipmi_sensor_util.h"
 #include "ipmi_sensors.h"
 #include "led_gpio_hal.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "stm32f7xx_ll_i2c.h"
 #include "system_status.h"
 #include "version.h"

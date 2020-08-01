@@ -23,7 +23,7 @@
 #include "error_handler.h"
 #include "impl/spi_driver_impl.h"
 #include "impl/spi_driver_util.h"
-#include "log/logbuffer.h"
+#include "log/log.h"
 #include "spi.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_spi.h"

@@ -22,7 +22,7 @@
 #include "bus/spi_driver.h"
 #include "cmsis_os.h"
 #include "gpio.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "spi.h"
 #include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_spi.h"

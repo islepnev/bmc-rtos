@@ -27,7 +27,7 @@
 #include "bsp_powermon.h"
 #include "dev_common_types.h"
 #include "dev_pm_sensors_config.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "powermon/dev_pm_sensors.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon.h"

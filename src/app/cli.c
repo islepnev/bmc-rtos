@@ -27,7 +27,7 @@
 #include "app_task_cli_impl.h"
 #include "debug_helpers.h"
 #include "display.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "microrl.h"
 
 // print callback for microrl library

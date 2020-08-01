@@ -22,7 +22,7 @@
 #include "ad9545/ad9545.h"
 #include "cmsis_os.h"
 #include "dev_ad9545.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static uint32_t stateTicks(Dev_ad9545_priv *p)
 {

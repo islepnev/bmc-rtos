@@ -26,7 +26,7 @@
 #include "bsp_pin_defs.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static bool pllIoUpdate(BusInterface *bus)
 {

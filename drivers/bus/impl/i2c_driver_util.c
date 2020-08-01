@@ -25,7 +25,7 @@
 #include "debug_helpers.h"
 #include "error_handler.h"
 #include "i2c.h"
-#include "log/logbuffer.h"
+#include "log/log.h"
 
 enum {I2C_BUS_COUNT = 4};
 

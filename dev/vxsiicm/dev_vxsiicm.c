@@ -26,7 +26,7 @@
 #include "dev_vxsiicm_types.h"
 #include "devices.h"
 #include "ipmi_sensor_types.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 

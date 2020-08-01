@@ -25,7 +25,7 @@
 #include "lwip/netif.h"
 #include "lwip/prot/ethernet.h"
 
-#include "logbuffer.h"
+#include "log/log.h"
 #include "lldp_neighbor.h"
 
 enum {

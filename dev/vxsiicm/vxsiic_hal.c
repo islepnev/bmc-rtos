@@ -23,7 +23,7 @@
 #include "bsp_pin_defs.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "log/logbuffer.h"
+#include "log/log.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_i2c.h"
 #include "vxsiic_hal.h"

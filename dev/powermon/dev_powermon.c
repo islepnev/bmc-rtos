@@ -27,7 +27,7 @@
 #include "dev_pm_sensors_types.h"
 #include "dev_powermon_types.h"
 #include "gpio.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 

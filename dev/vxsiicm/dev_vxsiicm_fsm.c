@@ -23,7 +23,7 @@
 #include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"
 #include "devices.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;

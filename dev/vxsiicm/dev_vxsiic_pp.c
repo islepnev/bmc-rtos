@@ -27,7 +27,7 @@
 #include "dev_vxsiicm_types.h"
 #include "ipmi_sensor_types.h"
 #include "ipmi_sensor_util.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "vxsiic_hal.h"
 
 static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)

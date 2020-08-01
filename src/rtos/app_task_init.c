@@ -28,7 +28,7 @@
 #include "debug_helpers.h"
 #include "devices.h"
 #include "led_gpio_hal.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "os_serial_tty.h"
 #include "powermon/dev_powermon.h"
 #include "stm32f7xx_hal.h"

@@ -14,14 +14,16 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #include "http_app.h"
 
 #include <string.h>
-#include "logbuffer.h"
-#include "http_request.h"
-#include "http_serve_page.h"
+
 #include "http_app_common.h"
 #include "http_app_log.h"
+#include "http_request.h"
+#include "http_serve_page.h"
+#include "log/log.h"
 
 const char *page_title(uri_path_t p)
 {

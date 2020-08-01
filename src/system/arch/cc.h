@@ -33,10 +33,11 @@
 #define __CC_H__
 
 #include "cpu.h"
+
 #include <stdlib.h>
 #include <stdio.h>
-#include "logbuffer.h"
-//#include "debug_helpers.h"
+
+#include "log/log.h"
 
 typedef int sys_prot_t;
 

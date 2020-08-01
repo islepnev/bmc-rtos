@@ -20,7 +20,7 @@
 #include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "logbuffer.h"
+#include "log/log.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 

@@ -6,7 +6,7 @@
 #include "ethernetif.h"
 #include "ipaddress.h"
 #include "lwipcfg.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 #ifdef USE_DHCP
 #define MAX_DHCP_TRIES  4

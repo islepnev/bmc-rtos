@@ -21,7 +21,7 @@
 #include "cmsis_os.h"
 #include "dev_auxpll.h"
 #include "dev_auxpll_types.h"
-#include "logbuffer.h"
+#include "log/log.h"
 
 static uint32_t stateStartTick = 0;
 static uint32_t stateTicks(void)
