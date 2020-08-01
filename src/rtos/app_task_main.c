@@ -42,5 +42,5 @@ osThreadDef(main, start_thread_main, osPriorityNormal,      1, mainThreadStackSi
 void create_task_main(void)
 {
     osThreadId mainThreadId = osThreadCreate(osThread (main), NULL);
-    assert(mainThreadId == NULL);
+    assert(mainThreadId);
 }
