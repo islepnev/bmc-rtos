@@ -17,7 +17,6 @@
 
 #include "dev_powermon.h"
 
-#include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bsp_powermon.h"

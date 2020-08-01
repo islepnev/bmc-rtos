@@ -20,7 +20,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "app_shared_data.h"
 #include "dev_pm_sensors_config.h"
 #include "dev_pm_sensors_config.h"
 #include "powermon/dev_pm_sensors.h"

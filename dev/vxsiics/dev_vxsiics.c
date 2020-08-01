@@ -21,7 +21,6 @@
 
 #include <string.h>
 
-#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "dev_vxsiics_stats.h"

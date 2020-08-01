@@ -18,7 +18,6 @@
 #include "system_status.h"
 
 #include "ad9516/dev_auxpll_types.h"
-#include "app_shared_data.h"
 #include "devices_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "sfpiic/dev_sfpiic.h"

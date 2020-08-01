@@ -17,7 +17,6 @@
 
 #include "dev_sfpiic_fsm.h"
 
-#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"

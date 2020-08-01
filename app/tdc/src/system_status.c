@@ -18,7 +18,6 @@
 #include "system_status.h"
 
 #include "ad9516/dev_auxpll_types.h"
-#include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "digipot/dev_digipot_types.h"
 #include "fpga/dev_fpga.h"

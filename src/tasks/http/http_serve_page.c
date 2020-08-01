@@ -30,7 +30,6 @@
 #include "http_app.h"
 #include "http_app_log.h"
 
-#include "app_shared_data.h"
 #include "devices.h"
 #include "devices_types.h"
 #include "ipmi_sensor_types.h"

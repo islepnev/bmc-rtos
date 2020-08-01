@@ -17,7 +17,6 @@
 
 #include "dev_tmp421_fsm.h"
 
-#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "dev_tmp421.h"
 #include "device_status_log.h"
