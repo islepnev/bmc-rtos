@@ -19,7 +19,6 @@
 
 #include <string.h>
 
-#include "bsp_thset.h"
 #include "cmsis_os.h"
 #include "dev_thset_types.h"
 #include "devicelist.h"

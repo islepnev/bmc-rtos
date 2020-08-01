@@ -26,10 +26,6 @@
 
 static const int SPI_TIMEOUT_MS = 10;
 
-/**
-  * @brief Read the temperature data from the specified sensor
-  * @param source: sensor index [0..3]
-  */
 bool adt7301_read(BusInterface *bus, int16_t *data)
 {
     uint16_t SPI_transmit_buffer = {0};
@@ -73,4 +69,42 @@ bool adt7301_read(BusInterface *bus, int16_t *data)
     }
     return true;
 }
+
+#endif
+
+#ifdef TTVXS_1_0
+
+static const int SPI_TIMEOUT_MS = 10;
+
+bool adt7301_read_temp(BusInterface *bus, int16_t *data)
+{
+
+    uint16_t SPI_transmit_buffer = {0};
+    uint16_t SPI_receive_buffer = {0};
+
+    GPIO_TypeDef * port;
+    uint16_t cs_pin;
+
+    switch (bus->address)
+    {
+    default:
+        port = ADT_CS_B_GPIO_Port;
+        cs_pin = ADT_CS_B_Pin;
+        break;
+    }
+
+    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_RESET);
+    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
+    HAL_GPIO_WritePin(port, cs_pin, GPIO_PIN_SET);
+    if (data) {
+        if (ret == HAL_OK) {
+            uint16_t result = SPI_receive_buffer;
+            *data = result;
+        } else {
+            *data = 0;
+        }
+    }
+    return ret;
+}
+
 #endif
