@@ -20,7 +20,6 @@
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "main.h"
 #include "stm32f7xx_it.h"
 #ifndef BOARD_TTVXS
 #include "bus/i2c_slave_driver.h"

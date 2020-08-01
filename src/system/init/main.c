@@ -15,8 +15,6 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "main.h"
-
 #include "app_task_init.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
@@ -25,6 +23,7 @@
 #include "init_periph.h"
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"
+#include "stm32f7xx_hal.h"
 #include "tim.h"
 
 int main(void)

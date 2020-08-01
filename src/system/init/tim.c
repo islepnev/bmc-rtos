@@ -19,6 +19,7 @@
 
 #include "tim.h"
 #include "error_handler.h"
+#include "stm32f7xx_hal_rcc.h"
 
 TIM_HandleTypeDef htim2;
 

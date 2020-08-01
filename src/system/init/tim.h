@@ -24,7 +24,8 @@
 extern "C" {
 #endif
 
-#include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_tim.h"
 
 extern TIM_HandleTypeDef htim2;
 
