@@ -15,22 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_init.h"
+#ifndef CLOCK_H
+#define CLOCK_H
 
-#include <stdlib.h>
+#include <stdbool.h>
 
-#include "bsp.h"
-#include "cmsis_os.h"
-#include "commands.h"
-#include "log/log.h"
-#include "os_serial_tty.h"
-#include "clock.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void app_task_init(void)
-{
-    configureTimerForRunTimeStats();
-     test_timers();
-    initialize_serial_console_hardware();
-    log_put(LOG_NOTICE, "Initializing");
-    commands_init();
+bool test_cpu_tick(void);
+bool test_hal_systick(void);
+bool test_timers(void);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // CLOCK_H

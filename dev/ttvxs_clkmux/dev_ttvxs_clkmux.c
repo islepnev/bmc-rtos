@@ -45,7 +45,7 @@ typedef union {
     uint8_t all;
 } clkmux_gpiob;
 
-void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -67,7 +67,7 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 
-void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
@@ -94,7 +94,7 @@ void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
     }
 }
 
-void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
