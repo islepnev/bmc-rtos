@@ -23,7 +23,7 @@
 
 #include "bus/bus_types.h"
 #include "dev_common_types.h"
-#include "devicelist.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {

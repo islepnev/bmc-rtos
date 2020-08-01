@@ -27,6 +27,7 @@
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "devicelist.h"
 
 osThreadId auxpllThreadId = NULL;
 enum { auxpllThreadStackSize = threadStackSize };

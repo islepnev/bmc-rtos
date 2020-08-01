@@ -26,7 +26,6 @@
 #include "cmsis_os.h"
 #include "commands.h"
 #include "debug_helpers.h"
-#include "devices.h"
 #include "led_gpio_hal.h"
 #include "log/log.h"
 #include "os_serial_tty.h"

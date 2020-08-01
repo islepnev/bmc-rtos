@@ -24,6 +24,7 @@
 #include "ansi_escape_codes.h"
 #include "dev_ad9545.h"
 #include "display.h"
+#include "devicelist.h"
 
 static const char *dev_ad9545_state_str(ad9545_state_t state)
 {

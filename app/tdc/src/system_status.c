@@ -20,6 +20,7 @@
 #include "ad9516/dev_auxpll_types.h"
 #include "app_task_powermon_impl.h"
 #include "digipot/dev_digipot_types.h"
+#include "devicelist.h"
 #include "fpga/dev_fpga.h"
 #include "powermon/dev_powermon.h"
 #include "sfpiic/dev_sfpiic.h"

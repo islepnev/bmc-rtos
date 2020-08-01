@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-#include "devicelist.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {

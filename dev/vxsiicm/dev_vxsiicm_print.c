@@ -22,7 +22,7 @@
 
 #include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"
-#include "devices.h"
+#include "devicelist.h"
 #include "display.h"
 
 void dev_vxsiicm_print(void)

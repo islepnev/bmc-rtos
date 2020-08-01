@@ -24,6 +24,7 @@
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "devicebase.h"
+#include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ipmi_sensors.h"

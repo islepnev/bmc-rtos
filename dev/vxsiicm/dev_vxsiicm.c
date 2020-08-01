@@ -24,7 +24,7 @@
 #include "debug_helpers.h"
 #include "dev_vxsiic_pp.h"
 #include "dev_vxsiicm_types.h"
-#include "devices.h"
+#include "devicelist.h"
 #include "ipmi_sensor_types.h"
 #include "log/log.h"
 #include "vxsiic_hal.h"

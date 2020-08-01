@@ -24,6 +24,7 @@
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "devicelist.h"
 #include "fpga/dev_fpga_types.h"
 
 osThreadId fpgaThreadId = NULL;

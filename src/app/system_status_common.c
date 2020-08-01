@@ -19,6 +19,7 @@
 
 #include "ad9545/dev_ad9545.h"
 #include "dev_common_types.h"
+#include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_types.h"
 

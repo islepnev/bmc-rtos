@@ -30,13 +30,13 @@
 #include "http_app.h"
 #include "http_app_log.h"
 
-#include "devices.h"
+#include "devicelist.h"
 #include "devices_types.h"
 #include "ipmi_sensor_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
-#include "vxsiicm/dev_vxsiicm_types.h"
 #include "version.h"
+#include "vxsiicm/dev_vxsiicm_types.h"
 
 #define RETURN_IF(x) { int ret = x; if (ret) return ret; }
 

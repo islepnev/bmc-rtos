@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include "bus/bus_types.h"
-#include "devicelist.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {

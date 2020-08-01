@@ -24,7 +24,7 @@
 
 #include "lwip/apps/snmp_table.h"
 #include "lwip/apps/snmp_scalar.h"
-#include "devices.h"
+#include "devicelist.h"
 #include "dev_common_types.h"
 #include "devices_types.h"
 #include "vxsiicm/dev_vxsiicm_types.h"

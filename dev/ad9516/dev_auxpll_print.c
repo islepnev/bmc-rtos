@@ -21,6 +21,7 @@
 
 #include "ansi_escape_codes.h"
 #include "dev_auxpll_types.h"
+#include "devicelist.h"
 #include "display.h"
 
 static char *auxpllStateStr(AuxPllState auxpllState)

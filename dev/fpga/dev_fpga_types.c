@@ -16,6 +16,7 @@
 */
 
 #include "dev_fpga_types.h"
+#include "devicelist.h"
 
 SensorStatus get_fpga_sensor_status(void)
 {

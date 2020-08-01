@@ -17,41 +17,22 @@
 
 #include "display_brief.h"
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
-#include <time.h>
 
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9545/ad9545_print.h"
 #include "ad9545/dev_ad9545_print.h"
-#include "ansi_escape_codes.h"
 #include "app_shared_data.h"
-#include "bsp_powermon.h"
-#include "clkmux/dev_clkmux.h"
-#include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "dev_common_types.h"
 #include "dev_digipot_print.h"
-#include "dev_mcu.h"
+#include "devicelist.h"
 #include "digipot/dev_digipot.h"
 #include "display.h"
-#include "display_boards.h"
-#include "display_brief.h"
 #include "display_common.h"
-#include "display_log.h"
-#include "display_tasks.h"
-#include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_print.h"
-#include "fpga/dev_fpga_types.h"
-#include "log/log.h"
-#include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon.h"
 #include "powermon/dev_powermon_display.h"
-#include "powermon/dev_powermon_types.h"
 #include "sfpiic/dev_sfpiic_print.h"
-#include "stm32f7xx_hal.h"
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
 

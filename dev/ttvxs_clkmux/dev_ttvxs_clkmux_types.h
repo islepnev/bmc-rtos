@@ -19,7 +19,8 @@
 #define DEV_TTVXS_CLKMUX_TYPES_H
 
 #include <stdint.h>
-#include "devicelist.h"
+
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {

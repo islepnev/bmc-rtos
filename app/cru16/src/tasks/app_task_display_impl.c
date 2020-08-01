@@ -54,8 +54,6 @@
 #include "powermon/dev_powermon_types.h"
 #include "rtc_util.h"
 #include "sfpiic/dev_sfpiic_print.h"
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_rtc.h"
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
 #include "version.h"

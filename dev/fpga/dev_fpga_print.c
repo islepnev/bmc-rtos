@@ -21,6 +21,7 @@
 
 #include "ansi_escape_codes.h"
 #include "display.h"
+#include "devicelist.h"
 
 void dev_fpga_print_box(void)
 {

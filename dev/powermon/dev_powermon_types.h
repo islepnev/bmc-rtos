@@ -22,7 +22,7 @@
 #include <stdbool.h>
 
 #include "bus/bus_types.h"
-#include "devicelist.h"
+#include "devicebase.h"
 #include "dev_pm_sensors_types.h"
 #include "bsp_powermon_types.h"
 

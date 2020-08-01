@@ -22,6 +22,7 @@
 #include "dev_auxpll.h"
 #include "dev_common_types.h"
 #include "devicebase.h"
+#include "devicelist.h"
 
 SensorStatus get_auxpll_sensor_status(void)
 {

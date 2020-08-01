@@ -25,6 +25,7 @@
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
 #include "dev_powermon_types.h"
+#include "devicelist.h"
 #include "gpio.h"
 #include "log/log.h"
 

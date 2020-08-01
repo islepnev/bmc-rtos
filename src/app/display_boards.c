@@ -22,7 +22,7 @@
 #include "ansi_escape_codes.h"
 #include "bsp.h"
 #include "devicelist_print.h"
-#include "devices.h"
+#include "devicelist.h"
 #include "display.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_display.h"

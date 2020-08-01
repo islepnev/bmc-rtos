@@ -20,8 +20,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "devicelist.h"
 #include "ad9516/ad9516_status.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {

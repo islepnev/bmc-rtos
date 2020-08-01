@@ -26,6 +26,7 @@
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "devicebase.h"
+#include "devicelist.h"
 #include "digipot/dev_digipot_fsm.h"
 #include "digipot/dev_digipot_types.h"
 #include "digipot/dev_digipot_types.h"

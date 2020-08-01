@@ -29,6 +29,7 @@
 #include "cru16_clkmux/dev_cru16_clkmux_fsm.h"
 #include "cru16_clkmux/dev_cru16_clkmux_types.h"
 #include "debug_helpers.h"
+#include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 

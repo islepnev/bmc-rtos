@@ -20,6 +20,7 @@
 #include "../ad9545/dev_ad9545.h"
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
+#include "devicelist.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"

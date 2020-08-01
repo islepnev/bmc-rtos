@@ -20,6 +20,7 @@
 #include "dev_sfpiic_ch.h"
 #include "dev_sfpiic_driver.h"
 #include "dev_sfpiic_types.h"
+#include "devicelist.h"
 #include "log/log.h"
 
 static bool dev_sfpiic_select_ch(uint8_t ch)

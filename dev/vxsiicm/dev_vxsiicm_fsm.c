@@ -21,7 +21,6 @@
 #include "debug_helpers.h"
 #include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"
-#include "devices.h"
 #include "log/log.h"
 
 static const uint32_t ERROR_DELAY_TICKS = 3000;

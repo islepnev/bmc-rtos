@@ -21,7 +21,7 @@
 
 #include "bus/bus_types.h"
 #include "dev_ad9545_fsm.h"
-#include "devicelist.h"
+#include "devicebase.h"
 #include "ad9545/ad9545_setup_regs.h"
 #include "ad9545/ad9545_status_regs.h"
 

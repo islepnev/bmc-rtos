@@ -28,6 +28,7 @@
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
+#include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"

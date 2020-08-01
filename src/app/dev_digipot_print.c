@@ -23,6 +23,7 @@
 #include "bsp_powermon.h"
 #include "commands_digipot.h"
 #include "devicebase.h"
+#include "devicelist.h"
 #include "digipot/dev_digipot_types.h"
 #include "display.h"
 #include "powermon/dev_powermon_display.h"
