@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "app_task_clkmux_impl.h"
+#include "dev_ttvxs_clkmux_fsm.h"
 
 #include "app_shared_data.h"
 #include "cmsis_os.h"

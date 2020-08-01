@@ -15,28 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_fpga_print.h"
+#include "display_sensors.h"
 
-#include <stdio.h>
-
-#include "ansi_escape_codes.h"
-#include "dev_fpga_types.h"
-#include "devicelist.h"
+#include "bsp_sensors_config.h"
 #include "display.h"
+#include "powermon/dev_powermon_display.h"
+#include "powermon/dev_powermon_types.h"
 
-void dev_fpga_print_box(void)
+const int DISPLAY_SENSORS_HEIGHT = (POWERMON_SENSORS+2);
+
+void print_sensors(int y)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d || !d->priv)
-        return;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-
-    printf("FPGA %s",
-           priv->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
-    if (priv->initb && !priv->done)
-        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
-    if (priv->done)
-        printf("%04X", priv->id);
-    printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
-    print_clear_eol();
+    const PmState pmState = get_powermon_state();
+    if (pmState == PM_STATE_INIT) {
+        print_clearbox(y, DISPLAY_SENSORS_HEIGHT);
+    } else {
+        print_goto(y, 1);
+        print_sensors_box();
+    }
 }

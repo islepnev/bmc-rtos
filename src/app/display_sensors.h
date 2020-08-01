@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_CLKMUX_IMPL_H
-#define APP_TASK_CLKMUX_IMPL_H
+#ifndef DISPLAY_SENSORS_H
+#define DISPLAY_SENSORS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern const int DISPLAY_SENSORS_HEIGHT;
 
-struct Dev_ttvxs_clkmux;
-void dev_ttvxs_clkmux_run(struct Dev_ttvxs_clkmux *d);
+void print_sensors(int y);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif // APP_TASK_CLKMUX_IMPL_H
+#endif // DISPLAY_SENSORS_H

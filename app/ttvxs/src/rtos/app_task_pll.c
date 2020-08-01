@@ -23,7 +23,6 @@
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
 #include "app_shared_data.h"
-#include "app_task_clkmux_impl.h"
 #include "app_tasks.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
@@ -31,6 +30,7 @@
 #include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
+#include "ttvxs_clkmux/dev_ttvxs_clkmux_fsm.h"
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 
 osThreadId pllThreadId = NULL;

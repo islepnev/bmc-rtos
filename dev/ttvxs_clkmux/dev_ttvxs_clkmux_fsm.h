@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,17 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_FPGA_PRINT_H
-#define DEV_FPGA_PRINT_H
+#ifndef DEV_TTVXS_CLKMUX_FSM_H
+#define DEV_TTVXS_CLKMUX_FSM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void dev_fpga_print_box(void);
+struct Dev_ttvxs_clkmux;
+void dev_ttvxs_clkmux_run(struct Dev_ttvxs_clkmux *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_FPGA_PRINT_H
+#endif // DEV_TTVXS_CLKMUX_FSM_H

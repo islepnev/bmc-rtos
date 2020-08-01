@@ -27,7 +27,6 @@ extern "C" {
 #endif
 
 #define DISPLAY_POWERMON_H 3
-#define DISPLAY_SENSORS_H (POWERMON_SENSORS+2)
 
 struct pm_sensor;
 const char *sensor_status_str(SensorStatus status);

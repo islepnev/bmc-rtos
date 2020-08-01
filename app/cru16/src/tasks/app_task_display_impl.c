@@ -19,44 +19,27 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 #include "ad9516/dev_auxpll_print.h"
-#include "ad9516/dev_auxpll_types.h"
-#include "ad9545/ad9545_print.h"
 #include "ad9545/dev_ad9545_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
-#include "bsp_powermon.h"
 #include "cmsis_os.h"
-#include "cru16_clkmux/dev_cru16_clkmux.h"
-#include "cru16_clkmux/dev_cru16_clkmux_types.h"
-#include "debug_helpers.h"
-#include "dev_common_types.h"
 #include "dev_digipot_print.h"
-#include "dev_mcu.h"
-#include "devices_types.h"
-#include "digipot/dev_digipot.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_brief.h"
 #include "display_common.h"
 #include "display_log.h"
+#include "display_sensors.h"
 #include "display_tasks.h"
-#include "eeprom_config/dev_eeprom_config.h"
 #include "fpga/dev_fpga_print.h"
-#include "fpga/dev_fpga_types.h"
-#include "log/log.h"
-#include "powermon/dev_pm_sensors_types.h"
-#include "powermon/dev_powermon.h"
 #include "powermon/dev_powermon_display.h"
-#include "powermon/dev_powermon_types.h"
 #include "rtc_util.h"
 #include "sfpiic/dev_sfpiic_print.h"
-#include "system_status.h"
 #include "thset/dev_thset_print.h"
-#include "version.h"
+#include "vxsiicm/dev_vxsiicm_print.h"
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 1000;
 const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
@@ -74,7 +57,7 @@ static void devPrintStatus(void)
 #define DISPLAY_POWERMON_Y (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H)
 #define DISPLAY_SENSORS_Y (0 + DISPLAY_POWERMON_Y + DISPLAY_POWERMON_H)
 #define DISPLAY_TEMP_H 1
-#define DISPLAY_TEMP_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_H)
+#define DISPLAY_TEMP_Y (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_HEIGHT)
 #define DISPLAY_MAIN_Y (0 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y)
 #define DISPLAY_MAIN_H 3
 #define DISPLAY_CLKMUX_Y (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H)
@@ -94,16 +77,6 @@ static void devPrintStatus(void)
 #define DISPLAY_AUXPLL_DETAIL_Y (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1)
 #define DISPLAY_AUXPLL_DETAIL_H 3
 
-static void print_sensors(void)
-{
-    const PmState pmState = get_powermon_state();
-    if (pmState == PM_STATE_INIT) {
-        print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_SENSORS_H);
-    } else {
-        print_goto(DISPLAY_SENSORS_Y, 1);
-        print_sensors_box();
-    }
-}
 
 static void print_main(void)
 {
@@ -125,7 +98,7 @@ static void display_summary(void)
     print_system_status(DISPLAY_SYS_STATUS_Y);
     print_powermon(DISPLAY_POWERMON_Y);
     if (enable_stats_display) {
-        print_sensors();
+        print_sensors(DISPLAY_SENSORS_Y);
     }
     print_thset(DISPLAY_TEMP_Y);
     print_main();
