@@ -21,20 +21,24 @@
 
 const char *potLabel(PotIndex index)
 {
+    (void)index;
     return "";
 }
 
 int potBusNumber(PotIndex index)
 {
+    (void)index;
     return 0;
 }
 
 int potBusAddress(PotIndex index)
 {
+    (void)index;
     return 0;
 }
 
 int potSensorIndex(PotIndex index)
 {
+    (void)index;
     return 0;
 }

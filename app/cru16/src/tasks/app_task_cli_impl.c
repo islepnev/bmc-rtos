@@ -54,9 +54,11 @@ void cycle_display_mode(void)
 
 void screen_handle_key(char ch)
 {
+    (void)ch;
 }
 
 bool app_handle_escape_seq(const char *str)
 {
+    (void)str;
     return false;
 }

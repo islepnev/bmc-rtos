@@ -34,6 +34,7 @@ const char *potLabel(PotIndex index)
 
 int potBusNumber(PotIndex index)
 {
+    (void)index;
     return 4;
 }
 
