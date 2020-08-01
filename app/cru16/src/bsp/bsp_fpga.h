@@ -18,13 +18,13 @@
 #ifndef BSP_FPGA_H
 #define BSP_FPGA_H
 
-#include <stdbool.h>
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool fpgaWriteSensors(void);
+extern sensor_list_t fpga_sensor_map;
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,8 @@
 #include "gpio.h"
 #include "logbuffer.h"
 #include "spi.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 
 static void DEBUG_PRINT_RET(const char *func, int ret)
 {

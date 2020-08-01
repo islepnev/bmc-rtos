@@ -22,6 +22,8 @@
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
 #include "stm32f7xx_hal_gpio.h"
+#include "stm32f7xx_hal_def.h"
+#include "stm32f7xx_hal_dma.h"
 #include "stm32f7xx_hal_spi.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_cortex.h"
@@ -32,7 +34,7 @@ SPI_HandleTypeDef hspi3 = {0};
 SPI_HandleTypeDef hspi4 = {0};
 SPI_HandleTypeDef hspi5 = {0};
 
-void MX_SPI2_Init(void)
+static void MX_SPI2_Init(void)
 {
     hspi2.Instance = SPI2;
     hspi2.Init.Mode = SPI_MODE_MASTER;
@@ -73,7 +75,7 @@ void MX_SPI2_Init(void)
 // PF9     ------> SPI5_MOSI
 // PF8     ------> SPI5_MISO
 
-void MX_SPI5_Init(void)
+static void MX_SPI5_Init(void)
 {
     hspi5.Instance = SPI5;
     hspi5.Init.Mode = SPI_MODE_MASTER;
@@ -94,7 +96,7 @@ void MX_SPI5_Init(void)
     }
 }
 
-void SPI2_synchronize(void)
+static void SPI2_synchronize(void)
 {
     __HAL_RCC_GPIOI_CLK_ENABLE();
 
@@ -122,6 +124,12 @@ void SPI2_synchronize(void)
     HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
     HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
     HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
+}
+
+void MX_SPI_Init(void)
+{
+    MX_SPI2_Init();
+    MX_SPI5_Init();
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)

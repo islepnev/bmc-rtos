@@ -33,6 +33,12 @@ typedef enum {
     SENSOR_CRITICAL = 3
 } SensorStatus;
 
+enum {sensor_index_list_size = 8};
+typedef struct sensor_list_t {
+    int count;
+    int indices[sensor_index_list_size];
+} sensor_list_t;
+
 typedef union
 {
   struct

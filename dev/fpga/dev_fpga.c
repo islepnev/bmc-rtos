@@ -18,6 +18,7 @@
 #include "dev_fpga.h"
 
 #include "../ad9545/dev_ad9545.h"
+#include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "thset/dev_thset_types.h"
 #include "devices_types.h"
@@ -30,61 +31,65 @@
 
 static uint16_t live_magic = 0x55AA;
 
-static bool fpga_test_reg(uint16_t addr, uint16_t wdata, uint16_t *rdata)
+static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
-    return fpga_spi_hal_write_reg(addr, wdata) &&
-           fpga_spi_hal_read_reg(addr, rdata) &&
+    BusInterface *bus = &dev->bus;
+    return fpga_spi_hal_write_reg(bus, addr, wdata) &&
+           fpga_spi_hal_read_reg(bus, addr, rdata) &&
            rdata &&
            (wdata == *rdata);
 }
 
-static void fpga_write_live_magic(void)
+static void fpga_write_live_magic(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     live_magic++;
     uint16_t wdata1 = live_magic;
     uint16_t wdata2 = ~live_magic;
-    fpga_spi_hal_write_reg(addr1, wdata1);
-    fpga_spi_hal_write_reg(addr2, wdata2);
+    fpga_spi_hal_write_reg(bus, addr1, wdata1);
+    fpga_spi_hal_write_reg(bus, addr2, wdata2);
 }
 
-bool fpga_check_live_magic(void)
+bool fpga_check_live_magic(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t rdata1 = 0, rdata2 = 0;
-    fpga_spi_hal_read_reg(addr1, &rdata1);
-    fpga_spi_hal_read_reg(addr2, &rdata2);
+    fpga_spi_hal_read_reg(bus, addr1, &rdata1);
+    fpga_spi_hal_read_reg(bus, addr2, &rdata2);
     uint16_t test1 = live_magic;
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
         log_put(LOG_ERR, "FPGA register contents unexpectedly changed");
         return false;
     }
-    fpga_write_live_magic();
+    fpga_write_live_magic(dev);
     return true;
 }
 
-bool fpga_test(void)
+bool fpga_test(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
-    if (! fpga_spi_hal_write_reg(addr1, wdata1))
+    if (! fpga_spi_hal_write_reg(bus, addr1, wdata1))
         goto err;
-    if (! fpga_spi_hal_write_reg(addr2, wdata2))
+    if (! fpga_spi_hal_write_reg(bus, addr2, wdata2))
         goto err;
-    if (! fpga_spi_hal_read_reg(addr1, &rdata1))
+    if (! fpga_spi_hal_read_reg(bus, addr1, &rdata1))
         goto err;
-    if (! fpga_spi_hal_read_reg(addr2, &rdata2))
+    if (! fpga_spi_hal_read_reg(bus, addr2, &rdata2))
         goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
         log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
-        fpga_write_live_magic();
+        fpga_write_live_magic(dev);
         return true;
     }
     log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
@@ -97,9 +102,10 @@ err:
 
 bool fpgaDetect(Dev_fpga *d)
 {
+    BusInterface *bus = &d->dev.bus;
     int err = 0;
     for (int i=0; i<FPGA_REG_COUNT; i++) {
-        if (! fpga_spi_hal_read_reg(i, &d->priv.regs[i])) {
+        if (! fpga_spi_hal_read_reg(bus, i, &d->priv.regs[i])) {
             err++;
             break;
         }
@@ -123,17 +129,19 @@ bool fpgaDetect(Dev_fpga *d)
     return DEVICE_NORMAL == d->dev.device_status;
 }
 
-bool fpgaWriteBmcVersion(void)
+bool fpgaWriteBmcVersion(DeviceBase *dev)
 {
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
+    BusInterface *bus = &dev->bus;
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
         return false;
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
         return false;
     return true;
 }
 
-bool fpgaWriteBmcTemperature(void)
+bool fpgaWriteBmcTemperature(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p)
         return false;
@@ -142,14 +150,15 @@ bool fpgaWriteBmcTemperature(void)
         int16_t v = (i < p->count && p->sensors[i].hdr.b.state == DEVICE_NORMAL)
                         ? (p->sensors[i].value * 32)
                         : 0x8000;
-        if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_3 + i, v))
+        if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_3 + i, v))
             return false;
     }
     return true;
 }
 
-bool fpgaWritePllStatus(void)
+bool fpgaWritePllStatus(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
@@ -162,22 +171,50 @@ bool fpgaWritePllStatus(void)
         if (priv->status.sysclk.b.pll0_locked)
             data |= 0x1;
     }
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_1, data))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, data))
         return false;
     return true;
 }
 
-bool fpgaWriteSystemStatus(void)
+bool fpgaWriteSystemStatus(DeviceBase *dev)
 {
+    BusInterface *bus = &dev->bus;
     uint16_t data = 0;
     data = getSystemStatus();
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_A, data))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_A, data))
         return false;
     data = getPowermonStatus();
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_B, data))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_B, data))
         return false;
     data = getPllStatus();
-    if (! fpga_spi_hal_write_reg(FPGA_SPI_ADDR_C, data))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_C, data))
         return false;
     return true;
+}
+
+static bool fpgaWriteSensorsByIndex(DeviceBase *dev, int *indices, int count)
+{
+    const Dev_powermon_priv *p = get_powermon_priv_const();
+    if (!p)
+        return false;
+    const pm_sensors_arr *sensors = &p->sensors;
+    BusInterface *bus = &dev->bus;
+    uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
+
+    for (int i=0; i<count; i++) {
+        SensorIndex index = (SensorIndex)indices[i];
+        const pm_sensor_priv *p = &sensors->arr[index].priv;
+        if (!fpga_spi_hal_write_reg(bus, address++,
+                                    (int16_t)(p->busVoltage * 1000)) &&
+            fpga_spi_hal_write_reg(bus, address++,
+                                   (int16_t)(p->current * 1000)))
+            return false;
+    }
+    return true;
+}
+
+bool fpgaWriteSensors(DeviceBase *dev)
+{
+    return fpgaWriteSensorsByIndex(
+        dev, fpga_sensor_map.indices, fpga_sensor_map.count);
 }

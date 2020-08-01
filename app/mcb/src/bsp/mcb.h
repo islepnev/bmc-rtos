@@ -22,8 +22,9 @@
 extern "C" {
 #endif
 
-int get_mcb_pcb_ver(void);
+#define FPGA_SPI_BUS_INDEX 5
 
+int get_mcb_pcb_ver(void);
 
 #ifdef __cplusplus
 }

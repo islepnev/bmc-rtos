@@ -25,7 +25,8 @@
 #include "impl/spi_driver_util.h"
 #include "log/logbuffer.h"
 #include "spi.h"
-
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 
 #define USE_INTERRUPT_MODE_SPI
 
@@ -88,3 +89,19 @@ HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf
     return ret;
 }
 #endif
+
+void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable)
+{
+    int dev_index = hspi_index(hspi);
+    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+        return;
+    if (enable) {
+        log_printf(LOG_CRIT, "Enabling FPGA SPI");
+        HAL_SPI_MspInit(hspi);
+    } else {
+        log_printf(LOG_CRIT, "Disabling FPGA SPI");
+        // HAL_SPI_Abort(hspi);
+        HAL_SPI_MspDeInit(hspi);
+    }
+    spi_driver_release_dev_sem(dev_index);
+}

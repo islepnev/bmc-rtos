@@ -34,7 +34,8 @@ extern "C" {
 //#define hi2c_sensors hi2c4
 #define hi2c_sfpiic hi2c4
 
-#define fpga_spi hspi1
+#define FPGA_SPI_BUS_INDEX 1
+
 #define ad9516_spi hspi4
 #define therm_spi hspi4
 

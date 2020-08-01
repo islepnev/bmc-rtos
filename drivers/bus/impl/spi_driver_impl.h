@@ -21,7 +21,7 @@
 #define SPI_DRIVER_IMPL_H
 
 #include <stdbool.h>
-#include "stm32f7xx_hal_def.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

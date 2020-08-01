@@ -28,8 +28,20 @@ extern "C" {
 
 enum {FPGA_REG_COUNT = 8};
 
+typedef enum {
+    FPGA_STATE_STANDBY,
+    FPGA_STATE_LOAD,
+    FPGA_STATE_RESET,
+    FPGA_STATE_RUN,
+    FPGA_STATE_PAUSE,
+    FPGA_STATE_ERROR
+} fpga_state_t;
+
 typedef struct Dev_fpga_priv {
     uint16_t regs[FPGA_REG_COUNT];
+    fpga_state_t state;
+    uint32_t fpga_load_start_tick;
+    uint32_t stateStartTick;
     uint8_t initb;
     uint8_t done;
     uint16_t id;

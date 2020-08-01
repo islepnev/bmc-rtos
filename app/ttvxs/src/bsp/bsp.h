@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "mcb.h"
+
 #define BOARD_TTVXS 1
 
 #define LED_HEARTBEAT LED_INT_GREEN
@@ -38,7 +40,6 @@ extern "C" {
 //#define ad9545_deviceAddr 0x4A
 //#define eeprom_cfg_deviceAddr 0x50
 
-#define fpga_spi hspi5
 #ifdef TTVXS_1_0
 #define therm_spi hspi2
 #else

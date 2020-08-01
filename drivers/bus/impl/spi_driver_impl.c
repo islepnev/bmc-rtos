@@ -27,6 +27,8 @@
 #include "error_handler.h"
 #include "spi.h"
 #include "spi_driver_util.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 #include "stm32f7xx_ll_spi.h"
 
 /*

@@ -18,6 +18,8 @@
 #include "app_task_fpga.h"
 
 #include <stdint.h>
+
+#include "bsp.h"
 #include "cmsis_os.h"
 #include "app_tasks.h"
 #include "debug_helpers.h"
@@ -30,7 +32,7 @@ static const uint32_t fpgaTaskLoopDelay = 10;
 
 static BusInterface fpga_bus_info = {
     .type = BUS_SPI,
-    .bus_number = 0, // FIXME
+    .bus_number = FPGA_SPI_BUS_INDEX,
     .address = 0
 };
 

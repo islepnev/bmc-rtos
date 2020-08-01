@@ -24,6 +24,8 @@
 #include "bsp_pin_defs.h"
 #include "logbuffer.h"
 #include "cmsis_os.h"
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
 
 static const int SPI_TIMEOUT_MS = 500;
 

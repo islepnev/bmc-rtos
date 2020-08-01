@@ -19,21 +19,22 @@
 #define DEV_FPGA_H
 
 #include <stdbool.h>
-#include "dev_common_types.h"
+
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct Dev_fpga;
-
 bool fpgaDetect(struct Dev_fpga *d);
-bool fpga_check_live_magic(void);
-bool fpga_test(void);
-bool fpgaWriteBmcVersion(void);
-bool fpgaWriteBmcTemperature(void);
-bool fpgaWritePllStatus(void);
-bool fpgaWriteSystemStatus(void);
+bool fpga_check_live_magic(DeviceBase *dev);
+bool fpga_test(DeviceBase *dev);
+bool fpgaWriteBmcVersion(DeviceBase *dev);
+bool fpgaWriteBmcTemperature(DeviceBase *dev);
+bool fpgaWritePllStatus(DeviceBase *dev);
+bool fpgaWriteSystemStatus(DeviceBase *dev);
+bool fpgaWriteSensors(DeviceBase *dev);
 
 #ifdef __cplusplus
 }

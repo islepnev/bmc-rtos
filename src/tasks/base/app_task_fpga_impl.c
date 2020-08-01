@@ -38,31 +38,17 @@ static const uint32_t DETECT_DELAY_TICKS = 100;
 static const uint32_t ERROR_DELAY_TICKS = 1000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-typedef enum {
-    FPGA_STATE_STANDBY,
-    FPGA_STATE_LOAD,
-    FPGA_STATE_RESET,
-    FPGA_STATE_RUN,
-    FPGA_STATE_PAUSE,
-    FPGA_STATE_ERROR,
-} fpga_state_t;
 
-static fpga_state_t state = FPGA_STATE_STANDBY;
-
-static uint32_t fpga_load_start_tick = 0;
-
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(Dev_fpga_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 static int old_fpga_done = -1;
-static int old_fpga_ok = -1;
 
 void fpga_task_run(Dev_fpga *d)
 {
-    const fpga_state_t old_state = state;
+    const fpga_state_t old_state = d->priv.state;
     if (fpga_done_pin_present()) {
         d->priv.initb = read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
         d->priv.done = read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
@@ -84,53 +70,53 @@ void fpga_task_run(Dev_fpga *d)
     if (old_fpga_done != fpga_done) {
         old_fpga_done = fpga_done;
         if (fpga_done)
-            fpga_enable_interface();
+            fpga_enable_interface(&d->dev.bus);
         else
-            fpga_disable_interface();
+            fpga_disable_interface(&d->dev.bus);
     }
-    switch (state) {
+    switch (d->priv.state) {
     case FPGA_STATE_STANDBY:
-        if (fpga_enable) {
-            state = FPGA_STATE_LOAD;
-            fpga_load_start_tick = osKernelSysTick();
-        }
         d->dev.device_status = DEVICE_UNKNOWN;
-        Dev_fpga_priv zz = {0};
-        d->priv = zz;
+//        Dev_fpga_priv zz = {0};
+//        d->priv = zz;
+        if (fpga_enable) {
+            d->priv.state = FPGA_STATE_LOAD;
+            d->priv.fpga_load_start_tick = osKernelSysTick();
+        }
         break;
     case FPGA_STATE_LOAD:
         if (!fpga_enable) {
-            state = FPGA_STATE_STANDBY;
+            d->priv.state = FPGA_STATE_STANDBY;
             break;
         }
         if (fpga_done) {
             if (fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / osKernelSysTickFrequency;
-                const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
+                const uint32_t ticks = osKernelSysTick() - d->priv.fpga_load_start_tick;
                 if (fpga_loaded)
                     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
-            state = FPGA_STATE_RESET;
+            d->priv.state = FPGA_STATE_RESET;
             break;
         }
-        if (stateTicks() > LOAD_DELAY_TICKS) {
+        if (stateTicks(&d->priv) > LOAD_DELAY_TICKS) {
             log_put(LOG_ERR, "FPGA load timeout");
-            state = FPGA_STATE_ERROR;
+            d->priv.state = FPGA_STATE_ERROR;
         }
         break;
     case FPGA_STATE_RESET:
         if (!fpga_power_present) {
-            state = FPGA_STATE_STANDBY;
+            d->priv.state = FPGA_STATE_STANDBY;
             break;
         }
         if (1
                 && DEVICE_NORMAL == fpgaDetect(d)
-                && DEVICE_NORMAL == fpga_test()
+                && DEVICE_NORMAL == fpga_test(&d->dev)
                 ) {
-            state = FPGA_STATE_RUN;
+            d->priv.state = FPGA_STATE_RUN;
             if (! fpga_done_pin_present()) {
                 const uint32_t tick_freq_hz = 1000U / osKernelSysTickFrequency;
-                const uint32_t ticks = osKernelSysTick() - fpga_load_start_tick;
+                const uint32_t ticks = osKernelSysTick() - d->priv.fpga_load_start_tick;
                 if (fpga_loaded)
                     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
@@ -139,51 +125,51 @@ void fpga_task_run(Dev_fpga *d)
             uint32_t detect_timeout = DETECT_DELAY_TICKS;
             if (! fpga_done_pin_present())
                 detect_timeout += LOAD_DELAY_TICKS;
-            if (stateTicks() > detect_timeout) {
+            if (stateTicks(&d->priv) > detect_timeout) {
                 // log_put(LOG_ERR, "FPGA detect timeout");
-                state = FPGA_STATE_STANDBY;
+                d->priv.state = FPGA_STATE_STANDBY;
             }
         }
         break;
     case FPGA_STATE_RUN:
         if (!fpga_power_present) {
-            state = FPGA_STATE_STANDBY;
+            d->priv.state = FPGA_STATE_STANDBY;
             break;
         }
         if (!fpga_done)
-            state = FPGA_STATE_STANDBY;
-        if ((!fpga_check_live_magic()) ||
-            (!fpgaWriteBmcVersion()) ||
-            (!fpgaWriteBmcTemperature()) ||
-            (!fpgaWritePllStatus()) ||
-            (!fpgaWriteSystemStatus()) ||
-            (!fpgaWriteSensors())
+            d->priv.state = FPGA_STATE_STANDBY;
+        if ((!fpga_check_live_magic(&d->dev)) ||
+            (!fpgaWriteBmcVersion(&d->dev)) ||
+            (!fpgaWriteBmcTemperature(&d->dev)) ||
+            (!fpgaWritePllStatus(&d->dev)) ||
+            (!fpgaWriteSystemStatus(&d->dev)) ||
+            (!fpgaWriteSensors(&d->dev))
             ) {
             log_printf(LOG_ERR, "FPGA SPI error");
-            state = FPGA_STATE_ERROR;
+            d->priv.state = FPGA_STATE_ERROR;
             break;
         }
-        state = FPGA_STATE_PAUSE;
+        d->priv.state = FPGA_STATE_PAUSE;
         break;
     case FPGA_STATE_PAUSE:
         if (!fpga_done)
-            state = FPGA_STATE_STANDBY;
-        if (stateTicks() > POLL_DELAY_TICKS) {
-            state = FPGA_STATE_RUN;
+            d->priv.state = FPGA_STATE_STANDBY;
+        if (stateTicks(&d->priv) > POLL_DELAY_TICKS) {
+            d->priv.state = FPGA_STATE_RUN;
         }
         break;
     case FPGA_STATE_ERROR:
         if (old_state != FPGA_STATE_ERROR)
             log_printf(LOG_ERR, "FPGA error");
         d->dev.device_status = DEVICE_FAIL;
-        if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = FPGA_STATE_STANDBY;
+        if (stateTicks(&d->priv) > ERROR_DELAY_TICKS) {
+            d->priv.state = FPGA_STATE_STANDBY;
         }
         break;
     default:
         break;
     }
-    if (old_state != state) {
-        stateStartTick = osKernelSysTick();
+    if (old_state != d->priv.state) {
+        d->priv.stateStartTick = osKernelSysTick();
     }
 }

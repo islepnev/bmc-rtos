@@ -15,45 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bsp.h"
 #include "bsp_fpga.h"
 
-#include "fpga_spi_hal.h"
 #include "dev_pm_sensors_config.h"
-#include "powermon/dev_powermon_types.h"
 
-bool fpgaWriteSensors(void)
-{
-    const Dev_powermon_priv *p = get_powermon_priv_const();
-    if (!p)
-        return false;
-    const pm_sensors_arr *sensors = &p->sensors;
-    uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_A].priv.current * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_B].priv.current * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_C].priv.current * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_5V].priv.current * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_VME_3V3].priv.current * 1000)))
-        return false;
-#ifdef BOARD_TDC64
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.busVoltage * 1000)))
-        return false;
-    if (! fpga_spi_hal_write_reg(address++, (int16_t)(sensors->arr[SENSOR_TDC_D].priv.current * 1000)))
-    return false;
-#endif
-    return true;
-}
+sensor_list_t fpga_sensor_map = {
+    .count = 6,
+    .indices = {
+        SENSOR_TDC_A,
+        SENSOR_TDC_B,
+        SENSOR_TDC_C,
+        SENSOR_VME_5V,
+        SENSOR_VME_3V3,
+        SENSOR_TDC_D
+    }
+};

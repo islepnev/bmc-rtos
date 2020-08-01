@@ -24,19 +24,16 @@
 extern "C" {
 #endif
 
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
+struct __SPI_HandleTypeDef;
+extern struct __SPI_HandleTypeDef hspi1;
+extern struct __SPI_HandleTypeDef hspi2;
+extern struct __SPI_HandleTypeDef hspi3;
+extern struct __SPI_HandleTypeDef hspi4;
+extern struct __SPI_HandleTypeDef hspi5;
 
-extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
-extern SPI_HandleTypeDef hspi3;
-extern SPI_HandleTypeDef hspi4;
-extern SPI_HandleTypeDef hspi5;
-
-void MX_SPI2_Init(void);
-void MX_SPI5_Init(void);
-
-void SPI2_synchronize(void);
+void MX_SPI_Init(void);
+void HAL_SPI_MspInit(struct __SPI_HandleTypeDef* spiHandle);
+void HAL_SPI_MspDeInit(struct __SPI_HandleTypeDef* spiHandle);
 
 #ifdef __cplusplus
 }
