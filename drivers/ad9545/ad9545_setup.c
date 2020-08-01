@@ -25,7 +25,7 @@ static const uint8_t sysclk_fb_div = 31;
 
 double sysclkVcoFreq(void)
 {
-    return SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
+    return (double)SYSCLK_REF_FREQ_MILLIHZ * sysclk_fb_div * 2 / 1000;
 }
 static const double sysclk_rel_offset = 0; // -2.5e-6;
 
@@ -95,7 +95,7 @@ void find_fraction(double r, int *pa, int *pb)
 {
     double min = 1;
     for (int b=1; b<100; b++) {
-        int a = round(r * b);
+        int a = lround(r * b);
         double diff = fabs(r - 1.0 * a / b);
         if (diff < min) {
             min = diff;

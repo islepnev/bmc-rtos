@@ -67,24 +67,12 @@ static void log_sensor_status(const pm_sensor *p)
     const pm_sensor_priv *sensor = &p->priv;
     enum { size = 50 };
     static char str[size];
-    const double volt = sensor->busVoltage;
-    const int volt_int = volt;
-    int volt_frac = 1000 * (volt - volt_int);
-    if (volt_frac < 0) volt_frac = -volt_frac;
-    double curr = sensor->current;
-    int neg = (curr < 0);
-    if (neg) curr = -curr;
-    const int curr_int = curr;
-    int curr_frac = 1000 * (curr - curr_int);
     if (p->dev.sensor != SENSOR_UNKNOWN)
-        snprintf(str, size, "%s %s, %d.%03d V, %s%d.%03d A",
+        snprintf(str, size, "%s %s, %.3f V, %.3f A",
                  sensor->label,
                  sensor_status_text(status),
-                 volt_int,
-                 volt_frac,
-                 neg?"-":"",
-                 curr_int,
-                 curr_frac
+                 sensor->busVoltage,
+                 sensor->current
                  );
     else
         snprintf(str, size, "%s %s",

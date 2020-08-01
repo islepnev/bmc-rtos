@@ -148,7 +148,7 @@ void display_task_run(void)
     uint32_t tick = osKernelSysTick();
     struct tm tm;
     get_rtc_tm(&tm);
-    int time_updated = old_tm.tm_sec != tm.tm_sec;
+    // int time_updated = old_tm.tm_sec != tm.tm_sec;
     if (tick > old_tick + DISPLAY_REFRESH_TIME_MS)
         schedule_display_refresh();
     const bool repaint_flag = read_display_repaint();

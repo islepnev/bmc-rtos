@@ -53,7 +53,7 @@ static int sfp_old_present[SFPIIC_CH_CNT] = {0};
 
 DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
-    for(uint8_t ch=0; ch<SFPIIC_CH_CNT; ++ch) {
+    for(int ch=0; ch<SFPIIC_CH_CNT; ++ch) {
         if (! dev_sfpiic_select_ch(ch)) {
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
