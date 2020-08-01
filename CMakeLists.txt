@@ -125,7 +125,7 @@ TARGET_LINK_LIBRARIES(${ELF} lwip)
 include_directories(
     ${MY_SRC_DIR}/config
     ${MY_SRC_DIR}/system
-    ${MY_SRC_DIR}/common/log
+    ${MY_SRC_DIR}/common
 )
 
 
