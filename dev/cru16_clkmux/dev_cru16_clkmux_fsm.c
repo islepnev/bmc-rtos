@@ -49,7 +49,7 @@ static void struct_vxs_i2c_init(Dev_cru16_clkmux *d)
     d->priv.pll_source = CRU16_PLL_SOURCE_DIV3;
 }
 
-void task_clkmux_run(Dev_cru16_clkmux *d)
+void dev_cru16_clkmux_run(Dev_cru16_clkmux *d)
 {
     if (!enable_power || !system_power_present) {
         state = CLKMUX_STATE_RESET;

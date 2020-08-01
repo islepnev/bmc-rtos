@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 struct Dev_cru16_clkmux;
-void task_clkmux_run(struct Dev_cru16_clkmux *d);
+void dev_cru16_clkmux_run(struct Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }

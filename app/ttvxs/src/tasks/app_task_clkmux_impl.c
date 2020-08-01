@@ -49,7 +49,7 @@ static void struct_vxs_i2c_init(Dev_ttvxs_clkmux *d)
     d->priv.pll_source = TTVXS_PLL_SOURCE_DIV3;
 }
 
-void task_clkmux_run(Dev_ttvxs_clkmux *d)
+void dev_ttvxs_clkmux_run(Dev_ttvxs_clkmux *d)
 {
     if (!enable_power || !system_power_present) {
         state = CLKMUX_STATE_RESET;

@@ -27,6 +27,8 @@ extern "C" {
 DeviceStatus getDeviceStatus(void);
 SensorStatus getSystemStatus(void);
 
+encoded_system_status_t encode_system_status(void);
+
 #ifdef __cplusplus
 }
 #endif

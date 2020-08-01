@@ -76,7 +76,7 @@ static void pllTask(void const *arg)
 
     while(1) {
         dev_eeprom_config_run(&eeprom);
-        task_clkmux_run(&clkmux);
+        dev_cru16_clkmux_run(&clkmux);
         bool power_on = enable_power && system_power_present;
         dev_ad9545_run(&pll, power_on);
         osDelay(pllTaskLoopDelay);

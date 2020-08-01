@@ -33,6 +33,19 @@ DeviceStatus getDeviceStatus(void)
     return status;
 }
 
+encoded_system_status_t encode_system_status(void)
+{
+    encoded_system_status_t code;
+    code.w = 0;
+    code.b.system = getSystemStatus() & 0xF;
+    code.b.pm =  getPowermonStatus() & 0xF;
+    code.b.therm = dev_thset_thermStatus() & 0xF;
+    code.b.sfpiic = get_sfpiic_sensor_status() & 0xF;
+    code.b.fpga = getFpgaStatus() & 0xF;
+    code.b.pll = getPllStatus() & 0xF;
+    return code;
+}
+
 //SensorStatus get_vxsiicm_sensor_status(const Devices *d)
 //{
 //    if (d->vxsiicm.dev.device_status != DEVICE_NORMAL)
