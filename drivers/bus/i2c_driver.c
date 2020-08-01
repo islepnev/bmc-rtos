@@ -19,6 +19,8 @@
 
 #include "i2c_driver.h"
 
+#include <assert.h>
+
 #include "bus_types.h"
 #include "cmsis_os.h"
 #include "error_handler.h"
@@ -47,6 +49,7 @@ bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, ui
 
 bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
+    assert(DevAddress);
     int dev_index = hi2c_index(hi2c);
     if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
         return false;
