@@ -33,8 +33,6 @@ enum {POWERMON_SENSORS_PCB_4_2 = 15};
 enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_4_2};
 #endif
 
-#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
-
 typedef enum {
     SENSOR_5VPC,
     SENSOR_VME_5V,

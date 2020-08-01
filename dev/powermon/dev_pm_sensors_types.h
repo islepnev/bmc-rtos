@@ -82,7 +82,7 @@ typedef enum MonState {
 } MonState;
 
 typedef struct Dev_pm_sensors_priv {
-    // TODO
+    int unused;// TODO
 } Dev_pm_sensors_priv;
 
 typedef struct Dev_pm_sensors {

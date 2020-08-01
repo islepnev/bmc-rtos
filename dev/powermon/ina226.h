@@ -15,41 +15,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// CRU16 board specific definitions
+#ifndef INA226_H
+#define INA226_H
 
-#ifndef BSP_SENSORS_CONFIG_H
-#define BSP_SENSORS_CONFIG_H
+#include <stdbool.h>
+#include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
+#include "bus/bus_types.h"
+
+extern const double SENSOR_MINIMAL_SHUNT_VAL;
+
+#define INA226_USE_INTERNAL_CALC 0
+
+typedef struct ina226_rawdata_t {
+    uint16_t rawVoltage;
+    uint16_t rawShuntVoltage;
+#if INA226_USE_INTERNAL_CALC
+    uint16_t rawCurrent;
+    uint16_t rawPower;
 #endif
+} ina226_rawdata_t;
 
-enum {POWERMON_SENSORS = 14};
+bool ina226_write_conf(BusInterface *bus, uint16_t cal);
+bool ina226_detect(BusInterface *bus);
+bool ina226_read(BusInterface *bus, ina226_rawdata_t *rawdata);
 
-typedef enum {
-    SENSOR_5VPC,
-    SENSOR_VME_3V3,
-    SENSOR_VME_5V,
-    SENSOR_MCB_4V5,
-    SENSOR_MCB_3V3,
-    SENSOR_5V,
-    SENSOR_1V5,
-    SENSOR_3V3,
-    SENSOR_CLK_3V3,
-    SENSOR_CLK_2V5,
-    SENSOR_FPGA_CORE_1V0,
-    SENSOR_FPGA_MGT_1V0,
-    SENSOR_FPGA_MGT_1V2,
-    SENSOR_FPGA_1V8
-} SensorIndex;
-
-extern const SensorIndex input_power_sensor;
-
-struct pm_sensors_arr;
-void bsp_pm_sensors_arr_init(struct pm_sensors_arr *arr);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // BSP_SENSORS_CONFIG_H
+#endif // INA226_H

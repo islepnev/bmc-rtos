@@ -23,6 +23,7 @@
 #include "bsp_powermon.h"
 #include "dev_pm_sensors.h"
 #include "dev_powermon_types.h"
+#include "powermon/ina226.h"
 #include "display.h"
 
 const char *sensor_status_str(SensorStatus status)

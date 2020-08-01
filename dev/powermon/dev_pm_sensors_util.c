@@ -20,6 +20,7 @@
 #include "dev_pm_sensors.h"
 #include "log/log.h"
 #include "cmsis_os.h"
+#include "dev_ina226.h"
 
 void monClearMinMax(Dev_powermon *d)
 {
@@ -44,8 +45,9 @@ int monDetect(Dev_powermon *d)
     pm_sensors_arr *sensors = &d->priv.sensors;
     for (int i=0; i<sensors->count; i++) {
         if (errors > 2) break;
-        DeviceStatus s = pm_sensor_detect(&sensors->arr[i]);
-        if (s == DEVICE_NORMAL) {
+        pm_sensor *sensor = &sensors->arr[i];
+        bool detected = dev_ina226_detect(sensor);
+        if (detected) {
             count++;
         } else {
             errors++;
@@ -65,7 +67,7 @@ int monReadValues(Dev_powermon *d)
             pm_sensor_set_sensorStatus(sensor, SENSOR_UNKNOWN);
         } else {
             if (sensor->dev.device_status == DEVICE_NORMAL) {
-                DeviceStatus s = pm_sensor_read(sensor);
+                DeviceStatus s = dev_ina226_read(sensor);
                 if (s == DEVICE_NORMAL)
                     ok++;
                 else

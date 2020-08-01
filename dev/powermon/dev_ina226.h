@@ -15,41 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// CRU16 board specific definitions
+#ifndef DEV_INA226_H
+#define DEV_INA226_H
 
-#ifndef BSP_SENSORS_CONFIG_H
-#define BSP_SENSORS_CONFIG_H
+#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dev_common_types.h"
 
-enum {POWERMON_SENSORS = 14};
+extern const double SENSOR_MINIMAL_SHUNT_VAL;
 
-typedef enum {
-    SENSOR_5VPC,
-    SENSOR_VME_3V3,
-    SENSOR_VME_5V,
-    SENSOR_MCB_4V5,
-    SENSOR_MCB_3V3,
-    SENSOR_5V,
-    SENSOR_1V5,
-    SENSOR_3V3,
-    SENSOR_CLK_3V3,
-    SENSOR_CLK_2V5,
-    SENSOR_FPGA_CORE_1V0,
-    SENSOR_FPGA_MGT_1V0,
-    SENSOR_FPGA_MGT_1V2,
-    SENSOR_FPGA_1V8
-} SensorIndex;
+struct pm_sensor;
+bool dev_ina226_detect(struct pm_sensor *d);
+DeviceStatus dev_ina226_read(struct pm_sensor *d);
+void pm_sensor_set_sensorStatus(struct pm_sensor *d, SensorStatus status);
 
-extern const SensorIndex input_power_sensor;
-
-struct pm_sensors_arr;
-void bsp_pm_sensors_arr_init(struct pm_sensors_arr *arr);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // BSP_SENSORS_CONFIG_H
+#endif // DEV_INA226_H

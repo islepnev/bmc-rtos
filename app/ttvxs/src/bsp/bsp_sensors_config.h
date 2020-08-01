@@ -34,7 +34,6 @@ enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_1_0};
 #else
 enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_1_1};
 #endif
-#define SENSOR_MINIMAL_SHUNT_VAL 1.0e-6
 
 typedef enum {
     SENSOR_5VPC, // new in TTVXS v1.1
