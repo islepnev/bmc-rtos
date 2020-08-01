@@ -25,7 +25,6 @@
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "app_task_cli_impl.h"
-#include "debug_helpers.h"
 #include "display.h"
 #include "log/log.h"
 #include "microrl.h"

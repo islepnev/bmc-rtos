@@ -23,7 +23,6 @@
 
 #include "bus/dev_vxsiics_stats.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "i2c.h"
 #include "log/log.h"
 #include "stm32f7xx_ll_i2c.h"

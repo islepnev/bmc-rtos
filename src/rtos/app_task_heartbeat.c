@@ -17,12 +17,12 @@
 
 #include "app_task_heartbeat.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "app_tasks.h"
 #include "bsp.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "led_gpio_hal.h"
 
 enum { heartbeatThreadStackSize = threadStackSize };
@@ -93,11 +93,7 @@ void create_task_heartbeat(void)
     {
         osThreadId rxThreadId = osThreadCreate(osThread (heartbeat_deq), NULL);
         osThreadId txThreadId = osThreadCreate(osThread (heartbeat_enq), NULL);
-        if (rxThreadId == NULL) {
-            debug_print("Failed to create heartbeat_deq thread\n");
-        }
-        if (txThreadId == NULL) {
-            debug_print("Failed to create heartbeat_enq thread\n");
-        }
+        assert(rxThreadId);
+        assert(txThreadId);
     }
 }

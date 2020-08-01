@@ -17,6 +17,7 @@
 
 #include "app_task_pll.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "ad9545/ad9545.h"
@@ -25,7 +26,6 @@
 #include "app_shared_data.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
@@ -82,7 +82,5 @@ void create_task_pll(DeviceBase *parent)
 {
     local_init(parent);
     pllThreadId = osThreadCreate(osThread (pll), NULL);
-    if (pllThreadId == NULL) {
-        debug_print("Failed to create pll thread\n");
-    }
+    assert (pllThreadId);
 }

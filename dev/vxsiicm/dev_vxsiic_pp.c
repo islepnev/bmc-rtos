@@ -23,7 +23,6 @@
 #include <stdint.h>
 
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "dev_vxsiicm_types.h"
 #include "ipmi_sensor_types.h"
 #include "ipmi_sensor_util.h"

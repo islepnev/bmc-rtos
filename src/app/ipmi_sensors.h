@@ -18,15 +18,13 @@
 #ifndef IPMI_SENSORS_H
 #define IPMI_SENSORS_H
 
-#include "ipmi_sensor_types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void sync_ipmi_sensors(void);
 
-extern IpmiSensors ipmi_sensors;
+extern struct IpmiSensors ipmi_sensors;
 
 #ifdef __cplusplus
 }

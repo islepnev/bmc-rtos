@@ -19,7 +19,6 @@
 
 #include "stm32f7xx_it.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "bus/i2c_slave_driver.h"
 
 #include "stm32f7xx_hal.h"

@@ -22,7 +22,6 @@
 #include <assert.h>
 
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "error_handler.h"
 #include "i2c.h"
 #include "log/log.h"

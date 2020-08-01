@@ -19,7 +19,6 @@
 
 #include "app_shared_data.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "dev_cru16_clkmux.h"
 #include "dev_cru16_clkmux_types.h"
 #include "log/log.h"

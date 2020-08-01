@@ -17,6 +17,7 @@
 
 #include "app_task_auxpll.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "ad9516/app_task_auxpll_impl.h"
@@ -26,7 +27,6 @@
 #include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "devicelist.h"
 
 osThreadId auxpllThreadId = NULL;
@@ -67,7 +67,5 @@ void create_task_auxpll(DeviceBase *parent)
 {
     local_init(parent);
     auxpllThreadId = osThreadCreate(osThread (auxpll), NULL);
-    if (auxpllThreadId == NULL) {
-        debug_print("Failed to create auxpll thread\n");
-    }
+    assert(auxpllThreadId);
 }

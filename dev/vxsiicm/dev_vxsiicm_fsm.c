@@ -18,7 +18,6 @@
 #include "dev_vxsiicm_fsm.h"
 
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "dev_vxsiicm.h"
 #include "dev_vxsiicm_types.h"
 #include "log/log.h"

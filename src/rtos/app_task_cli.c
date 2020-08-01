@@ -17,11 +17,11 @@
 
 #include "app_task_cli.h"
 
+#include <assert.h>
+
 #include "app_tasks.h"
 #include "cli.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
-#include "log/log.h"
 
 osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };
@@ -31,8 +31,5 @@ osThreadDef(cli, cliTask,    osPriorityNormal, 1, cliThreadStackSize);
 void create_task_cli(void)
 {
     cliThreadId = osThreadCreate(osThread (cli), NULL);
-    if (cliThreadId == NULL) {
-        debug_print("Failed to create cli thread\n");
-    }
-
+    assert(cliThreadId);
 }

@@ -17,10 +17,11 @@
 
 #include "app_task_main.h"
 
+#include <assert.h>
+
 #include "app_task_main_impl.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 
 enum { mainThreadStackSize = threadStackSize };
 static const uint32_t mainTaskLoopDelay = 10;
@@ -28,7 +29,6 @@ static const uint32_t mainTaskLoopDelay = 10;
 static void start_thread_main(void const *arg)
 {
     (void) arg;
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     task_main_init();
     while (1)
     {
@@ -42,7 +42,5 @@ osThreadDef(main, start_thread_main, osPriorityNormal,      1, mainThreadStackSi
 void create_task_main(void)
 {
     osThreadId mainThreadId = osThreadCreate(osThread (main), NULL);
-    if (mainThreadId == NULL) {
-        debug_print("Failed to create main thread\n");
-    }
+    assert(mainThreadId == NULL);
 }

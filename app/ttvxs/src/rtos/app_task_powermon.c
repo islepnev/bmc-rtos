@@ -17,12 +17,13 @@
 
 #include "app_task_powermon.h"
 
+#include <assert.h>
+
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "devicebase.h"
 #include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
@@ -32,7 +33,6 @@
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon.h"
 #include "powermon/dev_powermon_types.h"
-#include "sfpiic/dev_sfpiic_fsm.h"
 #include "sfpiic/dev_sfpiic_fsm.h"
 #include "sfpiic/dev_sfpiic_types.h"
 #include "thset/dev_thset.h"
@@ -121,7 +121,5 @@ void create_task_powermon(DeviceBase *parent)
 {
     local_init(parent);
     powermonThreadId = osThreadCreate(osThread (powermon), NULL);
-    if (powermonThreadId == NULL) {
-        debug_print("Failed to create powermon thread\n");
-    }
+    assert(powermonThreadId);
 }

@@ -17,10 +17,11 @@
 
 #include "app_task_display.h"
 
+#include <assert.h>
+
 #include "app_task_display_impl.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 
 static const uint32_t displayTaskLoopDelay = 50;
 osThreadId displayThreadId = NULL;
@@ -41,7 +42,5 @@ osThreadDef(display, start_display_task, osPriorityLow,      1, displayThreadSta
 void create_task_display(void)
 {
     displayThreadId = osThreadCreate(osThread (display), NULL);
-    if (displayThreadId == NULL) {
-        debug_print("Failed to create display thread\n");
-    }
+    assert(displayThreadId);
 }

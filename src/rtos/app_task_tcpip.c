@@ -17,9 +17,10 @@
 
 #include "app_task_tcpip.h"
 
+#include <assert.h>
+
 #include "app_tasks.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "lwipopts.h"
 #include "tcpip/app_task_tcpip_impl.h"
 
@@ -30,8 +31,6 @@ static const uint32_t tcpipTaskLoopDelay = 10;
 static void start_thread_tcpip( void const *arg)
 {
     (void) arg;
-
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     task_tcpip_init();
 
     while (1)
@@ -45,7 +44,5 @@ osThreadDef(tcpip, start_thread_tcpip, TCPIP_THREAD_PRIO, 1, tcpipThreadStackSiz
 void create_task_tcpip(void)
 {
     tcpipThreadId = osThreadCreate(osThread (tcpip), NULL);
-    if (tcpipThreadId == NULL) {
-        debug_print("Failed to create tcpip thread\n");
-    }
+    assert(tcpipThreadId);
 }

@@ -17,10 +17,11 @@
 
 #include "app_task_vxsiicm.h"
 
+#include <assert.h>
+
 #include "app_tasks.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "devicelist.h"
 #include "vxsiicm/dev_vxsiicm.h"
 #include "vxsiicm/dev_vxsiicm_fsm.h"
@@ -59,7 +60,5 @@ void create_task_vxsiicm(DeviceBase *parent)
 {
     local_init(parent);
     vxsiicThreadId = osThreadCreate(osThread (vxsiicm), NULL);
-    if (vxsiicThreadId == NULL) {
-        debug_print("Failed to create vxsiicm thread\n");
-    }
+    assert(vxsiicThreadId);
 }

@@ -17,13 +17,13 @@
 
 #include "app_task_fpga.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "app_tasks.h"
 #include "base/app_task_fpga_impl.h"
 #include "bsp.h"
 #include "cmsis_os.h"
-#include "debug_helpers.h"
 #include "devicelist.h"
 #include "fpga/dev_fpga_types.h"
 
@@ -61,7 +61,5 @@ void create_task_fpga(DeviceBase *parent)
 {
     local_init(parent);
     fpgaThreadId = osThreadCreate(osThread (fpga), NULL);
-    if (fpgaThreadId == NULL) {
-        debug_print("Failed to create fpga thread\n");
-    }
+    assert(fpgaThreadId);
 }
