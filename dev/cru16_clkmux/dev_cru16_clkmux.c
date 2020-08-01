@@ -22,7 +22,6 @@
 
 #include "dev_cru16_clkmux_types.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
-#include "stm32f7xx_hal_def.h"
 
 typedef union {
     struct {

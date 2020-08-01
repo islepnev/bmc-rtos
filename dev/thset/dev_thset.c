@@ -23,7 +23,6 @@
 #include "dev_thset_types.h"
 #include "devicelist.h"
 #include "log/log.h"
-#include "stm32f7xx_hal.h"
 
 static const uint32_t thermReadInterval = 300;
 static uint32_t thermReadTick = 0;

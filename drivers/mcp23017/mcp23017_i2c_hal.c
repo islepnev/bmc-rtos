@@ -19,7 +19,6 @@
 
 #include "bus/i2c_driver.h"
 #include "i2c.h"
-#include "stm32f7xx_hal.h"
 
 static I2C_HandleTypeDef * const hi2c = &hi2c4;
 
@@ -30,7 +29,7 @@ enum { MCP23017_BASE_I2C_ADDRESS = 0x20 };
 bool mcp23017_detect(void)
 {
     uint32_t Trials = 2;
-    return HAL_OK == HAL_I2C_IsDeviceReady(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
 }
 
 bool mcp23017_read(uint8_t reg, uint8_t *data)

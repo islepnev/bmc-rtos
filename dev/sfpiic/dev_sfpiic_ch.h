@@ -20,9 +20,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
 
-#include "dev_common_types.h"
 #include "dev_sfpiic_types.h"
 
 #ifdef __cplusplus

@@ -29,14 +29,6 @@
 #include "gpio.h"
 #include "log/log.h"
 #include "spi.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
-
-static void DEBUG_PRINT_RET(const char *func, int ret)
-{
-    log_printf(LOG_ERR, "%s failed: %d, SPI error 0x%08lX",
-           func, ret, ad9516_spi.ErrorCode);
-}
 
 static bool pllIoUpdate(Dev_auxpll *d)
 {

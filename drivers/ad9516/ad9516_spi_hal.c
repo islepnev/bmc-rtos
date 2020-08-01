@@ -24,15 +24,14 @@
 #include "gpio.h"
 #include "log/log.h"
 #include "spi.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
 
 static const int SPI_TIMEOUT_MS = 500;
 
 static bool set_csb(int state)
 {
-    if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
-        return true;
+    return true; // SPI_NSS_HARD_OUTPUT
+//    if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
+//        return true;
     bool write = state;
     write_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, write);
     bool read = read_gpio_pin(AD9516_CS_GPIO_Port, AD9516_CS_Pin);
@@ -115,21 +114,14 @@ bool ad9516_write_config(uint8_t data)
     return ad9516_write1_internal(0, data);
 }
 
-static void ad9516_spi_abort(void)
-{
-    if (HAL_OK != HAL_SPI_Abort(&ad9516_spi))
-        log_printf(LOG_ERR, "%s: HAL error", __func__);
-}
-
 void ad9516_enable_interface(void)
 {
-    if (IS_SPI_ALL_INSTANCE(ad9516_spi.Instance))
-        ad9516_disable_interface();
-    HAL_SPI_MspInit(&ad9516_spi);
+//    struct __SPI_HandleTypeDef *hspi = hspi_handle(bus->bus_number);
+//    spi_enable_interface(hspi, true);
 }
 
 void ad9516_disable_interface(void)
 {
-    ad9516_spi_abort();
-    HAL_SPI_MspDeInit(&ad9516_spi);
+//    struct __SPI_HandleTypeDef *hspi = hspi_handle(bus->bus_number);
+//    spi_enable_interface(hspi, false);
 }
