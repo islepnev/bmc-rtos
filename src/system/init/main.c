@@ -24,7 +24,6 @@
 #include "init_periph.h"
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"
-#include "stm32f7xx_hal_tim.h"
 #include "tim.h"
 
 int main(void)
@@ -51,19 +50,4 @@ int main(void)
 
     /* We should never get here as control is now taken by the scheduler */
     while (1) { }
-}
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM1) {
-        HAL_IncTick();
-    }
 }
