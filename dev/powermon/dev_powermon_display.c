@@ -127,9 +127,10 @@ void print_sensors_box(void)
     if (!priv)
         return;
     SensorStatus sensorStatus = pm_sensors_getStatus(priv);
-    printf("VME power: %4.1f W, %4.1f W max %s",
+    printf("VME power: %4.1f W, %4.1f W max, FPGA: %4.1f W %s",
            pm_get_power_w(priv),
            pm_get_power_max_w(priv),
+           pm_get_fpga_power_w(priv),
            sensor_status_ansi_str(sensorStatus));
     print_clear_eol();
     monPrintValues(priv);

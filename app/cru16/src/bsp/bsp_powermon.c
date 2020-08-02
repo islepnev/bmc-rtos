@@ -167,6 +167,17 @@ double pm_get_power_max_w(const Dev_powermon_priv *p)
     return mw;
 }
 
+double pm_get_fpga_power_w(const Dev_powermon_priv *p)
+{
+    const pm_sensors_arr *sensors = &p->sensors;
+    double mw = 0;
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_CORE_1V0]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_MGT_1V0]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_MGT_1V2]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_1V8]);
+    return mw;
+}
+
 void bsp_update_system_powergood_pin(bool power_good)
 {
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
