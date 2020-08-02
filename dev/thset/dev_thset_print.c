@@ -31,11 +31,32 @@ void print_thset_box(void)
         return;
     printf("Temp: ");
     for (int i=0; i<p->count; i++) {
-        if (p->sensors[i].hdr.b.state == DEVICE_NORMAL)
-            printf("%5.1f", p->sensors[i].value);
+        const GenericSensor *sensor = &p->sensors[i];
+        SensorStatus status = sensor->hdr.b.state;
+        const char *prefix = "";
+        const char *suffix = "";
+        switch (status) {
+        case SENSOR_UNKNOWN:
+            prefix = ANSI_BGR_PUR ANSI_GRAY;
+            suffix = ANSI_CLEAR;
+            break;
+        case SENSOR_NORMAL:
+            prefix = ANSI_CLEAR;
+            suffix = "";
+            break;
+        case SENSOR_WARNING:
+            prefix = ANSI_BGR_YELLOW ANSI_GRAY;
+            suffix = ANSI_CLEAR;
+            break;
+        case SENSOR_CRITICAL:
+            prefix = ANSI_BGR_RED ANSI_GRAY;
+            suffix = ANSI_CLEAR;
+            break;
+        }
+        if (status != SENSOR_UNKNOWN)
+            printf("%s%s%s %.1f%s", i ? ", " : "", prefix, sensor->name, sensor->value, suffix);
         else
-            printf(" --- ");
-        printf(" ");
+            printf("%s%s%s ---%s", i ? ", " : "", prefix, sensor->name, suffix);
     }
     const SensorStatus status = dev_thset_thermStatus();
     printf("%s", sensor_status_ansi_str(status));

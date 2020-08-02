@@ -22,7 +22,7 @@
 sensor_list_t fpga_sensor_map = {
     .count = 2,
     .indices = {
-        SENSOR_VXS_5V,
+        SENSOR_5V,
         SENSOR_3V3
     }
 };

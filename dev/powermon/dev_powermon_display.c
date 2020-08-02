@@ -127,7 +127,7 @@ void print_sensors_box(void)
     if (!priv)
         return;
     SensorStatus sensorStatus = pm_sensors_getStatus(priv);
-    printf("Power supplies: %4.1f W, %4.1f W max %s",
+    printf("VME power: %4.1f W, %4.1f W max %s",
            pm_get_power_w(priv),
            pm_get_power_max_w(priv),
            sensor_status_ansi_str(sensorStatus));
