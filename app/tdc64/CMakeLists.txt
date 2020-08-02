@@ -47,6 +47,10 @@ file(GLOB_RECURSE Drivers_SRCS
     ${MY_LIB_DIR}/drivers/*.c
 )
 
+file(GLOB_RECURSE App_SOURCES
+    ${MY_SRC_DIR}/app/*.c
+)
+
 file(GLOB_RECURSE Src_HEADERS
     ${MY_SRC_DIR}/*.h
 )
@@ -80,6 +84,7 @@ set(BmcApp_SRCS
     ${Dev_SRCS}
     ${Drivers_SRCS}
     ${Src_SOURCES}
+    ${App_SOURCES}
 )
 
 target_sources(${ELF} PRIVATE

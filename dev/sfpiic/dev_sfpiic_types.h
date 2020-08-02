@@ -18,6 +18,7 @@
 #ifndef DEV_SFPIIC_TYPES_H
 #define DEV_SFPIIC_TYPES_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "devicebase.h"
@@ -35,17 +36,29 @@ typedef enum {
     SFPIIC_CH_STATE_ERROR
 } sfpiic_ch_state_t;
 
+typedef unsigned char idprom_t[256];
+
 struct sfpiic_ch_status_t {
    int present;
+   bool dom_supported;
+   bool is_cxp;
+   bool is_sfp;
+   bool is_qsfp;
+   bool multilane;
+   uint32_t id_updated_timetick;
+   uint32_t dom_updated_timetick;
    SensorStatus system_status;
    uint16_t last_iic_addr;
-   int16_t temp; // in 1/256 degrees C
-   uint16_t volt; // in 100uV
    uint16_t tx_en_cnt;
    char vendor_name[17];
+   char vendor_pn[17];
    char vendor_serial[17];
-   uint16_t tx_pow[4];
-   uint16_t rx_pow[4];
+   double rx_power_dBm[4];
+   double tx_power_dBm[4];
+   double voltage;
+   double temp;
+   idprom_t idprom;
+   idprom_t diag;
 //   GenericSensor sensors[MAX_SENSOR_COUNT];
    sfpiic_stats_t iic_stats;
    sfpiic_stats_t iic_master_stats;

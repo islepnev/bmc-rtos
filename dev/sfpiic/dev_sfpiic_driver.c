@@ -61,7 +61,7 @@ bool sfpiic_write(uint8_t *pData, uint16_t Size)
 
 bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
-    addr = (uint16_t)((addr<<1)|1); // FIXME ???
+    addr = (uint16_t)((addr<<1) | 1);
     return  i2c_driver_mem_read(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
@@ -73,7 +73,7 @@ bool sfpiic_mem_read16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint1
 
 bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
-    addr = (uint16_t)((addr<<1)|1); // FIXME ???
+    addr = (uint16_t)((addr<<1) | 1);
     return i2c_driver_mem_write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 

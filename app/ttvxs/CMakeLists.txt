@@ -65,12 +65,15 @@ file(GLOB_RECURSE Drivers_SRCS
 #)
 #TARGET_LINK_LIBRARIES(${ELF} drivers)
 
+file(GLOB_RECURSE App_SOURCES
+    ${MY_SRC_DIR}/app/*.c
+)
+
 file(GLOB_RECURSE Src_HEADERS
     ${MY_SRC_DIR}/*.h
 )
 
 file(GLOB Src_SOURCES
-    ${MY_SRC_DIR}/app/*.c
     ${MY_SRC_DIR}/common/*.c
     ${MY_SRC_DIR}/common/log/*.c
     ${MY_SRC_DIR}/config/*.c
@@ -98,6 +101,7 @@ set(BmcApp_SRCS
     ${Dev_SRCS}
     ${Drivers_SRCS}
     ${Src_SOURCES}
+    ${App_SOURCES}
 )
 
 # SET_SOURCE_FILES_PROPERTIES( ${BmcApp_SRCS} PROPERTIES LANGUAGE CXX )

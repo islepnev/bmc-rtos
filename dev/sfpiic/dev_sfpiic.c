@@ -22,6 +22,7 @@
 #include "dev_sfpiic_types.h"
 #include "devicelist.h"
 #include "log/log.h"
+#include "sff/sff-common.h"
 
 static bool dev_sfpiic_select_ch(uint8_t ch)
 {
@@ -50,7 +51,19 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
     return d->dev.device_status;
 }
 
-static int sfp_old_present[SFPIIC_CH_CNT] = {0};
+//static int sfp_old_present[SFPIIC_CH_CNT] = {0};
+
+const char *transceiver_form_factor(const uint8_t *id)
+{
+    switch (id[0]) {
+    case SFF8024_ID_SFP: return "SFP";
+    case SFF8024_ID_QSFP: return "QSFP";
+    case SFF8024_ID_QSFP28: return "QSFP28";
+    case SFF8024_ID_QSFP_PLUS: return "QSFP+";
+    case SFF8024_ID_CXP: return "CXP";
+    default: return "unknown";
+    }
+}
 
 DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
@@ -60,16 +73,16 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
             return d->dev.device_status;
         }
         sfpiic_ch_status_t *status = &d->priv.status.sfp[ch];
-        if (dev_sfpiic_ch_update(d, ch)) {
-            status->present = 1;
-            if (!sfp_old_present[ch])
-                log_printf(LOG_NOTICE, "SFP ch #%d: inserted", ch);
-        } else {
-            if (sfp_old_present[ch])
-                log_printf(LOG_NOTICE, "SFP ch #%d: removed", ch);
-            status->present = 0;
-        }
-        sfp_old_present[ch] = status->present;
+        bool old_present = status->present;
+        status->present = dev_sfpiic_ch_update(d, ch);
+        if (!old_present && status->present)
+            log_printf(LOG_INFO, "Port %d: %s %s %s %s, %s",
+                       ch,
+                       transceiver_form_factor(status->idprom),
+                       status->vendor_name, status->vendor_pn, status->vendor_serial,
+                       status->dom_supported ? "DOM supported" : "no DOM");
+        if (old_present && !status->present)
+            log_printf(LOG_INFO, "Port %d: transceiver removed", ch);
     }
     return d->dev.device_status;
 }
