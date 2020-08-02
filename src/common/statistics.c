@@ -17,6 +17,8 @@
 
 #include "statistics.h"
 
+#include <math.h>
+
 void statistics_add_sample(statistics_t *stat, double value)
 {
     if (!stat)
@@ -40,4 +42,14 @@ void statistics_add_sample(statistics_t *stat, double value)
     double delta2 = value - _mean;
     stat->_sumvar += delta * delta2;
 
+}
+
+double statistics_variance(const statistics_t *stat)
+{
+    return (stat->n < 1) ? 0 : stat->_sumvar / stat->n;
+}
+
+double statistics_skewness(const statistics_t *stat)
+{
+    return (stat->M2 <= 0) ? stat->_mean : sqrt(stat->n) * stat->M3 / pow(stat->M2, 1.5);
 }

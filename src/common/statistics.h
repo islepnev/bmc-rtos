@@ -26,11 +26,11 @@ extern "C" {
 
 typedef struct statistics_t {
     uint64_t n;
-    double _mean = 0;
-    double _sumvar = 0;  // sum of squared distances from the mean
-    double M2 = 0;
-    double M3 = 0;
-    double M4 = 0;
+    double _mean;
+    double _sumvar;  // sum of squared distances from the mean
+    double M2;
+    double M3;
+    double M4;
 } statistics_t;
 
 #ifdef __cplusplus
@@ -38,5 +38,7 @@ typedef struct statistics_t {
 #endif
 
 void statistics_add_sample(statistics_t *stat, double value);
+double statistics_variance(const statistics_t *stat);
+double statistics_skewness(const statistics_t *stat);
 
 #endif // STATISTICS_H
