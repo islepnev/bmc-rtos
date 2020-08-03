@@ -109,16 +109,15 @@ static void start_task_powermon( void const *arg)
         dev_thset_add(&thset, therm[i].dev.name);
     }
 #endif
-    while (1)
-    {
+    while (1) {
+        bool power_on = enable_power && system_power_present;
 #ifndef BOARD_TDC64 // issue #669
         sfpiic_switch_enable(true);
-        task_sfpiic_run(&sfpiic);
+        task_sfpiic_run(&sfpiic, power_on);
 #endif
         sfpiic_switch_enable(false);
 #ifdef BOARD_TDC72
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
-            bool power_on = enable_power && system_power_present;
             dev_adt7301_run(&therm[i], power_on);
             thset.priv.sensors[i].value = therm[i].priv.temp;
             thset.priv.sensors[i].hdr.b.state = (therm[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;

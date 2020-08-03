@@ -30,12 +30,12 @@ static uint32_t stateTicks(Dev_max31725_priv *p)
     return osKernelSysTick() - p->state_start_tick;
 }
 
-void dev_max31725_run(Dev_max31725 *p, bool enable)
+void dev_max31725_run(Dev_max31725 *p, bool power_on)
 {
     Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
 #ifdef BOARD_TTVXS
     // issue #657
-    if (!enable) {
+    if (!power_on) {
         if (d->state != MAX31725_STATE_SHUTDOWN) {
             d->state = MAX31725_STATE_SHUTDOWN;
             p->dev.device_status = DEVICE_UNKNOWN;

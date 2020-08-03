@@ -80,17 +80,11 @@ void sfpPrintSummaryStatus(const Dev_sfpiic_priv *d)
 {
     const uint32_t now = osKernelSysTick();
     sfpPrintSummaryHeader();
-    for(int row=0; row<SFPIIC_CH_CNT; ++row) {
-        int sfp=0;
-        if(row<3)
-            sfp = 2-row;
-        else
-            sfp = SFPIIC_CH_CNT-row+2;
-
-        const sfpiic_ch_status_t *status = &d->status.sfp[sfp];
-        printf(" %-3d ", sfp+1);
+    for (int i=0; i<SFPIIC_CH_CNT; i++) {
+        const sfpiic_ch_status_t *status = &d->status.sfp[i];
+        printf(" %-3d ", i+1);
         if (!status->present) {
-            printf("\n");
+            print_clear_eol();
             continue;
         }
         switch (status->ch_state) {
@@ -114,16 +108,17 @@ void sfpPrintSummaryStatus(const Dev_sfpiic_priv *d)
 
                 }
             }
-            printf(ANSI_CLEAR "\n");
+            printf(ANSI_CLEAR);
             break;
         }
         case SFPIIC_CH_STATE_UNKNOWN:
-            printf(" STATE_UNKNOWN\n");
+            printf(" STATE_UNKNOWN");
             break;
         case SFPIIC_CH_STATE_ERROR:
-            printf(" STATE_ERROR\n");
+            printf(" STATE_ERROR");
             break;
         }
+        print_clear_eol();
     }
 }
 
@@ -164,7 +159,7 @@ static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
 }
 
 void sfpPrintStatus(void)
-{    
+{
     const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
     if (!priv)
         return;

@@ -36,6 +36,14 @@ typedef enum {
     SFPIIC_CH_STATE_ERROR
 } sfpiic_ch_state_t;
 
+typedef enum {
+    SFPIIC_STATE_SHUTDOWN,
+    SFPIIC_STATE_RESET,
+    SFPIIC_STATE_RUN,
+    SFPIIC_STATE_PAUSE,
+    SFPIIC_STATE_ERROR
+} sfpiic_state_t;
+
 typedef unsigned char idprom_t[256];
 
 struct sfpiic_ch_status_t {
@@ -74,6 +82,8 @@ struct sfpiic_status_t {
 typedef struct sfpiic_status_t sfpiic_status_t;
 
 typedef struct Dev_sfpiic_priv {
+    sfpiic_state_t state;
+    uint32_t stateStartTick;
     sfpiic_status_t status;
 } Dev_sfpiic_priv;
 

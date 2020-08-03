@@ -89,11 +89,11 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
+        bool power_on = enable_power && system_power_present;
         dev_eeprom_config_run(&eeprom);
         sfpiic_switch_enable(true);
-        task_sfpiic_run(&sfpiic);
+        task_sfpiic_run(&sfpiic, power_on);
         sfpiic_switch_enable(false);
-        bool power_on = enable_power && system_power_present;
         dev_max31725_run(&therm1, power_on);
         dev_tmp421_run(&therm2);
         thset.priv.sensors[0].value = therm2.priv.temp_internal;

@@ -14,18 +14,20 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_SFPIIC_IMPL_H
-#define APP_TASK_SFPIIC_IMPL_H
 
+#ifndef DEV_SFPIIC_FSM_H
+#define DEV_SFPIIC_FSM_H
+
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct Dev_sfpiic;
-void task_sfpiic_run(struct Dev_sfpiic *d);
+void task_sfpiic_run(struct Dev_sfpiic *p, bool power_on);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_SFPIIC_IMPL_H
+#endif // DEV_SFPIIC_FSM_H
