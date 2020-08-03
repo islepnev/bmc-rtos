@@ -105,6 +105,7 @@ bool i2c_driver_detect_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAd
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))
         return false;
+    DevAddress |= 1; // set read bit
     HAL_StatusTypeDef ret = HAL_I2C_IsDeviceReady(hi2c, DevAddress, Trials, millisec);
     if (HAL_OK == ret)
         return true;
@@ -118,6 +119,7 @@ bool i2c_driver_read_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddr
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))
         return false;
+    DevAddress |= 1; // set read bit
     HAL_StatusTypeDef ret = HAL_I2C_Master_Receive_IT(hi2c, DevAddress, pData, Size);
     return i2c_driver_after_hal_call(__func__, hi2c, DevAddress, ret, millisec);
 }
@@ -126,6 +128,7 @@ bool i2c_driver_write_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAdd
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))
         return false;
+    DevAddress &= ~1; // clear read bit
     HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit_IT(hi2c, DevAddress, pData, Size);
     return i2c_driver_after_hal_call(__func__, hi2c, DevAddress, ret, millisec);
 }
@@ -134,6 +137,7 @@ bool i2c_driver_mem_read_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t Dev
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))
         return false;
+    DevAddress |= 1; // set read bit
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Read_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
     return i2c_driver_after_hal_call(__func__, hi2c, DevAddress, ret, millisec);
 }
@@ -142,6 +146,7 @@ bool i2c_driver_mem_write_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t De
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))
         return false;
+    DevAddress &= ~1; // clear read bit
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
     return i2c_driver_after_hal_call(__func__, hi2c, DevAddress, ret, millisec);
 }
