@@ -153,7 +153,7 @@ double pm_get_power_w(const Dev_powermon_priv *p)
     double mw = 0;
     mw += get_sensor_power_w(&sensors->arr[SENSOR_5VPC]);
     mw += get_sensor_power_w(&sensors->arr[SENSOR_VME_5V]);
-    mw += get_sensor_power_w(&sensors->arr[SENSOR_MCB_4V5]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_VME_3V3]);
     return mw;
 }
 
@@ -163,7 +163,7 @@ double pm_get_power_max_w(const Dev_powermon_priv *p)
     double mw = 0;
     mw += sensors->arr[SENSOR_5VPC].priv.powerMax;
     mw += sensors->arr[SENSOR_VME_5V].priv.powerMax;
-    mw += sensors->arr[SENSOR_MCB_4V5].priv.powerMax;
+    mw += sensors->arr[SENSOR_VME_3V3].priv.powerMax;
     return mw;
 }
 
