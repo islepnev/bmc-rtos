@@ -27,12 +27,9 @@
 extern "C" {
 #endif
 
-enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
-
-bool sfpiic_pca9548_detect(BusInterface *bus);
-bool sfpiic_pca9548_set_channel(BusInterface *bus, uint8_t channel);
-// bool sfpiic_pca9548_read(BusInterface *bus, uint8_t *pData, uint16_t Size);
-// bool sfpiic_pca9548_write(BusInterface *bus, uint8_t *pData, uint16_t Size);
+struct Dev_pca9548;
+bool sfpiic_pca9548_detect(struct Dev_pca9548 *p);
+bool sfpiic_pca9548_set_channel(struct Dev_pca9548 *p, uint8_t channel, bool enable);
 bool sfpiic_mem_read(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 bool sfpiic_mem_write(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 bool sfpiic_get_ch_i2c_status(BusInterface *bus);

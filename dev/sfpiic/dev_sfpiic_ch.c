@@ -31,6 +31,8 @@
 #include "sff/sff-common.h"
 #include "sff/sfpdiag.h"
 
+enum { SFP_MAIN_I2C_ADDRESS = 0x50};
+
 static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, bool state)
 {
     sfpiic_ch_status_t *status = &d->priv.status.sfp[pp];

@@ -18,6 +18,7 @@
 #include "app_task_powermon.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "adt7301/dev_adt7301.h"
 #include "adt7301/dev_adt7301_fsm.h"
@@ -76,8 +77,15 @@ static BusInterface tdc_smbus_bus_info = {
     .address = 0
 };
 
+static BusInterface tdc_sfpiic_mux_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x74
+};
+
 static Dev_digipots digipots = {0};
 static Dev_thset thset = {0};
+static Dev_pca9548 pca9548 = {0};
 static Dev_sfpiic sfpiic = {0};
 
 static void local_init(DeviceBase *parent)
@@ -102,6 +110,11 @@ static void local_init(DeviceBase *parent)
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, tdc_smbus_bus_info, "SFP IIC");
+    create_device(&sfpiic.dev, &pca9548.dev, &pca9548.priv, DEV_CLASS_PCA9548, tdc_sfpiic_mux_bus_info, "IIC Mux");
+    sfpiic.mux = &pca9548;
+    sfpiic.priv.portCount = 2;   
+    strncpy(sfpiic.priv.portName[0], "SFP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[1], "SFP-2", SFPIIC_PORT_NAME_LEN);
 }
 
 static void start_task_powermon( void const *arg)

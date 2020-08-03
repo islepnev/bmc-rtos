@@ -30,7 +30,12 @@ static bool dev_sfpiic_select_ch(Dev_sfpiic *d, uint8_t ch)
     if (ch >= SFPIIC_CH_CNT)
         return false;
 
-    return sfpiic_pca9548_set_channel(&d->dev.bus, ch);
+    return sfpiic_pca9548_set_channel(d->mux, ch, true);
+}
+
+static bool dev_sfpiic_unselect_ch(Dev_sfpiic *d)
+{
+    return sfpiic_pca9548_set_channel(d->mux, 0, false);
 }
 
 void dev_sfpiic_init(struct Dev_sfpiic *d)
@@ -43,9 +48,7 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    BusInterface pca9548_bus = d->dev.bus;
-    pca9548_bus.address = PCA9548_BASE_I2C_ADDRESS;
-    if (! sfpiic_pca9548_detect(&pca9548_bus))
+    if (! sfpiic_pca9548_detect(d->mux))
         status = DEVICE_FAIL;
     d->dev.device_status = status;
     return d->dev.device_status;
@@ -82,6 +85,7 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
         if (old_present && !status->present)
             log_printf(LOG_INFO, "%s: transceiver removed", d->priv.portName[ch]);
     }
+    dev_sfpiic_unselect_ch(d);
     return d->dev.device_status;
 }
 

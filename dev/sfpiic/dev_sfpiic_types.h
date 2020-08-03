@@ -98,8 +98,18 @@ typedef struct Dev_sfpiic_priv {
     bool multilane[SFPIIC_CH_CNT];
 } Dev_sfpiic_priv;
 
+typedef struct Dev_pca9548_priv {
+    int unused;
+} Dev_pca9548_priv;
+
+typedef struct Dev_pca9548 {
+    DeviceBase dev;
+    Dev_pca9548_priv priv;
+} Dev_pca9548;
+
 typedef struct Dev_sfpiic {
     DeviceBase dev;
+    Dev_pca9548 *mux;
     Dev_sfpiic_priv priv;
 } Dev_sfpiic;
 

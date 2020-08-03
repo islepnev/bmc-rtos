@@ -70,10 +70,17 @@ static BusInterface ttvxs_smbus_bus_info = {
     .address = 0
 };
 
+static BusInterface ttvxs_sfpiic_mux_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0x74
+};
+
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
 static Dev_thset thset = {0};
+static Dev_pca9548 pca9548 = {0};
 static Dev_sfpiic sfpiic = {0};
 static Dev_eeprom_config eeprom = {0};
 
@@ -86,6 +93,8 @@ static void local_init(DeviceBase *parent)
     create_sensor_subdevices(&pm);
 
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, ttvxs_smbus_bus_info, "SFP IIC");
+    create_device(&sfpiic.dev, &pca9548.dev, &pca9548.priv, DEV_CLASS_PCA9548, ttvxs_sfpiic_mux_bus_info, "IIC Mux");
+    sfpiic.mux = &pca9548;
     sfpiic.priv.portCount = 4;
     sfpiic.priv.portIndex[0] = 3;
     sfpiic.priv.portIndex[1] = 2;
