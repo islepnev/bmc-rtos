@@ -46,19 +46,21 @@ static void dev_sfpiic_update_ch_state(Dev_sfpiic *d, int pp, bool state)
 
 static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
 {
+    BusInterface bus = d->dev.bus;
+    bus.address = SFP_MAIN_I2C_ADDRESS;
     uint16_t reg = SFF_8436_TX_DISABLE_REG;
     uint8_t val = 1;
-    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
+    if (! sfpiic_mem_read(&bus, reg, &val, 1))
         return false;
     if ((val&0xF)==0)
         return true;
 
     ++d->priv.status.sfp[ch].tx_en_cnt;
     val &= ~0xF;
-    if (! sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
+    if (! sfpiic_mem_write(&bus, reg, &val, 1))
         return false;
     val=1;
-    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, reg, &val, 1))
+    if (! sfpiic_mem_read(&bus, reg, &val, 1))
         return false;
     if ((val&0xF) != 0) {
         log_printf(LOG_WARNING, "Failed to enable TX port at SFP #%d: reg[86]=0x%02X\n", ch, val);
@@ -160,10 +162,12 @@ bool dev_sfpiic_parse_idprom(sfpiic_ch_status_t *status)
 
 bool dev_sfpiic_ch_read_idprom(Dev_sfpiic *d, uint8_t ch)
 {
+    BusInterface bus = d->dev.bus;
+    bus.address = SFP_MAIN_I2C_ADDRESS;
     sfpiic_ch_status_t *status = &d->priv.status.sfp[ch];
     const unsigned char *id = &status->idprom[0];
     // read lower page 0-127
-    if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, 0, (uint8_t *)id, 128))
+    if (! sfpiic_mem_read(&bus, 0, (uint8_t *)id, 128))
         return false;
 
     // read higher page 128-255
@@ -171,9 +175,9 @@ bool dev_sfpiic_ch_read_idprom(Dev_sfpiic *d, uint8_t ch)
         id[0] == SFF8024_ID_QSFP_PLUS ||
         id[0] == SFF8024_ID_QSFP28) {
         uint8_t page_select = 0;
-        if (! sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, 127, (uint8_t *)&page_select, 1))
+        if (! sfpiic_mem_write(&bus, 127, (uint8_t *)&page_select, 1))
             return false;
-        if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, 128, (uint8_t *)&id[128], 128))
+        if (! sfpiic_mem_read(&bus, 128, (uint8_t *)&id[128], 128))
             return false;
     }
 
@@ -188,8 +192,11 @@ bool dev_sfpiic_ch_read_idprom(Dev_sfpiic *d, uint8_t ch)
 
 bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
 {
-    uint16_t addr = SFP_MAIN_I2C_ADDRESS;
-    if (! sfpiic_get_ch_i2c_status(addr))
+    BusInterface bus = d->dev.bus;
+    bus.address = SFP_MAIN_I2C_ADDRESS;
+    BusInterface bus2 = d->dev.bus;
+    bus2.address = SFP_MAIN_I2C_ADDRESS + 1;
+    if (! sfpiic_get_ch_i2c_status(&bus))
         return false;
 
     const uint32_t now = osKernelSysTick();
@@ -198,8 +205,8 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
     enum {SFP_ID_SIZE = 3};
     const unsigned char *id = &status->idprom[0];
     // one retry
-    bool present = sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, 0, (uint8_t *)id, SFP_ID_SIZE) ||
-                   sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, 0, (uint8_t *)id, SFP_ID_SIZE);
+    bool present = sfpiic_mem_read(&bus, 0, (uint8_t *)id, SFP_ID_SIZE) ||
+                   sfpiic_mem_read(&bus, 0, (uint8_t *)id, SFP_ID_SIZE);
     dev_sfpiic_update_ch_state(d, ch, present);
     status->present = present;
     status->id_updated_timetick = now;
@@ -217,16 +224,16 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
     if (status->is_qsfp) {
         // reset TX_DISABLE
         uint8_t data = 0;
-        if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
+        if (! sfpiic_mem_read(&bus, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
             return false;
         if (data) {
             log_printf(LOG_INFO, "%s: clearing TX_DISABLE %02X", d->priv.portName[ch], data);
-            if (! sfpiic_mem_write(SFP_MAIN_I2C_ADDRESS, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
+            if (! sfpiic_mem_write(&bus, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
                 return false;
         }
     }
     if (status->is_sfp) {
-        bool a2_present = sfpiic_get_ch_i2c_status(0x51);
+        bool a2_present = sfpiic_get_ch_i2c_status(&bus2);
         if (!a2_present) {
             status->dom_supported = false;
             return true;
@@ -236,7 +243,7 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
         if (elapsed > 1000) {
             // detect DOM
             unsigned char *diag = &d->priv.status.sfp[ch].diag[0];
-            if (! sfpiic_mem_read(SFP_MAIN_I2C_ADDRESS+1, 0, (uint8_t *)diag, 256)) {
+            if (! sfpiic_mem_read(&bus2, 0, (uint8_t *)diag, 256)) {
                 status->dom_supported = false;
                 return false;
             }

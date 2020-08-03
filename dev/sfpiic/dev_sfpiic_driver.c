@@ -22,52 +22,63 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 #include "i2c.h"
 #include "log/log.h"
 
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;
 
-bool sfpiic_device_detect(uint16_t addr)
+bool sfpiic_pca9548_detect(BusInterface *bus)
 {
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    // uint16_t DevAddress = bus->address << 1;
+    uint16_t DevAddress = PCA9548_BASE_I2C_ADDRESS << 1;
     uint32_t Trials = 2;
-    return i2c_driver_detect(&hi2c_sfpiic, addr << 1, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(hi2c, DevAddress, Trials, I2C_TIMEOUT_MS);
 }
 
-bool sfpiic_switch_set_channel(uint8_t channel)
+static bool sfpiic_pca9548_read(BusInterface *bus, uint8_t *pData, uint16_t Size)
+{
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    // uint16_t DevAddress = bus->address << 1;
+    uint16_t DevAddress = PCA9548_BASE_I2C_ADDRESS << 1;
+    return i2c_driver_read(hi2c, DevAddress, pData, Size, SFPI2C_TIMEOUT_MS);
+}
+
+static bool sfpiic_pca9548_write(BusInterface *bus, uint8_t *pData, uint16_t Size)
+{
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    // uint16_t DevAddress = bus->address << 1;
+    uint16_t DevAddress = PCA9548_BASE_I2C_ADDRESS << 1;
+    return i2c_driver_write(hi2c, DevAddress, pData, Size, SFPI2C_TIMEOUT_MS);
+}
+
+bool sfpiic_pca9548_set_channel(BusInterface *bus, uint8_t channel)
 {
     assert(channel < 8);
     uint8_t data = (uint8_t)(1 << channel); // enable channel
-    return sfpiic_write(&data, 1);
+    return sfpiic_pca9548_write(bus, &data, 1);
 }
 
-bool sfpiic_read(uint8_t *pData, uint16_t Size)
+bool sfpiic_mem_read(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
-    uint16_t addr = (PCA9548_BASE_I2C_ADDRESS<<1)|1;
-    return i2c_driver_read(&hi2c_sfpiic, addr, pData, Size, SFPI2C_TIMEOUT_MS);
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
+    return  i2c_driver_mem_read(hi2c, DevAddress, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
-bool sfpiic_write(uint8_t *pData, uint16_t Size)
+bool sfpiic_mem_write(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
-    uint16_t addr = PCA9548_BASE_I2C_ADDRESS<<1;
-    return i2c_driver_write(&hi2c_sfpiic, addr, pData, Size, SFPI2C_TIMEOUT_MS);
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_write(hi2c, DevAddress, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
-bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
+bool sfpiic_get_ch_i2c_status(BusInterface *bus)
 {
-    addr = (uint16_t)((addr<<1) | 1);
-    return  i2c_driver_mem_read(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
-}
-
-bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
-{
-    addr = (uint16_t)((addr<<1) | 1);
-    return i2c_driver_mem_write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
-}
-
-bool sfpiic_get_ch_i2c_status(uint16_t addr)
-{
-    addr = (uint16_t)((addr<<1)|1);
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
     int trials = 2;
-    return i2c_driver_detect(&hi2c_sfpiic, addr, trials, SFPI2C_TIMEOUT_MS);
+    return i2c_driver_detect(hi2c, DevAddress, trials, SFPI2C_TIMEOUT_MS);
 }

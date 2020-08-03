@@ -21,19 +21,21 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bus/bus_types.h"
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 enum { PCA9548_BASE_I2C_ADDRESS = 0x74, SFP_MAIN_I2C_ADDRESS = 0x50};
 
-bool sfpiic_device_detect(uint16_t addr);
-bool sfpiic_switch_set_channel(uint8_t channel);
-bool sfpiic_read(uint8_t *pData, uint16_t Size);
-bool sfpiic_write(uint8_t *pData, uint16_t Size);
-bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
-bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
-bool sfpiic_get_ch_i2c_status(uint16_t addr);
+bool sfpiic_pca9548_detect(BusInterface *bus);
+bool sfpiic_pca9548_set_channel(BusInterface *bus, uint8_t channel);
+// bool sfpiic_pca9548_read(BusInterface *bus, uint8_t *pData, uint16_t Size);
+// bool sfpiic_pca9548_write(BusInterface *bus, uint8_t *pData, uint16_t Size);
+bool sfpiic_mem_read(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
+bool sfpiic_mem_write(BusInterface *bus, uint16_t MemAddress, uint8_t *pData, uint16_t Size);
+bool sfpiic_get_ch_i2c_status(BusInterface *bus);
 
 #ifdef  __cplusplus
 }

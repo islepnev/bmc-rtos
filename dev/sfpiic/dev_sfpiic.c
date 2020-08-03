@@ -30,7 +30,7 @@ static bool dev_sfpiic_select_ch(Dev_sfpiic *d, uint8_t ch)
     if (ch >= SFPIIC_CH_CNT)
         return false;
 
-    return sfpiic_switch_set_channel(ch);
+    return sfpiic_pca9548_set_channel(&d->dev.bus, ch);
 }
 
 void dev_sfpiic_init(struct Dev_sfpiic *d)
@@ -43,7 +43,9 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    if (! sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
+    BusInterface pca9548_bus = d->dev.bus;
+    pca9548_bus.address = PCA9548_BASE_I2C_ADDRESS;
+    if (! sfpiic_pca9548_detect(&pca9548_bus))
         status = DEVICE_FAIL;
     d->dev.device_status = status;
     return d->dev.device_status;

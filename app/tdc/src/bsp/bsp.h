@@ -32,7 +32,7 @@ extern "C" {
 
 //#define hi2c_ad9545 hi2c2
 //#define hi2c_sensors hi2c4
-#define hi2c_sfpiic hi2c4
+//#define hi2c_sfpiic hi2c4
 
 #define FPGA_SPI_BUS_INDEX 1
 #define AD9516_SPI_BUS_INDEX 4
@@ -40,7 +40,7 @@ extern "C" {
 #define therm_spi hspi4
 
 //#define ad9545_deviceAddr 0x4A
-#define hi2c_eeprom_cfg hi2c2
+//#define hi2c_eeprom_cfg hi2c2
 //#define eeprom_cfg_deviceAddr 0x50
 
 #define AUXPLL_AD9516_OUT6_ENABLE 1
