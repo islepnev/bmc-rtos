@@ -25,12 +25,10 @@
 #include "log/log.h"
 #include "sff/sff-common.h"
 
-static bool dev_sfpiic_select_ch(uint8_t ch)
+static bool dev_sfpiic_select_ch(Dev_sfpiic *d, uint8_t ch)
 {
     if (ch >= SFPIIC_CH_CNT)
         return false;
-
-    sfpiic_switch_reset();
 
     return sfpiic_switch_set_channel(ch);
 }
@@ -45,7 +43,6 @@ void dev_sfpiic_init(struct Dev_sfpiic *d)
 DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 {
     DeviceStatus status = DEVICE_NORMAL;
-    sfpiic_switch_reset();
     if (! sfpiic_device_detect(PCA9548_BASE_I2C_ADDRESS))
         status = DEVICE_FAIL;
     d->dev.device_status = status;
@@ -55,7 +52,7 @@ DeviceStatus dev_sfpiic_detect(Dev_sfpiic *d)
 DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
 {
     for(int ch=0; ch<SFPIIC_CH_CNT; ++ch) {
-        if (! dev_sfpiic_select_ch(ch)) {
+        if (! dev_sfpiic_select_ch(d, ch)) {
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
         }

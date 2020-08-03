@@ -28,12 +28,6 @@
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;
 
-void sfpiic_switch_reset(void)
-{
-//    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  0);
-//    write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin,  1);
-}
-
 bool sfpiic_device_detect(uint16_t addr)
 {
     uint32_t Trials = 2;
@@ -65,22 +59,10 @@ bool sfpiic_mem_read(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_
     return  i2c_driver_mem_read(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
-bool sfpiic_mem_read16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
-{
-    addr = (uint16_t)((addr<<1)|1);
-    return i2c_driver_mem_read(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_16BIT, pData, Size, SFPI2C_TIMEOUT_MS);
-}
-
 bool sfpiic_mem_write(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
 {
     addr = (uint16_t)((addr<<1) | 1);
     return i2c_driver_mem_write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_8BIT, pData, Size, SFPI2C_TIMEOUT_MS);
-}
-
-bool sfpiic_mem_write16(uint16_t addr, uint16_t MemAddress, uint8_t *pData, uint16_t Size)
-{
-    addr = (uint16_t)((addr<<1)|1);
-    return i2c_driver_mem_write(&hi2c_sfpiic, addr, MemAddress, I2C_MEMADD_SIZE_16BIT, pData, Size, SFPI2C_TIMEOUT_MS);
 }
 
 bool sfpiic_get_ch_i2c_status(uint16_t addr)
