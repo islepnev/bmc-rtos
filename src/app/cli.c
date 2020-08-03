@@ -116,7 +116,7 @@ static bool handle_escape_char(char ch)
     escbuf[escpos] = '\0';
     // log_printf(LOG_DEBUG, "esc input[%d]: %02X", escpos, ch);
     bool is_number = (ch >= '0' && ch <= '9');
-    bool complete = ! (is_number || ch == ';' || ch == '[');
+    bool complete = ! (is_number || ch == ';' || ch == '[' || (escpos == 1 && ch == 'O'));
     if (complete) {
         escbuf[sizeof (escbuf)-1] = '\0';
         // log_printf(LOG_DEBUG, "Complete esc sequence: %s", escbuf);
