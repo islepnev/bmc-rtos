@@ -141,12 +141,34 @@ void print_header(void)
                enable_stats_display? ANSI_BGR_BLUE "               " : ANSI_BGR_RED " Press any key ",
                ANSI_BGR_BLUE);
     }
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
+    printf(ANSI_CLEAR_EOL ANSI_BGR_BLACK ANSI_CLEAR);
 }
+
+enum { MAX_KEYS = 10 };
+static const char *keys[10] = {
+    "SPACE", "P", "F5", "F6", "F7",
+    "F8", "F9", "F10", "F11", "F12"
+};
+static const char *pages[10] = {
+    "Next", "Power", "Home", "VXS", "SFP",
+    "PLL", "Adj", "Log", "Tasks", "Devs"
+};
+static const int modes[10] = {
+    -1, -1, DISPLAY_SUMMARY, DISPLAY_BOARDS, DISPLAY_SFP_DETAIL,
+    DISPLAY_PLL_DETAIL, DISPLAY_DIGIPOT, DISPLAY_LOG, DISPLAY_TASKS, DISPLAY_DEVICES
+};
 
 void print_footer_line(void)
 {
-    printf(ANSI_BGR_BLUE ANSI_GRAY "SPACE: next page   P: switch power" ANSI_CLEAR_EOL ANSI_CLEAR);
+    printf(ANSI_BGR_BLUE ANSI_GRAY);
+    for (int i=0; i<MAX_KEYS; i++) {
+        const char *hilight = (modes[i] == display_mode) ? ANSI_BGR_GREEN : ANSI_BGR_BLUE;
+        if (i == 1)
+            hilight = enable_power ? ANSI_BGR_BLUE : ANSI_BGR_RED;
+        printf("%s " ANSI_BOLD "%s " ANSI_NORM "%s " ANSI_BGR_BLUE,
+               hilight, keys[i], pages[i]);
+    }
+    printf(ANSI_CLEAR_EOL ANSI_BGR_BLACK ANSI_CLEAR);
 }
 
 void dev_eeprom_config_print(void)

@@ -24,15 +24,21 @@ void cycle_display_mode(void)
 {
     switch (display_mode) {
     case DISPLAY_SUMMARY:
-        display_mode = DISPLAY_LOG;
+        display_mode = DISPLAY_BOARDS;
         break;
-    case DISPLAY_LOG:
-        display_mode = DISPLAY_DIGIPOT;
+    case DISPLAY_BOARDS:
+        display_mode = DISPLAY_SFP_DETAIL;
         break;
-    case DISPLAY_DIGIPOT:
+    case DISPLAY_SFP_DETAIL:
         display_mode = DISPLAY_PLL_DETAIL;
         break;
     case DISPLAY_PLL_DETAIL:
+        display_mode = DISPLAY_DIGIPOT;
+        break;
+    case DISPLAY_DIGIPOT:
+        display_mode = DISPLAY_LOG;
+        break;
+    case DISPLAY_LOG:
         display_mode = DISPLAY_TASKS;
         break;
     case DISPLAY_TASKS:
@@ -47,6 +53,7 @@ void cycle_display_mode(void)
     default:
         break;
     }
+    schedule_display_repaint();
 }
 
 void screen_handle_key(char ch)

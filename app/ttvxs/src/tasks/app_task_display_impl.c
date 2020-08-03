@@ -128,7 +128,7 @@ void display_page_contents(display_mode_t mode)
         display_boards(DISPLAY_BOARDS_Y);
         break;
     case DISPLAY_SFP_DETAIL:
-        sfpPrintStatus();
+        sfpPrintStatus(2);
         break;
     case DISPLAY_TASKS:
         display_tasks(DISPLAY_TASKS_Y);
@@ -156,8 +156,11 @@ void display_task_run(void)
         schedule_display_refresh();
     const bool repaint_flag = read_display_repaint();
     const bool refresh_flag = repaint_flag || read_display_refresh();
-    if (!refresh_flag)
+    if (!refresh_flag && !repaint_flag)
         return;
+    if (repaint_flag) {
+        print_get_screen_size();
+    }
     old_tick = tick;
     old_tm = tm;
 
@@ -180,8 +183,9 @@ void display_task_run(void)
     printf(ANSI_GOHOME ANSI_CLEAR);
     printf(ANSI_HIDE_CURSOR);
     print_header();
+    print_footer();
     display_page_contents(display_mode);
-    print_get_screen_size();
+    // print_get_screen_size();
     print_footer();
     print_goto(screen_height-1, 1);
     printf(ANSI_SHOW_CURSOR); // show cursor

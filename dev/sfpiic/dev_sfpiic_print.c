@@ -238,11 +238,12 @@ static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
     }
 }
 
-void sfpPrintStatus(void)
+void sfpPrintStatus(int y)
 {
     const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
     if (!priv)
         return;
+    print_goto(y, 1);
     print_clear_eol();
     // sff8079_show_all(priv->status.sfp[3].idprom);
     // sff8472_show_all(priv->status.sfp[3].diag);

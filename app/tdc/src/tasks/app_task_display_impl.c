@@ -165,7 +165,7 @@ void display_task_run(void)
         display_boards(DISPLAY_BOARDS_Y);
         break;
     case DISPLAY_SFP_DETAIL:
-        sfpPrintStatus();
+        sfpPrintStatus(2);
         break;
     case DISPLAY_TASKS:
         display_tasks(DISPLAY_TASKS_Y);
