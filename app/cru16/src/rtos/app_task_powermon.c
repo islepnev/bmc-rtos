@@ -69,6 +69,7 @@ static BusInterface cru16_smbus_bus_info = {
     .bus_number = 2,
     .address = 0
 };
+
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};

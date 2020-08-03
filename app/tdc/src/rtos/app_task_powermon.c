@@ -32,6 +32,7 @@
 #include "digipot/dev_digipot_types.h"
 #include "init_digipot_subdevices.h"
 #include "ipmi_sensors.h"
+#include "log/log.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon.h"
@@ -117,6 +118,8 @@ static void start_task_powermon( void const *arg)
     }
 #endif
     while (1) {
+        const uint32_t start = osKernelSysTick();
+
         const bool power_on = enable_power && system_power_present;
         sfpiic_switch_enable(false);
 #ifndef BOARD_TDC64 // issue #669
@@ -152,12 +155,17 @@ static void start_task_powermon( void const *arg)
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;
 //        }
+        const uint32_t finish = osKernelSysTick();
+        const uint32_t elapsed = finish - start;
+        if (elapsed > 100) {
+            log_printf(LOG_WARNING, "%s task took over %.3f s", "powermon", elapsed / 1000.00);
+        }
 
         osDelay(powermonTaskLoopDelay);
     }
 }
 
-osThreadDef(powermon, start_task_powermon, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, start_task_powermon, osPriorityHigh, 1, powermonThreadStackSize);
 
 void create_task_powermon(DeviceBase *parent)
 {

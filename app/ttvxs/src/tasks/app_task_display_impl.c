@@ -15,11 +15,11 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "app_task_display_impl.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-
-#include "app_task_display_impl.h"
 
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9545/dev_ad9545_print.h"
@@ -92,8 +92,6 @@ static void print_main(void)
 //        print_clearbox(DISPLAY_MAIN_Y, DISPLAY_MAIN_H);
 //    }
 }
-
-
 
 static int old_enable_stats_display = 0;
 

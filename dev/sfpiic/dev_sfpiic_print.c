@@ -27,6 +27,7 @@
 #include "sff/sff-internal.h"
 #include "cmsis_os.h"
 #include "ansi_escape_codes.h"
+#include "log/log.h"
 
 const int STALE_TIMEOUT_TICKS = 5000;
 
@@ -73,11 +74,6 @@ const char *compliance_1g_str(uint8_t value)
     }
 }
 
-void print_extended_compliance_str(const sfpiic_ch_status_t *status)
-{
-    printf("%s ", extended_compliance_str_qsfp(status->compliance_extended));
-}
-
 const char *ethernet_compliance_str(const sfpiic_ch_status_t *status)
 {
     const uint8_t id3 = status->compliance_ethernet_10_40_100;
@@ -89,49 +85,6 @@ const char *ethernet_compliance_str(const sfpiic_ch_status_t *status)
     if (id6 != 0)
         return compliance_1g_str(status->compliance_ethernet_1g);
     return "unknown";
-}
-
-void print_ethernet_compliance_str(const sfpiic_ch_status_t *status)
-{
-    const uint8_t id3 = status->compliance_ethernet_10_40_100;
-    const uint8_t id6 = status->compliance_ethernet_1g;
-
-    if (id3 & (1 << 7))
-        print_extended_compliance_str(status);
-    if (id3 & (1 << 6))
-        printf("10GBASE-LRM ");
-    if (id3 & (1 << 5))
-        printf("10GBASE-LR ");
-    if (id3 & (1 << 4))
-        printf("10GBASE-SR ");
-    if (id3 & (1 << 3))
-        printf("40GBASE-CR4 ");
-    if (id3 & (1 << 2))
-        printf("40GBASE-SR4 ");
-    if (id3 & (1 << 1))
-        printf("40GBASE-LR4 ");
-    if (id3 & (1 << 0))
-        printf("40G Active ");
-
-    if (id6 & (1 << 7))
-        printf("BASE-PX ");
-    if (id6 & (1 << 6))
-        printf("BASE-BX10 ");
-    if (id6 & (1 << 5))
-        printf("100BASE-FX ");
-    if (id6 & (1 << 4))
-        printf("100BASE-LX/LX10 ");
-    if (id6 & (1 << 3))
-        printf("1000BASE-T ");
-    if (id6 & (1 << 2))
-        printf("1000BASE-CX ");
-    if (id6 & (1 << 1))
-        printf("1000BASE-LX ");
-    if (id6 & (1 << 0))
-        printf("1000BASE-SX ");
-
-    if (id3 == 0 && id6 == 0)
-        printf("unsupported");
 }
 
 const char *dev_sfpiic_transceiver_str(uint8_t value)
@@ -152,7 +105,7 @@ const char *dev_sfpiic_connector_str(uint8_t value)
     case SFF8024_CTOR_MPO: return "MPO";
     case SFF8024_CTOR_LC: return "LC";
     case SFF8024_CTOR_RJ45: return "RJ45";
-    case SFF8024_CTOR_NO_SEPARABLE: return "none";
+    case SFF8024_CTOR_NO_SEPARABLE: return "";
     default: return "unknown";
     }
 }

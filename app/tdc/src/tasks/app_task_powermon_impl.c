@@ -20,11 +20,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "cmsis_os.h"
-
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bsp_powermon.h"
+#include "cmsis_os.h"
 #include "dev_common_types.h"
 #include "log/log.h"
 #include "powermon/dev_pm_sensors.h"
@@ -56,14 +55,14 @@ static uint32_t stateTicks(void)
 static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
 static void clearOldSensorStatus(void)
 {
-    for (int i=0; i<POWERMON_SENSORS; i++)
+    for (uint i=0; i<sizeof(oldSensorStatus) / sizeof(oldSensorStatus[0]); i++)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
 static void log_sensor_status(const pm_sensor *p)
 {
-    const pm_sensor_priv *sensor = &p->priv;
     const SensorStatus status = pm_sensor_status(p);
+    const pm_sensor_priv *sensor = &p->priv;
     enum { size = 50 };
     static char str[size];
     if (p->dev.sensor != SENSOR_UNKNOWN)
@@ -95,11 +94,11 @@ static void log_sensor_status(const pm_sensor *p)
     }
 }
 
-static void log_sensors_change(const Dev_powermon *pm)
+static void log_sensors_change(const Dev_powermon_priv *p)
 {
-    const pm_sensors_arr *sensors = &pm->priv.sensors;
+    const pm_sensors_arr *sensors = &p->sensors;
     for (int i=0; i<sensors->count; i++) {
-        const pm_sensor *sensor = &sensors->arr[i];
+        const pm_sensor *sensor = &p->sensors.arr[i];
         if (sensor->priv.rampState != RAMP_NONE)
             continue;
         SensorStatus status = pm_sensor_status(sensor);
@@ -110,9 +109,9 @@ static void log_sensors_change(const Dev_powermon *pm)
     }
 }
 
-static void log_critical_sensors(const Dev_powermon_priv *p)
+static void log_critical_sensors(const Dev_powermon *pm)
 {
-    const pm_sensors_arr *sensors = &p->sensors;
+    const pm_sensors_arr *sensors = &pm->priv.sensors;
     for (int i=0; i<sensors->count; i++) {
         const pm_sensor *sensor = &sensors->arr[i];
         if (sensor->priv.isOptional)
@@ -146,9 +145,9 @@ void task_powermon_run (Dev_powermon *pm)
         pm_initialized = 1;
     }
     pmLoopCount++;
-    pm_sensors_arr *sensors = &pm->priv.sensors;
     bool vmePresent = pm_read_liveInsert(priv);
     pm_read_pgood(priv->pgood);
+    pm_sensors_arr *sensors = &priv->sensors;
     const bool input_power_normal = get_input_power_normal(sensors);
     if (input_power_normal != old_inut_power_normal) {
         if (input_power_normal)
@@ -158,13 +157,13 @@ void task_powermon_run (Dev_powermon *pm)
     const int input_power_critical = get_input_power_failed(sensors);
     if (input_power_critical != old_inut_power_critical) {
         if (input_power_critical) {
-            log_critical_sensors(priv);
+            log_critical_sensors(pm);
             log_put(LOG_WARNING, "Input power critical");
         }
         old_inut_power_critical = input_power_critical;
     }
-    const int power_critical_ok = get_critical_power_valid(sensors);
-    const int power_critical_failure = get_critical_power_failure(sensors);
+    const int power_critical_ok = get_critical_power_valid(&priv->sensors);
+    const int power_critical_failure = get_critical_power_failure(&priv->sensors);
 
 //    const thset_state_t thset_state = thermal_shutdown_check(&dev.thset);
     if (THSET_STATE_2 == get_thset_state()) {
@@ -271,7 +270,7 @@ void task_powermon_run (Dev_powermon *pm)
         break;
     }
 
-    for (int i=0; i<POWERMON_SENSORS; i++)
+    for (int i=0; i<sensors->count; i++)
         sensors->arr[i].priv.rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
 
     if (!enable_power)
@@ -289,7 +288,7 @@ void task_powermon_run (Dev_powermon *pm)
     if ((priv->pmState == PM_STATE_RAMP)
             || (priv->pmState == PM_STATE_RUN)
             ) {
-        log_sensors_change(pm);
+        log_sensors_change(priv);
     } else {
         clearOldSensorStatus();
     }
