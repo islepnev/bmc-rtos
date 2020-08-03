@@ -56,12 +56,12 @@ bool vxsiic_detect_mux(BusInterface *bus)
     return true;
 }
 
-bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel)
+bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel, bool enable)
 {
     assert(subdevice < 3);
     assert(channel < 8);
     uint8_t data;
-    data = 1 << channel; // enable channel
+    data = enable ? (1 << channel) : 0; // enable channel
     BusInterface bus2 = *bus;
     bus2.address = PCA9548_BASE_I2C_ADDRESS + subdevice;
     return vxsiic_write(&bus2, &data, 1);

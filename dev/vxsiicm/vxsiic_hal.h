@@ -28,7 +28,7 @@ extern "C" {
 
 void vxsiic_reset_mux(BusInterface *bus);
 bool vxsiic_detect_mux(BusInterface *bus);
-bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel);
+bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel, bool enable);
 //bool vxsiic_get_pp_i2c_status(BusInterface *bus, uint8_t pp);
 //bool vxsiic_detect_pp_eeprom(BusInterface *bus, uint8_t pp);
 bool vxsiic_read_pp_eeprom(BusInterface *bus, uint8_t pp, uint16_t reg, uint8_t *data);

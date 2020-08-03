@@ -48,7 +48,22 @@ static bool vxsiic_select_pp(Dev_vxsiicm *d, uint8_t pp)
 
     uint8_t channel = map_slot_to_channel[pp];
     uint8_t subdevice = map_slot_to_subdevice[pp];
-    return vxsiic_mux_select(&d->dev.bus, subdevice, channel);
+    return vxsiic_mux_select(&d->dev.bus, subdevice, channel, true);
+    //    bool ret = true;
+    //    for (uint8_t i = 0; i < 3; i++) {
+    //        ret &= vxsiic_mux_select(&d->dev.bus, i, channel, i == subdevice);
+    //    }
+    //    return ret;
+}
+
+static bool vxsiic_unselect_pp(Dev_vxsiicm *d)
+{
+    vxsiic_reset_mux(&d->dev.bus);
+//    bool ret = true;
+//    for (uint8_t subdevice = 0; subdevice < 3; subdevice++) {
+//        ret &= vxsiic_mux_select(&d->dev.bus, subdevice, 0, false);
+//    }
+    return true;
 }
 
 DeviceStatus dev_vxsiicm_detect(Dev_vxsiicm *d)
@@ -111,6 +126,7 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
         }
         old_present[pp] = status->present;
     }
+    vxsiic_unselect_pp(d);
 //    uint32_t tick_end = osKernelSysTick();
 //    uint32_t ticks = tick_end - tick_begin;
 //    debug_printf("%s: %ld ticks\n", __func__, ticks);
