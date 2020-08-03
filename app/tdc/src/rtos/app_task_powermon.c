@@ -137,7 +137,7 @@ static void start_task_powermon( void const *arg)
         sfpiic_switch_enable(false);
 #ifndef BOARD_TDC64 // issue #669
         sfpiic_switch_enable(power_on);
-        task_sfpiic_run(&sfpiic, power_on);
+        task_sfpiic_run(&sfpiic, power_on); // controlled by FPGA
 #endif
         sfpiic_switch_enable(false);
 #ifdef BOARD_TDC72

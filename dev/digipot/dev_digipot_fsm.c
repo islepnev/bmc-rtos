@@ -35,7 +35,6 @@ void dev_digipot_run(struct Dev_digipots *d)
     digipot_state_t old_state = d->priv.state;
     switch (d->priv.state) {
     case DIGIPOT_STATE_INIT: {
-        //dev_digipots_priv_init(&d->priv);
         d->priv.count = 0;
         d->priv.state = DIGIPOT_STATE_DETECT;
         break;
@@ -43,7 +42,6 @@ void dev_digipot_run(struct Dev_digipots *d)
     case DIGIPOT_STATE_DETECT: {
         int pots_detected_1 = digipot_detect(d);
         if (pots_detected_1 == 0) {
-            osDelay(100);
             break;
         }
         int pots_detected_2 = digipot_detect(d);
@@ -52,7 +50,6 @@ void dev_digipot_run(struct Dev_digipots *d)
             d->priv.state = DIGIPOT_STATE_RUN;
             break;
         }
-        osDelay(100);
         break;
     }
     case DIGIPOT_STATE_RUN:
