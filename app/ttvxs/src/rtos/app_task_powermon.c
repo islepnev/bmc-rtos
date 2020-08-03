@@ -18,6 +18,7 @@
 #include "app_task_powermon.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
@@ -62,6 +63,12 @@ static BusInterface config_eeprom_bus_info = {
     .address = 0x57
 };
 
+static BusInterface ttvxs_smbus_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0
+};
+
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
@@ -71,12 +78,23 @@ static Dev_eeprom_config eeprom = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, null_bus_info, "Power Monitor");
-    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, ttvxs_smbus_bus_info, "Power Monitor");
+    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, ttvxs_smbus_bus_info, "Thermometers");
     create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, ttvxs_max31725_bus_info, "VCXO temperature");
     create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
     create_sensor_subdevices(&pm);
-    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
+
+    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, ttvxs_smbus_bus_info, "SFP IIC");
+    sfpiic.priv.portCount = 4;
+    sfpiic.priv.portIndex[0] = 3;
+    sfpiic.priv.portIndex[1] = 2;
+    sfpiic.priv.portIndex[2] = 1;
+    sfpiic.priv.portIndex[3] = 0;
+    strncpy(sfpiic.priv.portName[0], "SFP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[1], "SFP-2", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[2], "SFP-3", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[3], "SFP-4", SFPIIC_PORT_NAME_LEN);
+
     create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, config_eeprom_bus_info, "Board config");
 }
 
@@ -89,7 +107,7 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
-        bool power_on = enable_power && system_power_present;
+        const bool power_on = enable_power && system_power_present;
         sfpiic_switch_enable(false);
         dev_eeprom_config_run(&eeprom);
         sfpiic_switch_enable(power_on);

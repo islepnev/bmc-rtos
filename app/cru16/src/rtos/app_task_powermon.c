@@ -18,6 +18,7 @@
 #include "app_task_powermon.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
@@ -29,6 +30,7 @@
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 #include "ipmi_sensors.h"
+#include "log/log.h"
 #include "max31725/dev_max31725.h"
 #include "max31725/dev_max31725_fsm.h"
 #include "powermon/dev_powermon.h"
@@ -62,6 +64,11 @@ static BusInterface config_eeprom_bus_info = {
     .address = 0x57
 };
 
+static BusInterface cru16_smbus_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0
+};
 static Dev_powermon pm = {0};
 static Dev_max31725 therm1 = {0};
 static Dev_tmp421 therm2 = {0};
@@ -71,12 +78,36 @@ static Dev_eeprom_config eeprom = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, null_bus_info, "Power Monitor");
-    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, cru16_smbus_bus_info, "Power Monitor");
+    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, cru16_smbus_bus_info, "Thermometers");
     create_device(&thset.dev, &therm1.dev, &therm1.priv, DEV_CLASS_MAX31725, cru16_max31725_bus_info, "VCXO temperature");
     create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, ttvxs_tmp421_bus_info, "FPGA, board temperatures");
     create_sensor_subdevices(&pm);
-    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
+
+    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, cru16_smbus_bus_info, "SFP IIC");
+    sfpiic.priv.portCount = 8;
+    sfpiic.priv.portIndex[0] = 2;
+    sfpiic.priv.portIndex[1] = 1;
+    sfpiic.priv.portIndex[2] = 0;
+    sfpiic.priv.portIndex[3] = 7;
+    sfpiic.priv.portIndex[4] = 6;
+    sfpiic.priv.portIndex[5] = 5;
+    sfpiic.priv.portIndex[6] = 4;
+    sfpiic.priv.portIndex[7] = 3;
+    sfpiic.priv.multilane[3] = 1;
+    sfpiic.priv.multilane[4] = 1;
+    sfpiic.priv.multilane[5] = 1;
+    sfpiic.priv.multilane[6] = 1;
+    sfpiic.priv.multilane[7] = 1;
+    strncpy(sfpiic.priv.portName[0], "SFP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[1], "SFP-2", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[2], "SFP-3", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[3], "QSFP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[4], "QSFP-2", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[5], "QSFP-3", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[6], "QSFP-4", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[7], "QSFP-5", SFPIIC_PORT_NAME_LEN);
+
     create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, config_eeprom_bus_info, "Board config");
 }
 
@@ -89,9 +120,12 @@ static void start_task_powermon( void const *arg)
     thset.priv.count = 3;
     while (1)
     {
-        bool power_on = enable_power && system_power_present;
+        const uint32_t start = osKernelSysTick();
+
+        const bool power_on = enable_power && system_power_present;
+        sfpiic_switch_enable(false);
         dev_eeprom_config_run(&eeprom);
-        sfpiic_switch_enable(true);
+        sfpiic_switch_enable(power_on);
         task_sfpiic_run(&sfpiic, power_on);
         sfpiic_switch_enable(false);
         dev_max31725_run(&therm1, power_on);
@@ -110,12 +144,17 @@ static void start_task_powermon( void const *arg)
 //        if (event.status == osEventSignal) {
 //            pmState = PM_STATE_STANDBY;
 //        }
+        const uint32_t finish = osKernelSysTick();
+        const uint32_t elapsed = finish - start;
+        if (elapsed > 100) {
+            log_printf(LOG_WARNING, "%s task took over %.3f s", "powermon", elapsed / 1000.00);
+        }
 
         osDelay(powermonTaskLoopDelay);
     }
 }
 
-osThreadDef(powermon, start_task_powermon, osPriorityHigh,      1, powermonThreadStackSize);
+osThreadDef(powermon, start_task_powermon, osPriorityHigh, 1, powermonThreadStackSize);
 
 void create_task_powermon(DeviceBase *parent)
 {

@@ -16,4 +16,3 @@
 */
 
 #include "bsp_sfpiic.h"
-

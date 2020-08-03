@@ -68,14 +68,21 @@ static BusInterface tdc72_adt7301_bus_info = {
 };
 static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 #endif
+
+static BusInterface tdc_smbus_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 2,
+    .address = 0
+};
+
 static Dev_digipots digipots = {0};
 static Dev_thset thset = {0};
 static Dev_sfpiic sfpiic = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, null_bus_info, "Power Monitor");
-    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, null_bus_info, "Thermometers");
+    create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, tdc_smbus_bus_info, "Power Monitor");
+    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, tdc_smbus_bus_info, "Thermometers");
 
 #ifdef BOARD_TDC64
     const char *therm_name[TDC64_MAX31725_COUNT] = {"TDC-A", "TDC-B"};
@@ -90,10 +97,10 @@ static void local_init(DeviceBase *parent)
         create_device(&thset.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_ADT7301, tdc72_adt7301_bus_info, therm_name[i]);
     }
 #endif
-    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, null_bus_info, "DigiPots");
+    create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, tdc_smbus_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
-    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, null_bus_info, "SFP IIC");
+    create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, tdc_smbus_bus_info, "SFP IIC");
 }
 
 static void start_task_powermon( void const *arg)
@@ -110,9 +117,10 @@ static void start_task_powermon( void const *arg)
     }
 #endif
     while (1) {
-        bool power_on = enable_power && system_power_present;
+        const bool power_on = enable_power && system_power_present;
+        sfpiic_switch_enable(false);
 #ifndef BOARD_TDC64 // issue #669
-        sfpiic_switch_enable(true);
+        sfpiic_switch_enable(power_on);
         task_sfpiic_run(&sfpiic, power_on);
 #endif
         sfpiic_switch_enable(false);

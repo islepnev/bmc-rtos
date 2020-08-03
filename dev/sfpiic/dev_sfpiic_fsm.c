@@ -23,22 +23,22 @@
 #include "device_status_log.h"
 #include "log/log.h"
 
+static const uint32_t POWERON_DELAY_TICKS = 2000; // 450 ms minimum
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t stateTicks(const Dev_sfpiic_priv *p)
-{
-    return osKernelSysTick() - p->stateStartTick;
-}
-
 void task_sfpiic_run(Dev_sfpiic *p, bool power_on)
 {
-    sfpiic_state_t old_state = p->priv.state;
+    const sfpiic_state_t old_state = p->priv.state;
+    const DeviceStatus old_device_status = p->dev.device_status;
+    const uint32_t stateTicks = osKernelSysTick() - p->priv.stateStartTick;
+
     if (!power_on) {
         if (p->priv.state != SFPIIC_STATE_SHUTDOWN) {
             p->priv.state = SFPIIC_STATE_SHUTDOWN;
+            static const sfpiic_status_t zz = {0};
+            p->priv.status = zz;
             p->dev.device_status = DEVICE_UNKNOWN;
-            log_put(LOG_INFO, "SFP IIC shutdown");
         }
     }
     switch (p->priv.state) {
@@ -49,36 +49,37 @@ void task_sfpiic_run(Dev_sfpiic *p, bool power_on)
         break;
     }
     case SFPIIC_STATE_RESET: {
-        if (DEVICE_NORMAL == dev_sfpiic_detect(p)) {
-            p->priv.state = SFPIIC_STATE_RUN;
-            dev_log_status_change(&p->dev);
+        if (stateTicks > POWERON_DELAY_TICKS) {
+            if (DEVICE_NORMAL == dev_sfpiic_detect(p)) {
+                p->priv.state = SFPIIC_STATE_RUN;
+            }
         }
         break;
     }
     case SFPIIC_STATE_RUN:
         if (DEVICE_NORMAL != dev_sfpiic_update(p)) {
             p->priv.state = SFPIIC_STATE_ERROR;
-            dev_log_status_change(&p->dev);
             break;
         }
         p->priv.state = SFPIIC_STATE_PAUSE;
         break;
     case SFPIIC_STATE_PAUSE:
-        if (stateTicks(&p->priv) > POLL_DELAY_TICKS) {
+        if (stateTicks > POLL_DELAY_TICKS) {
             p->priv.state = SFPIIC_STATE_RUN;
         }
         break;
     case SFPIIC_STATE_ERROR:
         if (old_state != p->priv.state) {
-            log_printf(LOG_ERR, "SFP IIC error");
         }
-        if (stateTicks(&p->priv) > ERROR_DELAY_TICKS) {
+        if (stateTicks > ERROR_DELAY_TICKS) {
             p->priv.state = SFPIIC_STATE_RESET;
         }
         break;
     }
+    if (old_device_status != p->dev.device_status)
+        dev_log_status_change(&p->dev);
+
     if (old_state != p->priv.state) {
-        old_state = p->priv.state;
         p->priv.stateStartTick = osKernelSysTick();
     }
 }

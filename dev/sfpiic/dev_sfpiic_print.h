@@ -17,12 +17,17 @@
 #ifndef DEV_SFPIIC_PRINT_H
 #define DEV_SFPIIC_PRINT_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void sfpPrintStatus(void);
 void dev_sfpiic_print(void);
+
+const char *dev_sfpiic_transceiver_str(uint8_t value);
+const char *dev_sfpiic_connector_str(uint8_t value);
 
 #ifdef __cplusplus
 }

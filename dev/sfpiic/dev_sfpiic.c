@@ -76,13 +76,13 @@ DeviceStatus dev_sfpiic_update(Dev_sfpiic *d)
         bool old_present = status->present;
         status->present = dev_sfpiic_ch_update(d, ch);
         if (!old_present && status->present)
-            log_printf(LOG_INFO, "Port %d: %s %s %s %s, %s",
-                       ch,
+            log_printf(LOG_INFO, "%s: %s %s %s %s%s",
+                       d->priv.portName[ch],
                        transceiver_form_factor(status->idprom),
                        status->vendor_name, status->vendor_pn, status->vendor_serial,
-                       status->dom_supported ? "DOM supported" : "no DOM");
+                       status->is_sfp ? status->dom_supported ? ", DOM supported" : ", no DOM" : "");
         if (old_present && !status->present)
-            log_printf(LOG_INFO, "Port %d: transceiver removed", ch);
+            log_printf(LOG_INFO, "%s: transceiver removed", d->priv.portName[ch]);
     }
     return d->dev.device_status;
 }
