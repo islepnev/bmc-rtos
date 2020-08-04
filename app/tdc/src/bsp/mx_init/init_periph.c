@@ -18,6 +18,7 @@
 #include "init_periph.h"
 
 #include "i2c.h"
+#include "rtc.h"
 #include "spi.h"
 #include "usart.h"
 
@@ -38,4 +39,5 @@ void init_periph(void)
 
     MX_USART2_UART_Init();
     MX_USART3_UART_Init();
+    MX_RTC_Init();
 }

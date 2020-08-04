@@ -61,7 +61,9 @@ void SystemClock_Config(void)
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3
                                                |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
-                                               |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C4;
+                                               |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_I2C4
+                                               |RCC_PERIPHCLK_RTC;
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV25;
     PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
     PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
     PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
