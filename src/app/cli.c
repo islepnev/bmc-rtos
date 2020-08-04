@@ -171,10 +171,10 @@ void cliTask(void const *arg)
         case ' ':
             schedule_display_reset();
             break;
-        case '\r':
-        case '\n':
-            cycle_display_mode();
-            break;
+//        case '\r':
+//        case '\n':
+//            cycle_display_mode();
+//            break;
         case 'p':
         case 'P':
             enable_power = !enable_power;

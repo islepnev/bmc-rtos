@@ -72,7 +72,7 @@ static void digipot_action_up(void)
     schedule_display_refresh();
 }
 
-static void digipot_send_command(command_id_t id, uint32_t arg)
+static void digipot_send_command(digipot_command_id_t id, uint32_t arg)
 {
     CommandDigipots *cmd = osMailAlloc(mq_cmd_digipots_id, osWaitForever);
     if (!cmd) {

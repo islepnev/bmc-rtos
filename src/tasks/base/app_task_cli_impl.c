@@ -21,6 +21,7 @@
 
 #include "app_shared_data.h"
 #include "commands_digipot.h"
+#include "commands_menu.h"
 
 display_mode_t next_display_mode(display_mode_t mode)
 {
@@ -64,6 +65,9 @@ void cycle_display_mode(void)
 
 void screen_handle_key(char ch)
 {
+    if (DISPLAY_MENU == display_mode) {
+        menu_screen_handle_key(ch);
+    }
     if (DISPLAY_DIGIPOT == display_mode) {
         digipot_screen_handle_key(ch);
     }
@@ -97,6 +101,10 @@ bool app_handle_escape_seq(const char *str)
     }
     if (0 == strcmp(str, ESC_CODE_RIGHT)) {
         display_mode = next_display_mode(display_mode);
+        handled = true;
+    }
+    if (0 == strcmp(str, ESC_CODE_F1)) {
+        display_mode = DISPLAY_MENU;
         handled = true;
     }
     if (0 == strcmp(str, ESC_CODE_F2)) {

@@ -15,19 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "commands.h"
+#ifndef DISPLAY_MENU_H
+#define DISPLAY_MENU_H
 
-#include <assert.h>
+#include <stdbool.h>
 
-#include "error_handler.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-osMailQDef(mq_cmd_digipots, 10, CommandDigipots); // Declare a mail queue, size 10
-osMailQDef(mq_cmd_menu, 10, CommandMenu); // Declare a mail queue, size 10
+void display_menu_page(int y, bool repaint);
 
-void commands_init(void)
-{
-    mq_cmd_digipots_id = osMailCreate(osMailQ(mq_cmd_digipots), NULL);
-    assert (mq_cmd_digipots_id);
-    mq_cmd_menu_id = osMailCreate(osMailQ(mq_cmd_menu), NULL);
-    assert (mq_cmd_menu_id);
+#ifdef __cplusplus
 }
+#endif
+
+#endif // DISPLAY_MENU_H
