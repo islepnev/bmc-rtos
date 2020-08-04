@@ -29,7 +29,8 @@ static const int SPI_TIMEOUT_MS = 500;
 
 static bool set_csb(BusInterface *bus, int state)
 {
-    return true; // SPI_NSS_HARD_OUTPUT
+#ifdef BOARD_TDC64
+// Software NSS only: issue #705
 //    if (ad9516_spi.Init.NSS != SPI_NSS_SOFT)
 //        return true;
     bool write = state;
@@ -39,6 +40,8 @@ static bool set_csb(BusInterface *bus, int state)
         log_printf(LOG_CRIT, "AD9516_CS_B stuck %s", read ? "high": "low");
     }
     return write == read;
+#endif
+    return true; // SPI_NSS_HARD_OUTPUT
 }
 
 static bool ad9516_read1_duplex(BusInterface *bus, uint16_t reg, uint8_t *data)
