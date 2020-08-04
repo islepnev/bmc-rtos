@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 
+#include "app_shared_data.h"
 #include "bsp_digipot.h"
 #include "bsp_powermon.h"
 #include "commands_digipot.h"
@@ -29,39 +30,43 @@
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
 
-void display_digipots_page(int y)
+void display_digipots_page(int y, bool repaint)
 {
     print_goto(y, 1);
-    printf("Voltage adjustments\n" ANSI_CLEAR_EOL);
-    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom\n" ANSI_CLEAR_EOL);
+    printf("Voltage adjustments" ANSI_CLEAR_EOL "\n");
+    printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom" ANSI_CLEAR_EOL "\n");
     print_goto(y+2, 1);
-    printf("\n");
+    printf( ANSI_CLEAR_EOL "\n");
     printf("   adjustment ");
     pm_sensor_print_header();
+    int cur_y = y+4;
     const DeviceBase *dev_pm = find_device_const(DEV_CLASS_POWERMON);
     const Dev_powermon_priv *pm = dev_pm ? (Dev_powermon_priv *)device_priv_const(dev_pm) : 0;
 
     const DeviceBase *dev_dp = find_device_const(DEV_CLASS_DIGIPOTS);
-    if (!dev_dp || !dev_dp->priv)
-        return;
-    const Dev_digipots_priv *dp = (const Dev_digipots_priv *)device_priv_const(dev_dp);
+    if (dev_dp && dev_dp->priv) {
+        const Dev_digipots_priv *dp = (const Dev_digipots_priv *)device_priv_const(dev_dp);
 
-    for (uint i=0; i<dp->count; i++) {
-        const Dev_ad5141 *p = &dp->pot[i];
-        printf(" %s %s  ", (i == (uint)digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
-        if (p->dev.device_status == DEVICE_NORMAL)
-            printf("%3u ", p->priv.value);
-        else
-            printf("?   ");
-        if (pm && (int)p->priv.sensorIndex > 0 && (int)p->priv.sensorIndex < POWERMON_SENSORS) {
-            const pm_sensor *sensor = &pm->sensors.arr[p->priv.sensorIndex];
-            const int isOn = monIsOn(pm->sw_state, p->priv.sensorIndex);
-            printf("%10s", sensor->priv.label);
-            pm_sensor_print_values(sensor, isOn);
-        } else {
-            printf("<no sensor>");
+        for (uint i=0; i<dp->count; i++) {
+            const Dev_ad5141 *p = &dp->pot[i];
+            printf(" %s %s  ", (i == (uint)digipot_screen_selected) ? ">" : " ", potLabel((PotIndex)(i)));
+            if (p->dev.device_status == DEVICE_NORMAL)
+                printf("%3u ", p->priv.value);
+            else
+                printf("?   ");
+            if (pm && (int)p->priv.sensorIndex > 0 && (int)p->priv.sensorIndex < POWERMON_SENSORS) {
+                const pm_sensor *sensor = &pm->sensors.arr[p->priv.sensorIndex];
+                const int isOn = monIsOn(pm->sw_state, p->priv.sensorIndex);
+                printf("%10s", sensor->priv.label);
+                pm_sensor_print_values(sensor, isOn);
+            } else {
+                printf("<no sensor>");
+            }
+            printf("%s\n", ANSI_CLEAR_EOL);
         }
-        printf("%s\n", ANSI_CLEAR_EOL);
+        cur_y += dp->count;
     }
     //    pot_debug();
+    if (repaint)
+        print_clearbox(cur_y, screen_height - 1 - cur_y);
 }

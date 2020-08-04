@@ -20,7 +20,7 @@
 
 #include <stdbool.h>
 
-void display_log(int y, int count, bool repaint);
+void display_log_page(int y, int count, bool repaint);
 void print_log_messages(int y, int count, bool repaint);
 
 #endif // DISPLAY_LOG_H

@@ -18,7 +18,7 @@
 #ifndef DISPLAY_TASKS_H
 #define DISPLAY_TASKS_H
 
-void display_tasks(int y);
+void display_tasks_page(int y);
 
 #endif // DISPLAY_TASKS_H
 

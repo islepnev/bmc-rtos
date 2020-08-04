@@ -72,7 +72,7 @@ static void print_sysinfo_brief(void)
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
-void display_tasks(int y)
+void display_tasks_page(int y)
 {
     int taskCount = uxTaskGetNumberOfTasks();
     int sysinfo_lines = 2;

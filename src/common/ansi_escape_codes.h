@@ -11,9 +11,14 @@
 #define ANSI_CLEARTERM RIS
 #define ANSI_GOHOME    CSI "1;1H"
 
+#define ANSI_CLEAR     CSI "0m"
+
 #define ANSI_BOLD      CSI "1m"
 #define ANSI_BLINK     CSI "5m"
+#define ANSI_BOLD_OFF  CSI "21m"
 #define ANSI_NORM      CSI "22m"
+#define ANSI_BLINK_OFF CSI "25m"
+#define ANSI_INV_OFF   CSI "27m"
 
 #define ANSI_BLACK     CSI "30m"
 #define ANSI_RED       CSI "31m"
@@ -23,6 +28,7 @@
 #define ANSI_PUR       CSI "35m"
 #define ANSI_CYAN      CSI "36m"
 #define ANSI_GRAY      CSI "37m"
+#define ANSI_FGR_DEF   CSI "39m"
 
 #define ANSI_BGR_BLACK  CSI "40m"
 #define ANSI_BGR_RED    CSI "41m"
@@ -32,8 +38,7 @@
 #define ANSI_BGR_PUR    CSI "45m"
 #define ANSI_BGR_CYAN   CSI "46m"
 #define ANSI_BGR_WHITE  CSI "47m"
-
-#define ANSI_CLEAR     CSI "0m"
+#define ANSI_BGR_DEF    CSI "49m"
 
 #define ANSI_CLEAR_EOL CSI "K"
 

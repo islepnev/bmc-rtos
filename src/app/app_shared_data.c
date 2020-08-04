@@ -28,8 +28,9 @@ int screen_width = 100;
 int screen_height = 35;
 bool screen_size_set = 0;
 
-static bool display_refresh_flag = 0;
+static bool display_refresh_flag = 1;
 static bool display_repaint_flag = 1;
+static bool display_reset_flag = 1;
 
 void schedule_display_refresh(void)
 {
@@ -39,6 +40,11 @@ void schedule_display_refresh(void)
 void schedule_display_repaint(void)
 {
     display_repaint_flag = 1;
+}
+
+void schedule_display_reset(void)
+{
+    display_reset_flag = 1;
 }
 
 bool read_display_refresh(void)
@@ -54,5 +60,13 @@ bool read_display_repaint(void)
     // FIXME: make atomic
     int value = display_repaint_flag;
     display_repaint_flag = 0;
+    return value;
+}
+
+bool read_display_reset(void)
+{
+    // FIXME: make atomic
+    int value = display_reset_flag;
+    display_reset_flag = 0;
     return value;
 }

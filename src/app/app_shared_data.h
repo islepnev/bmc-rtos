@@ -49,8 +49,10 @@ extern bool screen_size_set;
 
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);
+void schedule_display_reset(void);
 bool read_display_refresh(void);
 bool read_display_repaint(void);
+bool read_display_reset(void);
 
 #ifdef __cplusplus
 }

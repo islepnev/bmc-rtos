@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-void print_thset_box(void);
+void print_thset_line(void);
 
 #ifdef __cplusplus
 }

@@ -20,9 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "app_shared_data.h"
 #include "dev_sfpiic.h"
 #include "dev_sfpiic_types.h"
 #include "display.h"
+#include "display_common.h"
 #include "sff/sff-common.h"
 #include "sff/sff-internal.h"
 #include "cmsis_os.h"
@@ -238,13 +240,13 @@ static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
     }
 }
 
-void sfpPrintStatus(int y)
+void display_sfpiic_page(int y)
 {
     const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
     if (!priv)
         return;
-    print_goto(y, 1);
-    print_clear_eol();
+    display_clear_page();
+    print_goto(y+1, 1);
     // sff8079_show_all(priv->status.sfp[3].idprom);
     // sff8472_show_all(priv->status.sfp[3].diag);
 

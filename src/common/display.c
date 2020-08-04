@@ -24,15 +24,17 @@ void print_clear_eol(void)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-void print_clearbox(int line1, int height)
-{
-    for(int i=line1; i<line1+height; i++)
-        printf("\x1B[%d;H\x1B[K", i);
-}
-
 void print_goto(int line, int col)
 {
     printf("\x1B[%d;%dH", line, col);
+}
+
+void print_clearbox(int line1, int height)
+{
+    printf("\x1B[%d;H", line1);
+    for(int i=line1; i<line1+height; i++)
+        printf("\x1B[K\n");
+        // printf("\x1B[%d;H\x1B[K", i);
 }
 
 void print_get_screen_size(void)

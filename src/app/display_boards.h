@@ -18,6 +18,16 @@
 #ifndef DISPLAY_BOARDS_H
 #define DISPLAY_BOARDS_H
 
-void display_boards(int y);
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void display_boards_page(int y, bool repaint);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DISPLAY_BOARDS_H

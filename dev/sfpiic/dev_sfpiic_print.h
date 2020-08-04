@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-void sfpPrintStatus(int y);
+void display_sfpiic_page(int y);
 void dev_sfpiic_print(void);
 
 const char *dev_sfpiic_transceiver_str(uint8_t value);

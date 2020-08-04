@@ -79,12 +79,12 @@ void print_log_messages(int y, int count, bool repaint)
         print_log_lines(y, count, repaint);
 }
 
-void display_log(int y, int count, bool repaint)
+void display_log_page(int y, int count, bool repaint)
 {
     if (repaint) {
-        print_goto(2, 1);
-        printf("Log messages\n" ANSI_CLEAR_EOL);
+        print_goto(y, 1);
+        printf("Log messages" ANSI_CLEAR_EOL "\n");
     }
-    print_log_lines(y, count, repaint);
+    print_log_lines(y+1, count, repaint);
 }
 

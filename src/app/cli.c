@@ -25,9 +25,12 @@
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "app_task_cli_impl.h"
+#include "cmsis_os.h"
 #include "display.h"
 #include "log/log.h"
 #include "microrl.h"
+
+static const uint32_t ESCAPE_TIMEOUT = 500; // ms
 
 // print callback for microrl library
 static void print (const char * str)
@@ -107,6 +110,7 @@ static bool handle_escape_seq(const char *str)
 
 static char escbuf[32] = {0};
 static size_t escpos = 0;
+static escTick = 0;
 
 static bool handle_escape_char(char ch)
 {
@@ -143,21 +147,29 @@ void cliTask(void const *arg)
     microrl_set_execute_callback (prl, execute);
     setvbuf(stdin, NULL, _IONBF, 0);
     static bool esc = false;
+    const uint32_t tick = osKernelSysTick();
     for( ;; )
     {
         char ch = getchar();
         if (ch == '\x1B') {
             esc = true;
             escpos = 0;
+            escTick = tick;
             continue;
         }
         if (esc) {
+            uint32_t elapsed = tick - escTick;
+            if (elapsed > ESCAPE_TIMEOUT) {
+                escpos = 0;
+                esc = false;
+                continue;
+            }
             esc = handle_escape_char(ch);
             continue;
         }
         switch(ch) {
         case ' ':
-            schedule_display_repaint();
+            schedule_display_reset();
             break;
         case '\r':
         case '\n':

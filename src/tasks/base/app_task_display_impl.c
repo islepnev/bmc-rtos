@@ -43,6 +43,7 @@
 
 const uint32_t DISPLAY_REFRESH_TIME_MS = 2000;
 const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
+const uint32_t DISPLAY_RESET_TIME_MS = 60000; // full reset terminal
 static uint32_t displayUpdateCount = 0;
 static int force_refresh = 0;
 
@@ -70,14 +71,7 @@ static const bool has_vxsiicm = true;
 static const bool has_vxsiicm = false;
 #endif
 
-//static void devPrintStatus(void)
-//{
-//    dev_sfpiic_print();
-//    dev_eeprom_config_print();
-//    if (has_vxsiicm)
-//        dev_vxsiicm_print();
-//}
-
+static const int DISPLAY_PAGE_Y = 2;
 static const int DISPLAY_SYS_STATUS_Y = 2;
 static const int DISPLAY_SYS_STATUS_H = 1;
 static const int DISPLAY_POWERMON_Y = (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H);
@@ -86,82 +80,90 @@ static const int DISPLAY_POTS_H  = has_digipots ? 1 : 0;
 static const int DISPLAY_SENSORS_Y = (0 + DISPLAY_POTS_Y + DISPLAY_POTS_H);
 static const int DISPLAY_TEMP_H = 1;
 static const int DISPLAY_TEMP_Y = (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_HEIGHT);
-static const int DISPLAY_MAIN_Y = (0 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y);
-static const int DISPLAY_MAIN_H = has_vxsiicm ? 4 : 3;
-static const int DISPLAY_CLKMUX_Y = (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H);
-static const int DISPLAY_CLKMUX_H = has_clkmux ? 1 : 0;
-static const int DISPLAY_FPGA_Y = (0 + DISPLAY_CLKMUX_Y + DISPLAY_CLKMUX_H);
-static const int DISPLAY_FPGA_H = 1;
-static const int DISPLAY_PLL_Y = (0 + DISPLAY_FPGA_Y + DISPLAY_FPGA_H);
+static const int DISPLAY_MAIN_Y = (1 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y);
+static const int DISPLAY_MAIN_H = has_vxsiicm ? 5 : 4;
+static const int DISPLAY_PLL_Y = (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H);
 static const int DISPLAY_AUXPLL_Y = (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H);
-static const int DISPLAY_AUXPLL_H = 1;
+static const int DISPLAY_AUXPLL_H = has_auxpll ? 1 : 0;
 static const int DISPLAY_LOG_Y = (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H);
+static const int DISPLAY_AUXPLL_DETAIL_Y = (DISPLAY_PAGE_Y + DISPLAY_PLL_DETAIL_H + 1);
 
-static const int DISPLAY_TASKS_Y = 2;
-static const int DISPLAY_BOARDS_Y = 3;
-
-static const int DISPLAY_PLL_DETAIL_Y = 2;
-static const int DISPLAY_AUXPLL_DETAIL_Y = (DISPLAY_PLL_DETAIL_Y + DISPLAY_PLL_DETAIL_H + 1);
-
-static void print_main(void)
+static void print_main(int y)
 {
-    print_goto(DISPLAY_MAIN_Y, 1);
-        print_clear_eol();
-        dev_sfpiic_print();
-        dev_eeprom_config_print();
-        if (has_vxsiicm)
-            dev_vxsiicm_print();
+    print_goto(y, 1);
+    dev_sfpiic_print();
+    dev_eeprom_config_print();
+    if (has_vxsiicm)
+        dev_vxsiicm_print();
+    if (has_clkmux)
+        print_clkmux();
+    print_fpga();
 }
 
 static int old_enable_stats_display = 0;
 
-static void display_summary(bool repaint)
+static void display_summary_page(int y, bool repaint)
 {
+    print_goto(y, 1);
+    if (repaint)
+        print_clearbox(y, DISPLAY_SENSORS_Y-y);
     print_system_status(DISPLAY_SYS_STATUS_Y);
     print_powermon(DISPLAY_POWERMON_Y);
     if (has_digipots)
         print_digipots();
-    print_sensors(DISPLAY_SENSORS_Y);
 
-    print_thset(DISPLAY_TEMP_Y);
-    print_main();
-    if (has_clkmux)
-        print_clkmux(DISPLAY_CLKMUX_Y);
-    print_fpga(DISPLAY_FPGA_Y);
+//    if (repaint)
+//        print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_TEMP_Y - DISPLAY_SENSORS_Y);
+    print_sensors(DISPLAY_SENSORS_Y); // always repaint
+
+//    if (repaint)
+//        print_clearbox(DISPLAY_TEMP_Y, DISPLAY_LOG_Y - DISPLAY_TEMP_Y);
+    print_goto(DISPLAY_TEMP_Y, 1);
+    print_thset_line(); // always repaint
+    print_clear_eol();
+    print_main(DISPLAY_MAIN_Y);
     if (DISPLAY_PLL_Y + DISPLAY_PLL_H < screen_height-1)
     print_pll(DISPLAY_PLL_Y);
     if (has_auxpll && DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H < screen_height-1)
         print_auxpll(DISPLAY_AUXPLL_Y);
+
+    print_clear_eol();
     print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y, repaint);
 }
 
 void display_page_contents(display_mode_t mode, bool repaint)
 {
+    static display_mode_t old_mode;
+    if (old_mode != mode)
+        repaint = true;
+    old_mode = mode;
     switch (display_mode) {
     case DISPLAY_SUMMARY:
-        display_summary(repaint);
+        display_summary_page(DISPLAY_PAGE_Y, repaint);
         break;
     case DISPLAY_LOG:
-        display_log(3, screen_height-1-3, repaint);
+        display_log_page(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y-2, repaint);
         break;
     case DISPLAY_DIGIPOT:
-        display_digipots_page(DISPLAY_POTS_Y);
+        display_digipots_page(DISPLAY_PAGE_Y, repaint);
         break;
     case DISPLAY_PLL_DETAIL:
-        display_pll_detail(DISPLAY_PLL_DETAIL_Y);
+        if (repaint)
+            display_clear_page();
+        display_pll_detail(DISPLAY_PAGE_Y);
         display_auxpll_detail(DISPLAY_AUXPLL_DETAIL_Y);
         break;
     case DISPLAY_BOARDS:
-        display_boards(DISPLAY_BOARDS_Y);
+        display_boards_page(DISPLAY_PAGE_Y, repaint);
         break;
     case DISPLAY_SFP_DETAIL:
-        sfpPrintStatus(2);
+        display_sfpiic_page(DISPLAY_PAGE_Y);
         break;
     case DISPLAY_TASKS:
-        display_tasks(DISPLAY_TASKS_Y);
+        display_tasks_page(DISPLAY_PAGE_Y);
         break;
     case DISPLAY_DEVICES:
-        display_devices();
+        display_devices_page(DISPLAY_PAGE_Y);
         break;
     case DISPLAY_MODE_COUNT:
         break;
@@ -170,8 +172,16 @@ void display_page_contents(display_mode_t mode, bool repaint)
     }
 }
 
+static void print_prompt(void)
+{
+    print_goto(screen_height-1, 1);
+    printf("> %s", ANSI_CLEAR_EOL);
+    printf(ANSI_SHOW_CURSOR);
+}
+
 uint32_t display_refresh_tick = 0;
 uint32_t display_repaint_tick = 0;
+uint32_t display_reset_tick = 0;
 static struct tm old_tm = {0};
 
 void display_task_run(void)
@@ -183,42 +193,54 @@ void display_task_run(void)
     if (now > display_repaint_tick + DISPLAY_REPAINT_TIME_MS) {
         schedule_display_repaint();
     }
+    if (now > display_reset_tick + DISPLAY_RESET_TIME_MS) {
+        schedule_display_reset();
+    }
     struct tm tm;
     get_rtc_tm(&tm);
     const bool time_updated = old_tm.tm_sec != tm.tm_sec;
     old_tm = tm;
-    if (time_updated)
-        schedule_display_refresh();
 
-    const bool repaint_flag = read_display_repaint();
+    const bool reset_flag = read_display_reset();
+    const bool repaint_flag = reset_flag || read_display_repaint();
     const bool refresh_flag = repaint_flag || read_display_refresh();
 
-    if (!refresh_flag && !repaint_flag)
+    if (reset_flag) {
+        print_get_screen_size();
+        printf(ANSI_CLEARTERM);
+    }
+    if (repaint_flag) {
+        print_get_screen_size();
+    }
+
+    if (time_updated) {
+        printf(ANSI_CLEAR ANSI_NORM ANSI_HIDE_CURSOR);
+        print_header_line();
+    }
+    if (!refresh_flag && !repaint_flag) {
+        print_prompt();
         return;
+    }
     if (refresh_flag)
         display_refresh_tick = now;
     if (repaint_flag)
         display_repaint_tick = now;
+    if (reset_flag)
+        display_reset_tick = now;
 
     if (! screen_size_set) {
         print_get_screen_size();
     }
 
-    if (repaint_flag) {
-        print_get_screen_size();
-        printf(ANSI_CLEARTERM);
-    }
-    printf(ANSI_GOHOME ANSI_CLEAR);
-    printf(ANSI_HIDE_CURSOR);
-    print_header();
+    printf(ANSI_CLEAR ANSI_NORM ANSI_HIDE_CURSOR);
+    if (!time_updated)
+        print_header_line();
     print_footer(repaint_flag);
     print_goto(2, 1);
     display_page_contents(display_mode, repaint_flag);
     // print_get_screen_size();
     // print_footer(repaint_flag);
-    print_goto(screen_height-1, 1);
-    printf(ANSI_SHOW_CURSOR); // show cursor
-    printf("%s", ANSI_CLEAR_EOL);
+    print_prompt();
     displayUpdateCount++;
 }
 
@@ -226,5 +248,4 @@ void display_task_init(void)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
-    printf(ANSI_CLEAR ANSI_CLEARTERM ANSI_GOHOME);
 }

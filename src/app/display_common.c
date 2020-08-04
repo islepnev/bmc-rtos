@@ -64,9 +64,15 @@ void display_device_sensor_ansi_str(const char *name, DeviceClass device_class)
     print_clear_eol();
 }
 
-void display_devices(void)
+void display_clear_page(void)
 {
-    print_goto(2, 1);
+    print_clearbox(2, screen_height - 2);
+}
+
+void display_devices_page(int y)
+{
+    display_clear_page();
+    print_goto(y, 1);
     printf("Device list" ANSI_CLEAR_EOL "\n");
     devicelist_print(deviceList.list[0], 0);
     printf(ANSI_CLEAR_EOL);
@@ -74,18 +80,18 @@ void display_devices(void)
 
 static void print_uptime_str(void)
 {
-    uint32_t ss = osKernelSysTick() / osKernelSysTickFrequency;
-    uint16_t dd = ss / 86400;
+    unsigned int ss = osKernelSysTick() / osKernelSysTickFrequency;
+    unsigned int dd = ss / 86400;
     ss -= dd*86400;
-    uint16_t hh = ss / 3600;
+    unsigned int hh = ss / 3600;
     ss -= hh*3600;
-    uint16_t mm = ss / 60;
+    unsigned int mm = ss / 60;
     ss -= mm*60;
     if (dd > 1)
         printf("%u days ", dd);
     if (dd == 1)
         printf("%u day ", dd);
-    printf("%2u:%02u:%02lu", hh, mm, ss);
+    printf("%2u:%02u:%02u", hh, mm, ss);
 }
 
 static void print_rtc_str(void)
@@ -111,11 +117,10 @@ void print_clock(void)
     }
 }
 
-void print_header(void)
+void print_header_line(void)
 {
-//    enum {BUFSZ = 200};
-//    static char buf[BUFSZ+1] = {0};
-    // Title
+    print_goto(1, 1);
+        // Title
     printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
 #ifdef HAL_ETH_MODULE_ENABLED
     if (tcpipThreadId) {
@@ -137,8 +142,8 @@ void print_header(void)
                 ANSI_BGR_BLUE);
     }
 #endif
-    printf(" %lu MHz", HAL_RCC_GetHCLKFreq()/1000000);
-    printf(" %3lu%%", freertos_get_cpu_load_percent());
+    printf(" %u MHz", (unsigned int)(HAL_RCC_GetHCLKFreq()/1000000));
+    printf(" %3u%%", (unsigned int)freertos_get_cpu_load_percent());
     printf("     %s" ANSI_BGR_BLUE ANSI_CLEAR_EOL,
            enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ");
     printf(ANSI_CLEAR_EOL);
@@ -163,6 +168,7 @@ static const display_mode_t modes[10] = {
 
 void print_footer_line(void)
 {
+    print_goto(screen_height, 1);
     printf(ANSI_BGR_BLUE ANSI_GRAY);
     for (int i=0; i<MAX_KEYS; i++) {
         const char *hilight = (modes[i] == display_mode) ? ANSI_BGR_GREEN : ANSI_BGR_BLUE;

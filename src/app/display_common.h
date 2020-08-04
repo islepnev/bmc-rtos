@@ -20,8 +20,9 @@
 
 #include "dev_common_types.h"
 
-void display_devices(void);
-void print_header(void);
+void display_clear_page(void);
+void display_devices_page(int y);
+void print_header_line(void);
 void print_footer_line(void);
 SensorStatus get_device_sensor_status(DeviceClass device_class);
 const char *device_sensor_status_ansi_str(DeviceClass device_class);

@@ -34,9 +34,8 @@ void display_auxpll_detail(int y);
 void print_powermon(int y);
 void print_pll(int y);
 void print_auxpll(int y);
-void print_thset(int y);
-void print_fpga(int y);
-void print_clkmux(int y);
+void print_fpga(void);
+void print_clkmux(void);
 
 #ifdef __cplusplus
 }

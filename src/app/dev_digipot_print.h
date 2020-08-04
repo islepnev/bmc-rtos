@@ -18,13 +18,15 @@
 #ifndef DEV_DIGIPOT_PRINT_H
 #define DEV_DIGIPOT_PRINT_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern int digipot_screen_selected;
 
-void display_digipots_page(int y);
+void display_digipots_page(int y, bool repaint);
 
 #ifdef __cplusplus
 }

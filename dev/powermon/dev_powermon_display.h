@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define DISPLAY_POWERMON_H 3
+enum { DISPLAY_POWERMON_H = 3 };
 
 struct pm_sensor;
 const char *sensor_status_str(SensorStatus status);

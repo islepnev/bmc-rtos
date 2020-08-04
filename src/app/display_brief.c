@@ -65,7 +65,6 @@ void print_footer(bool repaint)
 {
     if (!repaint)
         return;
-    print_goto(screen_height, 1);
     print_footer_line();
 }
 
@@ -112,21 +111,13 @@ void print_auxpll(int y)
     auxpllPrint();
 }
 
-void print_thset(int y)
+void print_fpga(void)
 {
-    print_goto(y, 1);
-    print_thset_box();
-}
-
-void print_fpga(int y)
-{
-    print_goto(y, 1);
     dev_fpga_print_box();
 }
 
-void print_clkmux(int y)
+void print_clkmux(void)
 {
-    print_goto(y, 1);
     display_device_sensor_ansi_str("ClkMux", DEV_CLASS_CLKMUX);
 }
 

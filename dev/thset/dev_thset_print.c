@@ -24,7 +24,7 @@
 #include "thset/dev_thset.h"
 #include "thset/dev_thset_types.h"
 
-void print_thset_box(void)
+void print_thset_line(void)
 {
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p)
