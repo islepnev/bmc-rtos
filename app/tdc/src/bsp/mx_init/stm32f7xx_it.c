@@ -55,6 +55,7 @@ void I2C1_EV_IRQHandler(void)
     i2c_event_interrupt_handler();
 }
 
+
 void I2C1_ER_IRQHandler(void)
 {
     i2c_error_interrupt_handler();

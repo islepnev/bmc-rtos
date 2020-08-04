@@ -73,13 +73,13 @@ static Dev_adt7301 therm[TDC72_ADT7301_COUNT] = {0};
 
 static BusInterface tdc_smbus_bus_info = {
     .type = BUS_IIC,
-    .bus_number = 2,
+    .bus_number = 4,
     .address = 0
 };
 
 static BusInterface tdc_sfpiic_mux_bus_info = {
     .type = BUS_IIC,
-    .bus_number = 2,
+    .bus_number = 4,
     .address = 0x74
 };
 
@@ -112,9 +112,26 @@ static void local_init(DeviceBase *parent)
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, tdc_smbus_bus_info, "SFP IIC");
     create_device(&sfpiic.dev, &pca9548.dev, &pca9548.priv, DEV_CLASS_PCA9548, tdc_sfpiic_mux_bus_info, "IIC Mux");
     sfpiic.mux = &pca9548;
-    sfpiic.priv.portCount = 2;   
+#ifdef BOARD_TDC64
+    sfpiic.priv.portCount = 2;
+    sfpiic.priv.portIndex[0] = 0;
+    sfpiic.priv.portIndex[1] = 1;
     strncpy(sfpiic.priv.portName[0], "SFP-1", SFPIIC_PORT_NAME_LEN);
     strncpy(sfpiic.priv.portName[1], "SFP-2", SFPIIC_PORT_NAME_LEN);
+#endif
+#ifdef BOARD_TDC72
+    sfpiic.priv.portCount = 5;
+    sfpiic.priv.portIndex[0] = 0;
+    sfpiic.priv.portIndex[1] = 1;
+    sfpiic.priv.portIndex[2] = 2;
+    sfpiic.priv.portIndex[3] = 3;
+    sfpiic.priv.portIndex[4] = 4;
+    strncpy(sfpiic.priv.portName[0], "SFP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[1], "SFP-2", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[2], "CXP-1", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[3], "CXP-2", SFPIIC_PORT_NAME_LEN);
+    strncpy(sfpiic.priv.portName[4], "CXP-3", SFPIIC_PORT_NAME_LEN);
+#endif
 }
 
 static void start_task_powermon( void const *arg)
