@@ -27,6 +27,8 @@ void bsp_tty_setup_uart(void)
         LL_USART_SetRXPinLevel(TTY_USART, LL_USART_RXPIN_LEVEL_INVERTED);
         LL_USART_SetTXPinLevel(TTY_USART, LL_USART_TXPIN_LEVEL_INVERTED);
     }
+    LL_USART_EnableIT_ERROR(TTY_USART);
+    LL_USART_EnableOverrunDetect(TTY_USART);
     LL_USART_ConfigAsyncMode(TTY_USART);
     LL_USART_Enable(TTY_USART);
 }
