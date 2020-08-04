@@ -18,14 +18,16 @@
 #ifndef DISPLAY_BRIEF_H
 #define DISPLAY_BRIEF_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define DISPLAY_AUXPLL_DETAIL_H 3
 
-void print_pm_pots(void);
-void print_footer(void);
+void print_digipots(void);
+void print_footer(bool repaint);
 void print_system_status(int y);
 void display_pll_detail(int y);
 void display_auxpll_detail(int y);

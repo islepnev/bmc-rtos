@@ -18,7 +18,7 @@
 #ifndef DISPLAY_SENSORS_H
 #define DISPLAY_SENSORS_H
 
-extern const int DISPLAY_SENSORS_HEIGHT;
+enum {DISPLAY_SENSORS_HEIGHT = 16+2} ;
 
 void print_sensors(int y);
 

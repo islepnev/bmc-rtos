@@ -22,7 +22,7 @@
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
 
-const int DISPLAY_SENSORS_HEIGHT = (POWERMON_SENSORS+2);
+// const int DISPLAY_SENSORS_HEIGHT = (POWERMON_SENSORS+2);
 
 void print_sensors(int y)
 {

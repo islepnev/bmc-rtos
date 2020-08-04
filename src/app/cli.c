@@ -59,7 +59,9 @@ static void handle_escape_screen_pos(uint16_t row, uint16_t col)
             if (screen_width != new_screen_width || screen_height != new_screen_height) {
                 screen_width = new_screen_width;
                 screen_height = new_screen_height;
+                screen_size_set = 1;
                 schedule_display_repaint();
+                log_printf(LOG_DEBUG, "Set screen size %d x %d", screen_width, screen_height);
             }
         }
     }
@@ -155,6 +157,8 @@ void cliTask(void const *arg)
         }
         switch(ch) {
         case ' ':
+            schedule_display_repaint();
+            break;
         case '\r':
         case '\n':
             cycle_display_mode();
@@ -162,6 +166,7 @@ void cliTask(void const *arg)
         case 'p':
         case 'P':
             enable_power = !enable_power;
+            schedule_display_refresh();
             if (enable_power)
                 log_put(LOG_INFO, "Received command power ON");
             else

@@ -47,7 +47,7 @@ void cycle_display_mode(void)
     case DISPLAY_DEVICES:
         display_mode = DISPLAY_SUMMARY;
         break;
-    case DISPLAY_NONE:
+    case DISPLAY_MODE_COUNT:
         display_mode = DISPLAY_SUMMARY;
         break;
     default:

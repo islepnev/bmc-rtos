@@ -46,7 +46,7 @@ void auxpllPrintStatus()
 
     // printf("AUXPLL FSM state %s\n", auxpllStateStr(d->fsm_state));
     const AUXPLL_Readback_REG_Type *pll_readback = &priv->status.pll_readback;
-    printf("PLL readback %02X %s%s%s%s%s%s\n",
+    printf("PLL readback %02X %s%s%s%s%s%s",
            pll_readback->raw,
            pll_readback->b.dlock ? " DLOCK" : "",
            pll_readback->b.ref1_over_thr ? " REF1_over" : "",
@@ -55,7 +55,6 @@ void auxpllPrintStatus()
            pll_readback->b.ref2_selected ? " REF2_SEL" : "",
            pll_readback->b.vco_cal_finished ? " VCO_CAL_OK" : ""
            );
-    printf("\n");
 }
 
 void auxpllPrint(void)
@@ -66,10 +65,7 @@ void auxpllPrint(void)
     }
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
 
-    printf("PLL AD9516:   %s %s",
-           auxpllStateStr(priv->fsm_state),
+    printf("PLL AD9516: %s  %s", auxpllStateStr(priv->fsm_state),
            sensor_status_ansi_str(get_auxpll_sensor_status()));
     print_clear_eol();
-    printf("  ");
-    auxpllPrintStatus();
 }

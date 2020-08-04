@@ -24,7 +24,7 @@ extern "C" {
 
 extern int digipot_screen_selected;
 
-void display_digipots(void);
+void display_digipots_page(int y);
 
 #ifdef __cplusplus
 }

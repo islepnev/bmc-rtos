@@ -47,7 +47,8 @@ static void print_log_entry(uint32_t index)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-static void print_log_lines(int count)
+static uint32_t old_log_wptr = 0;
+static void print_log_lines(int y, int count, bool repaint)
 {
     uint32_t max_count = count;
     if (max_count > LOG_BUF_SIZE)
@@ -55,6 +56,10 @@ static void print_log_lines(int count)
     volatile const uint32_t log_count = log_get_count();
     volatile const uint32_t log_wptr = log_get_wptr();
     volatile const uint32_t log_start = (log_count > max_count) ? (log_wptr + LOG_BUF_SIZE - max_count) % LOG_BUF_SIZE : 0;
+    if (!repaint && old_log_wptr == log_wptr)
+        return;
+    old_log_wptr = log_wptr;
+    print_goto(y, 1);
     if (log_start <= log_wptr) {
         for (uint32_t i=log_start; i<log_wptr; i++)
             print_log_entry(i);
@@ -68,19 +73,18 @@ static void print_log_lines(int count)
         print_clear_eol();
 }
 
-void print_log_messages(int y, int count)
+void print_log_messages(int y, int count, bool repaint)
 {
-    //    print_clearbox(y, DISPLAY_LOG_H);
-    print_goto(y, 1);
     if (count > 0)
-        print_log_lines(count);
+        print_log_lines(y, count, repaint);
 }
 
-void display_log(int y, int count)
+void display_log(int y, int count, bool repaint)
 {
-    print_goto(2, 1);
-    printf("Log messages\n" ANSI_CLEAR_EOL);
-    print_goto(y, 1);
-    print_log_lines(count);
+    if (repaint) {
+        print_goto(2, 1);
+        printf("Log messages\n" ANSI_CLEAR_EOL);
+    }
+    print_log_lines(y, count, repaint);
 }
 

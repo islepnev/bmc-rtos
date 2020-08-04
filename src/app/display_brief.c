@@ -36,7 +36,7 @@
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
 
-void print_pm_pots(void)
+void print_digipots(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
     if (!d || !d->priv)
@@ -61,8 +61,10 @@ void print_pm_pots(void)
     printf("%s\n", ANSI_CLEAR_EOL);
 }
 
-void print_footer(void)
+void print_footer(bool repaint)
 {
+    if (!repaint)
+        return;
     print_goto(screen_height, 1);
     print_footer_line();
 }

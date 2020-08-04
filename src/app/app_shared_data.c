@@ -21,10 +21,12 @@ bool system_power_present = false;
 int enable_pll_run = 0;
 display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
-int enable_stats_display = 1;
+bool eth_link_up = false;
+int app_ipv4 = 0;
 
 int screen_width = 100;
 int screen_height = 35;
+bool screen_size_set = 0;
 
 static bool display_refresh_flag = 0;
 static bool display_repaint_flag = 1;

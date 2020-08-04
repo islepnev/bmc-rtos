@@ -19,6 +19,7 @@
 #define APP_SHARED_DATA_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,17 +34,18 @@ typedef enum {
     DISPLAY_SFP_DETAIL,
     DISPLAY_TASKS,
     DISPLAY_DEVICES,
-    DISPLAY_NONE,
+    DISPLAY_MODE_COUNT // last element
 } display_mode_t;
 
 extern bool system_power_present;
 extern int enable_pll_run;
 extern display_mode_t display_mode;
 extern int enable_power;
-extern int enable_stats_display;
-
+extern bool eth_link_up;
+extern int app_ipv4;
 extern int screen_width;
 extern int screen_height;
+extern bool screen_size_set;
 
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);

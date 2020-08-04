@@ -1,6 +1,7 @@
 
 #include "app_task_tcpip_impl.h"
 
+#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "ethernetif.h"
 #include "lwip/netif.h"
@@ -54,6 +55,7 @@ static void Netif_Config(void)
 
   /* Set the link callback function, this function is called on change of link status*/
   netif_set_link_callback(&gnetif, ethernetif_update_config);
+  ethernetif_notify_conn_changed(&gnetif);
 
   /* create a binary semaphore used for informing ethernetif of frame reception */
   osSemaphoreDef(Netif_SEM);
@@ -172,5 +174,6 @@ static void CPU_CACHE_Enable(void)
 
 void ethernetif_notify_conn_changed(struct netif *netif)
 {
+    eth_link_up = netif_is_link_up(netif);
     log_printf(LOG_INFO, "Ethernet link %s", netif_is_link_up(netif) ? "up" : "down");
 }

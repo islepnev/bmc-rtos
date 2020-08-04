@@ -29,12 +29,12 @@
 #include "powermon/dev_powermon_display.h"
 #include "powermon/dev_powermon_types.h"
 
-void display_digipots(void)
+void display_digipots_page(int y)
 {
-    print_goto(2, 1);
+    print_goto(y, 1);
     printf("Voltage adjustments\n" ANSI_CLEAR_EOL);
     printf("  Keys: UP, DOWN: select channel; +, -: adjust voltage; 0: reset; w: write eeprom\n" ANSI_CLEAR_EOL);
-    print_goto(4, 1);
+    print_goto(y+2, 1);
     printf("\n");
     printf("   adjustment ");
     pm_sensor_print_header();
