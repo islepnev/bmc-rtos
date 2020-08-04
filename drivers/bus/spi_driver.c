@@ -96,10 +96,10 @@ void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable)
     if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
         return;
     if (enable) {
-        log_printf(LOG_INFO, "Enabling FPGA SPI");
+        log_printf(LOG_INFO, "Enabling SPI%d", dev_index);
         HAL_SPI_MspInit(hspi);
     } else {
-        log_printf(LOG_INFO, "Disabling FPGA SPI");
+        log_printf(LOG_INFO, "Disabling SPI%d", dev_index);
         // HAL_SPI_Abort(hspi);
         HAL_SPI_MspDeInit(hspi);
     }
