@@ -35,7 +35,6 @@ void dev_digipot_run(struct Dev_digipots *d)
     digipot_state_t old_state = d->priv.state;
     switch (d->priv.state) {
     case DIGIPOT_STATE_INIT: {
-        d->priv.count = 0;
         d->priv.state = DIGIPOT_STATE_DETECT;
         break;
     }
