@@ -31,7 +31,6 @@
 
 void display_boards_page(int y, bool repaint)
 {
-#ifdef BOARD_TTVXS
     print_goto(y, 1);
     printf("Boards" ANSI_CLEAR_EOL "\n");
     printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
@@ -72,5 +71,4 @@ void display_boards_page(int y, bool repaint)
     // print_clearbox(y+2+line, VXSIIC_SLOTS-line);
     if (repaint)
         print_clearbox(cur_y, screen_height - 1 - cur_y);
-#endif
 }

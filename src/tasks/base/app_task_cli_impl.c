@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "app_shared_data.h"
+#include "commands_digipot.h"
 
 display_mode_t next_display_mode(display_mode_t mode)
 {
@@ -63,7 +64,9 @@ void cycle_display_mode(void)
 
 void screen_handle_key(char ch)
 {
-    (void)ch;
+    if (DISPLAY_DIGIPOT == display_mode) {
+        digipot_screen_handle_key(ch);
+    }
 }
 
 const char *ESC_CODE_LEFT = "[D";
