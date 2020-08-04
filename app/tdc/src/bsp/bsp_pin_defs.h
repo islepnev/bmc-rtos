@@ -21,6 +21,8 @@
 #define ADT_CS_B3_GPIO_Port GPIOE
 #define ADT_CS_B3_Pin GPIO_PIN_15
 //
+#define SPI4_GPIO_Port GPIOE
+#define SPI4_NSS_Pin GPIO_PIN_11
 #define SPI4_DIN_GPIO_Port GPIOE
 #define SPI4_DIN_Pin GPIO_PIN_14
 #define SPI4_DOUT_GPIO_Port GPIOE
