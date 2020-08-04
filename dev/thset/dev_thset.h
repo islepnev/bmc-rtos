@@ -36,6 +36,7 @@ SensorStatus dev_thset_thermStatus(void);
 //thset_state_t thermal_shutdown_check(Dev_thset *d);
 void clear_thermal_shutdown(void);
 thset_state_t get_thset_state(void);
+SensorStatus dev_thset_sensor_status(const GenericSensor *d);
 
 #ifdef __cplusplus
 }

@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "devicelist.h"
+#include "dev_thset.h"
 #include "display.h"
 #include "thset/dev_thset.h"
 #include "thset/dev_thset_types.h"
@@ -32,7 +33,7 @@ void print_thset_line(void)
     printf("Temp: ");
     for (int i=0; i<p->count; i++) {
         const GenericSensor *sensor = &p->sensors[i];
-        SensorStatus status = sensor->hdr.b.state;
+        SensorStatus status = dev_thset_sensor_status(sensor); // ->hdr.b.state;
         const char *prefix = "";
         const char *suffix = "";
         switch (status) {
@@ -45,7 +46,7 @@ void print_thset_line(void)
             suffix = "";
             break;
         case SENSOR_WARNING:
-            prefix = ANSI_BGR_YELLOW ANSI_GRAY;
+            prefix = ANSI_BGR_YELLOW ANSI_BLACK;
             suffix = ANSI_CLEAR;
             break;
         case SENSOR_CRITICAL:
