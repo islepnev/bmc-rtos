@@ -14,114 +14,12 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef AD9516_STATUS_H
 #define AD9516_STATUS_H
 
 #include <stdint.h>
-/*
-typedef union
-{
-  struct
-  {
-      uint8_t save_in_progress:1;
-      uint8_t load_in_progress:1;
-      uint8_t fault:1;
-      uint8_t crc_error:1;
-      uint8_t reserved:4;
-  } b;
-  uint8_t raw;
-} Eeprom_Status_REG_Type;
 
-typedef union
-{
-  struct
-  {
-      uint8_t locked:1;
-      uint8_t stable:1;
-      uint8_t cal_busy:1;
-      uint8_t reserved:1;
-      uint8_t pll0_locked:1;
-      uint8_t pll1_locked:1;
-      uint8_t reserved2:2;
-  } b;
-  uint8_t raw;
-} Sysclk_Status_REG_Type;
-
-typedef union
-{
-  struct
-  {
-      uint8_t temp_alarm:1;
-      uint8_t aux_dpll_lock:1;
-      uint8_t aux_dpll_ref_fault:1;
-      uint8_t reserved:1;
-      uint8_t aux_nco0_delta_slewing:1;
-      uint8_t aux_nco0_delta_overflow:1;
-      uint8_t aux_nco1_delta_slewing:1;
-      uint8_t aux_nco1_delta_overflow:1;
-  } b;
-  uint8_t raw;
-} Misc_Status_REG_Type;
-
-typedef union
-{
-  struct
-  {
-      uint8_t slow:1;
-      uint8_t fast:1;
-      uint8_t jitter:1;
-      uint8_t fault:1;
-      uint8_t valid:1;
-      uint8_t los:1;
-      uint8_t reserved:2;
-  } b;
-  uint8_t raw;
-} Ref_Status_REG_Type;
-
-typedef union
-{
-  struct
-  {
-      uint8_t profile_0:1;
-      uint8_t profile_1:1;
-      uint8_t profile_2:1;
-      uint8_t profile_3:1;
-      uint8_t profile_4:1;
-      uint8_t profile_5:1;
-      uint8_t reserved:2;
-  } b;
-  uint8_t raw;
-} DPLL_Active_Profile_REG_Type;
-
-typedef union
-{
-  struct
-  {
-      uint8_t all_lock:1;
-      uint8_t dpll_phase_lock:1;
-      uint8_t dpll_freq_lock:1;
-      uint8_t apll_lock:1;
-      uint8_t apll_cal_busy:1;
-      uint8_t apll_cal_done:1;
-      uint8_t reserved:2;
-  } b;
-  uint8_t raw;
-} DPLL_Lock_Status_REG_Type;
-
-typedef union
-{
-  struct
-  {
-      uint8_t freerun:1;
-      uint8_t holdover:1;
-      uint8_t ref_switch:1;
-      uint8_t active:1;
-      uint8_t active_profile:3;
-      uint8_t reserved:1;
-  } b;
-  uint8_t raw;
-} DPLL_Operation_REG_Type;
-*/
 typedef union
 {
   struct
@@ -141,11 +39,6 @@ typedef union
 enum { AUXREF_INPUT_COUNT = 2};
 
 typedef struct {
-    //    Eeprom_Status_REG_Type eeprom;
-    //    Sysclk_Status_REG_Type sysclk;
-    //    Misc_Status_REG_Type misc;
-    //    int16_t internal_temp;
-    //    Ref_Status_REG_Type ref[REF_INPUT_COUNT];
     AUXPLL_Readback_REG_Type pll_readback;
 } AD9516_Status;
 

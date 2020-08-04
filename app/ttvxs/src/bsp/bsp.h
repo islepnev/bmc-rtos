@@ -15,13 +15,15 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TTVXS board specific definitions
-
 #ifndef BSP_H
 #define BSP_H
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "mcb.h"
+
+#define BOARD_TTVXS 1
 
 #define LED_HEARTBEAT LED_INT_GREEN
 
@@ -29,27 +31,29 @@
 extern "C" {
 #endif
 
-#define hi2c_ad9545 hi2c4
-#define hi2c_sensors hi2c2
-#define hi2c_sfpiic hi2c2
-#define vxsiic_hi2c hi2c1
-#define hi2c_eeprom_cfg hi2c3
+//#define hi2c_ad9545 hi2c4
+//#define hi2c_sensors hi2c2
+//#define hi2c_sfpiic hi2c2
+//#define vxsiic_hi2c hi2c1
+//#define hi2c_eeprom_cfg hi2c3 // mezzanine onboard eeprom
 
-#define ad9545_deviceAddr 0x4A
-#define eeprom_cfg_deviceAddr 0x50
+//#define ad9545_deviceAddr 0x4A
+//#define eeprom_cfg_deviceAddr 0x50
 
-#define fpga_spi hspi5
 #ifdef TTVXS_1_0
 #define therm_spi hspi2
 #else
-#define ad9516_spi hspi2
+#define AD9516_SPI_BUS_INDEX 2
 #endif
 
-#define DEV_THERM_COUNT 1
+#define AUXPLL_AD9516_OUT6_ENABLE 1
+#define AUXPLL_AD9516_OUT7_ENABLE 0
+#define AUXPLL_AD9516_OUT8_ENABLE 1
+#define AUXPLL_AD9516_OUT9_ENABLE 1
 
-uint32_t detect_pcb_version(void);
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
+void sfpiic_switch_enable(bool enable);
 
 #ifdef __cplusplus
 }

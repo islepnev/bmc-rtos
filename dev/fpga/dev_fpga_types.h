@@ -19,24 +19,45 @@
 #define DEV_FPGA_TYPES_H
 
 #include <stdint.h>
-#include "dev_common_types.h"
+
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 enum {FPGA_REG_COUNT = 8};
-typedef struct Dev_fpga {
-    DeviceStatus present;
+
+typedef enum {
+    FPGA_STATE_STANDBY,
+    FPGA_STATE_LOAD,
+    FPGA_STATE_RESET,
+    FPGA_STATE_RUN,
+    FPGA_STATE_PAUSE,
+    FPGA_STATE_ERROR
+} fpga_state_t;
+
+typedef struct Dev_fpga_priv {
     uint16_t regs[FPGA_REG_COUNT];
+    fpga_state_t state;
+    uint32_t fpga_load_start_tick;
+    uint32_t stateStartTick;
     uint8_t initb;
     uint8_t done;
     uint16_t id;
     uint16_t fw_ver;
     uint16_t fw_rev;
+} Dev_fpga_priv;
+
+typedef struct Dev_fpga {
+    DeviceBase dev;
+    Dev_fpga_priv priv;
 } Dev_fpga;
 
-SensorStatus get_fpga_sensor_status(const Dev_fpga *d);
+SensorStatus get_fpga_sensor_status(void);
+uint32_t get_fpga_id(void);
+uint32_t get_fpga_fw_ver(void);
+uint32_t get_fpga_fw_rev(void);
 
 #ifdef __cplusplus
 }

@@ -17,160 +17,143 @@
 
 #include "ad9545_i2c_hal.h"
 
-#include "bsp.h"
 #include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
+#include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 100;
 
-static HAL_StatusTypeDef pll_i2c_detect(uint16_t deviceAddr, uint32_t Trials)
+static bool pll_i2c_detect(BusInterface *bus, uint32_t Trials)
 {
-    return i2c_driver_detect(&hi2c_ad9545, deviceAddr, Trials, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_detect(hi2c_handle(bus->bus_number), DevAddress, Trials, I2C_TIMEOUT_MS);
 }
 
-static HAL_StatusTypeDef pll_i2c_mem_read(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
+static bool pll_i2c_mem_read(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_read(&hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_read(hi2c_handle(bus->bus_number), DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
-static HAL_StatusTypeDef pll_i2c_mem_write(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
+static bool pll_i2c_mem_write(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
-    return i2c_driver_mem_write(&hi2c_ad9545, DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_mem_write(hi2c_handle(bus->bus_number), DevAddress, MemAddress, MemAddSize, pData, Size, I2C_TIMEOUT_MS);
 }
 
-HAL_StatusTypeDef ad9545_i2c_detect(void)
+bool ad9545_i2c_detect(BusInterface *bus)
 {
-    HAL_StatusTypeDef ret;
     uint32_t Trials = 2;
-    ret = pll_i2c_detect(ad9545_deviceAddr << 1, Trials);
-    return ret;
+    return pll_i2c_detect(bus, Trials);
 }
 
-HAL_StatusTypeDef ad9545_read1(uint16_t reg, uint8_t *data)
+bool ad9545_read1(BusInterface *bus, uint16_t reg, uint8_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 1};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write1(uint16_t reg, uint8_t data)
+bool ad9545_write1(BusInterface *bus, uint16_t reg, uint8_t data)
 {
-    HAL_StatusTypeDef ret;
     int Size = 1;
     uint8_t pData[Size];
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_read2(uint16_t reg, uint16_t *data)
+bool ad9545_read2(BusInterface *bus, uint16_t reg, uint16_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 2};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint32_t)pData[1] << 8) | pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint32_t)pData[1] << 8) | pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write2(uint16_t reg, uint16_t data)
+bool ad9545_write2(BusInterface *bus, uint16_t reg, uint16_t data)
 {
-    HAL_StatusTypeDef ret;
     int Size = 2;
     uint8_t pData[Size];
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_read3(uint16_t reg, uint32_t *data)
+bool ad9545_read3(BusInterface *bus, uint16_t reg, uint32_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 3};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint32_t)pData[2] << 16) | ((uint32_t)pData[1] << 8) | pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write3(uint16_t reg, uint32_t data)
+bool ad9545_write3(BusInterface *bus, uint16_t reg, uint32_t data)
 {
-    HAL_StatusTypeDef ret;
     int Size = 3;
     uint8_t pData[Size];
     pData[2] = (data >> 16) & 0xFF;
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_read4(uint16_t reg, uint32_t *data)
+bool ad9545_read4(BusInterface *bus, uint16_t reg, uint32_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 4};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg , I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint32_t)pData[3] << 24)
-                    | ((uint32_t)pData[2] << 16)
-                    | ((uint32_t)pData[1] << 8)
-                    | pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg , I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint32_t)pData[3] << 24)
+                | ((uint32_t)pData[2] << 16)
+                | ((uint32_t)pData[1] << 8)
+                | pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write4(uint16_t reg, uint32_t data)
+bool ad9545_write4(BusInterface *bus, uint16_t reg, uint32_t data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 4};
     uint8_t pData[Size];
     pData[3] = (data >> 24) & 0xFF;
     pData[2] = (data >> 16) & 0xFF;
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_read5(uint16_t reg, uint64_t *data)
+bool ad9545_read5(BusInterface *bus, uint16_t reg, uint64_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 5};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg , I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint64_t)pData[4] << 32)
-                    | ((uint32_t)pData[3] << 24)
-                    | ((uint32_t)pData[2] << 16)
-                    | ((uint16_t)pData[1] << 8)
-                    | pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg , I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint64_t)pData[4] << 32)
+                | ((uint32_t)pData[3] << 24)
+                | ((uint32_t)pData[2] << 16)
+                | ((uint16_t)pData[1] << 8)
+                | pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write5(uint16_t reg, uint64_t data)
+bool ad9545_write5(BusInterface *bus, uint16_t reg, uint64_t data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 5};
     uint8_t pData[Size];
     pData[4] = (data >> 32) & 0xFF;
@@ -178,32 +161,28 @@ HAL_StatusTypeDef ad9545_write5(uint16_t reg, uint64_t data)
     pData[2] = (data >> 16) & 0xFF;
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_read6(uint16_t reg, uint64_t *data)
+bool ad9545_read6(BusInterface *bus, uint16_t reg, uint64_t *data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 6};
     uint8_t pData[Size];
-    ret = pll_i2c_mem_read(ad9545_deviceAddr << 1, reg , I2C_MEMADD_SIZE_16BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint64_t)pData[5] << 40)
-                    | ((uint64_t)pData[4] << 32)
-                    | ((uint32_t)pData[3] << 24)
-                    | ((uint32_t)pData[2] << 16)
-                    | ((uint16_t)pData[1] << 8)
-                    | pData[0];
-        }
+    if (! pll_i2c_mem_read(bus, reg , I2C_MEMADD_SIZE_16BIT, pData, Size))
+        return false;
+    if (data) {
+        *data = ((uint64_t)pData[5] << 40)
+                | ((uint64_t)pData[4] << 32)
+                | ((uint32_t)pData[3] << 24)
+                | ((uint32_t)pData[2] << 16)
+                | ((uint16_t)pData[1] << 8)
+                | pData[0];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ad9545_write6(uint16_t reg, uint64_t data)
+bool ad9545_write6(BusInterface *bus, uint16_t reg, uint64_t data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 6};
     uint8_t pData[Size];
     pData[5] = (data >> 40) & 0xFF;
@@ -212,13 +191,11 @@ HAL_StatusTypeDef ad9545_write6(uint16_t reg, uint64_t data)
     pData[2] = (data >> 16) & 0xFF;
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }
 
-HAL_StatusTypeDef ad9545_write8(uint16_t reg, uint64_t data)
+bool ad9545_write8(BusInterface *bus, uint16_t reg, uint64_t data)
 {
-    HAL_StatusTypeDef ret;
     enum {Size = 8};
     uint8_t pData[Size];
     pData[7] = (data >> 56) & 0xFF;
@@ -229,6 +206,5 @@ HAL_StatusTypeDef ad9545_write8(uint16_t reg, uint64_t data)
     pData[2] = (data >> 16) & 0xFF;
     pData[1] = (data >> 8) & 0xFF;
     pData[0] = data & 0xFF;
-    ret = pll_i2c_mem_write(ad9545_deviceAddr << 1, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
-    return ret;
+    return pll_i2c_mem_write(bus, reg, I2C_MEMADD_SIZE_16BIT, pData, Size);
 }

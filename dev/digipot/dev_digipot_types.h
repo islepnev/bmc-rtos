@@ -19,27 +19,49 @@
 #define DEV_DIGIPOT_TYPES_H
 
 #include <stdint.h>
-#include "bsp_digipot.h"
+#include "bus/bus_types.h"
 #include "dev_common_types.h"
-#include "dev_pm_sensors_types.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Dev_ad5141 {
-    PotIndex index;
-    SensorIndex sensorIndex;
-    uint8_t busAddress;
-    DeviceStatus deviceStatus;
+typedef struct Dev_ad5141_priv {
+    //    PotIndex index;
+    //    SensorIndex sensorIndex;
+    int index;
+    int sensorIndex;
     uint8_t value;
+} Dev_ad5141_priv;
+
+typedef struct Dev_ad5141 {
+    DeviceBase dev;
+    Dev_ad5141_priv priv;
 } Dev_ad5141;
 
+typedef enum {
+    DIGIPOT_STATE_INIT,
+    DIGIPOT_STATE_DETECT,
+    DIGIPOT_STATE_RUN,
+    DIGIPOT_STATE_ERROR
+} digipot_state_t;
+
+enum {MAX_DIGIPOT_COUNT = 4};
+
+typedef struct Dev_digipots_priv {
+    unsigned int count;
+    uint32_t stateStartTick;
+    digipot_state_t state;
+    Dev_ad5141 pot[MAX_DIGIPOT_COUNT];
+} Dev_digipots_priv;
+
 typedef struct Dev_digipots {
-    Dev_ad5141 pot[DEV_DIGIPOT_COUNT];
+    DeviceBase dev;
+    Dev_digipots_priv priv;
 } Dev_digipots;
 
-void struct_pots_init(Dev_digipots *d);
+SensorStatus get_digipot_sensor_status(void);
 
 #ifdef __cplusplus
 }

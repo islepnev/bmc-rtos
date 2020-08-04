@@ -16,10 +16,3 @@
 */
 
 #include "dev_ttvxs_clkmux_types.h"
-
-SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d)
-{
-   if (!d->present)
-      return SENSOR_UNKNOWN;
-   return SENSOR_NORMAL;
-}

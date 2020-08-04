@@ -18,9 +18,10 @@
 */
 
 #include "gpio.h"
+
+#include "bsp_pin_defs.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
-#include "bsp_pin_defs.h"
 
 typedef struct {
     GPIO_TypeDef* GPIOx;
@@ -122,13 +123,14 @@ void MX_GPIO_Init(void)
 
   // LEDs
   static const pin_def_t led_pins[5] = {
-      {LED_RED_B_GPIO_Port, LED_RED_B_Pin},
-      {LED_YELLOW_B_GPIO_Port, LED_YELLOW_B_Pin},
-      {LED_GREEN_B_GPIO_Port, LED_GREEN_B_Pin},
-      {LED_ERROR_B_GPIO_Port, LED_ERROR_B_Pin},
+      {LED_RED_B_GPIO_Port,       LED_RED_B_Pin},
+      {LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin},
+      {LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin},
+      {LED_ERROR_B_GPIO_Port,     LED_ERROR_B_Pin},
       {LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin}
   };
   for (int i=0; i<5; i++) {
+      // LEDs, turn on by default
       HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = led_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -252,12 +254,12 @@ void MX_GPIO_Init(void)
 
 #ifdef TTVXS_1_0
 #else
-  GPIO_InitStruct.Pin = SPI2_NSS_Pin;
+  GPIO_InitStruct.Pin = AD9516_CS_Pin;
   // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD; // OD;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP; // 4.7k pullup on PCB
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);
-  HAL_GPIO_Init(SPI2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(AD9516_CS_GPIO_Port, AD9516_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_Init(AD9516_CS_GPIO_Port, &GPIO_InitStruct);
 #endif
 }

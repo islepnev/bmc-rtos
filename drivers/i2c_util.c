@@ -16,7 +16,9 @@
 */
 
 #include "i2c_util.h"
+
 #include <stdio.h>
+
 #include "stm32f7xx_hal.h"
 
 static const int I2C_TIMEOUT_MS = 10;

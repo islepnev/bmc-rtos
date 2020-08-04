@@ -17,20 +17,12 @@
 
 #include "bsp_fpga.h"
 
-#include "fpga_spi_hal.h"
-#include "dev_pm_sensors_config.h"
-#include "dev_powermon_types.h"
+#include "bsp_sensors_config.h"
 
-bool fpgaWriteSensors(const struct Dev_powermon *d)
-{
-    uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VXS_5V].busVoltage * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_VXS_5V].current * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_3V3].busVoltage * 1000)))
-        return false;
-    if (HAL_OK != fpga_spi_hal_write_reg(address++, (int16_t)(d->sensors[SENSOR_3V3].current * 1000)))
-        return false;
-    return true;
-}
+sensor_list_t fpga_sensor_map = {
+    .count = 2,
+    .indices = {
+        SENSOR_5V,
+        SENSOR_3V3
+    }
+};

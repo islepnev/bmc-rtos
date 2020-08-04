@@ -21,54 +21,48 @@
 
 #include <stdio.h>
 
-#include "ad5141_i2c_hal.h"
-#include "powermon_i2c_driver.h"
+#include "ad5141/ad5141.h"
+#include "ad5141/ad5141_i2c_hal.h"
 
 void dev_ad5141_reset(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_reset(d->busAddress);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_reset(&d->dev.bus);
 }
 
 void dev_ad5141_inc(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_inc_rdac(d->busAddress);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_inc_rdac(&d->dev.bus);
 }
 
 void dev_ad5141_dec(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_dec_rdac(d->busAddress);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_dec_rdac(&d->dev.bus);
 }
 
 void dev_ad5141_write(Dev_ad5141 *d)
 {
-    if (d->deviceStatus == DEVICE_NORMAL)
-        ad5141_copy_rdac_to_eeprom(d->busAddress);
+    if (d->dev.device_status == DEVICE_NORMAL)
+        ad5141_copy_rdac_to_eeprom(&d->dev.bus);
 }
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    int detected = (HAL_OK == ad5141_nop(d->busAddress));
-    if (detected)
-        d->deviceStatus = DEVICE_NORMAL;
-    else
-        d->deviceStatus = DEVICE_UNKNOWN;
-    return d->deviceStatus;
+    bool detected = ad5141_nop(&d->dev.bus);
+    d->dev.device_status = detected ? DEVICE_NORMAL : DEVICE_UNKNOWN;
+    return d->dev.device_status;
 }
 
 int digipot_detect(Dev_digipots *d)
 {
     int count = 0;
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        powermon_i2c_reset_master();
-        DeviceStatus s = dev_ad5141_detect(&d->pot[i]);
+    for (uint i=0; i<d->priv.count; i++) {
+        DeviceStatus s = dev_ad5141_detect(&d->priv.pot[i]);
         if (s == DEVICE_NORMAL) {
-            dev_ad5141_reset(&d->pot[i]);
+            dev_ad5141_reset(&d->priv.pot[i]);
             count++;
-        } else {
-            powermon_i2c_reset_master();
         }
     }
     return count;
@@ -76,13 +70,11 @@ int digipot_detect(Dev_digipots *d)
 
 void digipot_read_rdac_all(Dev_digipots *d)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
-        Dev_ad5141 *p = &d->pot[i];
-        if (p->deviceStatus != DEVICE_NORMAL)
+    for (uint i=0; i<d->priv.count; i++) {
+        Dev_ad5141 *p = &d->priv.pot[i];
+        if (p->dev.device_status != DEVICE_NORMAL)
             continue;
-        ret = ad5141_read_rdac(p->busAddress, &p->value);
-        if (HAL_OK != ret)
+        if (! ad5141_read_rdac(&p->dev.bus, &p->priv.value))
             break;
     }
 }

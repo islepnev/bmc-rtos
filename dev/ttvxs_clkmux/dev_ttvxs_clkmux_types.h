@@ -19,7 +19,8 @@
 #define DEV_TTVXS_CLKMUX_TYPES_H
 
 #include <stdint.h>
-#include "dev_common_types.h"
+
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,12 +32,14 @@ typedef enum {
     TTVXS_PLL_SOURCE_EXT = 2,
 } ttvxs_pll_source_t;
 
-typedef struct Dev_ttvxs_clkmux {
-    DeviceStatus present;
+typedef struct Dev_ttvxs_clkmux_priv {
     ttvxs_pll_source_t pll_source;
-} Dev_ttvxs_clkmux;
+} Dev_ttvxs_clkmux_priv;
 
-SensorStatus get_clkmux_sensor_status(const Dev_ttvxs_clkmux *d);
+typedef struct Dev_ttvxs_clkmux {
+    DeviceBase dev;
+    Dev_ttvxs_clkmux_priv priv;
+} Dev_ttvxs_clkmux;
 
 #ifdef __cplusplus
 }

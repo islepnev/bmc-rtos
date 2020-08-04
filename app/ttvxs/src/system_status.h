@@ -24,12 +24,10 @@
 extern "C" {
 #endif
 
-struct Devices;
-struct Dev_ad9545;
+DeviceStatus getDeviceStatus(void);
+SensorStatus getSystemStatus(void);
 
-DeviceStatus getDeviceStatus(const struct Devices *d);
-SensorStatus getSystemStatus(const struct Devices *d);
-SensorStatus getPllStatus(const struct Dev_ad9545 *d);
+encoded_system_status_t encode_system_status(void);
 
 #ifdef __cplusplus
 }

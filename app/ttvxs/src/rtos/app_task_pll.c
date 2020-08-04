@@ -17,39 +17,77 @@
 
 #include "app_task_pll.h"
 
+#include <assert.h>
 #include <stdint.h>
 
-#include "cmsis_os.h"
+#include "ad9545/ad9545.h"
+#include "ad9545/dev_ad9545.h"
+#include "ad9545/dev_ad9545_fsm.h"
+#include "app_shared_data.h"
 #include "app_tasks.h"
-#include "app_task_eeprom_config_impl.h"
-#include "app_task_clkmux_impl.h"
-#include "app_task_pll_impl.h"
-#include "debug_helpers.h"
+#include "bus/bus_types.h"
+#include "cmsis_os.h"
+#include "devicelist.h"
+#include "eeprom_config/dev_eeprom_config.h"
+#include "eeprom_config/dev_eeprom_config_fsm.h"
+#include "ttvxs_clkmux/dev_ttvxs_clkmux_fsm.h"
+#include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize };
 static const uint32_t pllTaskLoopDelay = 50;
 
+static BusInterface pll_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x4A
+};
+
+static BusInterface clkmux_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = 0x20
+};
+
+// mezzanine eeprom
+static BusInterface mcb_eeprom_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 3,
+    .address = 0x50
+};
+
+static Dev_ad9545 pll = {0};
+static Dev_eeprom_config eeprom = {0};
+static Dev_ttvxs_clkmux clkmux = {0};
+
+static void local_init(DeviceBase *parent)
+{
+    init_ad9545_setup(&pll.priv.setup);
+    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9545, pll_bus_info, "Main PLL");
+    create_device(parent, &clkmux.dev, &clkmux.priv, DEV_CLASS_CLKMUX, clkmux_bus_info, "Clock Mux");
+    create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, mcb_eeprom_bus_info, "MCB config");
+}
+
 static void pllTask(void const *arg)
 {
     (void) arg;
-    // debug_printf("Started thread %s\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    task_clkmux_init();
-    pll_task_init();
+
+    ad9545_gpio_init(&pll.dev.bus);
+
     while(1) {
-        task_eeprom_config_run();
-        task_clkmux_run();
-        pll_task_run();
+        dev_eeprom_config_run(&eeprom);
+        dev_ttvxs_clkmux_run(&clkmux);
+        bool power_on = enable_power && system_power_present;
+        dev_ad9545_run(&pll, power_on);
         osDelay(pllTaskLoopDelay);
     }
 }
 
 osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
 
-void create_task_pll(void)
+void create_task_pll(DeviceBase *parent)
 {
+    local_init(parent);
     pllThreadId = osThreadCreate(osThread (pll), NULL);
-    if (pllThreadId == NULL) {
-        debug_print("Failed to create pll thread\n");
-    }
+    assert(pllThreadId);
 }

@@ -18,15 +18,15 @@
 // TTVXS board specific functions
 
 #include "bsp_powermon.h"
-#include "dev_pm_sensors_config.h"
-#include "dev_powermon_types.h"
-#include "dev_pm_sensors_types.h"
-#include "dev_pm_sensors.h"
-#include "bsp_pin_defs.h"
-#include "logbuffer.h"
 
+#include "bsp_pin_defs.h"
 #include "cmsis_os.h"
+#include "bsp_sensors_config.h"
 #include "gpio.h"
+#include "log/log.h"
+#include "powermon/dev_pm_sensors.h"
+#include "powermon/dev_pm_sensors_types.h"
+#include "powermon/dev_powermon_types.h"
 #include "stm32f7xx_hal_gpio.h"
 
 int monIsOn(const pm_switches sw, SensorIndex index)
@@ -35,7 +35,7 @@ int monIsOn(const pm_switches sw, SensorIndex index)
     case SENSOR_VPC_3V3: return 1;
     case SENSOR_5VPC: return 1;
     case SENSOR_5V: return 1;
-    case SENSOR_VXS_5V: return 1;
+    case SENSOR_VXS_8A_5V: return 1;
     case SENSOR_2V5: return sw[PSW_2V5];
     case SENSOR_3V3: return sw[PSW_3V3];
     case SENSOR_FPGA_CORE_1V0: return sw[PSW_1V0_CORE];
@@ -43,8 +43,8 @@ int monIsOn(const pm_switches sw, SensorIndex index)
     case SENSOR_FPGA_MGT_1V2: return sw[PSW_1V2_MGT]; // TTVXS v1.0: sw->switch_2v5;
     case SENSOR_MCB_4V5: return 1;
     case SENSOR_FPGA_1V8: return sw[PSW_2V5];
-    case SENSOR_VADJ: return sw[PSW_2V5];
-    case SENSOR_FMC_5V: return sw[PSW_5V_FMC];
+    case SENSOR_FMC_VADJ: return sw[PSW_2V5];
+    case SENSOR_VXS_1A5_5V: return 1;
     case SENSOR_FMC_12V: return sw[PSW_5V_FMC];
     case SENSOR_CLOCK_2V5: return sw[PSW_3V3];
     case SENSOR_MCB_3V3: return 1;
@@ -140,36 +140,49 @@ bool get_all_pgood(const pm_pgoods pgood)
     return true;
 }
 
-bool get_input_power_valid(const pm_sensors_arr sensors)
+bool get_input_power_valid(const pm_sensors_arr *sensors)
 {
-    return pm_sensor_isValid(&sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isValid(&sensors->arr[SENSOR_VXS_8A_5V]);
 }
 
-bool get_input_power_normal(const pm_sensors_arr sensors)
+bool get_input_power_normal(const pm_sensors_arr *sensors)
 {
-    return pm_sensor_isNormal(&sensors[SENSOR_VXS_5V]);
+    return pm_sensor_isNormal(&sensors->arr[SENSOR_VXS_8A_5V]);
 }
 
-bool get_input_power_failed(const pm_sensors_arr sensors)
+bool get_input_power_failed(const pm_sensors_arr *sensors)
 {
-    return SENSOR_CRITICAL == pm_sensor_status(&sensors[SENSOR_VXS_5V]);
+    return SENSOR_CRITICAL == pm_sensor_status(&sensors->arr[SENSOR_VXS_8A_5V]);
 }
 
-double pm_get_power_w(const Dev_powermon *pm)
+double pm_get_power_w(const Dev_powermon_priv *p)
 {
+    const pm_sensors_arr *sensors = &p->sensors;
     double mw = 0;
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_5VPC]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_VXS_5V]);
-    mw += get_sensor_power_w(&pm->sensors[SENSOR_MCB_4V5]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_5VPC]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_VXS_8A_5V]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_VXS_1A5_5V]);
     return mw;
 }
 
-double pm_get_power_max_w(const Dev_powermon *pm)
+double pm_get_power_max_w(const Dev_powermon_priv *p)
 {
+    const pm_sensors_arr *sensors = &p->sensors;
     double mw = 0;
-    mw += pm->sensors[SENSOR_5VPC].powerMax;
-    mw += pm->sensors[SENSOR_VXS_5V].powerMax;
-    mw += pm->sensors[SENSOR_MCB_4V5].powerMax;
+    mw += sensors->arr[SENSOR_5VPC].priv.powerMax;
+    mw += sensors->arr[SENSOR_VXS_8A_5V].priv.powerMax;
+    mw += sensors->arr[SENSOR_VXS_1A5_5V].priv.powerMax;
+    return mw;
+}
+
+double pm_get_fpga_power_w(const Dev_powermon_priv *p)
+{
+    const pm_sensors_arr *sensors = &p->sensors;
+    double mw = 0;
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_CORE_1V0]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_MGT_1V0]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_MGT_1V2]);
+    mw += get_sensor_power_w(&sensors->arr[SENSOR_FPGA_1V8]);
     return mw;
 }
 
@@ -178,7 +191,7 @@ void bsp_update_system_powergood_pin(bool power_good)
     write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }
 
-void switch_power(Dev_powermon *pm, bool state)
+void switch_power(Dev_powermon_priv *p, bool state)
 {
     // int pcb_ver = get_mcb_pcb_ver();
     if (state)
@@ -186,9 +199,9 @@ void switch_power(Dev_powermon *pm, bool state)
     else
         log_put(LOG_NOTICE, "Switching OFF");
     for (int i=0; i<POWER_SWITCH_COUNT; i++)
-        pm->sw[i] = state;
-    pm->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
-    write_power_switches(pm->sw);
+        p->sw[i] = state;
+    p->sw[PSW_5V] = 1; // (pcb_ver == PCB_VER_A_MCB_1_0) ? 1 : state; // TTVXS version
+    write_power_switches(p->sw);
     if (state)
         osDelay(1); // allow 20 us for charge with pullups
 }

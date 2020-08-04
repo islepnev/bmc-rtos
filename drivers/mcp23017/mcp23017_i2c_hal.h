@@ -18,8 +18,8 @@
 #ifndef MCP23017_I2C_HAL_H
 #define MCP23017_I2C_HAL_H
 
+#include <stdbool.h>
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,9 +40,9 @@ typedef enum {
     MCP23017_OLATB = 0x15
 } mcp23017_regs_bank_0;
 
-HAL_StatusTypeDef mcp23017_detect(void);
-HAL_StatusTypeDef mcp23017_read(uint8_t reg, uint8_t *data);
-HAL_StatusTypeDef mcp23017_write(uint8_t reg, uint8_t data);
+bool mcp23017_detect(void);
+bool mcp23017_read(uint8_t reg, uint8_t *data);
+bool mcp23017_write(uint8_t reg, uint8_t data);
 
 #ifdef __cplusplus
 }

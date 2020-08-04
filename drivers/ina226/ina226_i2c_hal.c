@@ -16,38 +16,42 @@
 */
 
 #include "ina226_i2c_hal.h"
-#include "i2c.h"
-#include "powermon_i2c_driver.h"
 
-HAL_StatusTypeDef ina226_i2c_Detect(uint16_t deviceAddr)
+#include "bus/i2c_driver.h"
+#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
+#include "i2c.h"
+
+static const int I2C_TIMEOUT_MS = 10;
+
+bool ina226_i2c_Detect(BusInterface *bus)
 {
-    HAL_StatusTypeDef ret;
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
     uint32_t Trials = 2;
-    ret = powermon_i2c_detect(deviceAddr << 1, Trials);
-    return ret;
+    return i2c_driver_detect(hi2c, DevAddress, Trials, I2C_TIMEOUT_MS);
 }
 
-HAL_StatusTypeDef ina226_i2c_Read(uint16_t deviceAddr, uint16_t reg, uint16_t *data)
+bool ina226_i2c_Read(BusInterface *bus, uint16_t reg, uint16_t *data)
 {
-    HAL_StatusTypeDef ret;
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
     int Size = 2;
     uint8_t pData[Size];
-    ret = powermon_i2c_mem_read(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
-    if (ret == HAL_OK) {
-        if (data) {
-            *data = ((uint16_t)pData[0] << 8) | pData[1];
-        }
+    if (! i2c_driver_mem_read(hi2c, DevAddress, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS))
+        return false;
+    if (data) {
+        *data = ((uint16_t)pData[0] << 8) | pData[1];
     }
-    return ret;
+    return true;
 }
 
-HAL_StatusTypeDef ina226_i2c_Write(uint16_t deviceAddr, uint16_t reg, uint16_t data)
+bool ina226_i2c_Write(BusInterface *bus, uint16_t reg, uint16_t data)
 {
-    HAL_StatusTypeDef ret;
+    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
+    uint16_t DevAddress = bus->address << 1;
     int Size = 2;
     uint8_t pData[Size];
     pData[0] = (data >> 8) & 0xFF;
     pData[1] = data & 0xFF;
-    ret = powermon_i2c_mem_write(deviceAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size);
-    return ret;
+    return i2c_driver_mem_write(hi2c, DevAddress, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
 }

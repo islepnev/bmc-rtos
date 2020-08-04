@@ -27,7 +27,6 @@ extern "C" {
 #endif
 
 void dev_led_set(DeviceLeds led, bool state);
-void dev_leds_toggle(DeviceLeds led);
 
 #ifdef __cplusplus
 }

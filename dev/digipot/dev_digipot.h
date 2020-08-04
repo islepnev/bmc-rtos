@@ -19,14 +19,12 @@
 #define DEV_DIGIPOT_H
 
 #include <stdint.h>
-#include "bsp_digipot.h"
+#include "bus/bus_types.h"
 #include "dev_digipot_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern int digipot_screen_selected;
 
 int digipot_detect(Dev_digipots *d);
 void digipot_read_rdac_all(Dev_digipots *d);

@@ -17,10 +17,7 @@
 
 #include "error_handler.h"
 
-#include "stm32f7xx_hal_conf.h"
 #include "cmsis_os.h"
-//#include "core_cm7.h"
-
 #include "debug_helpers.h"
 #include "error_handler_impl.h"
 
@@ -28,7 +25,7 @@ void app_exit_handler(int result)
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    debug_printf("Program exited with code %d", result);
+    debug_printf("\nProgram exited with code %d\n", result);
     while(1) {
         led_blink_error();
     }
@@ -83,7 +80,7 @@ void vApplicationMallocFailedHook( void )
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    debug_print("Error: malloc failed\n");
+    debug_print("\nError: malloc failed\n");
     while(1) {
         led_blink_error();
     }

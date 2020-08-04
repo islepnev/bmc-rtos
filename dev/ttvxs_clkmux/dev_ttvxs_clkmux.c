@@ -16,18 +16,12 @@
 */
 
 #include "dev_ttvxs_clkmux.h"
+
 #include <string.h>
 #include <stdint.h>
-#include "stm32f7xx_hal_def.h"
 
 #include "dev_ttvxs_clkmux_types.h"
-#include "mcp23017_i2c_hal.h"
-
-void dev_ttvxs_clkmux_init(Dev_ttvxs_clkmux *d)
-{
-    Dev_ttvxs_clkmux zz = {};
-    *d = zz;
-}
+#include "mcp23017/mcp23017_i2c_hal.h"
 
 typedef union {
     struct {
@@ -51,11 +45,11 @@ typedef union {
     uint8_t all;
 } clkmux_gpiob;
 
-void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_pll_source(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
-    data.bit.pll_source_sel = d->pll_source & 0x3;
+    data.bit.pll_source_sel = d->priv.pll_source & 0x3;
     mcp23017_write(MCP23017_GPIOB, data.all);
 }
 
@@ -73,14 +67,20 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 
-void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
-    data.bit.pll_source_sel = d->pll_source & 0x3;
+    data.bit.pll_source_sel = d->priv.pll_source & 0x3;
     mcp23017_write(MCP23017_GPIOB, data.all);
-    data.bit.crsw_sin = CRSW1_IN_PLL0A; // CRSW1_IN_AD9516_DIV3;
+    int crsw1_output_map[4] = {
+        CRSW1_IN_PLL0A, // CRSW1_IN_AD9516_DIV3
+        CRSW1_IN_PLL0A,
+        CRSW1_IN_PLL0A,
+        CRSW1_IN_PLL0A
+    };
     for (int i=0; i<4; i++) {
+        data.bit.crsw_sin = crsw1_output_map[i];
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOB, data.all);
         data.bit.crsw_load = 1;
@@ -94,12 +94,18 @@ void dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
     }
 }
 
-void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
+static void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 {
     clkmux_gpioa data;
     data.all = 0;
-    data.bit.crsw_sin = CRSW2_IN_AD9516;
+    int crsw2_output_map[4] = {
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516,
+        CRSW2_IN_AD9516
+    };
     for (int i=0; i<4; i++) {
+        data.bit.crsw_sin = crsw2_output_map[i];
         data.bit.crsw_sout = i;
         mcp23017_write(MCP23017_GPIOA, data.all);
         data.bit.crsw_load = 1;
@@ -115,35 +121,35 @@ void dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 
 DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
 {
-    if (HAL_OK != mcp23017_detect()) {
+    if (! mcp23017_detect()) {
         goto unknown;
     }
 //    uint8_t data = 0x55;
-//    if (HAL_OK != mcp23017_read(MCP23017_IODIRB, &data))
+//    if (! mcp23017_read(MCP23017_IODIRB, &data))
 //        goto err;
 //    if (data != 0xFF) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 1");
 //        goto err;
 //    }
-//    if (HAL_OK != mcp23017_read(MCP23017_IPOLA, &data))
+//    if (! mcp23017_read(MCP23017_IPOLA, &data))
 //        return DEVICE_FAIL;
 //    if (data != 0x00) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 2");
 //        goto err;
 //    }
     // set GPB1,GPB0
-    if (HAL_OK != mcp23017_write(MCP23017_IODIRA, 0x00)) // 0 = output
+    if (! mcp23017_write(MCP23017_IODIRA, 0x00)) // 0 = output
         goto err;
-    if (HAL_OK != mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
+    if (! mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
-    d->present = DEVICE_NORMAL;
+    d->dev.device_status = DEVICE_NORMAL;
     return DEVICE_NORMAL;
 err:
-    d->present = DEVICE_FAIL;
+    d->dev.device_status = DEVICE_FAIL;
     return DEVICE_FAIL;
 unknown:
-    d->present = DEVICE_UNKNOWN;
+    d->dev.device_status = DEVICE_UNKNOWN;
     return DEVICE_UNKNOWN;
 }
 

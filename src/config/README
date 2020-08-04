@@ -1,0 +1,4 @@
+When STM32HAL is compiled as a library, it is not possible to use different HSE_VALUE.
+TDC72 and TDC64 boards have 24 MHz osc, while TTVXS and CRU16 has 25 MHz.
+
+Bug: MCU timing is not critical on TDCxx boards, thus use 25 MHz ad HSE_VALUE

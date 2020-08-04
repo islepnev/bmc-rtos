@@ -16,16 +16,49 @@
 */
 
 #include "dev_fpga_types.h"
+#include "devicelist.h"
 
-SensorStatus get_fpga_sensor_status(const Dev_fpga *d)
+SensorStatus get_fpga_sensor_status(void)
 {
-   if (!d->present)
-      return SENSOR_UNKNOWN;
-   if (!d->initb)
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return SENSOR_UNKNOWN;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+
+   if (d->device_status != DEVICE_NORMAL)
+      return SENSOR_WARNING;
+   if (!priv->initb)
       return SENSOR_CRITICAL;
-   if (!d->done)
+   if (!priv->done)
       return SENSOR_CRITICAL;
-   if (d->id == 0 || d->id == 0xFFFFu)
+   if (priv->id == 0 || priv->id == 0xFFFFu)
       return SENSOR_WARNING;
    return SENSOR_NORMAL;
+}
+
+uint32_t get_fpga_id(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return 0;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    return priv->id;
+}
+
+uint32_t get_fpga_fw_ver(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return 0;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    return priv->fw_ver;
+}
+
+uint32_t get_fpga_fw_rev(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return 0;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    return priv->fw_rev;
 }

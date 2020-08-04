@@ -14,20 +14,21 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
 #ifndef DEV_POWERMON_TYPES_H
 #define DEV_POWERMON_TYPES_H
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "dev_common_types.h"
-#include "dev_pm_sensors_config.h"
+
+#include "bus/bus_types.h"
+#include "devicebase.h"
 #include "dev_pm_sensors_types.h"
 #include "bsp_powermon_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 typedef enum {
     PM_STATE_INIT,
@@ -42,32 +43,31 @@ typedef enum {
     PM_STATE_ERROR
 } PmState;
 
-typedef enum MonState {
-    MON_STATE_INIT = 0,
-    MON_STATE_DETECT = 1,
-    MON_STATE_READ = 2,
-    MON_STATE_ERROR = 3
-} MonState;
-
-typedef pm_sensor pm_sensors_arr[POWERMON_SENSORS];
-
-typedef struct Dev_powermon {
+typedef struct Dev_powermon_priv {
     PmState pmState;
     MonState monState;
     uint32_t stateStartTick;
     int monErrors;
     int monCycle;
-//    DeviceStatus present;
-   pm_sensors_arr sensors;
-   bool vmePresent;
-   pm_pgoods pgood;
-   pm_switches sw;
-   pm_switches sw_state;
+    pm_sensors_arr sensors;
+    bool vmePresent;
+    pm_pgoods pgood;
+    pm_switches sw;
+    pm_switches sw_state;
+} Dev_powermon_priv;
+
+typedef struct Dev_powermon {
+    DeviceBase dev;
+    Dev_powermon_priv priv;
 } Dev_powermon;
 
-SensorStatus pm_sensors_getStatus(const Dev_powermon *d);
-SensorStatus getMonStatus(const Dev_powermon *pm);
-SensorStatus getPowermonStatus(const Dev_powermon *d);
+SensorStatus pm_sensors_getStatus(const Dev_powermon_priv *d);
+SensorStatus getMonStatus(const Dev_powermon_priv *pm);
+SensorStatus getPowermonStatus(void);
+PmState get_powermon_state(void);
+Dev_powermon_priv *get_powermon_priv(void);
+const Dev_powermon_priv *get_powermon_priv_const(void);
+int get_sensor_count(void);
 
 #ifdef __cplusplus
 }

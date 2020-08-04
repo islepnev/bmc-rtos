@@ -16,13 +16,17 @@
 */
 
 #include "rtc_util.h"
+
 #include <time.h>
-#include "stm32f7xx_hal.h"
+
 #include "rtc.h"
+#include "stm32f7xx_hal.h"
 
 void get_rtc_tm(struct tm *tm)
 {
     if (!tm) return;
+    if (hrtc.State != HAL_RTC_STATE_READY)
+        return;
     RTC_TimeTypeDef sTime;
     RTC_DateTypeDef sDate;
     HAL_StatusTypeDef ret1 = HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
