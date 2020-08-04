@@ -196,7 +196,7 @@ void display_task_run(void)
     if (now > display_reset_tick + DISPLAY_RESET_TIME_MS) {
         schedule_display_reset();
     }
-    struct tm tm;
+    struct tm tm = {0};
     get_rtc_tm(&tm);
     const bool time_updated = old_tm.tm_sec != tm.tm_sec;
     old_tm = tm;
@@ -204,6 +204,10 @@ void display_task_run(void)
     const bool reset_flag = read_display_reset();
     const bool repaint_flag = reset_flag || read_display_repaint();
     const bool refresh_flag = repaint_flag || read_display_refresh();
+    bool idle = !time_updated && !refresh_flag;
+
+    if (idle)
+        return;
 
     if (reset_flag) {
         print_get_screen_size();
@@ -216,10 +220,6 @@ void display_task_run(void)
     if (time_updated) {
         printf(ANSI_CLEAR ANSI_NORM ANSI_HIDE_CURSOR);
         print_header_line();
-    }
-    if (!refresh_flag && !repaint_flag) {
-        print_prompt();
-        return;
     }
     if (refresh_flag)
         display_refresh_tick = now;

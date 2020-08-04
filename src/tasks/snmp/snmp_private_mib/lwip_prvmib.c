@@ -111,7 +111,7 @@ static s16_t systemStatus_get_value(struct snmp_node_instance* instance, void* v
 static s16_t systemDateTime_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    struct tm tm;
+    struct tm tm = {0};
     get_rtc_tm(&tm);
     char buf[12];
     u_short tmp_year = htons(tm.tm_year + 1900);

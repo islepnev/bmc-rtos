@@ -96,7 +96,7 @@ static void print_uptime_str(void)
 
 static void print_rtc_str(void)
 {
-    struct tm tm;
+    struct tm tm = {0};
     get_rtc_tm(&tm);
     char buf[32];
     strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &tm);
