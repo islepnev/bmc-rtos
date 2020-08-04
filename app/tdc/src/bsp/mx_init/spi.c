@@ -71,6 +71,7 @@ void MX_SPI4_Init(void)
     hspi4.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
 #ifdef BOARD_TDC64
     // AD9516-4
+    hspi4.Init.NSS = SPI_NSS_HARD_OUTPUT;
     hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
     hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 #endif
@@ -113,6 +114,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         __HAL_RCC_SPI4_CLK_ENABLE();
         __HAL_RCC_GPIOE_CLK_ENABLE();
         GPIO_InitStruct.Pin = SPI4_DIN_Pin|SPI4_SCLK_Pin|SPI4_DOUT_Pin;
+#ifdef BOARD_TDC64
+        GPIO_InitStruct.Pin |= AD9516_CS_Pin;
+#endif
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
