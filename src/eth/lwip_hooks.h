@@ -15,27 +15,16 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef IPADDRESS_H
-#define IPADDRESS_H
+#ifndef LWIP_HOOKS_H
+#define LWIP_HOOKS_H
 
-#define ETH_PORT_NAME "mgmt0"
+#include <stdint.h>
 
-/*Static IP ADDRESS*/
-#define IP_ADDR0   10
-#define IP_ADDR1   0
-#define IP_ADDR2   0
-#define IP_ADDR3   35
+struct netif;
+struct dhcp;
+struct dhcp_msg;
 
-/*NETMASK*/
-#define NETMASK_ADDR0   255
-#define NETMASK_ADDR1   255
-#define NETMASK_ADDR2   255
-#define NETMASK_ADDR3   0
+void lwip_dhcp_hook_append_options(struct netif *netif, struct dhcp *dhcp, uint8_t state, struct dhcp_msg *msg,
+                                   uint8_t msg_type, uint16_t *options_len_ptr);
 
-/*Gateway Address*/
-#define GW_ADDR0   10
-#define GW_ADDR1   0
-#define GW_ADDR2   0
-#define GW_ADDR3   1
-
-#endif // IPADDRESS_H
+#endif // LWIP_HOOKS_H

@@ -45,6 +45,8 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -125,7 +127,8 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- DHCP options ---------- */
 #define LWIP_DHCP               1
-
+#define LWIP_NETIF_HOSTNAME     1
+#define LWIP_AUTOIP             0
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
@@ -252,6 +255,15 @@ struct pbuf;
 struct netif;
 extern int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif);
 #define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(pbuf, netif) lwip_hook_unknown_eth_protocol(pbuf, netif)
+
+
+struct dhcp;
+struct dhcp_msg;
+extern void lwip_dhcp_hook_append_options(struct netif *netif, struct dhcp *dhcp, uint8_t state, struct dhcp_msg *msg,
+                                   uint8_t msg_type, uint16_t *options_len_ptr);
+
+#define LWIP_HOOK_DHCP_APPEND_OPTIONS(netif, dhcp, state, msg, msg_type, options_len_ptr) \
+    lwip_dhcp_hook_append_options(netif, dhcp, state, msg, msg_type, options_len_ptr)
 
 #ifdef __cplusplus
 }
