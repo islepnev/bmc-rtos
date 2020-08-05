@@ -15,24 +15,30 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MENU_H
-#define MENU_H
+#ifndef MENU_ITEM_H
+#define MENU_ITEM_H
 
 #include <stdbool.h>
 
-#include "menu_item.h"
+#include "menu_command.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const menu_item_t *menu_home;
-extern const menu_item_t *menu_current;
-
-void init_menu(void);
+typedef struct menu_item_t {
+    // menu_command_t command;
+    unsigned int command;
+    const char *label;
+    const char *text;
+    struct menu_item_t *parent;
+    struct menu_item_t *prev;
+    struct menu_item_t *next;
+    struct menu_item_t *children;
+} menu_item_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MENU_H
+#endif // MENU_ITEM_H

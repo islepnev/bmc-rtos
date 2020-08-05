@@ -19,14 +19,25 @@
 
 #include <assert.h>
 
-const menu_item_t *find_previous(const menu_item_t *item)
+menu_item_t *append_child(menu_item_t *parent, menu_item_t *item)
 {
-    const menu_item_t *tmp = item;
-    while (tmp->next) {
-        if (tmp->next == item) {
-            return tmp;
+    assert(parent);
+    if (!parent)
+        return item;
+    if (parent->children) {
+        // last element of maybe circular list
+        menu_item_t *start = parent->children;
+        menu_item_t *p = start;
+        while (p && p->next) {
+            p = p->next;
+            if (p == start)
+                break; // loop detected
         }
-        tmp = tmp->next;
+        menu_item_t *orig_last = p;
+        p->next = item;
+        item->prev = orig_last;
+    } else {
+        parent->children = item;
     }
     return item;
 }
@@ -51,10 +62,12 @@ const menu_item_t *find_nth_sibling(const menu_item_t *item, int n)
     const menu_item_t *start = item->parent->children;
     const menu_item_t *cur = start;
     int i = 1;
-    while (cur && cur->next != start) {
+    while (cur) {
         if (i == n)
             return cur;
         cur = cur->next;
+        if (cur == start)
+            break; // loop detected
     }
     return item;
 }

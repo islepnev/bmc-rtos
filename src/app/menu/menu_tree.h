@@ -20,13 +20,13 @@
 
 #include <stdbool.h>
 
-#include "menu.h"
+#include "menu_item.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-const menu_item_t *find_previous(const menu_item_t *item);
+menu_item_t *append_child(menu_item_t *parent, menu_item_t *item);
 const menu_item_t *find_previous_level_menu(const menu_item_t *item);
 const menu_item_t *find_nth_sibling(const menu_item_t *item, int n);
 int menu_level(const menu_item_t *item);

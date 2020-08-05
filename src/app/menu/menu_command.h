@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MENU_H
-#define MENU_H
+#ifndef MENU_COMMAND_H
+#define MENU_COMMAND_H
 
 #include <stdbool.h>
 
@@ -26,13 +26,12 @@
 extern "C" {
 #endif
 
-extern const menu_item_t *menu_home;
-extern const menu_item_t *menu_current;
-
-void init_menu(void);
+typedef enum {
+    MENU_COMMAND_NULL
+} menu_command_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MENU_H
+#endif // MENU_COMMAND_H

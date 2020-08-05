@@ -17,10 +17,14 @@
 
 #include "menu_exec.h"
 
+#include "menu_command.h"
 #include "log/log.h"
 
 void menu_exec(const menu_item_t *item)
 {
+    switch (item->command) {
+    case MENU_COMMAND_NULL:
+        break;
+    }
     log_printf(LOG_DEBUG, "Execute menu %s", item->text);
 }
-

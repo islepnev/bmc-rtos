@@ -39,6 +39,9 @@ static void set_current_item(const menu_item_t *item)
 static void menu_process_command(const CommandMenu *cmd)
 {
     const menu_item_t *item = menu_current;
+    assert(item);
+    if (!item)
+        return;
 
     switch (cmd->command_id) {
     case COMMAND_MENU_DIGIT_0:
@@ -54,7 +57,8 @@ static void menu_process_command(const CommandMenu *cmd)
         item = find_nth_sibling(item, cmd->command_id - COMMAND_MENU_DIGIT_0);
         break;
     case COMMAND_MENU_UP: {
-        item = find_previous(item);
+        if (item->prev)
+            item = item->prev;
         break;
     }
     case COMMAND_MENU_DOWN:
@@ -107,6 +111,26 @@ static void print_menu_level(const menu_item_t *item)
     }
 }
 
+static int debug_print_menu_tree(const menu_item_t *item, int level)
+{
+    assert(item);
+    if (!item)
+        return 0;
+    int n = 1;
+    for (int i=0; i<level; i++)
+        printf("  ");
+    printf("%s    prev %s    next %s", item->text,
+           item->prev ? item->prev->text : "---",
+           item->next ? item->next->text : "---");
+    print_clear_eol();
+    if (item->children) {
+        n += debug_print_menu_tree(item->children, level+1);
+    }
+    if (item->next)
+        n += debug_print_menu_tree(item->next, level);
+    return n;
+}
+
 void display_menu_page(int y, bool repaint)
 {
     menu_check_mail();
@@ -116,9 +140,14 @@ void display_menu_page(int y, bool repaint)
 
     print_goto(y, 1);
     print_clear_eol(); y++;
+
     assert(menu_current);
     const menu_item_t *parent = menu_current->parent;
     assert(parent);
+
+    //    y += debug_print_menu_tree(parent, 0);
+    //    print_clear_eol(); y++;
+    //    print_clear_eol(); y++;
 
     print_menu_level(parent);
     printf(" %s", parent->text);
@@ -132,7 +161,7 @@ void display_menu_page(int y, bool repaint)
         n++;
         bool hilight = (menu_current == item);
         printf("%s", hilight ? ANSI_BGR_RED : ANSI_BGR_DEF);
-        print_menu_level(item);
+        //print_menu_level(item);
         printf(" (%d)  %s%s" ANSI_BGR_DEF ANSI_CLEAR_EOL "\n",
                item->command, item->text, item->children ? "..." : "");
         item = item->next;
