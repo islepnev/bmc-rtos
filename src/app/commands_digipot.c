@@ -22,6 +22,7 @@
 #include "app_shared_data.h"
 #include "commands.h"
 #include "digipot/dev_digipot.h"
+#include "keysyms.h"
 #include "log/log.h"
 
 enum {KEYBUF_SIZE = 3};
@@ -113,11 +114,11 @@ static void digipot_action_minus(void)
 
 bool digipot_handle_escape_seq(const char *str)
 {
-    if (0 == strncmp(str, "[A", 3)) {
+    if (0 == strcmp(str, ESC_CODE_UP)) {
         digipot_action_up();
         return true;
     }
-    if (0 == strncmp(str, "[B", 3)) {
+    if (0 == strcmp(str, ESC_CODE_DOWN)) {
         digipot_action_down();
         return true;
     }

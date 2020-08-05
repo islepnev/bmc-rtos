@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef COMMANDS_MENU_H
-#define COMMANDS_MENU_H
+#ifndef MENU_H
+#define MENU_H
 
 #include <stdbool.h>
 
@@ -24,11 +24,22 @@
 extern "C" {
 #endif
 
-bool menu_handle_escape_seq(const char *str);
-void menu_screen_handle_key(const char ch);
+typedef struct menu_item_t {
+    int command;
+    const char *label;
+    const char *text;
+    struct menu_item_t *parent;
+    struct menu_item_t *next;
+    struct menu_item_t *children;
+} menu_item_t;
+
+extern const menu_item_t *menu_home;
+extern const menu_item_t *menu_current;
+
+void init_menu(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // COMMANDS_MENU_H
+#endif // MENU_H

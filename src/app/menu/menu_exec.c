@@ -15,30 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MENU_H
-#define MENU_H
+#include "menu_exec.h"
 
-#include <stdbool.h>
+#include "log/log.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct menu_item_t {
-    int command;
-    const char *text;
-    struct menu_item_t *parent;
-    struct menu_item_t *next;
-    struct menu_item_t *children;
-} menu_item_t;
-
-extern const menu_item_t *menu_home;
-extern const menu_item_t *menu_current;
-
-void init_menu(void);
-
-#ifdef __cplusplus
+void menu_exec(const menu_item_t *item)
+{
+    log_printf(LOG_DEBUG, "Execute menu %s", item->text);
 }
-#endif
 
-#endif // MENU_H

@@ -23,18 +23,17 @@
 #include "app_shared_data.h"
 #include "display.h"
 #include "ipc.h"
-#include "menu.h"
+#include "menu/menu.h"
+#include "menu/menu_exec.h"
+#include "menu/menu_tree.h"
+#include "log/log.h"
 
-const menu_item_t *find_previous(const menu_item_t *item)
+static void set_current_item(const menu_item_t *item)
 {
-    const menu_item_t *tmp = item;
-    while (tmp->next) {
-        if (tmp->next == item) {
-            return tmp;
-        }
-        tmp = tmp->next;
-    }
-    return item;
+    if (item == menu_current)
+        return;
+    menu_current = item;
+    schedule_display_refresh();
 }
 
 static void menu_process_command(const CommandMenu *cmd)
@@ -42,6 +41,18 @@ static void menu_process_command(const CommandMenu *cmd)
     const menu_item_t *item = menu_current;
 
     switch (cmd->command_id) {
+    case COMMAND_MENU_DIGIT_0:
+    case COMMAND_MENU_DIGIT_1:
+    case COMMAND_MENU_DIGIT_2:
+    case COMMAND_MENU_DIGIT_3:
+    case COMMAND_MENU_DIGIT_4:
+    case COMMAND_MENU_DIGIT_5:
+    case COMMAND_MENU_DIGIT_6:
+    case COMMAND_MENU_DIGIT_7:
+    case COMMAND_MENU_DIGIT_8:
+    case COMMAND_MENU_DIGIT_9:
+        item = find_nth_sibling(item, cmd->command_id - COMMAND_MENU_DIGIT_0);
+        break;
     case COMMAND_MENU_UP: {
         item = find_previous(item);
         break;
@@ -53,17 +64,18 @@ static void menu_process_command(const CommandMenu *cmd)
     case COMMAND_MENU_ENTER:
         if (item->children)
             item = item->children;
+        else
+            menu_exec(item);
         break;
     case COMMAND_MENU_BACK:
-        if (item->parent && item->parent->parent)
-            item = item->parent;
+        item = find_previous_level_menu(item);
         break;
     case COMMAND_MENU_HOME:
         item = menu_home->children;
         break;
     default:;
     }
-    menu_current = item;
+    set_current_item(item);
 }
 
 static void menu_check_mail(void)
@@ -83,16 +95,35 @@ static void menu_check_mail(void)
     osMailFree(mq_cmd_menu_id, mail);
 }
 
+
+static void print_menu_level(const menu_item_t *item)
+{
+    const menu_item_t *cur = item;
+    const int level = menu_level(item);
+    // printf("L%d ", level);
+    for (int i=1; i<=level; i++) {
+        const menu_item_t *p = find_nth_level_parent(item, i);
+        printf("%s%s", (i>1) ? "." : "", p->label);
+    }
+}
+
 void display_menu_page(int y, bool repaint)
 {
     menu_check_mail();
 
     if (repaint)
-        print_clearbox(y, screen_height - 1);
+        print_clearbox(y, screen_height - 2);
 
     print_goto(y, 1);
+    print_clear_eol(); y++;
+    assert(menu_current);
     const menu_item_t *parent = menu_current->parent;
     assert(parent);
+
+    print_menu_level(parent);
+    printf(" %s", parent->text);
+    print_clear_eol(); y++;
+
     const menu_item_t *start_item = parent->children;
     assert(start_item);
     int n = 0;
@@ -100,10 +131,10 @@ void display_menu_page(int y, bool repaint)
     while (item) {
         n++;
         bool hilight = (menu_current == item);
-        printf("%s%d.  (%d)  %s%s%s" ANSI_CLEAR_EOL "\n",
-               hilight ? ANSI_BGR_RED : ANSI_BGR_DEF,
-               n, item->command, item->text, item->children ? "..." : "",
-               ANSI_BGR_DEF);
+        printf("%s", hilight ? ANSI_BGR_RED : ANSI_BGR_DEF);
+        print_menu_level(item);
+        printf(" (%d)  %s%s" ANSI_BGR_DEF ANSI_CLEAR_EOL "\n",
+               item->command, item->text, item->children ? "..." : "");
         item = item->next;
         if (item == start_item)
             break;

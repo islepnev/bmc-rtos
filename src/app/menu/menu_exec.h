@@ -15,20 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef COMMANDS_MENU_H
-#define COMMANDS_MENU_H
+#ifndef MENU_EXEC_H
+#define MENU_EXEC_H
 
-#include <stdbool.h>
+#include "menu.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool menu_handle_escape_seq(const char *str);
-void menu_screen_handle_key(const char ch);
+void menu_exec(const menu_item_t *item);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // COMMANDS_MENU_H
+#endif // MENU_EXEC_H

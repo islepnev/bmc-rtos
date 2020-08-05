@@ -15,20 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef COMMANDS_MENU_H
-#define COMMANDS_MENU_H
+#ifndef MENU_TREE_H
+#define MENU_TREE_H
 
 #include <stdbool.h>
+
+#include "menu.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool menu_handle_escape_seq(const char *str);
-void menu_screen_handle_key(const char ch);
+const menu_item_t *find_previous(const menu_item_t *item);
+const menu_item_t *find_previous_level_menu(const menu_item_t *item);
+const menu_item_t *find_nth_sibling(const menu_item_t *item, int n);
+int menu_level(const menu_item_t *item);
+const menu_item_t *find_nth_level_parent(const menu_item_t *item, int level);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // COMMANDS_MENU_H
+#endif // MENU_TREE_H

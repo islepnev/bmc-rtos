@@ -28,6 +28,7 @@
 #include "cmsis_os.h"
 #include "display.h"
 #include "log/log.h"
+#include "keysyms.h"
 #include "microrl.h"
 
 static const uint32_t ESCAPE_TIMEOUT = 500; // ms
@@ -110,7 +111,7 @@ static bool handle_escape_seq(const char *str)
 
 static char escbuf[32] = {0};
 static size_t escpos = 0;
-static escTick = 0;
+static uint32_t escTick = 0;
 
 static bool handle_escape_char(char ch)
 {
@@ -151,7 +152,7 @@ void cliTask(void const *arg)
     for( ;; )
     {
         char ch = getchar();
-        if (ch == '\x1B') {
+        if (ch == ASCII_ESC) {
             esc = true;
             escpos = 0;
             escTick = tick;

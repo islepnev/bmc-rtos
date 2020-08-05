@@ -36,7 +36,7 @@
 #include "display_sensors.h"
 #include "display_tasks.h"
 #include "fpga/dev_fpga_print.h"
-#include "base/menu.h"
+#include "menu/menu.h"
 #include "powermon/dev_powermon_display.h"
 #include "rtc_util.h"
 #include "sfpiic/dev_sfpiic_print.h"

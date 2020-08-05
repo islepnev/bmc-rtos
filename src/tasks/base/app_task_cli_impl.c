@@ -22,10 +22,13 @@
 #include "app_shared_data.h"
 #include "commands_digipot.h"
 #include "commands_menu.h"
+#include "keysyms.h"
 
 display_mode_t next_display_mode(display_mode_t mode)
 {
     switch (mode) {
+    case DISPLAY_MENU:
+        return DISPLAY_SUMMARY;
     case DISPLAY_SUMMARY:
         return DISPLAY_BOARDS;
     case DISPLAY_BOARDS:
@@ -73,23 +76,6 @@ void screen_handle_key(char ch)
     }
 }
 
-const char *ESC_CODE_LEFT = "[D";
-const char *ESC_CODE_RIGHT = "[C";
-const char *ESC_CODE_UP = "[A";
-const char *ESC_CODE_DOWN = "[B";
-
-const char *ESC_CODE_F1 = "OP";
-const char *ESC_CODE_F2 = "OQ";
-const char *ESC_CODE_F3 = "OR";
-const char *ESC_CODE_F4 = "OS";
-const char *ESC_CODE_F5 = "[15~";
-const char *ESC_CODE_F6 = "[17~";
-const char *ESC_CODE_F7 = "[18~";
-const char *ESC_CODE_F8 = "[19~";
-const char *ESC_CODE_F9 = "[20~";
-const char *ESC_CODE_F10 = "[21~";
-const char *ESC_CODE_F11 = "[23~";
-const char *ESC_CODE_F12 = "[24~";
 
 bool app_handle_escape_seq(const char *str)
 {
@@ -138,6 +124,17 @@ bool app_handle_escape_seq(const char *str)
     if (0 == strcmp(str, ESC_CODE_F9)) {
         display_mode = DISPLAY_DEVICES;
         handled = true;
+    }
+
+    if (display_mode == DISPLAY_MENU) {
+        if (menu_handle_escape_seq(str)) {
+            handled = true;
+        }
+    }
+    if (display_mode == DISPLAY_DIGIPOT) {
+        if (digipot_handle_escape_seq(str)) {
+            handled = true;
+        }
     }
     if (old_display_mode != display_mode)
         schedule_display_repaint();
