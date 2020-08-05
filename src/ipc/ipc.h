@@ -29,14 +29,40 @@ typedef enum {
     COMMAND_DIGIPOTS_INC,
     COMMAND_DIGIPOTS_DEC,
     COMMAND_DIGIPOTS_WRITE
-} command_id_t;
+} digipot_command_id_t;
 
 typedef struct CommandDigipots {
-    command_id_t command_id;
+    digipot_command_id_t command_id;
     uint8_t arg;
 } CommandDigipots;
 
 osMailQId mq_cmd_digipots_id;
+
+
+typedef enum {
+    COMMAND_MENU_HOME = 1,
+    COMMAND_MENU_DIGIT_0,
+    COMMAND_MENU_DIGIT_1,
+    COMMAND_MENU_DIGIT_2,
+    COMMAND_MENU_DIGIT_3,
+    COMMAND_MENU_DIGIT_4,
+    COMMAND_MENU_DIGIT_5,
+    COMMAND_MENU_DIGIT_6,
+    COMMAND_MENU_DIGIT_7,
+    COMMAND_MENU_DIGIT_8,
+    COMMAND_MENU_DIGIT_9,
+    COMMAND_MENU_UP,
+    COMMAND_MENU_DOWN,
+    COMMAND_MENU_BACK,
+    COMMAND_MENU_ENTER
+} menu_command_id_t;
+
+typedef struct CommandMenu {
+    menu_command_id_t command_id;
+    uint8_t arg;
+} CommandMenu;
+
+osMailQId mq_cmd_menu_id;
 
 #ifdef __cplusplus
 }

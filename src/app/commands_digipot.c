@@ -22,6 +22,7 @@
 #include "app_shared_data.h"
 #include "commands.h"
 #include "digipot/dev_digipot.h"
+#include "keysyms.h"
 #include "log/log.h"
 
 enum {KEYBUF_SIZE = 3};
@@ -72,7 +73,7 @@ static void digipot_action_up(void)
     schedule_display_refresh();
 }
 
-static void digipot_send_command(command_id_t id, uint32_t arg)
+static void digipot_send_command(digipot_command_id_t id, uint32_t arg)
 {
     CommandDigipots *cmd = osMailAlloc(mq_cmd_digipots_id, osWaitForever);
     if (!cmd) {
@@ -113,11 +114,11 @@ static void digipot_action_minus(void)
 
 bool digipot_handle_escape_seq(const char *str)
 {
-    if (0 == strncmp(str, "[A", 3)) {
+    if (0 == strcmp(str, ESC_CODE_UP)) {
         digipot_action_up();
         return true;
     }
-    if (0 == strncmp(str, "[B", 3)) {
+    if (0 == strcmp(str, ESC_CODE_DOWN)) {
         digipot_action_down();
         return true;
     }

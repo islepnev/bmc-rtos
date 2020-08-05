@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -27,14 +27,13 @@
 #include "lwipcfg.h"
 
 #ifdef USE_DHCP
-#define MAX_DHCP_TRIES  4
-volatile uint8_t DHCP_state = DHCP_START;
+static const int MAX_DHCP_TRIES  = 4;
+static uint8_t DHCP_state = DHCP_START;
 #endif
 
 #ifdef USE_DHCP
 
 static int old_link_up = 0;
-static u8_t old_dhcp_state = 0;
 const char *dhcp_state_str(u8_t state)
 {
     switch (state) {
@@ -56,22 +55,39 @@ const char *dhcp_state_str(u8_t state)
     }
 }
 
-static uint8_t iptxt[20] = {0};
+void app_notify_ip_address_change(const struct netif *netif)
+{
+    const int my_ipv4 = netif->ip_addr.addr;
+    const struct dhcp *dhcp = (struct dhcp *)netif_get_client_data(netif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
+    const int serv_ipv4 = dhcp ? dhcp->server_ip_addr.addr : 0;
+    if (my_ipv4 != app_ipv4) {
+        if (my_ipv4)
+            log_printf(LOG_INFO, "%s: dhcp assigned IP address %d.%d.%d.%d by server %d.%d.%d.%d",
+                       ETH_PORT_NAME,
+                       my_ipv4 & 0xFF, (my_ipv4 >> 8) & 0xFF,
+                       (my_ipv4 >> 16) & 0xFF, (my_ipv4 >> 24) & 0xFF,
+                       serv_ipv4 & 0xFF, (serv_ipv4 >> 8) & 0xFF,
+                       (serv_ipv4 >> 16) & 0xFF, (serv_ipv4 >> 24) & 0xFF);
+        else
+            log_printf(LOG_INFO, "%s: dhcp released IP address %d.%d.%d.%d",
+                       ETH_PORT_NAME,
+                       app_ipv4 & 0xFF, (app_ipv4 >> 8) & 0xFF,
+                       (app_ipv4 >> 16) & 0xFF, (app_ipv4 >> 24) & 0xFF);
 
-void log_dhcp_state_change(struct netif *netif)
+        app_ipv4 = my_ipv4;
+    }
+}
+
+void check_dhcp_state_change(struct netif *netif)
 {
     const struct dhcp *dhcp = (struct dhcp *)netif_get_client_data(netif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
-    if (dhcp->state == old_dhcp_state)
-        return;
-    log_printf(LOG_INFO, "dhcp: %s", dhcp_state_str(dhcp->state));
-    if (dhcp->state == DHCP_STATE_BOUND) {
-        sprintf((char *)iptxt, "%s", ip4addr_ntoa((const ip4_addr_t *)&netif->ip_addr));
-        log_printf(LOG_NOTICE, "dhcp: IP address assigned by a DHCP server: %s", iptxt);
-        app_ipv4 = netif->ip_addr.addr;
-    } else {
-        app_ipv4 = 0;
+    unsigned char dhcp_state = dhcp ? dhcp->state : DHCP_STATE_OFF;
+    static u8_t old_dhcp_state = 0;
+    if (dhcp_state != old_dhcp_state) {
+        // log_printf(LOG_DEBUG, "%s: dhcp: state %s", ETH_PORT_NAME, dhcp_state_str(dhcp_state));
+        app_notify_ip_address_change(netif);
+        old_dhcp_state = dhcp_state;
     }
-    old_dhcp_state = dhcp->state;
 }
 
 void DHCP_thread(void const * argument)
@@ -80,7 +96,6 @@ void DHCP_thread(void const * argument)
   ip_addr_t ipaddr;
   ip_addr_t netmask;
   ip_addr_t gw;
-  struct dhcp *dhcp;
 
   for (;;)
   {
@@ -88,10 +103,11 @@ void DHCP_thread(void const * argument)
     if (link_up != old_link_up) {
         old_link_up = link_up;
         if (link_up) {
-          dhcp_network_changed_link_up(netif);
+            dhcp_network_changed_link_up(netif);
         }
+        app_notify_ip_address_change(netif);
     }
-    log_dhcp_state_change(netif);
+    check_dhcp_state_change(netif);
     switch (DHCP_state)
     {
     case DHCP_START:
@@ -101,7 +117,6 @@ void DHCP_thread(void const * argument)
         ip_addr_set_zero_ip4(&netif->gw);
         dhcp_start(netif);
         DHCP_state = DHCP_WAIT_ADDRESS;
-        log_printf(LOG_INFO, "dhcp: Looking for DHCP server");
       }
       break;
 
@@ -110,32 +125,34 @@ void DHCP_thread(void const * argument)
         if (dhcp_supplied_address(netif))
         {
           DHCP_state = DHCP_ADDRESS_ASSIGNED;
-
-//          sprintf((char *)iptxt, "%s", ip4addr_ntoa((const ip4_addr_t *)&netif->ip_addr));
-//          log_printf(LOG_NOTICE, "dhcp: IP address assigned by a DHCP server: %s", iptxt);
         }
         else
         {
-          dhcp = (struct dhcp *)netif_get_client_data(netif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
+            struct dhcp *dhcp = (struct dhcp *)netif_get_client_data(netif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
 
           // DHCP timeout
-          if (dhcp->tries > MAX_DHCP_TRIES)
+          if (dhcp && dhcp->tries > MAX_DHCP_TRIES)
           {
             DHCP_state = DHCP_TIMEOUT;
 
-            // Stop DHCP
-            dhcp_stop(netif);
+            if (false) { // do not use static IP
+                // Stop DHCP
+                dhcp_stop(netif);
 
-            // Static address used
-            IP_ADDR4(&ipaddr, IP_ADDR0 ,IP_ADDR1 , IP_ADDR2 , IP_ADDR3 );
-            IP_ADDR4(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
-            IP_ADDR4(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
-            netif_set_addr(netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
-            app_ipv4 = ipaddr.addr;
-
-            sprintf((char *)iptxt, "%s", ip4addr_ntoa((const ip4_addr_t *)&netif->ip_addr));
-            log_printf(LOG_WARNING, "dhcp: timeout");
-            log_printf(LOG_WARNING, "Static IP address: %s", iptxt);
+                // Static address used
+                IP_ADDR4(&ipaddr, IP_ADDR0 ,IP_ADDR1 , IP_ADDR2 , IP_ADDR3 );
+                IP_ADDR4(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
+                IP_ADDR4(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+                netif_set_addr(netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+                if (app_ipv4 != (int)ipaddr.addr) {
+                    app_ipv4 = ipaddr.addr;
+                    log_printf(LOG_NOTICE, "%s: dhcp timeout", ETH_PORT_NAME);
+                    log_printf(LOG_INFO, "%s: using static IP address: %d.%d.%d.%d",
+                               ETH_PORT_NAME,
+                               app_ipv4 & 0xFF, (app_ipv4 >> 8) & 0xFF,
+                               (app_ipv4 >> 16) & 0xFF, (app_ipv4 >> 24) & 0xFF);
+                }
+            }
           }
         }
       }

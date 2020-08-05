@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,38 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BSP_DIGIPOT_H
-#define BSP_DIGIPOT_H
-
-#include "bsp.h"
+#ifndef KEYSYMS_H
+#define KEYSYMS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    UNUSED
-} PotIndex;
+extern const char *ESC_CODE_LEFT;
+extern const char *ESC_CODE_RIGHT;
+extern const char *ESC_CODE_UP;
+extern const char *ESC_CODE_DOWN;
 
-enum {DEV_DIGIPOT_COUNT = 0};
+extern const char *ESC_CODE_F1;
+extern const char *ESC_CODE_F2;
+extern const char *ESC_CODE_F3;
+extern const char *ESC_CODE_F4;
+extern const char *ESC_CODE_F5;
+extern const char *ESC_CODE_F6;
+extern const char *ESC_CODE_F7;
+extern const char *ESC_CODE_F8;
+extern const char *ESC_CODE_F9;
+extern const char *ESC_CODE_F10;
+extern const char *ESC_CODE_F11;
+extern const char *ESC_CODE_F12;
 
-const char *potLabel(PotIndex index);
-int potBusNumber(PotIndex index);
-int potBusAddress(PotIndex index);
-int potSensorIndex(PotIndex index);
+extern const char ASCII_LF;
+extern const char ASCII_CR;
+extern const char ASCII_ESC;
+extern const char ASCII_DEL;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BSP_DIGIPOT_H
+#endif // KEYSYMS_H

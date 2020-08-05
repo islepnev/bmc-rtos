@@ -1,3 +1,19 @@
+/*
+**    Copyright 2019-2020 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 #include "app_task_tcpip_impl.h"
 
@@ -175,5 +191,6 @@ static void CPU_CACHE_Enable(void)
 void ethernetif_notify_conn_changed(struct netif *netif)
 {
     eth_link_up = netif_is_link_up(netif);
-    log_printf(LOG_INFO, "Ethernet link %s", netif_is_link_up(netif) ? "up" : "down");
+    log_printf(LOG_INFO, "%s: link %s", ETH_PORT_NAME,
+               netif_is_link_up(netif) ? "up" : "down");
 }

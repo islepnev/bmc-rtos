@@ -15,19 +15,27 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "commands.h"
+#include "keysyms.h"
 
-#include <assert.h>
+const char *ESC_CODE_LEFT = "[D";
+const char *ESC_CODE_RIGHT = "[C";
+const char *ESC_CODE_UP = "[A";
+const char *ESC_CODE_DOWN = "[B";
 
-#include "error_handler.h"
+const char *ESC_CODE_F1 = "OP";
+const char *ESC_CODE_F2 = "OQ";
+const char *ESC_CODE_F3 = "OR";
+const char *ESC_CODE_F4 = "OS";
+const char *ESC_CODE_F5 = "[15~";
+const char *ESC_CODE_F6 = "[17~";
+const char *ESC_CODE_F7 = "[18~";
+const char *ESC_CODE_F8 = "[19~";
+const char *ESC_CODE_F9 = "[20~";
+const char *ESC_CODE_F10 = "[21~";
+const char *ESC_CODE_F11 = "[23~";
+const char *ESC_CODE_F12 = "[24~";
 
-osMailQDef(mq_cmd_digipots, 10, CommandDigipots); // Declare a mail queue, size 10
-osMailQDef(mq_cmd_menu, 10, CommandMenu); // Declare a mail queue, size 10
-
-void commands_init(void)
-{
-    mq_cmd_digipots_id = osMailCreate(osMailQ(mq_cmd_digipots), NULL);
-    assert (mq_cmd_digipots_id);
-    mq_cmd_menu_id = osMailCreate(osMailQ(mq_cmd_menu), NULL);
-    assert (mq_cmd_menu_id);
-}
+const char ASCII_LF = '\x0A';
+const char ASCII_CR = '\x0D';
+const char ASCII_ESC = '\x1B';
+const char ASCII_DEL = '\x7F';

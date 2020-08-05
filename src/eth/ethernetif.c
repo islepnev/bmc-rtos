@@ -53,6 +53,7 @@
 #include "netif/etharp.h"
 #include "netif/ethernet.h"
 #include "stm32f7xx_hal.h"
+#include "version.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -500,7 +501,23 @@ err_t ethernetif_init(struct netif *netif)
 
 #if LWIP_NETIF_HOSTNAME
     /* Initialize interface hostname */
-    netif->hostname = "lwip";
+    uint8_t mac[6];
+    get_mac_address(mac);
+    enum {HOSTNAME_LEN = 32};
+    static char buf[HOSTNAME_LEN+1];
+    snprintf(buf, HOSTNAME_LEN, "%s-%02X%02X%02X-%02X%02X%02X", APP_NAME_STR,
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    for (size_t i=0; i<strlen(buf); i++) {
+        char c = buf[i];
+        if ((c >= '0' && c <= '9') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z')
+            )
+            continue;
+        buf[i] = '-';
+    }
+    netif->hostname = buf;
+
 #endif /* LWIP_NETIF_HOSTNAME */
 
     netif->name[0] = IFNAME0;
