@@ -84,8 +84,7 @@ void check_dhcp_state_change(struct netif *netif)
     unsigned char dhcp_state = dhcp ? dhcp->state : DHCP_STATE_OFF;
     static u8_t old_dhcp_state = 0;
     if (dhcp_state != old_dhcp_state) {
-        log_printf(LOG_DEBUG, "%s: dhcp: state %s",
-                   ETH_PORT_NAME, dhcp_state_str(dhcp_state));
+        // log_printf(LOG_DEBUG, "%s: dhcp: state %s", ETH_PORT_NAME, dhcp_state_str(dhcp_state));
         app_notify_ip_address_change(netif);
         old_dhcp_state = dhcp_state;
     }
