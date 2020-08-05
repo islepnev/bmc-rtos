@@ -25,7 +25,7 @@
 void create_digipots_subdevices(Dev_digipots *d)
 {
     d->priv.count = 0;
-    for (int i=0; i<MAX_DIGIPOT_COUNT; i++) {
+    for (int i=0; i<DEV_DIGIPOT_COUNT; i++) {
         Dev_ad5141 zz = {0};
         Dev_ad5141 *pot = &d->priv.pot[i];
         *pot = zz;
