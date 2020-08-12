@@ -17,20 +17,25 @@
 
 #include "app_task_init.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
+#include "ansi_escape_codes.h"
 #include "bsp.h"
 #include "cmsis_os.h"
 #include "commands.h"
+#include "debug_helpers.h"
 #include "log/log.h"
 #include "os_serial_tty.h"
 #include "clock.h"
 
 void app_task_init(void)
 {
+    debug_print(ANSI_CLEAR "\n");
+    debug_print("Initializing\n");
     configureTimerForRunTimeStats();
-     test_timers();
+    test_timers();
     initialize_serial_console_hardware();
-    log_put(LOG_NOTICE, "Initializing");
+    init_logging();
     commands_init();
 }

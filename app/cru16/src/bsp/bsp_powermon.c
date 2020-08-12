@@ -71,6 +71,8 @@ void read_power_switches_state(pm_switches sw_state)
     sw_state[PSW_3V3]      = read_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin);
     sw_state[PSW_2V5_CLK]  = read_gpio_pin(ON_2V5_CLK_GPIO_Port,  ON_2V5_CLK_Pin);
     sw_state[PSW_5V]       = read_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin);
+    sw_state[PSW_3V3_CLK]  = read_gpio_pin(ON_3V3_CLK_GPIO_Port,  ON_3V3_CLK_Pin);
+    sw_state[PSW_1V8_FPGA] = read_gpio_pin(ON_1V8_FPGA_GPIO_Port, ON_1V8_FPGA_Pin);
 }
 
 void write_power_switches(pm_switches sw)
@@ -82,6 +84,8 @@ void write_power_switches(pm_switches sw)
     write_gpio_pin(ON_3V3_GPIO_Port,      ON_3V3_Pin,      sw[PSW_3V3]);
     write_gpio_pin(ON_2V5_CLK_GPIO_Port,  ON_2V5_CLK_Pin,  sw[PSW_2V5_CLK]);
     write_gpio_pin(ON_5V_VXS_GPIO_Port,   ON_5V_VXS_Pin,   sw[PSW_5V]);
+    write_gpio_pin(ON_3V3_CLK_GPIO_Port,  ON_3V3_CLK_Pin,  sw[PSW_3V3_CLK]);
+    write_gpio_pin(ON_1V8_FPGA_GPIO_Port, ON_1V8_FPGA_Pin, sw[PSW_1V8_FPGA]);
 }
 
 void init_pgood(pm_pgoods pgood)

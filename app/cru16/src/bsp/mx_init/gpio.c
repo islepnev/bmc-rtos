@@ -68,14 +68,16 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(PCB_VER_A1_GPIO_Port, &GPIO_InitStruct);
 
   // ON_* (open drain, default = 1)
-  static const pin_def_t on_pins[7] = {
+  static const pin_def_t on_pins[9] = {
       {ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin},
       {ON_1V0_MGT_GPIO_Port, ON_1V0_MGT_Pin},
       {ON_1V2_MGT_GPIO_Port, ON_1V2_MGT_Pin},
       {ON_1V5_GPIO_Port, ON_1V5_Pin},
       {ON_3V3_GPIO_Port, ON_3V3_Pin},
       {ON_2V5_CLK_GPIO_Port, ON_2V5_CLK_Pin},
-      {ON_5V_VXS_GPIO_Port, ON_5V_VXS_Pin}
+      {ON_5V_VXS_GPIO_Port, ON_5V_VXS_Pin},
+      {ON_3V3_CLK_GPIO_Port, ON_3V3_CLK_Pin},
+      {ON_1V8_FPGA_GPIO_Port, ON_1V8_FPGA_Pin}
   };
   for (int i=0; i<7; i++) {
       HAL_GPIO_WritePin(on_pins[i].GPIOx, on_pins[i].pin, GPIO_PIN_SET);
@@ -140,13 +142,11 @@ void MX_GPIO_Init(void)
   }
 
   // PGOOD, PEN
-  static const pin_def_t pgood_pins[7] = {
+  static const pin_def_t pgood_pins[5] = {
       {PGOOD_1V0_MGT_GPIO_Port, PGOOD_1V0_MGT_Pin},
       {PGOOD_1V0_CORE_GPIO_Port, PGOOD_1V0_CORE_Pin},
       {PGOOD_1V2_MGT_GPIO_Port,PGOOD_1V2_MGT_Pin },
       {PGOOD_1V5_GPIO_Port, PGOOD_1V5_Pin},
-      {ON_3V3_CLK_GPIO_Port, ON_3V3_CLK_Pin},
-      {ON_1V8_FPGA_GPIO_Port, ON_1V8_FPGA_Pin},
       {PEN_B_GPIO_Port, PEN_B_Pin}
   };
   for (int i=0; i<7; i++) {

@@ -97,11 +97,11 @@ void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable)
         return;
     if (enable) {
         log_printf(LOG_INFO, "Enabling SPI%d", dev_index);
-        HAL_SPI_MspInit(hspi);
+        HAL_SPI_Init(hspi);
     } else {
         log_printf(LOG_INFO, "Disabling SPI%d", dev_index);
         // HAL_SPI_Abort(hspi);
-        HAL_SPI_MspDeInit(hspi);
+        HAL_SPI_DeInit(hspi);
     }
     spi_driver_release_dev_sem(dev_index);
 }

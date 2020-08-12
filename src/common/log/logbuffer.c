@@ -17,18 +17,31 @@
 
 #include "logbuffer.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include "cmsis_os.h"
+#include "debug_helpers.h"
+#include "error_handler.h"
 #include "log_prio.h"
 #include "logentry.h"
 
 static unsigned int log_wptr = 0;
 static unsigned int log_count = 0;
+osSemaphoreId buf_sem;
+osSemaphoreDef(buf_sem);
+
 static LogEntry buf[LOG_BUF_SIZE];
+
+void init_logbuffer(void)
+{
+    buf_sem = osSemaphoreCreate(osSemaphore(buf_sem), 1);
+    assert(buf_sem);
+    debug_print("Logging initialized\n");
+}
 
 void log_put_long(LogPriority priority, uint32_t tick, const char *str)
 {
@@ -37,6 +50,8 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
         return;
     if (copy_len > LOG_LINE_SIZE-1)
         copy_len = LOG_LINE_SIZE-1;
+    // lock
+    osSemaphoreWait(buf_sem, 0);
     strncpy(buf[log_wptr].str, str, copy_len);
     if (buf[log_wptr].str[copy_len-1] == '\n')
         buf[log_wptr].str[copy_len-1] = '\0';
@@ -45,6 +60,8 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
     buf[log_wptr].priority = priority;
     buf[log_wptr].tick = tick;
     log_wptr = (log_wptr+1) % LOG_BUF_SIZE;
+    // unlock
+    osSemaphoreRelease(buf_sem);
     log_count++;
 }
 
@@ -58,9 +75,11 @@ void log_get(int index, LogEntry *dest)
         dest->str[0] = '\0';
         return;
     }
+    osSemaphoreWait(buf_sem, 0);
     dest->priority = buf[index].priority;
     dest->tick = buf[index].tick;
     strncpy(dest->str, buf[index].str, LOG_LINE_SIZE);
+    osSemaphoreRelease(buf_sem);
 }
 
 uint32_t log_get_wptr(void)

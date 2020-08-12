@@ -27,6 +27,11 @@
 #include "logbuffer.h"
 #include "logentry.h"
 
+void init_logging(void)
+{
+    init_logbuffer();
+}
+
 void log_printf(LogPriority priority, const char *format, ...)
 {
     enum {buf_size = LOG_LINE_SIZE};

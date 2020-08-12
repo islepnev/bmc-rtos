@@ -35,6 +35,8 @@ const char *psw_label(PowerSwitchIndex index)
     case PSW_1V0_MGT:  return "1V0_MGT";
     case PSW_1V2_MGT:  return "1V2_MGT";
     case PSW_1V0_CORE: return "1V0_CORE";
+    case PSW_3V3_CLK:  return "3V3_CLK";
+    case PSW_1V8_FPGA: return "1V8_FPGA";
     }
     return "???";
 }

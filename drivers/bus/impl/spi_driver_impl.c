@@ -91,9 +91,15 @@ static bool spi_driver_check_hal_ret(const char *title, struct __SPI_HandleTypeD
 
 static bool spi_driver_before_hal_call(const char *title, struct __SPI_HandleTypeDef *hspi)
 {
+    if (hspi->State == HAL_SPI_STATE_RESET) {
+        log_printf(LOG_CRIT, "%s: SPI %d not initialized\n",
+                   title, hspi_index(hspi));
+        return false;
+    }
+    assert(hspi->State == HAL_SPI_STATE_READY);
     spi_driver_clear_transfer_error(hspi);
     if (LL_SPI_IsActiveFlag_BSY(hspi->Instance)) {
-        log_printf(LOG_CRIT, "%s: spi %d bus busy\n",
+        log_printf(LOG_CRIT, "%s: SPI %d bus busy\n",
                    title, hspi_index(hspi));
         spi_driver_reset_internal(hspi);
         return false;

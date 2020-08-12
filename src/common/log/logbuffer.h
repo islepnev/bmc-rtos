@@ -30,6 +30,7 @@ enum {LOG_BUF_SIZE = 100};
 struct LogEntry;
 typedef struct LogEntry LogEntry;
 
+void init_logbuffer(void);
 void log_put_long(LogPriority priority, uint32_t tick, const char *str);
 void log_get(int index, LogEntry *dest);
 uint32_t log_get_wptr(void);

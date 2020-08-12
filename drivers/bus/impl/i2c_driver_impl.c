@@ -85,6 +85,12 @@ static bool i2c_driver_check_hal_ret(const char *title, struct __I2C_HandleTypeD
 
 static bool i2c_driver_before_hal_call(const char *title, struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress)
 {
+    if (hi2c->State == HAL_I2C_STATE_RESET) {
+        log_printf(LOG_CRIT, "%s: I2C %d not initialized\n",
+                   title, hi2c_index(hi2c));
+        return false;
+    }
+    assert(hi2c->State == HAL_I2C_STATE_READY);
     i2c_driver_clear_transfer_error(hi2c);
     if (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance)) {
         log_printf(LOG_CRIT, "%s: I2C %d.%02X bus busy\n",

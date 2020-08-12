@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+void init_logging(void);
 void log_printf(LogPriority priority, const char *format, ...);
 void log_printf_debug(const char *format, ...);
 void log_put(LogPriority priority, const char *str);

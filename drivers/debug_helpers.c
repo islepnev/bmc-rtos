@@ -1,26 +1,26 @@
-//
-//    Copyright 2019 Ilja Slepnev
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/*
+**    Copyright 2019 Ilja Slepnev
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 
 #include <stdarg.h>
 #include <stdio.h>
 
 #include "ansi_escape_codes.h"
 #include "bsp_tty.h"
-#include "log/log.h"
 #include "stm32f7xx_ll_usart.h"
 
 static inline void debug_send_char(const char c)
@@ -45,9 +45,9 @@ static inline void debug_print_impl(const char *ptr)
 
 void debug_print(const char *str)
 {
-    debug_print_impl("\r" ANSI_CLEAR ANSI_CLEAR_EOL);
+    // debug_print_impl("\r" ANSI_CLEAR ANSI_BGR_RED ANSI_CLEAR_EOL);
     debug_print_impl(str);
-    debug_print_impl(ANSI_CLEAR_EOL);
+    // debug_print_impl(ANSI_CLEAR_EOL);
 }
 
 void debug_printf(const char *format, ...)
@@ -61,7 +61,6 @@ void debug_printf(const char *format, ...)
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0) {
-        // debug_print(buffer);
-        log_put(LOG_DEBUG, buffer);
+        debug_print(buffer);
     }
 }

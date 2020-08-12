@@ -17,6 +17,7 @@
 
 #include "error_handler.h"
 
+#include "ansi_escape_codes.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "error_handler_impl.h"
@@ -25,20 +26,33 @@ void app_exit_handler(int result)
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    debug_printf("\nProgram exited with code %d\n", result);
+
+    debug_print("\n" ANSI_CLEAR ANSI_BGR_RED ANSI_CLEAR_EOL);
+    debug_print("Abnormal termination\n" ANSI_CLEAR_EOL);
+    debug_printf("Exit code %d\n" ANSI_CLEAR_EOL, result);
+    debug_print("\n" ANSI_CLEAR_EOL);
+
     while(1) {
         led_blink_error();
     }
 }
 
-static void app_assert_handler( uint32_t line, const uint8_t *file )
+static void app_assert_handler(const char *file, int line, const char *assert_func, const char *expr )
 {
     volatile unsigned long ul = 0;
 
     taskDISABLE_INTERRUPTS();
+
     led_show_error();
 
-    debug_printf("\nassert failed at %s:%ld\n", file, line);
+    debug_print("\n" ANSI_CLEAR ANSI_BGR_RED ANSI_CLEAR_EOL);
+    debug_print("Assertion failed\n" ANSI_CLEAR_EOL);
+    debug_print(file);
+    debug_printf(":%ld\n" ANSI_CLEAR_EOL, line);
+    debug_print(assert_func);
+    debug_print(" ");
+    debug_print(expr);
+    debug_print("\n" ANSI_CLEAR_EOL);
 
     taskENTER_CRITICAL();
     {
@@ -70,7 +84,23 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    app_assert_handler(line, file);
+    app_assert_handler((const char *)file, line, "", "");
+}
+
+/*!
+ * Overwrite the standard (weak) definition of the assert failed handling function.
+ *
+ * - Output format is changed to reflect the gcc error message style
+ *
+ * @param filename    - the filename where the error happened
+ * @param line        - the line number where the error happened
+ * @param assert_func - the function name where the error happened
+ * @param expr        - the expression that triggered the failed assert
+ */
+
+void __assert_func(const char *filename, int line, const char *assert_func, const char *expr)
+{
+    app_assert_handler(filename, line, assert_func, expr);
 }
 
 /**

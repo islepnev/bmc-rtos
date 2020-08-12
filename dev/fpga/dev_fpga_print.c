@@ -24,6 +24,19 @@
 #include "devicelist.h"
 #include "display.h"
 
+static const char *fpga_state_str(fpga_state_t state)
+{
+    switch (state) {
+    case FPGA_STATE_STANDBY: return ANSI_YELLOW "STANDBY" ANSI_CLEAR;
+    case FPGA_STATE_RESET:   return ANSI_RED "RESET" ANSI_CLEAR;
+    case FPGA_STATE_LOAD:    return ANSI_YELLOW "LOAD" ANSI_CLEAR;
+    case FPGA_STATE_RUN:     return ANSI_GREEN "RUN" ANSI_CLEAR;
+    case FPGA_STATE_PAUSE:   return ANSI_GREEN "IDLE" ANSI_CLEAR;
+    case FPGA_STATE_ERROR:   return ANSI_RED "ERROR" ANSI_CLEAR;
+    }
+    return "unknown";
+}
+
 void dev_fpga_print_box(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
@@ -32,11 +45,12 @@ void dev_fpga_print_box(void)
     const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
 
     printf("FPGA %s",
-           priv->initb ? "" : ANSI_RED "INIT " ANSI_CLEAR);
+           priv->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
     if (priv->initb && !priv->done)
-        printf(ANSI_YELLOW "loading" ANSI_CLEAR);
-    if (priv->done)
+        printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
+    if (priv->done && priv->id_read)
         printf("%04X", priv->id);
+    printf(ANSI_CLEAR_EOL ANSI_COL30 "%9s ", fpga_state_str(priv->state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     print_clear_eol();
 }

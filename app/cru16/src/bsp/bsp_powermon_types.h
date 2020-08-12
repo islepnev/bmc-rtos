@@ -30,10 +30,12 @@ typedef enum PowerSwitchIndex {
     PSW_1V5,
     PSW_1V0_CORE,
     PSW_1V0_MGT,
-    PSW_1V2_MGT
+    PSW_1V2_MGT,
+    PSW_3V3_CLK,
+    PSW_1V8_FPGA
 } PowerSwitchIndex;
 
-#define POWER_SWITCH_COUNT 7
+#define POWER_SWITCH_COUNT 9
 const char *psw_label(PowerSwitchIndex index);
 typedef bool pm_switches[POWER_SWITCH_COUNT];
 

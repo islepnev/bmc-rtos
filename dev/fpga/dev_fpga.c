@@ -87,8 +87,8 @@ bool fpga_test(DeviceBase *dev)
     if (! fpga_spi_hal_read_reg(bus, addr2, &rdata2))
         goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
-        log_printf(LOG_INFO, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
-        log_printf(LOG_INFO, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
+        // log_printf(LOG_DEBUG, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
+        // log_printf(LOG_DEBUG, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
         fpga_write_live_magic(dev);
         return true;
     }
@@ -110,13 +110,14 @@ bool fpgaDetect(Dev_fpga *d)
             break;
         }
     }
+    d->priv.id_read = 1;
     uint16_t id = d->priv.regs[0];
     if (id == 0x0000 || id == 0xFFFF)
         err++;
     if (err == 0)
         d->dev.device_status = DEVICE_NORMAL;
-//    else
-//        d->present = DEVICE_FAIL;
+    else
+        d->dev.device_status = DEVICE_FAIL;
 
     d->priv.id = id;
 
