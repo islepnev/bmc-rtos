@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,33 +15,9 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+#ifndef ADC_DRIVER_H
+#define ADC_DRIVER_H
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
+void adc_driver_init(void);
 
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
-
-void init_periph(void)
-{
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
-
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
-
-    MX_ADC1_Init();
-    MX_RTC_Init();
-}
+#endif // ADC_DRIVER_H

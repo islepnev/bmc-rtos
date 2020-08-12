@@ -37,6 +37,7 @@
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
 #endif
+#include "app_task_adc.h"
 
 #include "dev_common_types.h"
 #include "devicelist.h"
@@ -66,4 +67,5 @@ void create_tasks(void)
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     create_task_tcpip();
 #endif
+    create_task_adc();
 }

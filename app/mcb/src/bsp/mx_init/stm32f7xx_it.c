@@ -25,6 +25,7 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_usart.h"
 
+extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim1;
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
@@ -46,6 +47,11 @@ extern void serial_console_interrupt_handler(USART_TypeDef *usart);
 /* please refer to the startup file (startup_stm32f7xx.s).                    */
 /******************************************************************************/
 
+
+void ADC_IRQHandler(void)
+{
+    HAL_ADC_IRQHandler(&hadc1);
+}
 
 void TIM1_UP_TIM10_IRQHandler(void)
 {
