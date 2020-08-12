@@ -24,6 +24,13 @@
 
 static const int I2C_TIMEOUT_MS = 10;
 
+bool ad5141_detect(BusInterface *bus)
+{
+    uint16_t DevAddress = bus->address << 1;
+    int Trials = 2;
+    return i2c_driver_detect(hi2c_handle(bus->bus_number), DevAddress, Trials, I2C_TIMEOUT_MS);
+}
+
 bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data)
 {
     uint16_t DevAddress = bus->address << 1;

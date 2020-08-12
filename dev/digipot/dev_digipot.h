@@ -18,7 +18,9 @@
 #ifndef DEV_DIGIPOT_H
 #define DEV_DIGIPOT_H
 
+#include <stdbool.h>
 #include <stdint.h>
+
 #include "bus/bus_types.h"
 #include "dev_digipot_types.h"
 
@@ -27,11 +29,11 @@ extern "C" {
 #endif
 
 int digipot_detect(Dev_digipots *d);
-void digipot_read_rdac_all(Dev_digipots *d);
-void dev_ad5141_reset(Dev_ad5141 *d);
-void dev_ad5141_inc(Dev_ad5141 *d);
-void dev_ad5141_dec(Dev_ad5141 *d);
-void dev_ad5141_write(Dev_ad5141 *d);
+bool digipot_read_rdac_all(Dev_digipots *d);
+bool dev_ad5141_reset(Dev_ad5141 *d);
+bool dev_ad5141_inc(Dev_ad5141 *d);
+bool dev_ad5141_dec(Dev_ad5141 *d);
+bool dev_ad5141_write(Dev_ad5141 *d);
 
 #ifdef __cplusplus
 }

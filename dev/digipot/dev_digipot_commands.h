@@ -18,6 +18,8 @@
 #ifndef DEV_DIGIPOT_COMMANDS
 #define DEV_DIGIPOT_COMMANDS
 
+#include <stdbool.h>
+
 #include "dev_digipot_types.h"
 
 #ifdef __cplusplus
@@ -25,8 +27,8 @@ extern "C" {
 #endif
 
 struct CommandDigipots;
-void digipot_process_command(Dev_digipots_priv *d, const struct CommandDigipots *cmd);
-void digipot_check_mail(Dev_digipots_priv *d);
+bool digipot_process_command(Dev_digipots_priv *d, const struct CommandDigipots *cmd);
+bool digipot_check_mail(Dev_digipots_priv *d);
 
 #ifdef __cplusplus
 }

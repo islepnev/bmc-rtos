@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+bool ad5141_detect(BusInterface *bus);
 bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data);
 bool ad5141_read(BusInterface *bus, uint16_t command, uint8_t *data);
 
