@@ -31,8 +31,8 @@
 
 void app_task_init(void)
 {
-    debug_print(ANSI_CLEAR "\n");
-    debug_print("Initializing\n");
+    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL "\n");
+    debug_print("Initializing" ANSI_CLEAR_EOL "\n");
     configureTimerForRunTimeStats();
     test_timers();
     initialize_serial_console_hardware();

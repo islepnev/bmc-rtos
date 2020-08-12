@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "ansi_escape_codes.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "error_handler.h"
@@ -40,7 +41,7 @@ void init_logbuffer(void)
 {
     buf_sem = osSemaphoreCreate(osSemaphore(buf_sem), 1);
     assert(buf_sem);
-    debug_print("Logging initialized\n");
+    debug_print("Logging initialized" ANSI_CLEAR_EOL "\n");
 }
 
 void log_put_long(LogPriority priority, uint32_t tick, const char *str)
