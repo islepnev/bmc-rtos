@@ -142,7 +142,7 @@ void print_header_line(void)
                 ANSI_BGR_BLUE);
     }
 #endif
-    printf(" %u MHz", (unsigned int)(HAL_RCC_GetHCLKFreq()/1000000));
+    printf("  %u MHz", (unsigned int)(HAL_RCC_GetHCLKFreq()/1000000));
     printf(" %3u%%", (unsigned int)freertos_get_cpu_load_percent());
     printf("     %s" ANSI_BGR_BLUE ANSI_CLEAR_EOL,
            enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ");
