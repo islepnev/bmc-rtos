@@ -62,14 +62,10 @@ static void pllTask(void const *arg)
     ad9545_gpio_init(&pll.dev.bus);
 
     while(1) {
-#ifdef BOARD_TDC72
-        if (system_power_present) // issue #688
+        if (system_power_present) // issue #688, #734
             dev_eeprom_config_run(&eeprom);
         else
             eeprom.dev.device_status = DEVICE_UNKNOWN;
-#else
-        dev_eeprom_config_run(&eeprom);
-#endif
         bool power_on = enable_power && system_power_present;
         dev_ad9545_run(&pll, power_on);
         osDelay(pllTaskLoopDelay);
