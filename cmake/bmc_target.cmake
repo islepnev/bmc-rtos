@@ -6,30 +6,14 @@ FUNCTION(BMC_TARGET_PRE TARGET)
     target_compile_definitions(${TARGET} PRIVATE
         BOARD_${BOARD_UPPER}
     )
-    set(CONFIG_INC_DIRS
-        ${MY_SRC_DIR}/config
-    )
-
-    # FIXME: remove it
-    target_include_directories(${TARGET} PRIVATE
-        ${CONFIG_INC_DIRS}
-    )
-
-    TARGET_INCLUDE_DIRECTORIES(STM32HAL PRIVATE
-        ${CONFIG_INC_DIRS}
-        ${MY_LIB_DIR}/common
-    )
-    TARGET_INCLUDE_DIRECTORIES(FreeRTOS PRIVATE
-        ${CONFIG_INC_DIRS}
-    )
 ENDFUNCTION()
 
 FUNCTION(BMC_TARGET_POST TARGET)
     TARGET_LINK_LIBRARIES(${TARGET}
-        lwip
-        FreeRTOS
-        CMSIS
-        STM32HAL
+        lwip-${cpu}
+        FreeRTOS-${cpu}
+        CMSIS-${cpu}
+        STM32HAL-${cpu}
     )
     STM32_SET_TARGET_PROPERTIES(${TARGET})
     STM32_ADD_HEX_BIN_TARGETS(${TARGET})

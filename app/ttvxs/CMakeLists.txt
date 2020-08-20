@@ -5,7 +5,18 @@ set(BOARD "ttvxs")
 
 SET(ELF ${BOARD}_rtos.elf)
 
+set(cpu 769ni)
+
+include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
+include(${MY_TOP_DIR}/cmake/bmc_target.cmake)
+FIND_PACKAGE(CMSIS REQUIRED)
+
 BMC_TARGET_PRE(${ELF})
+
+TARGET_INCLUDE_DIRECTORIES(${ELF} INTERFACE
+    ${CMSIS_INCLUDE_DIRS}
+)
+TARGET_LINK_LIBRARIES(${ELF} lwip-${cpu})
 
 #subdirs(${MY_LIB_DIR}/dev)
 #subdirs(${MY_LIB_DIR}/drivers)
