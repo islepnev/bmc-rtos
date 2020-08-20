@@ -44,6 +44,27 @@ static uint32_t stateTicks(Dev_fpga_priv *p)
     return osKernelSysTick() - p->stateStartTick;
 }
 
+static bool read_init_b(void)
+{
+    if (! fpga_done_pin_present())
+        return 1;
+#ifdef FPGA_INIT_B_Pin
+    return read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+#else
+    return 1;
+#endif
+}
+static bool read_done(void)
+{
+    if (! fpga_done_pin_present())
+        return 1;
+#ifdef FPGA_DONE_Pin
+    return read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+#else
+    return 1;
+#endif
+}
+
 static int old_fpga_done = -1;
 static int fpga_detect_fail_count = 0;
 static int fpga_error_count = 0;
@@ -51,13 +72,8 @@ static int fpga_error_count = 0;
 void fpga_task_run(Dev_fpga *d)
 {
     const fpga_state_t old_state = d->priv.state;
-    if (fpga_done_pin_present()) {
-        d->priv.initb = read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
-        d->priv.done = read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
-    } else {
-        d->priv.initb = 1;
-        d->priv.done = 1;
-    }
+    d->priv.initb = read_init_b();
+    d->priv.done = read_done();
     int fpga_core_power_present = false;
     const Dev_powermon_priv *priv = get_powermon_priv_const();
     if (priv) {

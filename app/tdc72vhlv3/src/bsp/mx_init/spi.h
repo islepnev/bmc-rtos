@@ -1,4 +1,6 @@
 /*
+**    TDC72VHL SPI Init/Deinit
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -14,18 +16,30 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_MAIN_IMPL_H
-#define APP_TASK_MAIN_IMPL_H
+
+#ifndef SPI_H
+#define SPI_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void task_main_init(void);
-void task_main_run(void);
+#include "stm32f7xx_hal_dma.h"
+#include "stm32f7xx_hal_spi.h"
+
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi5;
+
+void MX_SPI1_Init(void);
+void MX_SPI4_Init(void);
+void MX_SPI5_Init(void);
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_MAIN_IMPL_H
+#endif // SPI_H

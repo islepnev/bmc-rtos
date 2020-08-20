@@ -14,18 +14,22 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef APP_TASK_MAIN_IMPL_H
-#define APP_TASK_MAIN_IMPL_H
+
+#ifndef APP_TASK_PLL_H
+#define APP_TASK_PLL_H
+
+#include "cmsis_os.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void task_main_init(void);
-void task_main_run(void);
+extern osThreadId pllThreadId;
+struct DeviceBase;
+void create_task_pll(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_MAIN_IMPL_H
+#endif // APP_TASK_PLL_H

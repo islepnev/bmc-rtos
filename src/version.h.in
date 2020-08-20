@@ -32,6 +32,9 @@
 #ifdef BOARD_TDC72
 #define APP_NAME_STR "TDC72VXS4 BMC"
 #endif
+#ifdef BOARD_TDC72VHLV3
+#define APP_NAME_STR "TDC72VHL-v3 BMC"
+#endif
 #ifdef BOARD_TTVXS
 #define APP_NAME_STR "TTVXS BMC"
 #endif
@@ -43,7 +46,6 @@
 
 #define xstr(s) str(s)
 #define str(s) #s
-#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM)
 
 #if VERSION_PATCH_NUM
 #define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) "-" xstr(VERSION_PATCH_NUM)

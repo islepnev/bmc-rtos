@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,36 +15,37 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+// TDC72VHL v3 board specific functions
 
-#include "adc.h"
+#include "bsp.h"
+
+#include <stdbool.h>
+
+#include "bsp_pin_defs.h"
+#include "bsp_sensors_config.h"
+#include "gpio.h"
 #include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
+#include "log/log.h"
 
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
+int pcb_version = 0;
 
-void init_periph(void)
+uint32_t read_pcb_version(void)
 {
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
+    return 0;
+}
 
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
-#endif
+void update_board_version(int powermon_count)
+{
+    (void)powermon_count;
+    // nothing
+}
 
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
+bool fpga_done_pin_present(void)
+{
+    return false;
+}
 
-    MX_ADC1_Init();
-    MX_RTC_Init();
+void sfpiic_switch_enable(bool enable)
+{
+    (void)enable;
 }

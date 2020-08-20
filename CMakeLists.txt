@@ -49,7 +49,11 @@ configure_file(
   ${MY_SRC_DIR}/version.h.in
   ${CMAKE_BINARY_DIR}/generated/version.h
 )
-include_directories(${CMAKE_BINARY_DIR}/generated)
+include_directories(
+    ${CMAKE_BINARY_DIR}/generated
+    ${MY_SRC_DIR}/config
+    ${MY_LIB_DIR}/common
+)
 add_custom_target(data ALL SOURCES
     ${MY_TOP_DIR}/doc/Doxyfile.in
     ${MY_TOP_DIR}/mib/afi-bmc.mib
@@ -62,5 +66,6 @@ subdirs(cpu/stm32f769ni)
 subdirs(cpu/stm32f746ig)
 subdirs(app/tdc64)
 subdirs(app/tdc72)
+subdirs(app/tdc72vhlv3)
 subdirs(app/ttvxs)
 subdirs(app/cru16)

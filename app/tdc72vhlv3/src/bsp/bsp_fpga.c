@@ -15,36 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+#include "bsp_fpga.h"
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
+#include "bsp_sensors_config.h"
 
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
-
-void init_periph(void)
-{
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
-
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
-#endif
-
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
-
-    MX_ADC1_Init();
-    MX_RTC_Init();
-}
+sensor_list_t fpga_sensor_map = {
+    .count = 6,
+    .indices = {
+    }
+};

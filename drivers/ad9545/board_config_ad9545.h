@@ -30,28 +30,17 @@
 #define PLL_DIST_DIV_0     10
 #define PLL_DIST_DIV_1     13
 
-#elif (defined (BOARD_TDC64) || defined(BOARD_TDC72))
-#define DPLL0_BW_HZ        500
-#define DPLL1_BW_HZ        500
-#define PLL_REFA_PERIOD_NS  24
-#define PLL_REFB_PERIOD_NS  24
-#define PLL_REFA_DIV       209
-#define PLL_REFB_DIV       209
-#define PLL_DIST_DIV_0     30
-#define PLL_DIST_DIV_1     39
-
-#elif defined(BOARD_TTVXS)
-#define DPLL0_BW_HZ        500
-#define DPLL1_BW_HZ        500
-#define PLL_REFA_PERIOD_NS  24
-#define PLL_REFB_PERIOD_NS  24
-#define PLL_REFA_DIV       209
-#define PLL_REFB_DIV       209
-#define PLL_DIST_DIV_0     30
-#define PLL_DIST_DIV_1     39
-
 #else
-#error "BOARD variant not defined"
+
+#define DPLL0_BW_HZ        500
+#define DPLL1_BW_HZ        500
+#define PLL_REFA_PERIOD_NS  24
+#define PLL_REFB_PERIOD_NS  24
+#define PLL_REFA_DIV       209
+#define PLL_REFB_DIV       209
+#define PLL_DIST_DIV_0     30
+#define PLL_DIST_DIV_1     39
+
 #endif
 
 #endif // BOARD_CONFIG_AD9545_H

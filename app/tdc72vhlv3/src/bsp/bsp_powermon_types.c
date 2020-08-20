@@ -15,36 +15,32 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+#include "bsp_powermon_types.h"
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
-
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
-
-void init_periph(void)
+bool pm_switches_isEqual(const pm_switches l, const pm_switches r)
 {
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
+    for (int i=0; i<POWER_SWITCH_COUNT; i++)
+        if (l[i] != r[i])
+            return false;
+    return true;
+}
 
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
-#endif
+const char *psw_label(PowerSwitchIndex index)
+{
+    switch(index) {
+    case PSW_5V:       return "5V";
+    case PSW_3V3:      return "3.3V";
+    case PSW_1V5:      return "1.5V";
+    case PSW_1V0:  return "1.0V";
+    }
+    return "???";
+}
 
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
-
-    MX_ADC1_Init();
-    MX_RTC_Init();
+const char *pgood_label(PowerGoodIndex index)
+{
+    switch(index) {
+    case PGOOD_1V5:       return "1.5V";
+    case PGOOD_1V0:  return "1.0V_CORE";
+    }
+    return "???";
 }

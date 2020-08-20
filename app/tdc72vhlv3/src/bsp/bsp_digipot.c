@@ -1,5 +1,7 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Digital Potentiometers
+**
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,36 +17,28 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "init_periph.h"
+#include "bsp_digipot.h"
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
-
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
-
-void init_periph(void)
+const char *potLabel(PotIndex index)
 {
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
+    (void)index;
+    return "";
+}
 
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
-#endif
+int potBusNumber(PotIndex index)
+{
+    (void)index;
+    return 0;
+}
 
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
+int potBusAddress(PotIndex index)
+{
+    (void)index;
+    return 0;
+}
 
-    MX_ADC1_Init();
-    MX_RTC_Init();
+int potSensorIndex(PotIndex index)
+{
+    (void)index;
+    return 0;
 }

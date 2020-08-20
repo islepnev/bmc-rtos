@@ -330,12 +330,17 @@ bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup)
 void ad9545_reset(BusInterface *bus)
 {
     // toggle reset_b pin
+#if defined (PLL_RESET_B_Pin)
     write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 0);
     write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 1);
+#endif
 }
 
 bool ad9545_gpio_test(BusInterface *bus)
 {
+#if defined (PLL_RESET_B_Pin) && \
+defined (PLL_M3_GPIO_Port) && defined (PLL_M4_GPIO_Port) && \
+defined (PLL_M5_GPIO_Port) && defined (PLL_M6_GPIO_Port)
     bool pin_resetb = read_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin);
     bool pin_m3 = read_gpio_pin(PLL_M3_GPIO_Port, PLL_M3_Pin);
     bool pin_m4 = read_gpio_pin(PLL_M4_GPIO_Port, PLL_M4_Pin);
@@ -353,6 +358,8 @@ bool ad9545_gpio_test(BusInterface *bus)
         log_printf(LOG_NOTICE, "PLL GPIO: resetb=%u, m3=%u, m4=%u, m5=%u, m6=%u", pin_resetb, pin_m3, pin_m4, pin_m5, pin_m6);
         return false;
     }
+#endif
+    return false;
 }
 
 // AD9545
@@ -362,6 +369,7 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
+#if defined (PLL_RESET_B_Pin)
     // pull-up on PCB, internal 100 kΩ pull-up resistor
     GPIO_InitStruct.Pin = PLL_RESET_B_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -369,20 +377,23 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     write_gpio_pin(PLL_RESET_B_GPIO_Port, PLL_RESET_B_Pin, 1);
     HAL_GPIO_Init(PLL_RESET_B_GPIO_Port, &GPIO_InitStruct);
-
+#endif
+#ifdef PLL_M0_Pin
     // input
     GPIO_InitStruct.Pin = PLL_M0_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(PLL_M0_GPIO_Port, &GPIO_InitStruct);
-
+#endif
+#ifdef PLL_M3_Pin
     // M3=0 - do not load eeprom.
     // internal 100 kΩ pull-down, disable pin
     GPIO_InitStruct.Pin = PLL_M3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(PLL_M3_GPIO_Port, &GPIO_InitStruct);
-
+#endif
+#ifdef PLL_M4_Pin
     // M4=1 - I2C mode
     // pull-up on PCB, internal 100 kΩ pull-down
     GPIO_InitStruct.Pin = PLL_M4_Pin;
@@ -390,7 +401,8 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     write_gpio_pin(PLL_M4_GPIO_Port, PLL_M4_Pin, 1);
     HAL_GPIO_Init(PLL_M4_GPIO_Port, &GPIO_InitStruct);
-
+#endif
+#ifdef PLL_M5_Pin
     // M5=0 - I2C address offset
     // pull-down on PCB
     GPIO_InitStruct.Pin = PLL_M5_Pin;
@@ -399,7 +411,8 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     write_gpio_pin(PLL_M5_GPIO_Port, PLL_M5_Pin, 0);
     HAL_GPIO_Init(PLL_M5_GPIO_Port, &GPIO_InitStruct);
-
+#endif
+#ifdef PLL_M6_Pin
     // M6=1 - I2C address offset, internal 10 kΩ pull-up resistor
     // pull-up on PCB
     GPIO_InitStruct.Pin = PLL_M6_Pin;
@@ -408,4 +421,5 @@ void ad9545_gpio_init(BusInterface *bus)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     write_gpio_pin(PLL_M6_GPIO_Port, PLL_M6_Pin, 1);
     HAL_GPIO_Init(PLL_M6_GPIO_Port, &GPIO_InitStruct);
+#endif
 }

@@ -19,7 +19,7 @@
 
 #include <assert.h>
 
-#include "app_task_main_impl.h"
+#include "base/app_task_main_impl.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
 

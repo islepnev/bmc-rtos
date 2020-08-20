@@ -14,37 +14,39 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef BSP_POWERMON_TYPES_H
+#define BSP_POWERMON_TYPES_H
 
-#include "init_periph.h"
+#include <stdbool.h>
 
-#include "adc.h"
-#include "i2c.h"
-#include "rtc.h"
-#include "spi.h"
-#include "usart.h"
-
-#include "bus/i2c_driver.h"
-#include "bus/spi_driver.h"
-#include "adc_driver.h"
-
-void init_periph(void)
-{
-    i2c_driver_init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_SMBUS_Init();
-    MX_I2C4_Init();
-
-    spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-    MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
+typedef enum PowerSwitchIndex {
+    PSW_5V,
+    PSW_3V3,
+    PSW_1V5,
+    PSW_1V0,
+} PowerSwitchIndex;
 
-    MX_ADC1_Init();
-    MX_RTC_Init();
+#define POWER_SWITCH_COUNT 4
+const char *psw_label(PowerSwitchIndex index);
+typedef bool pm_switches[POWER_SWITCH_COUNT];
+
+typedef enum PowerGoodIndex {
+    PGOOD_1V5,
+    PGOOD_1V0,
+} PowerGoodIndex;
+
+#define POWER_GOOD_COUNT 2
+const char *pgood_label(PowerGoodIndex index);
+typedef bool pm_pgoods[POWER_GOOD_COUNT];
+
+bool pm_switches_isEqual(const pm_switches l, const pm_switches r);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // BSP_POWERMON_TYPES_H
