@@ -35,6 +35,7 @@ extern SPI_HandleTypeDef hspi5;
 
 void MX_SPI1_Init(void);
 void MX_SPI4_Init(void);
+void MX_SPI5_Init(void);
 
 
 #ifdef __cplusplus
