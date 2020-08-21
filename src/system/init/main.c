@@ -40,8 +40,8 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     led_all_set_state(true);
-    init_periph();
     MX_TIM2_Init();
+    init_periph();
 
     app_task_init();
     create_tasks();
