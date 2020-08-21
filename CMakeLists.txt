@@ -21,8 +21,8 @@ SET(STM32Cube_DIR ${MY_EXT_DIR}/STM32Cube)
 SET(FreeRTOS_DIR ${MY_EXT_DIR}/FreeRTOS)
 SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
 
-SET(STM32_MIN_HEAP_SIZE 0x20000)
-SET(STM32_MIN_STACK_SIZE 0x200)
+SET(STM32_MIN_HEAP_SIZE 0x20000) # Minimum heap size for error detection at link-time
+SET(STM32_MIN_STACK_SIZE 0x400) # Minimum stack size for error detection at link-time
 SET(FREERTOS_HEAP_IMPL 4)
 
 PROJECT(bmc_rtos LANGUAGES C CXX)
@@ -62,10 +62,15 @@ add_custom_target(data ALL SOURCES
     ${MY_TOP_DIR}/build_id.in
 )
 
+set(BUILD_CPU_769 TRUE)
+
+if(BUILD_CPU_769)
 subdirs(cpu/stm32f769ni)
-subdirs(cpu/stm32f746ig)
 subdirs(app/tdc64)
 subdirs(app/tdc72)
-subdirs(app/tdc72vhlv3)
 subdirs(app/ttvxs)
 subdirs(app/cru16)
+else()
+#subdirs(cpu/stm32f746ig)
+#subdirs(app/tdc72vhlv3)
+endif()
