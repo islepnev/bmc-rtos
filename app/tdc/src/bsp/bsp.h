@@ -25,23 +25,56 @@
 extern "C" {
 #endif
 
-//#define BOARD_TDC72 1
-//#define BOARD_TDC64 1
+#if !defined(BOARD_TDC64) && !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV3)
+#error
+#endif
 
+#if defined(BOARD_TDC64)
+#define ENABLE_AD9516    1
+#define ENABLE_AD9545    1
+#define ENABLE_AD9548    0
+#define ENABLE_ADT7301   1
+#define ENABLE_DIGIPOT   1
+#define ENABLE_MAX31725  1
+#define ENABLE_POWERMON  1
+#define ENABLE_SFPIIC    1
+#define ENABLE_SENSORS   1
+#endif
+
+#if defined(BOARD_TDC72)
+#define ENABLE_AD9516    0
+#define ENABLE_AD9545    1
+#define ENABLE_AD9548    0
+#define ENABLE_ADT7301   1
+#define ENABLE_DIGIPOT   1
+#define ENABLE_MAX31725  1
+#define ENABLE_POWERMON  1
+#define ENABLE_SFPIIC    1
+#define ENABLE_SENSORS   1
+#endif
+
+#if defined(BOARD_TDC72VHLV3)
+#define ENABLE_AD9516    0
+#define ENABLE_AD9548    1
+#define ENABLE_ADT7301   1
+#define ENABLE_DIGIPOT   0
+#define ENABLE_MAX31725  0
+#define ENABLE_POWERMON  0
+#define ENABLE_SFPIIC    0
+#define ENABLE_SENSORS   0
+#endif
+
+#ifdef BOARD_TDC72VHLV3
+#define USART3_SWAP_RXTX 1
+#define LED_HEARTBEAT LED_GREEN
+#else
+#define USART3_SWAP_RXTX 0
 #define LED_HEARTBEAT LED_INT_GREEN
-
-//#define hi2c_ad9545 hi2c2
-//#define hi2c_sensors hi2c4
-//#define hi2c_sfpiic hi2c4
+#endif
 
 #define FPGA_SPI_BUS_INDEX 1
 #define AD9516_SPI_BUS_INDEX 4
-
-#define therm_spi hspi4
-
-//#define ad9545_deviceAddr 0x4A
-//#define hi2c_eeprom_cfg hi2c2
-//#define eeprom_cfg_deviceAddr 0x50
+#define AD9548_SPI_BUS_INDEX 5
 
 #define AUXPLL_AD9516_OUT6_ENABLE 1
 #define AUXPLL_AD9516_OUT7_ENABLE 1

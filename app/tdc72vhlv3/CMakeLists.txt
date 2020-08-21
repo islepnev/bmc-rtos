@@ -8,6 +8,7 @@ SET(BSP_DIR ${MY_TOP_DIR}/app/tdc72vhlv3/src)
 SET(ELF ${BOARD}_rtos.elf)
 
 set(cpu 746ig)
+// add_compile_definitions(STM32F746xx)
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
 include(${MY_TOP_DIR}/cmake/bmc_target.cmake)

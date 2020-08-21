@@ -20,13 +20,13 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "gpio.h"
-#include "spi.h"
 #include "bus/spi_driver.h"
 #include "bus/impl/spi_driver_util.h"
 
-#ifdef BOARD_TDC72
-
+#if ENABLE_ADT7301
 static const int SPI_TIMEOUT_MS = 10;
+
+#ifndef TTVXS_1_0
 
 bool adt7301_read(BusInterface *bus, int16_t *data)
 {
@@ -74,9 +74,7 @@ bool adt7301_read(BusInterface *bus, int16_t *data)
     return ret;
 }
 
-#endif
-
-#ifdef TTVXS_1_0
+#else
 
 static const int SPI_TIMEOUT_MS = 10;
 
@@ -111,4 +109,6 @@ bool adt7301_read_temp(BusInterface *bus, int16_t *data)
     return ret;
 }
 
-#endif
+#endif // TTVXS_1_0
+
+#endif // ENABLE_ADT7301

@@ -47,7 +47,10 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = 400 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
+#if ENABLE_POWERMON
 static Dev_powermon pm = {0};
+#endif
+
 #ifdef BOARD_TDC64
 static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
     {
@@ -62,7 +65,7 @@ static BusInterface tdc64_max31725_bus_info[TDC64_MAX31725_COUNT] = {
 };
 static Dev_max31725 therm[TDC64_MAX31725_COUNT] = {0};
 #endif
-#ifdef BOARD_TDC72
+#ifdef ENABLE_ADT7301
 static BusInterface tdc72_adt7301_bus_info = {
     .type = BUS_SPI,
     .bus_number = 4,
@@ -83,15 +86,21 @@ static BusInterface tdc_sfpiic_mux_bus_info = {
     .address = 0x74
 };
 
+#if ENABLE_DIGIPOT
 static Dev_digipots digipots = {0};
+#endif
 static Dev_thset thset = {0};
 static Dev_pca9548 pca9548 = {0};
 static Dev_sfpiic sfpiic = {0};
 
 static void local_init(DeviceBase *parent)
 {
+#if ENABLE_POWERMON
     create_device(parent, &pm.dev, &pm.priv, DEV_CLASS_POWERMON, tdc_smbus_bus_info, "Power Monitor");
-    create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, tdc_smbus_bus_info, "Thermometers");
+    create_sensor_subdevices(&pm);
+#endif
+
+    create_device(parent, &thset.dev, &thset.priv, DEV_CLASS_THSET, tdc_smbus_bus_info, "Thermometers");
 
 #ifdef BOARD_TDC64
     const char *therm_name[TDC64_MAX31725_COUNT] = {"TDC-A", "TDC-B"};
@@ -99,19 +108,23 @@ static void local_init(DeviceBase *parent)
         create_device(&thset.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_MAX31725, tdc64_max31725_bus_info[i], therm_name[i]);
     }
 #endif
-#ifdef BOARD_TDC72
+#ifdef ENABLE_ADT7301
     const char *therm_name[TDC72_ADT7301_COUNT] = {"PLL", "TDC-A", "TDC-B", "TDC-C"};
     for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
         tdc72_adt7301_bus_info.address = i;
         create_device(&thset.dev, &therm[i].dev, &therm[i].priv, DEV_CLASS_ADT7301, tdc72_adt7301_bus_info, therm_name[i]);
     }
 #endif
+#if ENABLE_DIGIPOT
     create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, tdc_smbus_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
-    create_sensor_subdevices(&pm);
+#endif
+
+#if ENABLE_SFPIIC
     create_device(parent, &sfpiic.dev, &sfpiic.priv, DEV_CLASS_SFPIIC, tdc_smbus_bus_info, "SFP IIC");
     create_device(&sfpiic.dev, &pca9548.dev, &pca9548.priv, DEV_CLASS_PCA9548, tdc_sfpiic_mux_bus_info, "IIC Mux");
     sfpiic.mux = &pca9548;
+#endif
 #ifdef BOARD_TDC64
     sfpiic.priv.portCount = 2;
     sfpiic.priv.portIndex[0] = 0;
@@ -137,7 +150,7 @@ static void local_init(DeviceBase *parent)
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
-#ifdef BOARD_TDC72
+#ifdef ENABLE_ADT7301
     for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
         dev_thset_add(&thset, therm[i].dev.name);
     }
@@ -152,12 +165,12 @@ static void start_task_powermon( void const *arg)
 
         const bool power_on = enable_power && system_power_present;
         sfpiic_switch_enable(false);
-#ifndef BOARD_TDC64 // issue #669
+#if ENABLE_SFPIIC
         sfpiic_switch_enable(power_on);
         task_sfpiic_run(&sfpiic, power_on); // controlled by FPGA
 #endif
         sfpiic_switch_enable(false);
-#ifdef BOARD_TDC72
+#ifdef ENABLE_ADT7301
         for (int i=0; i<TDC72_ADT7301_COUNT; i++) {
             dev_adt7301_run(&therm[i], power_on);
             thset.priv.sensors[i].value = therm[i].priv.temp;
@@ -176,9 +189,14 @@ static void start_task_powermon( void const *arg)
         thset.priv.count = TDC64_MAX31725_COUNT;
         dev_thset_run(&thset);
 #endif
+#if ENABLE_DIGIPOT
+
         dev_digipot_run(&digipots);
+#endif
         dev_thset_run(&thset);
+#if ENABLE_POWERMON
         task_powermon_run(&pm);
+#endif
         sync_ipmi_sensors();
 
 //        osEvent event = osSignalWait(SIGNAL_POWER_OFF, powermonTaskLoopDelay);

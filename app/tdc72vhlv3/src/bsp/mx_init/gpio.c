@@ -42,39 +42,42 @@ bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin)
 void MX_GPIO_Init(void)
 {
 
-  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, ADT_CS_B1_Pin|ADT_CS_B2_Pin|ADT_CS_B3_Pin|ADT_CS_B0_Pin 
-                          |ON_3V3_Pin|ON_1V5_Pin|ON_5V_Pin|ON_1V0_1V2_Pin 
-                          |PLL_LED_EN_B_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, PLL_LED_EN_B_Pin, GPIO_PIN_RESET);
+
+  HAL_GPIO_WritePin(GPIOE, ADT_CS_B1_Pin|ADT_CS_B2_Pin|ADT_CS_B3_Pin|ADT_CS_B0_Pin
+                               |ON_3V3_Pin|ON_1V5_Pin|ON_5V_Pin|ON_1V0_1V2_Pin
+                               , GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, LED_RED_B_Pin|LED_YELLOW_B_Pin|LED_GREEN_B_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(PLL_RESET_GPIO_Port, PLL_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SYSTEM_RDY_GPIO_Port, SYSTEM_RDY_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SYSTEM_RDY_GPIO_Port, SYSTEM_RDY_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PEPin PEPin PEPin PEPin 
-                           PEPin PEPin PEPin PEPin 
+  /*Configure GPIO pins : PEPin PEPin PEPin PEPin
+                           PEPin PEPin PEPin PEPin
                            PEPin */
-  GPIO_InitStruct.Pin = ADT_CS_B1_Pin|ADT_CS_B2_Pin|ADT_CS_B3_Pin|ADT_CS_B0_Pin 
-                          |ON_3V3_Pin|ON_1V5_Pin|ON_5V_Pin|ON_1V0_1V2_Pin 
+  GPIO_InitStruct.Pin = ADT_CS_B1_Pin|ADT_CS_B2_Pin|ADT_CS_B3_Pin|ADT_CS_B0_Pin
+                          |ON_3V3_Pin|ON_1V5_Pin|ON_5V_Pin|ON_1V0_1V2_Pin
                           |PLL_LED_EN_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -130,5 +133,4 @@ void MX_GPIO_Init(void)
   /* EXTI interrupt init*/
 //  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
 //  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-
 }

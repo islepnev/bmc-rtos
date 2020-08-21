@@ -25,6 +25,14 @@
 
 #define BOARD_CRU16 1
 
+#define ENABLE_AD9516    1
+#define ENABLE_ADT7301   0
+#define ENABLE_DIGIPOT   0
+#define ENABLE_MAX31725  1
+#define ENABLE_POWERMON  1
+#define ENABLE_SFPIIC    1
+#define ENABLE_SENSORS   1
+
 #define LED_HEARTBEAT LED_INT_GREEN
 
 #ifdef __cplusplus

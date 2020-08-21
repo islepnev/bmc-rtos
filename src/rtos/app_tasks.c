@@ -54,7 +54,7 @@ void create_tasks(void)
     create_task_cli();
     create_task_powermon(&topdevice);
     create_task_main();
-#if !defined(BOARD_TDC72)
+#if ENABLE_AD9516
     create_task_auxpll(&topdevice);
 #endif
     create_task_pll(&topdevice);

@@ -31,9 +31,13 @@ int pcb_version = 0;
 
 uint32_t read_pcb_version(void)
 {
+#ifdef BOARD_TDC72VHLV3
+    return 0;
+#else
     bool a0 = read_gpio_pin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin);
     bool a1 = read_gpio_pin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin);
     return a1 * 2 + a0;
+#endif
 }
 
 #ifdef BOARD_TDC72
@@ -62,7 +66,11 @@ void update_board_version(int powermon_count)
 
 bool fpga_done_pin_present(void)
 {
+#ifdef BOARD_TDC72VHLV3
+    return false;
+#else
     return true;
+#endif
 }
 #endif
 
