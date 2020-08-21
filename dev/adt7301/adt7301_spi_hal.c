@@ -21,6 +21,8 @@
 #include "bsp_pin_defs.h"
 #include "gpio.h"
 #include "spi.h"
+#include "bus/spi_driver.h"
+#include "bus/impl/spi_driver_util.h"
 
 #ifdef BOARD_TDC72
 
@@ -59,15 +61,17 @@ bool adt7301_read(BusInterface *bus, int16_t *data)
     }
 
     write_gpio_pin(port, cs_pin, 0);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(&therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number),
+                                (uint8_t *)&SPI_transmit_buffer,
+                                (uint8_t *)&SPI_receive_buffer,
+                                1,
+                                SPI_TIMEOUT_MS);
     write_gpio_pin(port, cs_pin, 1);
-    if (HAL_OK != ret)
-        return false;
-    if (data) {
+    if (ret && data) {
         int16_t result = SPI_receive_buffer;
         *data = (result << 2) >> 2;
     }
-    return true;
+    return ret;
 }
 
 #endif
@@ -94,15 +98,15 @@ bool adt7301_read_temp(BusInterface *bus, int16_t *data)
     }
 
     write_gpio_pin(port, cs_pin, 0);
-    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(therm_spi, (uint8_t *)&SPI_transmit_buffer, (uint8_t *)&SPI_receive_buffer, 1, SPI_TIMEOUT_MS);
+    bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number),
+                                (uint8_t *)&SPI_transmit_buffer,
+                                (uint8_t *)&SPI_receive_buffer,
+                                1,
+                                SPI_TIMEOUT_MS);
     write_gpio_pin(port, cs_pin, 1);
-    if (data) {
-        if (ret == HAL_OK) {
-            uint16_t result = SPI_receive_buffer;
-            *data = result;
-        } else {
-            *data = 0;
-        }
+    if (ret && data) {
+        int16_t result = SPI_receive_buffer;
+        *data = (result << 2) >> 2;
     }
     return ret;
 }
