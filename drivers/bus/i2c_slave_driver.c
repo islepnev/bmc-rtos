@@ -155,7 +155,7 @@ void i2c_event_interrupt_handler(void)
     else
     {
         vxsiic_i2c_stats.errors++;
-        log_put(LOG_ERR, "vxsiic: unexpected I2C event interrupt");
+        log_printf(LOG_ERR, "vxsiic: unexpected I2C event interrupt, ISR=%08X", I2C1->ISR);
     }
 }
 
