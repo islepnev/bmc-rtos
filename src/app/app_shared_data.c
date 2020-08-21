@@ -17,7 +17,7 @@
 
 #include "app_shared_data.h"
 
-bool system_power_present = false;
+bool system_power_present = true;
 int enable_pll_run = 0;
 display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
