@@ -21,7 +21,7 @@
 
 #include "ansi_escape_codes.h"
 #include "bsp_tty.h"
-#include "stm32f7xx_ll_usart.h"
+#include "stm32_ll.h"
 
 static inline void debug_send_char(const char c)
 {

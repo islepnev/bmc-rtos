@@ -182,6 +182,32 @@ struct __SPI_HandleTypeDef * hspi_handle(BusIndex index)
     return NULL;
 }
 
+void *spi_instance(int index)
+{
+#ifdef SPI1
+    if (index == 1)
+        return SPI1;
+#endif
+#ifdef SPI2
+    if (index == 2)
+        return SPI2;
+#endif
+#ifdef SPI3
+    if (index == 3)
+        return SPI3;
+#endif
+#ifdef SPI4
+    if (index == 4)
+        return SPI4;
+#endif
+#ifdef SPI5
+    if (index == 5)
+        return SPI5;
+#endif
+    // assert(0);
+    return NULL;
+}
+
 int32_t spi_driver_wait_it_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
     SemaphoreHandle_t sem = spi_driver_it_sem_by_hspi(hspi);

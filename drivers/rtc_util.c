@@ -20,7 +20,14 @@
 #include <time.h>
 
 #include "rtc.h"
+
+#ifdef STM32F303xC
+#include "stm32f3xx_hal.h"
+#endif
+
+#if defined(STM32F746xx) || defined(STM32F769xx)
 #include "stm32f7xx_hal.h"
+#endif
 
 void get_rtc_tm(struct tm *tm)
 {

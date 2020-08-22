@@ -36,11 +36,7 @@ void init_periph(void)
     MX_I2C4_Init();
 
     spi_driver_init();
-    MX_SPI1_Init();
-    MX_SPI4_Init();
-#ifdef BOARD_TDC72VHLV3
-    MX_SPI5_Init();
-#endif
+    init_spi_peripherals();
 
     MX_USART2_UART_Init();
     MX_USART3_UART_Init();

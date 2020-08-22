@@ -31,7 +31,7 @@ extern struct __SPI_HandleTypeDef hspi3;
 extern struct __SPI_HandleTypeDef hspi4;
 extern struct __SPI_HandleTypeDef hspi5;
 
-void MX_SPI_Init(void);
+void init_spi_peripherals(void);
 void HAL_SPI_MspInit(struct __SPI_HandleTypeDef* spiHandle);
 void HAL_SPI_MspDeInit(struct __SPI_HandleTypeDef* spiHandle);
 

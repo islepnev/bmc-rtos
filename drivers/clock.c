@@ -22,7 +22,8 @@
 #include "FreeRTOSConfig.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
-#include "stm32f7xx_hal.h"
+
+#include "stm32_hal.h"
 
 bool test_cpu_tick(void)
 {

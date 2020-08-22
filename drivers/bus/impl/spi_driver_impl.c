@@ -27,9 +27,8 @@
 #include "log/log.h"
 #include "spi.h"
 #include "spi_driver_util.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
-#include "stm32f7xx_ll_spi.h"
+#include "stm32_hal.h"
+#include "stm32_ll.h"
 
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error

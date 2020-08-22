@@ -20,11 +20,9 @@
 #include "spi.h"
 
 #include "bsp_pin_defs.h"
+#include "bus/impl/spi_driver_util.h"
 #include "error_handler.h"
-#include "stm32f7xx_hal_cortex.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_rcc.h"
-#include "stm32f7xx_hal_spi.h"
+#include "stm32_hal.h"
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
@@ -33,79 +31,90 @@ SPI_HandleTypeDef hspi4;
 SPI_HandleTypeDef hspi5;
 
 // SPI1: FPGA
-void MX_SPI1_Init(void)
+void init_fpga_spi(int index)
 {
-    hspi1.Instance = SPI1;
-    hspi1.Init.Mode = SPI_MODE_MASTER;
-    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
-    hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
-    hspi1.Init.NSS = SPI_NSS_SOFT;
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi1.Init.CRCPolynomial = 7;
-    hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
+    hspi->Init.NSS = SPI_NSS_SOFT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
 }
 
 // SPI4: ADT7301
-void MX_SPI4_Init(void)
+void init_adt7301_spi(int index)
 {
-    hspi4.Instance = SPI4;
-    hspi4.Init.Mode = SPI_MODE_MASTER;
-    hspi4.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
-    hspi4.Init.NSS = SPI_NSS_SOFT;
-    hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi4.Init.CRCPolynomial = 7;
-    hspi4.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    hspi4.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
+    hspi->Init.NSS = SPI_NSS_SOFT;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
 #ifdef BOARD_TDC64
     // AD9516-4
-    // hspi4.Init.NSS = SPI_NSS_HARD_OUTPUT;
-    hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    // hspi->Init.NSS = SPI_NSS_HARD_OUTPUT;
+    hspi->Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 #endif
 #if defined (BOARD_TDC72) || defined (BOARD_TDC72VHLV3)
     // ADT7301
-    hspi4.Init.DataSize = SPI_DATASIZE_16BIT;
-    hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 #endif
-    if (HAL_SPI_Init(&hspi4) != HAL_OK) {
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
 }
 
 // SPI5: PLL AD9548
-void MX_SPI5_Init(void)
+void init_ad9548_spi(int index)
 {
-
-    hspi5.Instance = SPI5;
-    hspi5.Init.Mode = SPI_MODE_MASTER;
-    hspi5.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi5.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi5.Init.CLKPolarity = SPI_POLARITY_LOW;
-    hspi5.Init.CLKPhase = SPI_PHASE_1EDGE;
-    hspi5.Init.NSS = SPI_NSS_HARD_OUTPUT;
-    hspi5.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-    hspi5.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi5.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi5.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi5.Init.CRCPolynomial = 7;
-    hspi5.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    hspi5.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-    if (HAL_SPI_Init(&hspi5) != HAL_OK) {
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi->Init.NSS = SPI_NSS_HARD_OUTPUT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
+}
+
+void init_spi_peripherals(void)
+{
+    init_fpga_spi(1);
+    init_adt7301_spi(4);
+#ifdef BOARD_TDC72VHLV3
+    init_ad9548_spi(5);
+#endif
 }
 
 static void SPI4_synchronize(void)

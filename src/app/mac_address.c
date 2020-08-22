@@ -17,7 +17,7 @@
 
 #include "mac_address.h"
 
-#include "stm32f7xx_hal.h"
+#include "stm32_hal.h"
 
 void get_mac_address(uint8_t buf[6])
 {

@@ -24,8 +24,7 @@
 #include "app_tasks.h"
 #include "cmsis_os.h"
 #include "log/log.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_adc.h"
+#include "stm32_hal.h"
 
 ADC_HandleTypeDef hadc1;
 

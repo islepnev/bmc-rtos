@@ -31,7 +31,7 @@
 #include "freertos_stats.h"
 #include "mac_address.h"
 #include "rtc_util.h"
-#include "stm32f7xx_hal.h"
+#include "stm32_hal.h"
 #include "version.h"
 
 SensorStatus get_device_sensor_status(DeviceClass device_class)

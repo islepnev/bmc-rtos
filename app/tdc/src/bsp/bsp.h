@@ -25,7 +25,10 @@
 extern "C" {
 #endif
 
-#if !defined(BOARD_TDC64) && !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV3)
+#if !defined(BOARD_TDC64) && \
+!defined(BOARD_TDC72) && \
+!defined(BOARD_TDC72VHLV2) && \
+!defined(BOARD_TDC72VHLV3)
 #error
 #endif
 
@@ -51,6 +54,17 @@ extern "C" {
 #define ENABLE_POWERMON  1
 #define ENABLE_SFPIIC    1
 #define ENABLE_SENSORS   1
+#endif
+
+#if defined(BOARD_TDC72VHLV2)
+#define ENABLE_AD9516    0
+#define ENABLE_AD9548    1
+#define ENABLE_ADT7301   1
+#define ENABLE_DIGIPOT   0
+#define ENABLE_MAX31725  0
+#define ENABLE_POWERMON  0
+#define ENABLE_SFPIIC    0
+#define ENABLE_SENSORS   0
 #endif
 
 #if defined(BOARD_TDC72VHLV3)

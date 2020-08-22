@@ -24,7 +24,7 @@
 #include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "display.h"
-#include "stm32f7xx_hal.h"
+#include "stm32_hal.h"
 
 static void print_osThreadList(void)
 {

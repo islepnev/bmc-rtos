@@ -73,3 +73,6 @@ subdirs(app/cru16)
 
 subdirs(cpu/stm32f746ig)
 subdirs(app/tdc72vhlv3)
+
+#subdirs(cpu/stm32f303cc)
+#subdirs(app/tdc72vhlv2)

@@ -39,7 +39,7 @@ void init_periph(void)
   //  MX_QUADSPI_Init();
   //  MX_SDMMC1_SD_Init();
   spi_driver_init();
-  MX_SPI_Init();
+  init_spi_peripherals();
 
   MX_USART1_UART_Init(); // front-panel usb
   MX_USART2_UART_Init(); // mezzanine usb
