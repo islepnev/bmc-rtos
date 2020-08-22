@@ -1,6 +1,9 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 cmake_policy(SET CMP0048 NEW)
+SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+set(HAVE_FLAG_SEARCH_PATHS_FIRST 0) # workaround for macosx
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
     message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
@@ -62,15 +65,11 @@ add_custom_target(data ALL SOURCES
     ${MY_TOP_DIR}/build_id.in
 )
 
-set(BUILD_CPU_769 TRUE)
-
-if(BUILD_CPU_769)
 subdirs(cpu/stm32f769ni)
 subdirs(app/tdc64)
 subdirs(app/tdc72)
 subdirs(app/ttvxs)
 subdirs(app/cru16)
-else()
-#subdirs(cpu/stm32f746ig)
-#subdirs(app/tdc72vhlv3)
-endif()
+
+subdirs(cpu/stm32f746ig)
+subdirs(app/tdc72vhlv3)

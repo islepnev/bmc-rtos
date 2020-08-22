@@ -23,6 +23,14 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 
+#ifndef STM32F769xx
+#error "STM32F769xx should be defined"
+#endif
+
+#ifdef STM32F746xx
+#error "STM32F746xx should NOT be defined"
+#endif
+
 typedef struct {
     GPIO_TypeDef* GPIOx;
     uint16_t pin;

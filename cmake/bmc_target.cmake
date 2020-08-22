@@ -1,4 +1,4 @@
-FUNCTION(BMC_TARGET_PRE TARGET)
+FUNCTION(BMC_TARGET_PRE TARGET BOARD)
     set(OUTPUT_NAME ${TARGET})
     ADD_EXECUTABLE(${TARGET})
 
@@ -8,12 +8,13 @@ FUNCTION(BMC_TARGET_PRE TARGET)
     )
 ENDFUNCTION()
 
-FUNCTION(BMC_TARGET_POST TARGET)
+FUNCTION(BMC_TARGET_POST TARGET cpu)
     TARGET_LINK_LIBRARIES(${TARGET}
-        lwip-${cpu}
-        FreeRTOS-${cpu}
-        CMSIS-${cpu}
-        STM32HAL-${cpu}
+        CMSIS_${cpu}
+        STM32HAL_${cpu}
+        FreeRTOS_${cpu}
+#        sysclk_${cpu}
+        lwip_${cpu}
     )
     STM32_SET_TARGET_PROPERTIES(${TARGET})
     STM32_ADD_HEX_BIN_TARGETS(${TARGET})

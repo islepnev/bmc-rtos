@@ -8,18 +8,12 @@ SET(BSP_DIR ${MY_TOP_DIR}/app/tdc72vhlv3/src)
 SET(ELF ${BOARD}_rtos.elf)
 
 set(cpu 746ig)
-// add_compile_definitions(STM32F746xx)
+SET(STM32_CHIP STM32F746IGK)
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
 include(${MY_TOP_DIR}/cmake/bmc_target.cmake)
-FIND_PACKAGE(CMSIS REQUIRED)
 
-BMC_TARGET_PRE(${ELF})
-
-TARGET_INCLUDE_DIRECTORIES(${ELF} INTERFACE
-    ${CMSIS_INCLUDE_DIRS}
-)
-TARGET_LINK_LIBRARIES(${ELF} lwip-${cpu})
+BMC_TARGET_PRE(${ELF} ${BOARD})
 
 #subdirs(${MY_LIB_DIR}/dev)
 #subdirs(${MY_LIB_DIR}/drivers)
@@ -103,10 +97,8 @@ target_sources(${ELF} PRIVATE
     ${BmcApp_HEADERS}
     ${BmcApp_SRCS}
 )
+
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
-    ${LWIP_DIR}/src/include
-    ${CMSIS_INCLUDE_DIRS}
-    ${STM32HAL_INCLUDE_DIR}
     ${BSP_DIR}
     ${BSP_DIR}/bsp
     ${BSP_DIR}/bsp/mx_init
@@ -123,4 +115,4 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_SRC_DIR}/system/init
     ${MY_SRC_DIR}/tasks
 )
-BMC_TARGET_POST(${ELF})
+BMC_TARGET_POST(${ELF} ${cpu})

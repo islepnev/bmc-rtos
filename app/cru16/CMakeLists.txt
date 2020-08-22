@@ -6,17 +6,14 @@ set(BOARD "cru16")
 SET(ELF ${BOARD}_rtos.elf)
 
 set(cpu 769ni)
+SET(STM32_CHIP STM32F769NIH)
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
 include(${MY_TOP_DIR}/cmake/bmc_target.cmake)
-FIND_PACKAGE(CMSIS REQUIRED)
 
-BMC_TARGET_PRE(${ELF})
+BMC_TARGET_PRE(${ELF} ${BOARD})
 
-TARGET_INCLUDE_DIRECTORIES(${ELF} INTERFACE
-    ${CMSIS_INCLUDE_DIRS}
-)
-TARGET_LINK_LIBRARIES(${ELF} lwip-${cpu})
+target_link_libraries(${ELF} lwip_${cpu})
 
 #subdirs(${MY_LIB_DIR}/dev)
 #subdirs(${MY_LIB_DIR}/drivers)
@@ -31,13 +28,6 @@ set(BSP_INC_DIRS
     ${MY_TOP_DIR}/app/${BOARD}/src/bsp/mx_init
     ${MY_TOP_DIR}/app/${BOARD}/src/rtos
     ${MY_TOP_DIR}/app/${BOARD}/src/tasks
-)
-
-# required for lwip
-include_directories(
-    ${MY_SRC_DIR}/config
-    ${MY_SRC_DIR}/common
-    ${MY_SRC_DIR}/system
 )
 
 file(GLOB_RECURSE BSP_HEADERS
@@ -111,19 +101,18 @@ target_sources(${ELF} PRIVATE
     ${BmcApp_SRCS}
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
-    ${LWIP_DIR}/src/include
-    ${CMSIS_INCLUDE_DIRS}
-    ${STM32HAL_INCLUDE_DIR}
     ${BSP_INC_DIRS}
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/dev/common
     ${MY_LIB_DIR}/drivers
     ${MY_SRC_DIR}/app
+    ${MY_SRC_DIR}/config
     ${MY_SRC_DIR}/common
+    ${MY_SRC_DIR}/system
     ${MY_SRC_DIR}/eth
     ${MY_SRC_DIR}/ipc
     ${MY_SRC_DIR}/rtos
     ${MY_SRC_DIR}/system/init
     ${MY_SRC_DIR}/tasks
 )
-BMC_TARGET_POST(${ELF})
+BMC_TARGET_POST(${ELF} ${cpu})
