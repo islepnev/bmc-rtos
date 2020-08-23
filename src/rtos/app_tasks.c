@@ -22,17 +22,19 @@
 #include "app_task_heartbeat.h"
 #include "app_task_main.h"
 #include "app_task_pll.h"
+#ifdef ENABLE_POWERMON
 #include "app_task_powermon.h"
+#endif
 #include "bsp.h"
 
 #if !defined(BOARD_TDC72)
-#include "app_task_auxpll.h"
+#include "ad9516/app_task_auxpll.h"
 #endif
-#include "app_task_fpga.h"
+#include "fpga/app_task_fpga.h"
 #if defined(BOARD_TTVXS)
-#include "app_task_vxsiicm.h"
+#include "vxsiicm/app_task_vxsiicm.h"
 #else
-#include "app_task_vxsiics.h"
+#include "vxsiics/app_task_vxsiics.h"
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
@@ -52,17 +54,21 @@ void create_tasks(void)
     create_task_heartbeat();
     create_task_display();
     create_task_cli();
+#ifdef ENABLE_POWERMON
     create_task_powermon(&topdevice);
+#endif
     create_task_main();
 #if ENABLE_AD9516
     create_task_auxpll(&topdevice);
 #endif
     create_task_pll(&topdevice);
     create_task_fpga(&topdevice);
-#if defined(BOARD_TTVXS)
+#ifdef ENABLE_VXSIICM
     create_task_vxsiicm(&topdevice);
 #else
+#ifdef ENABLE_VXSIICS
     create_task_vxsiics();
+#endif
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     create_task_tcpip();

@@ -22,19 +22,16 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
-#include "stm32f7xx_hal_cortex.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_rcc.h"
+#include "bus/impl/i2c_hal_handles.h"
+#include "stm32_hal.h"
 #ifndef BOARD_TTVXS
-#include "stm32f7xx_ll_bus.h"
-#include "stm32f7xx_ll_gpio.h"
-#include "stm32f7xx_ll_i2c.h"
+#include "stm32_ll.h"
 #endif
 
-I2C_HandleTypeDef hi2c1; // VXS switches 0x71-0x73, VXSIIC
-I2C_HandleTypeDef hi2c2; // Power Monitors
-I2C_HandleTypeDef hi2c3; // EEPROM
-I2C_HandleTypeDef hi2c4; // PLL AD9545
+//I2C_HandleTypeDef hi2c1; // VXS switches 0x71-0x73, VXSIIC
+//I2C_HandleTypeDef hi2c2; // Power Monitors
+//I2C_HandleTypeDef hi2c3; // EEPROM
+//I2C_HandleTypeDef hi2c4; // PLL AD9545
 
 #ifndef BOARD_TTVXS
 

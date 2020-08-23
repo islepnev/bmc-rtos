@@ -24,7 +24,6 @@
 #include "ad9545/dev_ad9545_print.h"
 #include "app_shared_data.h"
 #include "dev_common_types.h"
-#include "dev_digipot_print.h"
 #include "devicelist.h"
 #include "digipot/dev_digipot.h"
 #include "display.h"
@@ -80,35 +79,45 @@ void print_system_status(int y)
 
 void display_pll_detail(int y)
 {
+#ifdef ENABLE_AD9545
     print_clearbox(y, DISPLAY_PLL_DETAIL_H);
     print_goto(y, 1);
     dev_ad9545_verbose_status();
+#endif
 }
 
 void display_auxpll_detail(int y)
 {
+#ifdef ENABLE_AD9516
     print_clearbox(y, DISPLAY_AUXPLL_DETAIL_H);
     print_goto(y, 1);
     printf(" --- AD9516 Status ---\n");
     auxpllPrintStatus();
+#endif
 }
 
 void print_powermon(int y)
 {
+#ifdef ENABLE_POWERMON
     print_goto(y, 1);
     print_powermon_box();
+#endif
 }
 
 void print_pll(int y)
 {
+#ifdef ENABLE_AD9545
     print_goto(y, 1);
     dev_ad9545_print_box();
+#endif
 }
 
 void print_auxpll(int y)
 {
+#ifdef ENABLE_AD9516
     print_goto(y, 1);
     auxpllPrint();
+#endif
 }
 
 void print_fpga(void)

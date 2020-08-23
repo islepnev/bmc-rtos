@@ -19,16 +19,22 @@
 
 #include "spi.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bus/impl/spi_driver_util.h"
 #include "error_handler.h"
 #include "stm32_hal.h"
+#include "stm32_init_periph.h"
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 SPI_HandleTypeDef hspi4;
 SPI_HandleTypeDef hspi5;
+
+//static SPI_TypeDef *ad9548_spi_instance  = SPI1;
+//static SPI_TypeDef *fpga_spi_instance    = SPI2;
+//static SPI_TypeDef *adt7301_spi_instance = SPI3;
 
 static void init_fpga_spi(int index)
 {
@@ -98,132 +104,86 @@ static void init_ad9548_spi(int index)
 
 void init_spi_peripherals(void)
 {
-    init_ad9548_spi(1);
-    init_fpga_spi(2);
-    init_adt7301_spi(3);
+    spi_enable_clock();
+    init_ad9548_spi(SPI_BUS_INDEX_AD9548);
+    init_fpga_spi(SPI_BUS_INDEX_FPGA);
+    init_adt7301_spi(SPI_BUS_INDEX_ADT7301);
 }
-
-static void SPI4_synchronize(void)
-{
-    __HAL_RCC_GPIOI_CLK_ENABLE();
-
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    // force NSS high
-    GPIO_InitStruct.Pin = SPI4_NSS_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_NSS_Pin, GPIO_PIN_SET);
-    HAL_GPIO_Init(SPI4_GPIO_Port, &GPIO_InitStruct);
-
-    // toggle SCLK to reset SPI interface on device
-    GPIO_InitStruct.Pin = SPI4_SCLK_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_Init(SPI4_GPIO_Port, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_NSS_Pin, GPIO_PIN_RESET); // CS# assert
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
-    HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
-}
-
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if (spiHandle->Instance==SPI1) {
-        // FPGA
-        // software NSS
-        GPIO_InitStruct.Pin = FPGA_NSS_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (spiHandle->Instance==SPI1)
+    {
         __HAL_RCC_SPI1_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        GPIO_InitStruct.Pin = FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin;
+
+        GPIO_InitStruct.Pin = PLL_CS_Pin|PLL_SCLK_Pin|PLL_MOSI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         HAL_NVIC_SetPriority(SPI1_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(SPI1_IRQn);
     }
-    else if (spiHandle->Instance==SPI4) {
-        // ADT7301
-        // SPI4_synchronize();
-        __HAL_RCC_SPI4_CLK_ENABLE();
-        __HAL_RCC_GPIOE_CLK_ENABLE();
-//#ifdef BOARD_TDC72VHLV3
-//        GPIO_InitStruct.Pin = ADT_SCLK_Pin|ADT_DOUT_Pin|ADT_DIN_Pin;
-//#else
-        GPIO_InitStruct.Pin = SPI4_DIN_Pin|SPI4_SCLK_Pin|SPI4_DOUT_Pin;
-//#endif
-//#ifdef BOARD_TDC64
-//        GPIO_InitStruct.Pin |= AD9516_CS_Pin;
-//#endif
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI4;
-        HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    else if (spiHandle->Instance==SPI2)
+    {
+        __HAL_RCC_SPI2_CLK_ENABLE();
 
-        HAL_NVIC_SetPriority(SPI4_IRQn, 5, 0);
-        HAL_NVIC_EnableIRQ(SPI4_IRQn);
-    }
-    else if (spiHandle->Instance==SPI5) {
-        // PLL AD9548
-#if ENABLE_AD9548
-        __HAL_RCC_SPI5_CLK_ENABLE();
-        GPIO_InitStruct.Pin = PLL_SPI_SCLK_Pin|PLL_SPI_NSS_Pin|PLL_SPI_MOSI_Pin|PLL_SPI_MISO_Pin;
+        GPIO_InitStruct.Pin = FPGA_SCLK_Pin|FPGA_MISO_Pin|FPGA_MOSI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI5;
-        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-#endif
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        HAL_NVIC_SetPriority(SPI2_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(SPI2_IRQn);
+    }
+    else if (spiHandle->Instance==SPI3)
+    {
+        __HAL_RCC_SPI3_CLK_ENABLE();
+
+        GPIO_InitStruct.Pin = ADT_SCLK_Pin|ADT_DIN_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = ADT_DOUT_Pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
+        HAL_GPIO_Init(ADT_DOUT_GPIO_Port, &GPIO_InitStruct);
+
+        HAL_NVIC_SetPriority(SPI3_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(SPI3_IRQn);
     }
 }
 
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 {
-    if (spiHandle->Instance==SPI1) {
+
+    if (spiHandle->Instance==SPI1)
+    {
         __HAL_RCC_SPI1_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOA, FPGA_NSS_Pin|FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin);
+        HAL_GPIO_DeInit(GPIOA, PLL_CS_Pin|PLL_SCLK_Pin|PLL_MOSI_Pin);
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
     }
-    else if (spiHandle->Instance==SPI4) {
-        __HAL_RCC_SPI4_CLK_DISABLE();
-//#ifdef BOARD_TDC64
-////        HAL_GPIO_DeInit(GPIOE, AD9516_CS_Pin);
-//        GPIO_InitTypeDef GPIO_InitStruct = {0};
-//        GPIO_InitStruct.Pin = AD9516_CS_Pin;
-//        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-//        GPIO_InitStruct.Pull = GPIO_PULLUP;
-//        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//        HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-//#endif
-//#ifdef BOARD_TDC72VHLV3
-//        HAL_GPIO_DeInit(GPIOE, ADT_SCLK_Pin|ADT_DOUT_Pin|ADT_DIN_Pin);
-//#else
-        HAL_GPIO_DeInit(GPIOE, SPI4_DIN_Pin|SPI4_SCLK_Pin|SPI4_DOUT_Pin);
-//#endif
-        HAL_NVIC_DisableIRQ(SPI4_IRQn);
+    else if (spiHandle->Instance==SPI2)
+    {
+        __HAL_RCC_SPI2_CLK_DISABLE();
+        HAL_GPIO_DeInit(GPIOB, FPGA_SCLK_Pin|FPGA_MISO_Pin|FPGA_MOSI_Pin);
+        HAL_NVIC_DisableIRQ(SPI2_IRQn);
     }
-    else if(spiHandle->Instance==SPI5) {
-#if ENABLE_AD9548
-        __HAL_RCC_SPI5_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOF, PLL_SPI_SCLK_Pin|PLL_SPI_NSS_Pin|PLL_SPI_MOSI_Pin|PLL_SPI_MISO_Pin);
-#endif
+    else if (spiHandle->Instance==SPI3)
+    {
+        __HAL_RCC_SPI3_CLK_DISABLE();
+        HAL_GPIO_DeInit(GPIOB, ADT_SCLK_Pin|ADT_DOUT_Pin|ADT_DIN_Pin);
+        HAL_NVIC_DisableIRQ(SPI3_IRQn);
     }
 }

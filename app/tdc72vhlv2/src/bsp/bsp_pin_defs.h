@@ -1,0 +1,50 @@
+#ifndef BSP_PIN_DEFS_H
+#define BSP_PIN_DEFS_H
+
+#define ADT_CS_B0_GPIO_Port GPIOA
+#define ADT_CS_B0_Pin GPIO_PIN_15
+#define ADT_CS_B1_GPIO_Port GPIOA
+#define ADT_CS_B1_Pin GPIO_PIN_9
+#define ADT_CS_B2_GPIO_Port GPIOA
+#define ADT_CS_B2_Pin GPIO_PIN_11
+#define ADT_CS_B3_GPIO_Port GPIOA
+#define ADT_CS_B3_Pin GPIO_PIN_10
+#define ADT_DIN_GPIO_Port GPIOB
+#define ADT_DIN_Pin GPIO_PIN_5
+#define ADT_DOUT_GPIO_Port GPIOB
+#define ADT_DOUT_Pin GPIO_PIN_4
+#define ADT_SCLK_GPIO_Port GPIOB
+#define ADT_SCLK_Pin GPIO_PIN_3
+#define FPGA_MISO_GPIO_Port GPIOB
+#define FPGA_MISO_Pin GPIO_PIN_14
+#define FPGA_MOSI_GPIO_Port GPIOB
+#define FPGA_MOSI_Pin GPIO_PIN_15
+#define FPGA_NSS_GPIO_Port GPIOB
+#define FPGA_NSS_Pin GPIO_PIN_12
+#define FPGA_SCLK_GPIO_Port GPIOB
+#define FPGA_SCLK_Pin GPIO_PIN_13
+#define LED_GREEN_B_GPIO_Port GPIOB
+#define LED_GREEN_B_Pin GPIO_PIN_11
+#define LED_RED_B_GPIO_Port GPIOB
+#define LED_RED_B_Pin GPIO_PIN_2
+#define LED_YELLOW_B_GPIO_Port GPIOB
+#define LED_YELLOW_B_Pin GPIO_PIN_10
+#define PLL_CS_GPIO_Port GPIOA
+#define PLL_CS_Pin GPIO_PIN_4
+#define PLL_IRQ_B_EXTI_IRQn EXTI9_5_IRQn
+#define PLL_IRQ_B_GPIO_Port GPIOB
+#define PLL_IRQ_B_Pin GPIO_PIN_6
+#define PLL_LED_EN_B_GPIO_Port GPIOB
+#define PLL_LED_EN_B_Pin GPIO_PIN_0
+#define PLL_MOSI_GPIO_Port GPIOA
+#define PLL_MOSI_Pin GPIO_PIN_7
+#define PLL_RESET_GPIO_Port GPIOB
+#define PLL_RESET_Pin GPIO_PIN_7
+#define PLL_SCLK_GPIO_Port GPIOA
+#define PLL_SCLK_Pin GPIO_PIN_5
+#define TTY_RX_GPIO_Port GPIOA
+#define TTY_RX_Pin GPIO_PIN_3
+#define TTY_TX_GPIO_Port GPIOA
+#define TTY_TX_Pin GPIO_PIN_2
+
+#endif // BSP_PIN_DEFS_H

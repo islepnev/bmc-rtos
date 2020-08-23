@@ -38,6 +38,7 @@
 //#include "examples/snmp/snmp_v3/snmpv3_dummy.h"
 #include "snmp_private_mib/private_mib.h"
 #include "lldp_mib.h"
+#include "app_name.h"
 #include "version.h"
 
 #if LWIP_SNMP

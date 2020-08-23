@@ -16,8 +16,9 @@
 */
 #include "http_app_common.h"
 
-#include "version.h"
+#include "app_name.h"
 #include "http_server.h"
+#include "version.h"
 
 static const char *SERVER_HEADERS_200 =
         "HTTP/1.0 200 OK\n"

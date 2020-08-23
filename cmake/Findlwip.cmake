@@ -98,10 +98,6 @@ SET(lwip_SOURCES
    "${lwipsnmp_SRCS}"
 )
 
-LIST(APPEND lwip_SOURCES
-    ${MY_SRC_DIR}/system/OS/sys_arch.c
-)
-
 FIND_PATH(LWIP_INCLUDE_DIRS lwip/opt.h
     PATH_SUFFIXES include
     HINTS ${LWIP_DIR}/src/include

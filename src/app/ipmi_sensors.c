@@ -31,6 +31,8 @@ IpmiSensors ipmi_sensors = {0};
 void sync_ipmi_sensors(void)
 {
     uint32_t index = 0;
+
+#if defined(ENABLE_POWERMON) && defined (ENABLE_SENSORS)
     // Power monitors
     const Dev_powermon_priv *pm = get_powermon_priv_const();
     const pm_sensors_arr *sensors = &pm->sensors;
@@ -53,7 +55,7 @@ void sync_ipmi_sensors(void)
             strncpy(gs->name, s->label, SENSOR_NAME_SIZE-1);
         }
     }
-
+#endif
     const Dev_thset_priv *thset = get_thset_priv_const();
     if (thset) {
         assert(index + thset->count < MAX_SENSOR_COUNT);

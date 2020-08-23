@@ -75,11 +75,13 @@ void fpga_task_run(Dev_fpga *d)
     d->priv.initb = read_init_b();
     d->priv.done = read_done();
     int fpga_core_power_present = true;
+#ifdef ENABLE_POWERMON
     const Dev_powermon_priv *priv = get_powermon_priv_const();
     if (priv) {
         const pm_sensors_arr *sensors = &priv->sensors;
         fpga_core_power_present = get_fpga_core_power_present(sensors);
     }
+#endif
     int fpga_power_present = enable_power && fpga_core_power_present;
     int fpga_enable = fpga_power_present && d->priv.initb;
 //    int fpga_loading = fpga_power_present && d->priv.initb && !d->priv.done;

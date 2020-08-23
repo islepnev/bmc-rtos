@@ -16,11 +16,17 @@
 */
 
 #ifdef STM32F303xC
+#include "stm32f3xx_ll_bus.h"
+#include "stm32f3xx_ll_i2c.h"
+#include "stm32f3xx_ll_gpio.h"
 #include "stm32f3xx_ll_usart.h"
 #include "stm32f3xx_ll_spi.h"
 #endif
 
 #if defined(STM32F746xx) || defined(STM32F769xx)
+#include "stm32f7xx_ll_bus.h"
+#include "stm32f7xx_ll_i2c.h"
+#include "stm32f7xx_ll_gpio.h"
 #include "stm32f7xx_ll_usart.h"
 #include "stm32f7xx_ll_spi.h"
 #endif

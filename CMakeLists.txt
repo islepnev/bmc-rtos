@@ -19,12 +19,13 @@ SET(MY_TOP_DIR ${CMAKE_SOURCE_DIR})
 SET(MY_EXT_DIR ${MY_TOP_DIR}/external)
 SET(MY_LIB_DIR ${MY_TOP_DIR})
 SET(MY_SRC_DIR ${MY_TOP_DIR}/src)
+SET(PLATFORM_DIR ${MY_TOP_DIR}/platform)
 
 SET(STM32Cube_DIR ${MY_EXT_DIR}/STM32Cube)
 SET(FreeRTOS_DIR ${MY_EXT_DIR}/FreeRTOS)
 SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
 
-SET(STM32_MIN_HEAP_SIZE 0x20000) # Minimum heap size for error detection at link-time
+SET(STM32_MIN_HEAP_SIZE 0x2000) # Minimum heap size for error detection at link-time
 SET(STM32_MIN_STACK_SIZE 0x400) # Minimum stack size for error detection at link-time
 SET(FREERTOS_HEAP_IMPL 4)
 
@@ -74,5 +75,5 @@ subdirs(app/cru16)
 subdirs(cpu/stm32f746ig)
 subdirs(app/tdc72vhlv3)
 
-#subdirs(cpu/stm32f303cc)
-#subdirs(app/tdc72vhlv2)
+subdirs(cpu/stm32f303cc)
+subdirs(app/tdc72vhlv2)

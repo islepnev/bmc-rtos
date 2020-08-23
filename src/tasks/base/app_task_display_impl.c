@@ -26,7 +26,6 @@
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "cmsis_os.h"
-#include "dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_brief.h"
@@ -93,7 +92,9 @@ static const int DISPLAY_AUXPLL_DETAIL_Y = (DISPLAY_PAGE_Y + DISPLAY_PLL_DETAIL_
 static void print_main(int y)
 {
     print_goto(y, 1);
+#ifdef ENABLE_SFPIIC
     dev_sfpiic_print();
+#endif
     dev_eeprom_config_print();
     if (has_vxsiicm)
         dev_vxsiicm_print();
@@ -150,7 +151,9 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_log_page(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y-2, repaint);
         break;
     case DISPLAY_DIGIPOT:
+#ifdef ENABLE_DIGIPOTS
         display_digipots_page(DISPLAY_PAGE_Y, repaint);
+#endif
         break;
     case DISPLAY_PLL_DETAIL:
         if (repaint)
@@ -162,7 +165,9 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_boards_page(DISPLAY_PAGE_Y, repaint);
         break;
     case DISPLAY_SFP_DETAIL:
+#ifdef ENABLE_SFPIIC
         display_sfpiic_page(DISPLAY_PAGE_Y);
+#endif
         break;
     case DISPLAY_TASKS:
         display_tasks_page(DISPLAY_PAGE_Y);

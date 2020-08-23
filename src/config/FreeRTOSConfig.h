@@ -70,7 +70,7 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 7 )
 #define configMINIMAL_STACK_SIZE                 ((uint16_t)1024) // 128
-#define configTOTAL_HEAP_SIZE                    ((size_t)0x20000) // 0x40000
+#define configTOTAL_HEAP_SIZE                    ((size_t)HEAP_SIZE) // set by cmake
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configGENERATE_RUN_TIME_STATS            1
 #define configUSE_TRACE_FACILITY                 1

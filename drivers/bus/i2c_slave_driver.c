@@ -25,7 +25,7 @@
 #include "cmsis_os.h"
 #include "i2c.h"
 #include "log/log.h"
-#include "stm32f7xx_ll_i2c.h"
+#include "stm32_ll.h"
 
 #define SLAVE_OWN_ADDRESS 0x33
 

@@ -24,13 +24,10 @@
 #endif
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_usart.h"
+#include "bus/impl/i2c_hal_handles.h"
 
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim1;
-extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c2;
-extern I2C_HandleTypeDef hi2c3;
-extern I2C_HandleTypeDef hi2c4;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi3;

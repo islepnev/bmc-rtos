@@ -46,6 +46,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include <string.h>
 
+#include "app_name.h"
 #include "ethernetif.h"
 #include "lwip/opt.h"
 #include "lwip/timeouts.h"

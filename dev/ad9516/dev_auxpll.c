@@ -21,7 +21,7 @@
 
 #include "ad9516/ad9516_spi_hal.h"
 #include "ad9516/ad9516_status.h"
-#include "ad9516_regs.h"
+#include "ad9516/ad9516_regs.h"
 #include "ansi_escape_codes.h"
 #include "cmsis_os.h"
 #include "dev_auxpll_types.h"

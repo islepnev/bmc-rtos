@@ -39,7 +39,7 @@ typedef enum {
 } display_mode_t;
 
 extern bool system_power_present;
-extern int enable_pll_run;
+//extern int enable_pll_run;
 extern display_mode_t display_mode;
 extern int enable_power;
 extern bool eth_link_up;

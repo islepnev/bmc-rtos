@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#define FPGA_SPI_BUS_INDEX 5
+#define SPI_BUS_INDEX_FPGA 5
 
 enum {
     PCB_VER_A_MCB_1_0 = 3,

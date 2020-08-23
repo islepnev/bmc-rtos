@@ -17,14 +17,11 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/* USART2 init function */
+#include "bsp.h"
+#include "bsp_pin_defs.h"
+#include "stm32_ll.h"
 
 void MX_USART2_UART_Init(void)
 {
@@ -65,9 +62,3 @@ void MX_USART2_UART_Init(void)
   LL_USART_Enable(USART2);
 
 }
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

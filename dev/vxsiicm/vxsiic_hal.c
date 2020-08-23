@@ -25,6 +25,7 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "log/log.h"
+#include "stm32_hal.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 

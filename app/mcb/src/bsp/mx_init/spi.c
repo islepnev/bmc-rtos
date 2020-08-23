@@ -19,10 +19,12 @@
 
 #include "spi.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
-#include "error_handler.h"
 #include "bus/impl/spi_driver_util.h"
+#include "error_handler.h"
 #include "stm32_hal.h"
+#include "stm32_init_periph.h"
 
 SPI_HandleTypeDef hspi1 = {0};
 SPI_HandleTypeDef hspi2 = {0};
@@ -87,8 +89,6 @@ static void init_fpga_spi(int index)
 
 static void SPI2_synchronize(void)
 {
-    __HAL_RCC_GPIOI_CLK_ENABLE();
-
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     // force NSS high
@@ -117,8 +117,8 @@ static void SPI2_synchronize(void)
 
 void init_spi_peripherals(void)
 {
-    init_ad9516_spi(2);
-    init_fpga_spi(5);
+    init_ad9516_spi(SPI_BUS_INDEX_AD9516);
+    init_fpga_spi(SPI_BUS_INDEX_FPGA);
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
@@ -127,7 +127,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     if (spiHandle->Instance==SPI2) {
         SPI2_synchronize();
         __HAL_RCC_SPI2_CLK_ENABLE();
-        __HAL_RCC_GPIOI_CLK_ENABLE();
+
         GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; // OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -147,7 +147,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
         __HAL_RCC_SPI5_CLK_ENABLE();
-        __HAL_RCC_GPIOF_CLK_ENABLE();
+
         GPIO_InitStruct.Pin = FPGA_SCLK_Pin|FPGA_MOSI_Pin|FPGA_MISO_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;

@@ -21,7 +21,7 @@
 #include "device_status_log.h"
 #include "led_gpio_hal.h"
 #include "log/log.h"
-#include "powermon/dev_powermon_types.h"
+//#include "powermon/dev_powermon_types.h"
 #include "system_status.h"
 
 static uint32_t mainloopCount = 0;
@@ -36,8 +36,8 @@ SensorStatus old_status = SENSOR_UNKNOWN;
 void task_main_run(void)
 {
     mainloopCount++;
-    const PmState pmState = get_powermon_state();
-    enable_pll_run = (pmState == PM_STATE_RUN);
+//    const PmState pmState = get_powermon_state();
+    // enable_pll_run = (pmState == PM_STATE_RUN);
 
     const SensorStatus systemStatus = getSystemStatus();
     if (old_status != systemStatus) {

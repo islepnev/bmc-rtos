@@ -184,7 +184,11 @@ bool fpgaWriteSystemStatus(DeviceBase *dev)
     data = getSystemStatus();
     if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_A, data))
         return false;
+#ifdef ENABLE_POWERMON
     data = getPowermonStatus();
+#else
+    data = 0;
+#endif
     if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_B, data))
         return false;
     data = getPllStatus();
@@ -193,6 +197,7 @@ bool fpgaWriteSystemStatus(DeviceBase *dev)
     return true;
 }
 
+#ifdef ENABLE_SENSORS
 static bool fpgaWriteSensorsByIndex(DeviceBase *dev, int *indices, int count)
 {
     const Dev_powermon_priv *p = get_powermon_priv_const();
@@ -219,3 +224,10 @@ bool fpgaWriteSensors(DeviceBase *dev)
     return fpgaWriteSensorsByIndex(
         dev, fpga_sensor_map.indices, fpga_sensor_map.count);
 }
+#else
+bool fpgaWriteSensors(DeviceBase *dev)
+{
+    return true;
+}
+#endif
+

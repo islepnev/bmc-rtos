@@ -182,7 +182,7 @@ struct __SPI_HandleTypeDef * hspi_handle(BusIndex index)
     return NULL;
 }
 
-void *spi_instance(int index)
+inline void *spi_instance(int index)
 {
 #ifdef SPI1
     if (index == 1)

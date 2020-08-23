@@ -24,6 +24,7 @@
 #include "stm32f3xx_hal_gpio.h"
 #include "stm32f3xx_hal_rcc.h"
 #include "stm32f3xx_hal_spi.h"
+#include "stm32f3xx_hal_tim.h"
 #endif
 
 #if defined(STM32F746xx) || defined(STM32F769xx)
@@ -35,4 +36,5 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_spi.h"
+#include "stm32f7xx_hal_tim.h"
 #endif

@@ -29,6 +29,22 @@
 #include "powermon/dev_powermon_display.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
 
+const char *sensor_status_str(SensorStatus status)
+{
+    switch (status) {
+    case SENSOR_UNKNOWN:
+        return ANSI_GRAY   "none" ANSI_CLEAR;
+    case SENSOR_NORMAL:
+        return ANSI_GREEN  "NORM" ANSI_CLEAR;
+    case SENSOR_WARNING:
+        return ANSI_YELLOW "WARN" ANSI_CLEAR;
+    case SENSOR_CRITICAL:
+        return ANSI_RED    "CRIT" ANSI_CLEAR;
+    default:
+        return "????";
+    }
+}
+
 void display_boards_page(int y, bool repaint)
 {
     print_goto(y, 1);

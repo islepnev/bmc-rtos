@@ -25,12 +25,13 @@
 
 #define BOARD_TTVXS 1
 
-#define ENABLE_AD9516    1
-#define ENABLE_ADT7301   0 // TTVXS 1.0 only, not supported
-#define ENABLE_DIGIPOT   0
-#define ENABLE_MAX31725  1
-#define ENABLE_POWERMON  1
-#define ENABLE_SFPIIC    1
+//#define ENABLE_AD9516    1
+//#define ENABLE_AD9545    1
+//#define ENABLE_ADT7301   0 // TTVXS 1.0 only, not supported
+//#define ENABLE_DIGIPOT   0
+//#define ENABLE_MAX31725  1
+//#define ENABLE_POWERMON  1
+//#define ENABLE_SFPIIC    1
 #define ENABLE_SENSORS   1
 
 #define LED_HEARTBEAT LED_INT_GREEN
@@ -51,7 +52,7 @@ extern "C" {
 #ifdef TTVXS_1_0
 #define therm_spi hspi2
 #else
-#define AD9516_SPI_BUS_INDEX 2
+#define SPI_BUS_INDEX_AD9516 2
 #endif
 
 #define AUXPLL_AD9516_OUT6_ENABLE 1

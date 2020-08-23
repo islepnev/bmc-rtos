@@ -35,7 +35,7 @@ static unsigned int log_count = 0;
 osSemaphoreId buf_sem;
 osSemaphoreDef(buf_sem);
 
-static LogEntry buf[LOG_BUF_SIZE];
+static LogEntry logbuf[LOG_BUF_SIZE];
 
 void init_logbuffer(void)
 {
@@ -53,13 +53,13 @@ void log_put_long(LogPriority priority, uint32_t tick, const char *str)
         copy_len = LOG_LINE_SIZE-1;
     // lock
     osSemaphoreWait(buf_sem, 0);
-    strncpy(buf[log_wptr].str, str, copy_len);
-    if (buf[log_wptr].str[copy_len-1] == '\n')
-        buf[log_wptr].str[copy_len-1] = '\0';
+    strncpy(logbuf[log_wptr].str, str, copy_len);
+    if (logbuf[log_wptr].str[copy_len-1] == '\n')
+        logbuf[log_wptr].str[copy_len-1] = '\0';
 
-    buf[log_wptr].str[copy_len] = '\0';
-    buf[log_wptr].priority = priority;
-    buf[log_wptr].tick = tick;
+    logbuf[log_wptr].str[copy_len] = '\0';
+    logbuf[log_wptr].priority = priority;
+    logbuf[log_wptr].tick = tick;
     log_wptr = (log_wptr+1) % LOG_BUF_SIZE;
     // unlock
     osSemaphoreRelease(buf_sem);
@@ -77,9 +77,9 @@ void log_get(int index, LogEntry *dest)
         return;
     }
     osSemaphoreWait(buf_sem, 0);
-    dest->priority = buf[index].priority;
-    dest->tick = buf[index].tick;
-    strncpy(dest->str, buf[index].str, LOG_LINE_SIZE);
+    dest->priority = logbuf[index].priority;
+    dest->tick = logbuf[index].tick;
+    strncpy(dest->str, logbuf[index].str, LOG_LINE_SIZE);
     osSemaphoreRelease(buf_sem);
 }
 

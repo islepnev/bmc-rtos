@@ -26,6 +26,7 @@
 #include "dev_sfpiic_types.h"
 #include "i2c.h"
 #include "log/log.h"
+#include "stm32_hal.h"
 
 static const int SFPI2C_TIMEOUT_MS = 25;
 static const int I2C_TIMEOUT_MS = 10;

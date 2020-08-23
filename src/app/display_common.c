@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include "ansi_escape_codes.h"
+#include "app_name.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"

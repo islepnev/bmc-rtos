@@ -29,7 +29,6 @@ extern "C" {
 enum { DISPLAY_POWERMON_H = 3 };
 
 struct pm_sensor;
-const char *sensor_status_str(SensorStatus status);
 void pm_sensor_print_header(void);
 void pm_sensor_print_values(const struct pm_sensor *d, bool isOn);
 void print_powermon_box(void);

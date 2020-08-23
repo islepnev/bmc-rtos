@@ -19,8 +19,10 @@
 
 #include "bus/i2c_driver.h"
 #include "i2c.h"
+#include "bus/impl/i2c_hal_handles.h"
+#include "stm32_hal.h"
 
-static I2C_HandleTypeDef * const hi2c = &hi2c4;
+static struct __I2C_HandleTypeDef * const hi2c = &hi2c4;
 
 static const int I2C_TIMEOUT_MS = 10;
 

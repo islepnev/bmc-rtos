@@ -1,5 +1,5 @@
 /*
-**    TDC72 GPIO init
+**    TDC72VHL-v3 GPIO init
 **
 **    Copyright 2019 Ilja Slepnev
 **

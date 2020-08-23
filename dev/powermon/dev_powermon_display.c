@@ -25,22 +25,6 @@
 #include "dev_powermon_types.h"
 #include "display.h"
 
-const char *sensor_status_str(SensorStatus status)
-{
-    switch (status) {
-    case SENSOR_UNKNOWN:
-        return ANSI_GRAY   "none" ANSI_CLEAR;
-    case SENSOR_NORMAL:
-        return ANSI_GREEN  "NORM" ANSI_CLEAR;
-    case SENSOR_WARNING:
-        return ANSI_YELLOW "WARN" ANSI_CLEAR;
-    case SENSOR_CRITICAL:
-        return ANSI_RED    "CRIT" ANSI_CLEAR;
-    default:
-        return "????";
-    }
-}
-
 const char *monStateStr(MonState state)
 {
     switch(state) {

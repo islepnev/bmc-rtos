@@ -23,12 +23,12 @@
 
 #include "devicebase.h"
 #include "ipmi_sensor_types.h"
+#include "vxsiic_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {VXSIIC_SLOTS = 18};
 //enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
 
@@ -109,8 +109,6 @@ void struct_vxs_i2c_init(Dev_vxsiicm *d);
 //    vxsiic_i2c_board_stats_t pp[VXSIIC_SLOTS];
 //} vxsiic_i2c_stats_t;
 
-extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
-extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
 uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d);
 
 #ifdef __cplusplus

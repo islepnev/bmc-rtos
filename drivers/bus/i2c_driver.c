@@ -28,6 +28,7 @@
 #include "impl/i2c_driver_impl.h"
 #include "impl/i2c_driver_util.h"
 #include "log/log.h"
+#include "stm32_hal.h"
 
 void i2c_driver_init(void)
 {

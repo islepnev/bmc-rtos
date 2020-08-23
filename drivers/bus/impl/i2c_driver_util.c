@@ -24,6 +24,7 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 #include "i2c.h"
+#include "i2c_hal_handles.h"
 #include "log/log.h"
 
 enum {I2C_BUS_COUNT = 4};

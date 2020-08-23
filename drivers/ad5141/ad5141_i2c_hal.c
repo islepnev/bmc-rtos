@@ -21,6 +21,7 @@
 #include "bus/i2c_driver.h"
 #include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
 #include "i2c.h"
+#include "stm32_hal.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 

@@ -19,6 +19,7 @@
 
 #include "spi.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "bus/impl/spi_driver_util.h"
 #include "error_handler.h"
@@ -30,8 +31,7 @@ SPI_HandleTypeDef hspi3;
 SPI_HandleTypeDef hspi4;
 SPI_HandleTypeDef hspi5;
 
-// SPI1: FPGA
-void init_fpga_spi(int index)
+static void init_fpga_spi(int index)
 {
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
@@ -53,8 +53,7 @@ void init_fpga_spi(int index)
     }
 }
 
-// SPI4: ADT7301
-void init_adt7301_spi(int index)
+static void init_ad9516_spi(int index)
 {
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
@@ -62,31 +61,43 @@ void init_adt7301_spi(int index)
     hspi->Init.Direction = SPI_DIRECTION_2LINES;
     hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
-    hspi->Init.NSS = SPI_NSS_SOFT;
+    hspi->Init.NSS = SPI_NSS_SOFT; // SPI_NSS_HARD_OUTPUT
     hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi->Init.TIMode = SPI_TIMODE_DISABLE;
     hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     hspi->Init.CRCPolynomial = 7;
     hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
     hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-#ifdef BOARD_TDC64
-    // AD9516-4
-    // hspi->Init.NSS = SPI_NSS_HARD_OUTPUT;
     hspi->Init.DataSize = SPI_DATASIZE_8BIT;
     hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
-#endif
-#if defined (BOARD_TDC72) || defined (BOARD_TDC72VHLV3)
-    // ADT7301
-    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
-    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-#endif
     if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
 }
 
-// SPI5: PLL AD9548
-void init_ad9548_spi(int index)
+static void init_adt7301_spi(int index)
+{
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
+    hspi->Init.NSS = SPI_NSS_SOFT;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+static void init_ad9548_spi(int index)
 {
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
@@ -110,17 +121,21 @@ void init_ad9548_spi(int index)
 
 void init_spi_peripherals(void)
 {
-    init_fpga_spi(1);
-    init_adt7301_spi(4);
+    init_fpga_spi(SPI_BUS_INDEX_FPGA);
+#if defined (BOARD_TDC72) || defined (BOARD_TDC72VHLV3)
+    init_adt7301_spi(SPI_BUS_INDEX_ADT7301);
+#endif
+#ifdef BOARD_TDC64
+    init_ad9516_spi(SPI_BUS_INDEX_AD9516);
+#endif
 #ifdef BOARD_TDC72VHLV3
-    init_ad9548_spi(5);
+    init_ad9548_spi(SPI_BUS_INDEX_AD9548);
 #endif
 }
 
+#if 0
 static void SPI4_synchronize(void)
 {
-    __HAL_RCC_GPIOI_CLK_ENABLE();
-
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     // force NSS high
@@ -146,7 +161,7 @@ static void SPI4_synchronize(void)
     HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
     HAL_GPIO_WritePin(SPI4_GPIO_Port, SPI4_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
 }
-
+#endif
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
@@ -162,7 +177,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
         __HAL_RCC_SPI1_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+
         GPIO_InitStruct.Pin = FPGA_MISO_Pin|FPGA_SCK_Pin|FPGA_MOSI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -177,7 +192,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         // ADT7301
         // SPI4_synchronize();
         __HAL_RCC_SPI4_CLK_ENABLE();
-        __HAL_RCC_GPIOE_CLK_ENABLE();
+
 //#ifdef BOARD_TDC72VHLV3
 //        GPIO_InitStruct.Pin = ADT_SCLK_Pin|ADT_DOUT_Pin|ADT_DIN_Pin;
 //#else

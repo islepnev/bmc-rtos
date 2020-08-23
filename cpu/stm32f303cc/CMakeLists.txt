@@ -5,6 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 set(cpu 303cc)
 
 SET(STM32_CHIP STM32F303CC)
+set(HEAP_SIZE 10240) # 1/4 of A000 (40k) total
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
 
@@ -43,6 +44,8 @@ FIND_PACKAGE(FreeRTOS REQUIRED)
 
 add_library(FreeRTOS_${cpu} OBJECT ${FreeRTOS_SOURCES})
 
+target_compile_definitions(FreeRTOS_${cpu} PRIVATE -DHEAP_SIZE=${HEAP_SIZE})
+
 target_include_directories(FreeRTOS_${cpu} PUBLIC
     ${FreeRTOS_INCLUDE_DIRS}
 )
@@ -51,21 +54,21 @@ target_link_libraries(FreeRTOS_${cpu} CMSIS_${cpu})
 STM32_SET_TARGET_PROPERTIES(FreeRTOS_${cpu})
 
 
-### lwIP
+#### lwIP
 
-FIND_PACKAGE(lwip REQUIRED)
-add_library(lwip_${cpu} OBJECT ${lwip_SOURCES})
-target_compile_definitions(lwip_${cpu} PRIVATE LWIP_DEBUG)
-target_include_directories(lwip_${cpu}
-    PUBLIC
-    ${LWIP_INCLUDE_DIRS}
-    PRIVATE
-    ${MY_SRC_DIR}/config
-    ${MY_SRC_DIR}/system
-    ${MY_SRC_DIR}/common
-)
+#FIND_PACKAGE(lwip REQUIRED)
+#add_library(lwip_${cpu} OBJECT ${lwip_SOURCES})
+#target_compile_definitions(lwip_${cpu} PRIVATE LWIP_DEBUG)
+#target_include_directories(lwip_${cpu}
+#    PUBLIC
+#    ${LWIP_INCLUDE_DIRS}
+#    PRIVATE
+#    ${MY_SRC_DIR}/common
+#    ${MY_SRC_DIR}/config
+#    ${MY_SRC_DIR}/eth
+#)
 
-target_link_libraries(lwip_${cpu} FreeRTOS_${cpu})
+#target_link_libraries(lwip_${cpu} FreeRTOS_${cpu})
 
 
 #### init cpu
