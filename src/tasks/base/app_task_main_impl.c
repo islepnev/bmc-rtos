@@ -52,7 +52,13 @@ void task_main_run(void)
     // read other signals
     // getDevices()->pen_b = read_gpio_pin(PEN_B_GPIO_Port, PEN_B_Pin);
 
-    led_set_state(LED_RED, systemStatus >= SENSOR_CRITICAL);
-    led_set_state(LED_YELLOW, systemStatus >= SENSOR_WARNING);
-    led_set_state(LED_GREEN, systemStatus == SENSOR_NORMAL);
+    static int cnt = 0;
+    cnt++;
+    if (cnt > 50)
+        cnt = 0;
+    bool blink = cnt < 2;
+    led_set_state(LED_RED,    !blink & (systemStatus >= SENSOR_CRITICAL));
+    led_set_state(LED_YELLOW, !blink & (systemStatus >= SENSOR_WARNING));
+    led_set_state(LED_GREEN,  !blink & (systemStatus == SENSOR_NORMAL));
+    led_set_state(LED_INT_GREEN, blink);
 }

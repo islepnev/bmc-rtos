@@ -51,7 +51,7 @@ void create_tasks(void)
     BusInterface bus = {0};
     create_device(0, &topdevice, 0, DEV_CLASS_VIRTUAL, bus, "Device Root");
 
-    create_task_heartbeat();
+    // create_task_heartbeat(); // no need, see main task
     create_task_display();
     create_task_cli();
 #ifdef ENABLE_POWERMON
