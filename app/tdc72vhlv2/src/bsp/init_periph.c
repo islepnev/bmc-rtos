@@ -22,18 +22,32 @@
 #include "spi.h"
 #include "usart.h"
 
+#include "ansi_escape_codes.h"
 #include "bus/spi_driver.h"
 #include "adc_driver.h"
+#include "debug_helpers.h"
 
 void init_periph(void)
 {
-    i2c_driver_init();
-
-    spi_driver_init();
-    init_spi_peripherals();
-
     MX_USART2_UART_Init();
 
+    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL"\n\nUART init Ok\n");
+
+    debug_print("ADC init...");
     MX_ADC1_Init();
+    debug_print(" Ok\n");
+
+    debug_print("RTC init...");
     MX_RTC_Init();
+    debug_print(" Ok\n");
+
+    // i2c_driver_init();
+
+    debug_print("SPI driver init...");
+    spi_driver_init();
+    debug_print(" Ok\n");
+
+    debug_print("SPI peripherals init...");
+    init_spi_peripherals();
+    debug_print(" Ok\n");
 }

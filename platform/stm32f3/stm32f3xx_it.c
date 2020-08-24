@@ -20,8 +20,6 @@
 #include "stm32f3xx_it.h"
 
 #include "stm32_hal.h"
-#include "FreeRTOS.h"
-#include "task.h"
 
 extern ADC_HandleTypeDef hadc1;
 extern SPI_HandleTypeDef hspi1;

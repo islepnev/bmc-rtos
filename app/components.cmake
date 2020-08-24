@@ -73,7 +73,7 @@ endif()
 
 if(${BOARD} STREQUAL "tdc72vhlv3")
     set(BOARD_COMPONENTS
-        ad9548
+        # ad9548
         adt7301
         fpga
         vxsiics
@@ -82,7 +82,7 @@ endif()
 
 if(${BOARD} STREQUAL "tdc72vhlv2")
     set(BOARD_COMPONENTS
-        ad9548
+        # ad9548
         adt7301
         fpga
     )
