@@ -50,6 +50,11 @@ void configureTimerForRunTimeStats( void )
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
+double getRunTimeCounterFrequency(void)
+{
+    return SystemCoreClock >> prescale_bits;
+}
+
 uint32_t getRunTimeCounterValue( void )
 {
     static uint32_t last_value = 0, overflows = 0;

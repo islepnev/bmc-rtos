@@ -24,8 +24,9 @@
 extern "C" {
 #endif
 
-void configureTimerForRunTimeStats( void );
-uint32_t getRunTimeCounterValue( void );
+void configureTimerForRunTimeStats(void);
+double getRunTimeCounterFrequency(void);
+uint32_t getRunTimeCounterValue(void);
 
 #ifdef  __cplusplus
 }
