@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 set(cpu 303cc)
 
 SET(STM32_CHIP STM32F303CC)
-set(HEAP_SIZE 20480) # 1/2 of A000 (40k) total
+set(HEAP_SIZE 16384) # 1/2 of A000 (40k) total
 set(HSE_VALUE 24000000)
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
