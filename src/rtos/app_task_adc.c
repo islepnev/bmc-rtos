@@ -30,7 +30,7 @@ ADC_HandleTypeDef hadc1;
 
 static const uint32_t adcTaskLoopDelay = 1000;
 osThreadId adcThreadId = NULL;
-enum { adcThreadStackSize = 1000 };
+enum { adcThreadStackSize = threadStackSize };
 
 static void start_adc_task(void const *arg)
 {

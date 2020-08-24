@@ -28,7 +28,7 @@
 #include "fpga/dev_fpga_types.h"
 
 osThreadId fpgaThreadId = NULL;
-enum { fpgaThreadStackSize = threadStackSize };
+enum { fpgaThreadStackSize = threadStackSize + 70 };
 static const uint32_t fpgaTaskLoopDelay = 10;
 
 static BusInterface fpga_bus_info = {
