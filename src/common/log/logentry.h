@@ -20,7 +20,11 @@
 
 #include "logbuffer.h"
 
+#ifdef STM32F3
+enum {LOG_LINE_SIZE = 100};
+#else
 enum {LOG_LINE_SIZE = 200};
+#endif
 
 struct LogEntry {
     LogPriority priority;
