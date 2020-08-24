@@ -32,32 +32,31 @@ void init_logging(void)
     init_logbuffer();
 }
 
+enum {buf_size = LOG_LINE_SIZE};
+static char log_printf_buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+
 void log_printf(LogPriority priority, const char *format, ...)
 {
-    enum {buf_size = LOG_LINE_SIZE};
     static va_list args;
-    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
     va_start(args, format);
-    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    size_t n = vsnprintf(log_printf_buffer, sizeof log_printf_buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0)
-        log_put_long(priority, osKernelSysTick(), buffer);
+        log_put_long(priority, osKernelSysTick(), log_printf_buffer);
 }
 
 void log_printf_debug(const char *format, ...)
 {
-    enum {buf_size = LOG_LINE_SIZE};
     static va_list args;
-    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
     va_start(args, format);
-    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    size_t n = vsnprintf(log_printf_buffer, sizeof log_printf_buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0)
-        log_put_long(LOG_DEBUG, osKernelSysTick(), buffer);
+        log_put_long(LOG_DEBUG, osKernelSysTick(), log_printf_buffer);
 }
 
 void log_put(LogPriority priority, const char *str)

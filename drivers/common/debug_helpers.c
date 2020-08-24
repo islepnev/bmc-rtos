@@ -54,13 +54,13 @@ void debug_printf(const char *format, ...)
 {
     enum {buf_size = 100};
     static va_list args;
-    static char buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
+    static char debug_printf_buffer[buf_size]; // FIXME: use BUFSIZ from stdio.h
 
     va_start(args, format);
-    size_t n = vsnprintf(buffer, sizeof buffer, format, args);
+    size_t n = vsnprintf(debug_printf_buffer, sizeof debug_printf_buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0) {
-        debug_print(buffer);
+        debug_print(debug_printf_buffer);
     }
 }
