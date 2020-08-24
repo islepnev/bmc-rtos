@@ -89,10 +89,14 @@ bool i2c_driver_util_init(void)
         assert(false);
         return false;
     }
-    osSemaphoreWait(i2c1_it_sem, osWaitForever);
-    osSemaphoreWait(i2c2_it_sem, osWaitForever);
-    osSemaphoreWait(i2c3_it_sem, osWaitForever);
-    osSemaphoreWait(i2c4_it_sem, osWaitForever);
+    if ((xSemaphoreTake(i2c1_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(i2c2_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(i2c3_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(i2c4_it_sem, 0) != pdTRUE)
+        ) {
+        assert(false);
+        return false;
+    }
 
     // create device semaphores
     i2c1_dev_sem = osSemaphoreCreate(osSemaphore(i2c1_dev_sem), 1);

@@ -25,6 +25,7 @@
 #include "error_handler.h"
 #include "log/log.h"
 #include "spi.h"
+#include "stm32_hal.h"
 
 enum {SPI_BUS_COUNT = 5};
 
@@ -96,11 +97,15 @@ bool spi_driver_util_init(void)
         assert(false);
         return false;
     }
-    osSemaphoreWait(spi1_it_sem, osWaitForever);
-    osSemaphoreWait(spi2_it_sem, osWaitForever);
-    osSemaphoreWait(spi3_it_sem, osWaitForever);
-    osSemaphoreWait(spi4_it_sem, osWaitForever);
-    osSemaphoreWait(spi5_it_sem, osWaitForever);
+    if ((xSemaphoreTake(spi1_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi2_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi3_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi4_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi5_it_sem, 0) != pdTRUE)
+        ) {
+        assert(false);
+        return false;
+    }
 
     // create device semaphores
     spi1_dev_sem = osSemaphoreCreate(osSemaphore(spi1_dev_sem), 1);
@@ -204,7 +209,7 @@ inline void *spi_instance(int index)
     if (index == 5)
         return SPI5;
 #endif
-    // assert(0);
+    assert(false);
     return NULL;
 }
 
