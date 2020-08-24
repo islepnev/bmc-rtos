@@ -110,7 +110,9 @@ void vApplicationMallocFailedHook( void )
 {
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    debug_print("\nError: malloc failed\n");
+    debug_print("\n" ANSI_CLEAR ANSI_BGR_RED ANSI_CLEAR_EOL);
+    debug_print("Error: malloc failed\n" ANSI_CLEAR_EOL);
+    debug_print("\n" ANSI_CLEAR_EOL);
     while(1) {
         led_blink_error();
     }
@@ -124,9 +126,10 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
     (void) pxTask;
     taskDISABLE_INTERRUPTS();
     led_show_error();
-    debug_print("\nError: stack overflow in task '");
+    debug_print("\n" ANSI_CLEAR ANSI_BGR_RED ANSI_CLEAR_EOL);
+    debug_print("Error: stack overflow in task '");
     debug_print(pcTaskName);
-    debug_print("'\n");
+    debug_print("'\n" ANSI_CLEAR_EOL);
     while(1) {
         led_blink_error();
     }
