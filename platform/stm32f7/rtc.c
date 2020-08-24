@@ -34,8 +34,9 @@ void MX_RTC_Init(void)
   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 124;//127;
-  hrtc.Init.SynchPrediv = 7999; // 255;
+  // RTC clock: 1000 kHz, set dividers 125, 8000
+  hrtc.Init.AsynchPrediv = 124;
+  hrtc.Init.SynchPrediv = 7999;
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
