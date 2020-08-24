@@ -23,7 +23,7 @@
 #include "app_tasks.h"
 #include "cmsis_os.h"
 
-enum { mainThreadStackSize = threadStackSize + 50 };
+enum { mainThreadStackSize = threadStackSize + 70 };
 static const uint32_t mainTaskLoopDelay = 10;
 
 static void start_thread_main(void const *arg)

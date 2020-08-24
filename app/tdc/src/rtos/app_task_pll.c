@@ -24,6 +24,7 @@
 #include "ad9545/dev_ad9545.h"
 #include "ad9545/dev_ad9545_fsm.h"
 #include "app_shared_data.h"
+#include "app_tasks.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "devicelist.h"
@@ -31,7 +32,7 @@
 #include "eeprom_config/dev_eeprom_config_fsm.h"
 
 osThreadId pllThreadId = NULL;
-enum { pllThreadStackSize = 400 };
+enum { pllThreadStackSize = threadStackSize + 150 };
 static const uint32_t pllTaskLoopDelay = 30;
 
 static BusInterface pll_bus_info = {

@@ -26,7 +26,7 @@ extern "C" {
 
 // for use with GCC flags -fstack-usage -Wstack-usage=N
 // Note: debug_printf stack overhead is 100 bytes
-enum { threadStackSize = 200 };
+enum { threadStackSize = configMINIMAL_STACK_SIZE }; // words
 
 enum {
     SIGNAL_REFRESH_DISPLAY = 1000,

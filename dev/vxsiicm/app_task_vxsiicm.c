@@ -28,7 +28,8 @@
 #include "vxsiicm/dev_vxsiicm_types.h"
 
 osThreadId vxsiicThreadId = NULL;
-enum { vxsiicThreadStackSize = 1000 };
+enum { vxsiicThreadStackSize = threadStackSize + 170 };
+
 static const uint32_t vxsiicTaskLoopDelay = 10;
 
 static Dev_vxsiicm vxsiicm = {0};

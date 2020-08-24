@@ -22,6 +22,7 @@
 
 #include "app_shared_data.h"
 #include "app_task_powermon_impl.h"
+#include "app_tasks.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
@@ -43,7 +44,7 @@
 #include "tmp421/dev_tmp421_fsm.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = 400 };
+enum { powermonThreadStackSize = threadStackSize + 120 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
 static BusInterface cru16_max31725_bus_info = {

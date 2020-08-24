@@ -30,7 +30,7 @@
 #include "devicelist.h"
 
 osThreadId pllThreadId = NULL;
-enum { pllThreadStackSize = threadStackSize };
+enum { pllThreadStackSize = threadStackSize + 80 };
 static const uint32_t pllTaskLoopDelay = 50;
 
 static BusInterface pll_bus_info = {

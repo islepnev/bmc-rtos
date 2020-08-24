@@ -61,7 +61,7 @@
 /* The time to block waiting for input. */
 #define TIME_WAITING_FOR_INPUT                 ( osWaitForever )
 /* Stack size of the interface thread */
-#define INTERFACE_THREAD_STACK_SIZE            ( 350 )
+#define INTERFACE_THREAD_STACK_SIZE            ( configMINIMAL_STACK_SIZE + 200 )
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 's'

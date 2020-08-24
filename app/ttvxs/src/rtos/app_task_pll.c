@@ -34,7 +34,7 @@
 #include "ttvxs_clkmux/dev_ttvxs_clkmux_types.h"
 
 osThreadId pllThreadId = NULL;
-enum { pllThreadStackSize = threadStackSize };
+enum { pllThreadStackSize = threadStackSize + 150 };
 static const uint32_t pllTaskLoopDelay = 50;
 
 static BusInterface pll_bus_info = {

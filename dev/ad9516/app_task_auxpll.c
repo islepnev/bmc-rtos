@@ -30,7 +30,7 @@
 #include "devicelist.h"
 
 osThreadId auxpllThreadId = NULL;
-enum { auxpllThreadStackSize = threadStackSize };
+enum { auxpllThreadStackSize = threadStackSize + 80 };
 static const uint32_t auxpllTaskLoopDelay = 10;
 
 static BusInterface auxpll_bus_info = {
