@@ -16,9 +16,11 @@
 */
 
 #include "ad9548_regs.h"
+#include "ad9548_setup_regs.h"
+#include "ad9548_status_regs.h"
 
 // System Clock Settings
-const PLL_SysClk_regs Default_PLL_SysClk = {
+const AD9548_SysClk_regs Default_PLL_SysClk = {
     {0x0100, 0b01000001},	// Charge Pump and Lock Detect Control
     {0x0101, 0x18},			// N Divider, N from 6 to 255 (default = 0x28 = 40, current = 0x18 = 24)
     {0x0102, 0b01000101},	// SYSCLK Input Options
@@ -31,7 +33,7 @@ const PLL_SysClk_regs Default_PLL_SysClk = {
 };
 
 // Multifunction Pins
-const PLL_MFPins_regs Default_PLL_MFPins = {
+const AD9548_MFPins_regs Default_PLL_MFPins = {
     {0x0200, (0x01 << 7) | 64},	// M0, Reference A active
     {0x0201, (0x01 << 7) | 66},	// M1, Reference B active
     {0x0202, (0x01 << 7) | 68},	// M2, Reference C active
@@ -43,7 +45,7 @@ const PLL_MFPins_regs Default_PLL_MFPins = {
 };
 
 // IRQ settings
-const PLL_IRQ_regs Default_PLL_IRQ = {
+const AD9548_IRQ_regs Default_PLL_IRQ = {
     {0x0208, 0x00},	// IRQ Pin Output Mode
     {0x0209, 0x33},	// IRQ Mask for SYSCLK
     {0x020A, 0x0F},	// IRQ Mask for Distribution Sync, Watchdog Timer, and EEPROM
@@ -56,7 +58,7 @@ const PLL_IRQ_regs Default_PLL_IRQ = {
 };
 
 // DPLL Settings
-const PLL_DPLL_regs Default_PLL_DPLL = {
+const AD9548_DPLL_regs Default_PLL_DPLL = {
     {0x0300, 0x7F},		// Free running frequency tuning word, Bits[7:0]
     {0x0301, 0xEF},		// Free running frequency tuning word, Bits[15:8]
     {0x0302, 0x46},		// Free running frequency tuning word, Bits[23:9]
@@ -87,7 +89,7 @@ const PLL_DPLL_regs Default_PLL_DPLL = {
     {0x031B, 0x00}		// History Mode
 };
 
-const PLL_OutClk_regs PLL_OutClk_ADC64VE = {
+const AD9548_OutClk_regs PLL_OutClk_ADC64VE = {
     {0x0400, 0x00},		// Distribution Settings
     {0x0401, 0x0F},		// Distribution Enable
     {0x0402, 0x20},		// Distribution Synchronization
@@ -114,7 +116,7 @@ const PLL_OutClk_regs PLL_OutClk_ADC64VE = {
     {0x0417, 0x00}		// [5:0] Q3 divider, Bits[29:24]
 };
 
-const PLL_RefIn_regs PLL_RefIn_ADC64VE = {
+const AD9548_RefIn_regs PLL_RefIn_ADC64VE = {
     {0x0500, 0x00},			// Reference Power-Down
     {0x0501, 0x00},			// Reference Logic Family (A, AA, B, BB)
     {0x0502, 0x00},			// Reference Logic Family (C, CC, D, DD)
@@ -126,7 +128,7 @@ const PLL_RefIn_regs PLL_RefIn_ADC64VE = {
 };
 
 // Profile 0 - Dedicated to Ref A (for 125/2 MHz)
-const PLL_Profile_regs PLL_Prof0_ADC64VE = {
+const AD9548_Profile_regs PLL_Prof0_ADC64VE = {
     {0x0600, 0x1B},		// Priorities
     {0x0601, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0602, 0x24},		// Nominal reference period, Bits[15:8]
@@ -180,7 +182,7 @@ const PLL_Profile_regs PLL_Prof0_ADC64VE = {
 };
 
 // Profile 1 - Dedicated to Ref B (for 125/3 MHz)
-const PLL_Profile_regs PLL_Prof1_ADC64VE = {
+const AD9548_Profile_regs PLL_Prof1_ADC64VE = {
     {0x0632, 0x00},		// Priorities
     {0x0633, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0634, 0x36},		// Nominal reference period, Bits[15:8]
@@ -234,7 +236,7 @@ const PLL_Profile_regs PLL_Prof1_ADC64VE = {
 };
 
 // Profile 2 - Dedicated to Ref B (for 41.7/2 MHz)
-const PLL_Profile_regs PLL_Prof2_ADC64VE = {
+const AD9548_Profile_regs PLL_Prof2_ADC64VE = {
     {0x0680, 0x00},		// Priorities
     {0x0681, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0682, 0x6C},		// Nominal reference period, Bits[15:8]
@@ -288,7 +290,7 @@ const PLL_Profile_regs PLL_Prof2_ADC64VE = {
 };
 
 // Profile 3 - Dedicated to Ref D (for 125/2 MHz)
-const PLL_Profile_regs PLL_Prof3_ADC64VE = {
+const AD9548_Profile_regs PLL_Prof3_ADC64VE = {
     {0x06B2, 0x09},		// Priorities
     {0x06B3, 0x00},		// Nominal reference period, Bits[7:0]
     {0x06B4, 0x24},		// Nominal reference period, Bits[15:8]
@@ -343,7 +345,7 @@ const PLL_Profile_regs PLL_Prof3_ADC64VE = {
 
 
 // Clock Distribution Output Settings
-const PLL_OutClk_regs PLL_OutClk_TDC_VHLE = {
+const AD9548_OutClk_regs PLL_OutClk_TDC_VHLE = {
     {0x0400, 0x00},		// Distribution Settings
     {0x0401, 0x0F},		// Distribution Enable
     {0x0402, 0x10},		// Distribution Synchronization
@@ -371,7 +373,7 @@ const PLL_OutClk_regs PLL_OutClk_TDC_VHLE = {
 };
 
 // Reference Inputs Settings
-const PLL_RefIn_regs PLL_RefIn_TDC_VHLE = {
+const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE = {
     {0x0500, 0x03},			// Reference Power-Down
     {0x0501, 0x00},			// Reference Logic Family (A, AA, B, BB)
     {0x0502, 0x00},			// Reference Logic Family (C, CC, D, DD)
@@ -383,7 +385,7 @@ const PLL_RefIn_regs PLL_RefIn_TDC_VHLE = {
 };
 
 // Profile 0 Settings
-const PLL_Profile_regs PLL_Prof0_TDC_VHLE = {
+const AD9548_Profile_regs PLL_Prof0_TDC_VHLE = {
     {0x0600, 0x1B},		// Priorities
     {0x0601, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0602, 0x12},		// Nominal reference period, Bits[15:8]
@@ -437,7 +439,7 @@ const PLL_Profile_regs PLL_Prof0_TDC_VHLE = {
 };
 
 // Profile 1 Settings
-const PLL_Profile_regs PLL_Prof1_TDC_VHLE = {
+const AD9548_Profile_regs PLL_Prof1_TDC_VHLE = {
     {0x0632, 0x00},		// Priorities
     {0x0633, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0634, 0x36},		// Nominal reference period, Bits[15:8]
@@ -491,7 +493,7 @@ const PLL_Profile_regs PLL_Prof1_TDC_VHLE = {
 };
 
 // Profile 2 - Dedicated to Ref B (40 MHz)
-const PLL_Profile_regs PLL_Prof2_TDC_VHLE = {
+const AD9548_Profile_regs PLL_Prof2_TDC_VHLE = {
     {0x0680, 0x00},		// Priorities
     {0x0681, 0x40},		// Nominal reference period, Bits[7:0]
     {0x0682, 0x78},		// Nominal reference period, Bits[15:8]
@@ -545,7 +547,7 @@ const PLL_Profile_regs PLL_Prof2_TDC_VHLE = {
 };
 
 // Profile 3 Settings
-const PLL_Profile_regs PLL_Prof3_TDC_VHLE = {
+const AD9548_Profile_regs PLL_Prof3_TDC_VHLE = {
     {0x06B2, 0x09},		// Priorities
     {0x06B3, 0x00},		// Nominal reference period, Bits[7:0]
     {0x06B4, 0x36},		// Nominal reference period, Bits[15:8]
@@ -601,7 +603,7 @@ const PLL_Profile_regs PLL_Prof3_TDC_VHLE = {
 
 
 // Clock Distribution Output Settings
-const PLL_OutClk_regs PLL_OutClk_TQDC16VS = {
+const AD9548_OutClk_regs PLL_OutClk_TQDC16VS = {
     {0x0400, 0x00},		// Distribution Settings
     {0x0401, 0x0F},		// Distribution Enable
     {0x0402, 0x10},		// Distribution Synchronization
@@ -629,7 +631,7 @@ const PLL_OutClk_regs PLL_OutClk_TQDC16VS = {
 };
 
 // Reference Inputs Settings
-const PLL_RefIn_regs PLL_RefIn_TQDC16VS = {
+const AD9548_RefIn_regs PLL_RefIn_TQDC16VS = {
     {0x0500, 0x03},			// Reference Power-Down
     {0x0501, 0x00},			// Reference Logic Family (A, AA, B, BB)
     {0x0502, 0x00},			// Reference Logic Family (C, CC, D, DD)
@@ -641,7 +643,7 @@ const PLL_RefIn_regs PLL_RefIn_TQDC16VS = {
 };
 
 // Profile 0 - Dedicated to Ref A
-const PLL_Profile_regs PLL_Prof0_TQDC16VS = {
+const AD9548_Profile_regs PLL_Prof0_TQDC16VS = {
     {0x0600, 0x1B},		// Priorities
     {0x0601, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0602, 0x12},		// Nominal reference period, Bits[15:8]
@@ -695,7 +697,7 @@ const PLL_Profile_regs PLL_Prof0_TQDC16VS = {
 };
 
 // Profile 1 - Dedicated to Ref B (41.67 MHz)
-const PLL_Profile_regs PLL_Prof1_TQDC16VS = {
+const AD9548_Profile_regs PLL_Prof1_TQDC16VS = {
     {0x0632, 0x00},		// Priorities
     {0x0633, 0x00},		// Nominal reference period, Bits[7:0]
     {0x0634, 0x36},		// Nominal reference period, Bits[15:8]
@@ -749,7 +751,7 @@ const PLL_Profile_regs PLL_Prof1_TQDC16VS = {
 };
 
 // Profile 2 - Dedicated to Ref B (40 MHz)
-const PLL_Profile_regs PLL_Prof2_TQDC16VS = {
+const AD9548_Profile_regs PLL_Prof2_TQDC16VS = {
     {0x0680, 0x00},		// Priorities
     {0x0681, 0x40},		// Nominal reference period, Bits[7:0]
     {0x0682, 0x78},		// Nominal reference period, Bits[15:8]
@@ -803,7 +805,7 @@ const PLL_Profile_regs PLL_Prof2_TQDC16VS = {
 };
 
 // Profile 3 - Dedicated to Ref D
-const PLL_Profile_regs PLL_Prof3_TQDC16VS = {
+const AD9548_Profile_regs PLL_Prof3_TQDC16VS = {
     {0x06B2, 0x09},		// Priorities
     {0x06B3, 0x00},		// Nominal reference period, Bits[7:0]
     {0x06B4, 0x36},		// Nominal reference period, Bits[15:8]

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,36 +14,25 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef DEV_AD9548_PRINT_H
+#define DEV_AD9548_PRINT_H
 
-#ifndef AD9548_H
-#define AD9548_H
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "bus/bus_types.h"
-
-typedef enum {
-    BOARD_PLL_DEFAULT,
-    BOARD_PLL_ADC64VE,
-    BOARD_PLL_TDC_VHLE,
-    BOARD_PLL_TQDC16VS
-} AD9548_BOARD_PLL_VARIANT;
+#include "ad9548_setup.h"
+#include "ad9548_setup_regs.h"
+#include "ad9548_status_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ad9548_gpio_init(BusInterface *bus);
-bool ad9548_gpio_test(BusInterface *bus);
-bool ad9548_reset(BusInterface *bus);
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address);
-bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value);
-void ad9548_ioupdate(BusInterface *bus);
-bool ad9548_detect(BusInterface *bus);
+//void pllPrintRefStatus(const Dev_ad9548 *d, PllRef_TypeDef ref_input);
+//void pllPrintDPLLChannelStatus(const Dev_ad9548 *d, PllChannel_TypeDef channel);
+void ad9548_verbose_setup(const ad9548_setup_t *setup);
+void ad9548_verbose_status(const AD9548_Status *status);
+void ad9548_brief_status(const AD9548_Status *status);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // AD9548_H
+#endif // DEV_AD9548_PRINT_H

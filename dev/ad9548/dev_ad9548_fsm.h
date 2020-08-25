@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,35 +15,31 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_H
-#define AD9548_H
+#ifndef DEV_AD9548_FSM_H
+#define DEV_AD9548_FSM_H
 
 #include <stdbool.h>
-#include <stdint.h>
-
-#include "bus/bus_types.h"
-
-typedef enum {
-    BOARD_PLL_DEFAULT,
-    BOARD_PLL_ADC64VE,
-    BOARD_PLL_TDC_VHLE,
-    BOARD_PLL_TQDC16VS
-} AD9548_BOARD_PLL_VARIANT;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ad9548_gpio_init(BusInterface *bus);
-bool ad9548_gpio_test(BusInterface *bus);
-bool ad9548_reset(BusInterface *bus);
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address);
-bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value);
-void ad9548_ioupdate(BusInterface *bus);
-bool ad9548_detect(BusInterface *bus);
+typedef enum {
+    AD9548_STATE_INIT,
+    AD9548_STATE_RESET,
+    AD9548_STATE_SETUP_SYSCLK,
+    AD9548_STATE_SYSCLK_WAITLOCK,
+    AD9548_STATE_SETUP,
+    AD9548_STATE_RUN,
+    AD9548_STATE_ERROR,
+    AD9548_STATE_FATAL
+} ad9548_state_t;
+
+struct Dev_ad9548;
+void dev_ad9548_run(struct Dev_ad9548 *dev, bool enable);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // AD9548_H
+#endif // DEV_AD9548_FSM_H

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,35 +15,40 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_H
-#define AD9548_H
+#ifndef DEV_AD9548_H
+#define DEV_AD9548_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
+#include "ad9548_regs.h"
+#include "ad9548_setup_regs.h"
+#include "ad9548_status_regs.h"
 #include "bus/bus_types.h"
-
-typedef enum {
-    BOARD_PLL_DEFAULT,
-    BOARD_PLL_ADC64VE,
-    BOARD_PLL_TDC_VHLE,
-    BOARD_PLL_TQDC16VS
-} AD9548_BOARD_PLL_VARIANT;
+#include "dev_ad9548_fsm.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ad9548_gpio_init(BusInterface *bus);
-bool ad9548_gpio_test(BusInterface *bus);
-bool ad9548_reset(BusInterface *bus);
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address);
-bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value);
-void ad9548_ioupdate(BusInterface *bus);
-bool ad9548_detect(BusInterface *bus);
+typedef struct Dev_ad9548_priv {
+    ad9548_setup_t setup;
+    AD9548_Status status;
+    ad9548_state_t fsm_state;
+    uint32_t stateStartTick;
+    uint32_t recoveryCount;
+} Dev_ad9548_priv;
+
+typedef struct Dev_ad9548 {
+    DeviceBase dev;
+    Dev_ad9548_priv priv;
+} Dev_ad9548;
+
+void ad9548_update_pll_sensor_status(Dev_ad9548 *pll);
+void ad9548_clear_status(Dev_ad9548 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // AD9548_H
+#endif // DEV_AD9548_H

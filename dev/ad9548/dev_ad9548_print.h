@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,35 +15,21 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_H
-#define AD9548_H
+#ifndef DEV_AD9548_PRINT_H
+#define DEV_AD9548_PRINT_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "bus/bus_types.h"
-
-typedef enum {
-    BOARD_PLL_DEFAULT,
-    BOARD_PLL_ADC64VE,
-    BOARD_PLL_TDC_VHLE,
-    BOARD_PLL_TQDC16VS
-} AD9548_BOARD_PLL_VARIANT;
+enum { DISPLAY_PLL_H = 5 };
+enum { DISPLAY_PLL_DETAIL_H = 31 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool ad9548_gpio_init(BusInterface *bus);
-bool ad9548_gpio_test(BusInterface *bus);
-bool ad9548_reset(BusInterface *bus);
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address);
-bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value);
-void ad9548_ioupdate(BusInterface *bus);
-bool ad9548_detect(BusInterface *bus);
+void dev_ad9548_verbose_status(void);
+void dev_ad9548_print_box(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // AD9548_H
+#endif // DEV_AD9548_PRINT_H

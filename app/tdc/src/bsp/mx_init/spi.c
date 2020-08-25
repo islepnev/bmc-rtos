@@ -220,6 +220,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI5;
         HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+        HAL_NVIC_SetPriority(SPI5_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(SPI5_IRQn);
 #endif
     }
 }

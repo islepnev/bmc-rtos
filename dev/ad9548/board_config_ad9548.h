@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,17 +15,32 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_REGS_H
-#define AD9548_REGS_H
+#ifndef BOARD_CONFIG_AD9548_H
+#define BOARD_CONFIG_AD9548_H
 
-#include <stdint.h>
+#include "bsp.h"
 
-typedef struct PLL_Reg
-{
-    uint16_t address;
-    uint8_t data;
-    uint8_t __dummy_alignment;
-} PLL_Reg;
+#if defined (BOARD_CRU16)
+#define DPLL0_BW_HZ        2000
+#define DPLL1_BW_HZ        2000
+#define PLL_REFA_PERIOD_NS   8
+#define PLL_REFB_PERIOD_NS   8
+#define PLL_REFA_DIV       625
+#define PLL_REFB_DIV       625
+#define PLL_DIST_DIV_0     10
+#define PLL_DIST_DIV_1     13
 
+#else
 
-#endif // AD9548_REGS_H
+#define DPLL0_BW_HZ        500
+#define DPLL1_BW_HZ        500
+#define PLL_REFA_PERIOD_NS  24
+#define PLL_REFB_PERIOD_NS  24
+#define PLL_REFA_DIV       209
+#define PLL_REFB_DIV       209
+#define PLL_DIST_DIV_0     30
+#define PLL_DIST_DIV_1     39
+
+#endif
+
+#endif // BOARD_CONFIG_AD9548_H
