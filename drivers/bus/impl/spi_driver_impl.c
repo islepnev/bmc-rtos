@@ -68,7 +68,10 @@ static bool spi_driver_wait_complete(const char *title, struct __SPI_HandleTypeD
     int32_t status = spi_driver_wait_it_sem(hspi, millisec);
     if (status != osOK) {
         log_printf(LOG_CRIT, "%s: SPI %d timeout\n", title, hspi_index(hspi));
-        HAL_SPI_Abort_IT(hspi);
+        int ret = HAL_SPI_Abort_IT(hspi);
+        if (HAL_OK != ret) {
+            log_printf(LOG_CRIT, "%s: SPI %d abort failed: %d\n", title, hspi_index(hspi), ret);
+        }
         spi_driver_reset_internal(hspi);
         return false;
     }
@@ -93,6 +96,11 @@ static bool spi_driver_before_hal_call(const char *title, struct __SPI_HandleTyp
     if (hspi->State == HAL_SPI_STATE_RESET) {
         log_printf(LOG_CRIT, "%s: SPI %d not initialized\n",
                    title, hspi_index(hspi));
+        return false;
+    }
+    if (hspi->State != HAL_SPI_STATE_READY) {
+        log_printf(LOG_CRIT, "%s: SPI %d not ready: %d\n",
+                   title, hspi_index(hspi), hspi->State);
         return false;
     }
     assert(hspi->State == HAL_SPI_STATE_READY);
