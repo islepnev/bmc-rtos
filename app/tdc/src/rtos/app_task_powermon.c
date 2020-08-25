@@ -23,6 +23,7 @@
 #include "adt7301/dev_adt7301.h"
 #include "adt7301/dev_adt7301_fsm.h"
 #include "app_shared_data.h"
+#include "app_tasks.h"
 #include "app_task_powermon_impl.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
@@ -44,7 +45,7 @@
 #include "thset/dev_thset_types.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = 400 };
+enum { powermonThreadStackSize = threadStackSize + 120 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
 static Dev_powermon pm = {0};
