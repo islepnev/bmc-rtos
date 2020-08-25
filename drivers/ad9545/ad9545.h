@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_PLL_H
-#define DEV_PLL_H
+#ifndef AD9545_H
+#define AD9545_H
 
 #include <stdbool.h>
 
@@ -33,7 +33,7 @@ bool ad9545_detect(BusInterface *bus);
 bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup);
 
 bool ad9545_software_reset(BusInterface *bus);
-bool ad9545_setup_sysclk(BusInterface *bus, const PllSysclkSetup_TypeDef *sysclkSetup);
+bool ad9545_setup_sysclk(BusInterface *bus, const AD9545_Sysclk_Setup_TypeDef *sysclkSetup);
 bool ad9545_calibrate_sysclk(BusInterface *bus);
 bool ad9545_read_status(BusInterface *bus, AD9545_Status *status);
 bool ad9545_read_sysclk_status(BusInterface *bus, AD9545_Status *status);
@@ -46,4 +46,4 @@ void ad9545_gpio_init(BusInterface *bus);
 }
 #endif
 
-#endif // DEV_PLL_H
+#endif // AD9545_H

@@ -18,6 +18,7 @@
 #include "system_status_common.h"
 
 #include "ad9545/dev_ad9545.h"
+#include "ad9548/dev_ad9548.h"
 #include "dev_common_types.h"
 #include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
@@ -46,6 +47,7 @@ SensorStatus getFpgaStatus(void)
 
 bool getPllLockState(void)
 {
+#if ENABLE_AD9545
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
@@ -53,21 +55,46 @@ bool getPllLockState(void)
     return priv->status.sysclk.b.stable &&
            priv->status.sysclk.b.pll0_locked &&
            priv->status.sysclk.b.pll1_locked;
+#endif
+#if ENABLE_AD9548
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
+    if (!d || !d->priv)
+        return false;
+    const Dev_ad9548_priv *priv = (const Dev_ad9548_priv *)d->priv;
+    return priv->status.sysclk.b.stable &&
+           priv->status.DpllStat.b.dpll_freq_lock &&
+           priv->status.DpllStat.b.dpll_phase_lock;
+#endif
 }
 
 SensorStatus getPllStatus(void)
 {
+#if ENABLE_AD9545
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return SENSOR_UNKNOWN;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)d->priv;
 
-    if (priv->fsm_state == PLL_STATE_ERROR || priv->fsm_state == PLL_STATE_FATAL)
+    if (priv->fsm_state == AD9545_STATE_ERROR || priv->fsm_state == AD9545_STATE_FATAL)
         return SENSOR_CRITICAL;
     if (d->device_status != DEVICE_NORMAL)
         return SENSOR_CRITICAL;
     if (!priv->status.sysclk.b.locked)
         return SENSOR_CRITICAL;
+#endif
+#if ENABLE_AD9548
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
+    if (!d || !d->priv)
+        return SENSOR_UNKNOWN;
+    const Dev_ad9548_priv *priv = (const Dev_ad9548_priv *)d->priv;
+
+    if (priv->fsm_state == AD9548_STATE_ERROR || priv->fsm_state == AD9548_STATE_FATAL)
+        return SENSOR_CRITICAL;
+    if (d->device_status != DEVICE_NORMAL)
+        return SENSOR_CRITICAL;
+    if (!priv->status.sysclk.b.locked)
+        return SENSOR_CRITICAL;
+#endif
     if (!getPllLockState())
         return SENSOR_WARNING;
     return SENSOR_NORMAL;

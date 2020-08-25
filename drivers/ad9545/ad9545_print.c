@@ -24,9 +24,9 @@
 #include "ad9545_setup_regs.h"
 #include "display.h"
 
-static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, PllChannel_TypeDef channel)
+static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, AD9545_Channel_TypeDef channel)
 {
-    const DPLL_Status *dpll_status = &status->dpll[channel];
+    const AD9545_DPLL_Status *dpll_status = &status->dpll[channel];
     uint64_t ftw = dpll_status->ftw_history;
     uint64_t default_ftw = get_dpll_default_ftw(channel);
     int64_t twdelta = ftw - default_ftw;
@@ -34,20 +34,20 @@ static int64_t pll_ftw_rel_ppb(const AD9545_Status *status, PllChannel_TypeDef c
     return twdelta/norm;
 }
 
-static ProfileRefSource_TypeDef pll_get_current_ref(const AD9545_Status *status, PllChannel_TypeDef channel)
+static AD9545_Profile_Ref_Source_TypeDef pll_get_current_ref(const AD9545_Status *status, AD9545_Channel_TypeDef channel)
 {
     //    int active = d->status.dpll[channel].operation.b.active;
     //    if (!active)
     //        return PROFILE_REF_SOURCE_INVALID;
     uint8_t active_profile = status->dpll[channel].operation.b.active_profile;
-    if (active_profile >= DPLL_PROFILE_COUNT)
+    if (active_profile >= AD9545_DPLL_PROFILE_COUNT)
         return PROFILE_REF_SOURCE_INVALID;
-    Pll_DPLL_Setup_TypeDef dpll = {0};
+    AD9545_DPLL_Setup_TypeDef dpll = {0};
     init_DPLL_Setup(&dpll, channel);
-    return (ProfileRefSource_TypeDef)dpll.profile[active_profile].Profile_Ref_Source;
+    return (AD9545_Profile_Ref_Source_TypeDef)dpll.profile[active_profile].Profile_Ref_Source;
 }
 
-static void pllPrintRefStatusBits(Ref_Status_REG_Type r)
+static void pllPrintRefStatusBits(AD9545_Ref_Status_REG_Type r)
 {
     printf("%s%s%s%s%s%s",
            r.b.slow   ? " SLOW" : "",
@@ -59,7 +59,7 @@ static void pllPrintRefStatusBits(Ref_Status_REG_Type r)
            );
 }
 
-static const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r)
+static const char *pllProfileRefSourceStr(AD9545_Profile_Ref_Source_TypeDef r)
 {
     switch(r) {
     case PROFILE_REF_SOURCE_A: return "A";
@@ -75,9 +75,9 @@ static const char *pllProfileRefSourceStr(ProfileRefSource_TypeDef r)
     }
 }
 
-static void pllPrintRefStatus(const AD9545_Status *status, PllRef_TypeDef ref_input)
+static void pllPrintRefStatus(const AD9545_Status *status, AD9545_Ref_TypeDef ref_input)
 {
-    Ref_Status_REG_Type r = status->ref[ref_input];
+    AD9545_Ref_Status_REG_Type r = status->ref[ref_input];
     printf("Ref %d  %02X",
            ref_input,
            r.raw
@@ -86,11 +86,11 @@ static void pllPrintRefStatus(const AD9545_Status *status, PllRef_TypeDef ref_in
     printf("\n");
 }
 
-static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_TypeDef channel)
+static void pllPrintDPLLChannelStatus(const AD9545_Status *status, AD9545_Channel_TypeDef channel)
 {
-    const DPLL_Status *dpll_status = &status->dpll[channel];
+    const AD9545_DPLL_Status *dpll_status = &status->dpll[channel];
     {
-        DPLL_Active_Profile_REG_Type r = dpll_status->act_profile;
+        AD9545_DPLL_Active_Profile_REG_Type r = dpll_status->act_profile;
         printf("Translation profile %d.%s%s%s%s%s%s%s\n",
                channel,
                ((r.raw & 0x3F) ==0) ? "none" : "",
@@ -103,7 +103,7 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_Ty
                                );
     }
     {
-        DPLL_Lock_Status_REG_Type r = dpll_status->lock_status;
+        AD9545_DPLL_Lock_Status_REG_Type r = dpll_status->lock_status;
         printf("Lock status %02X %s%s%s%s%s%s\n",
                r.raw,
                r.b.all_lock ? " ALL_LOCK" : "",
@@ -115,7 +115,7 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_Ty
                                    );
     }
     {
-        DPLL_Operation_REG_Type r = dpll_status->operation;
+        AD9545_DPLL_Operation_REG_Type r = dpll_status->operation;
         printf("Oper status %02X %s%s%s%s %s %d.%d\n",
                r.raw,
                r.b.freerun ? " FREERUN" : "",
@@ -128,7 +128,7 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_Ty
                );
     }
     {
-        DPLL_State_REG_Type r = dpll_status->state;
+        AD9545_DPLL_State_REG_Type r = dpll_status->state;
         printf("State %02X %s%s%s%s%s\n",
                r.raw,
                r.b.hist_available   ? " HIST" : "",
@@ -179,7 +179,7 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, PllChannel_Ty
 //    default: return "unknown";
 //    }
 //}
-static void pllPrintDPLLChannelSetup(const Pll_DPLL_Setup_TypeDef *dpll, PllChannel_TypeDef channel)
+static void pllPrintDPLLChannelSetup(const AD9545_DPLL_Setup_TypeDef *dpll, AD9545_Channel_TypeDef channel)
 {
 
     printf("DPLL%d profile[0] %s%s%s%s, FB %s%s FBdiv %u+%u/%u, BW %g Hz\n",
@@ -242,8 +242,8 @@ void ad9545_verbose_status(const AD9545_Status *status)
            status->misc.b.aux_dpll_ref_fault ? " AUX_DPLL_REF_FAULT" : ""
            );
     printf("Internal temp %d C\n", status->internal_temp/128);
-    pllPrintRefStatus(status, REFA);
-    pllPrintRefStatus(status, REFB);
+    pllPrintRefStatus(status, AD9545_REFA);
+    pllPrintRefStatus(status, AD9545_REFB);
     printf(" --- DPLL channel %d ---\n", DPLL0);
     pllPrintDPLLChannelStatus(status, DPLL0);
     printf(" --- DPLL channel %d ---\n", DPLL1);
@@ -258,15 +258,15 @@ void ad9545_brief_status(const AD9545_Status *status)
 //    printf("%s\n", ANSI_CLEAR_EOL);
     if (1) {
         printf("  Ref A:");
-        pllPrintRefStatusBits(status->ref[REFA]);
+        pllPrintRefStatusBits(status->ref[AD9545_REFA]);
         printf("%s\n", ANSI_CLEAR_EOL);
         printf("  Ref B:");
-        pllPrintRefStatusBits(status->ref[REFB]);
+        pllPrintRefStatusBits(status->ref[AD9545_REFB]);
         printf("%s\n", ANSI_CLEAR_EOL);
         for (int channel=0; channel<DPLL_COUNT; channel++) {
-            int64_t ppb0 = pll_ftw_rel_ppb(status, (PllChannel_TypeDef)channel);
+            int64_t ppb0 = pll_ftw_rel_ppb(status, (AD9545_Channel_TypeDef)channel);
             const char *ref0str = "";
-            ProfileRefSource_TypeDef ref0 = pll_get_current_ref(status, (PllChannel_TypeDef)channel);
+            AD9545_Profile_Ref_Source_TypeDef ref0 = pll_get_current_ref(status, (AD9545_Channel_TypeDef)channel);
             if (ref0 != PROFILE_REF_SOURCE_INVALID)
                 ref0str = pllProfileRefSourceStr(ref0);
             bool locked = (channel == DPLL1) ? status->sysclk.b.pll1_locked : status->sysclk.b.pll0_locked;

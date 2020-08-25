@@ -29,14 +29,14 @@
 static const char *dev_ad9545_state_str(ad9545_state_t state)
 {
     switch(state) {
-    case PLL_STATE_INIT:    return "INIT";
-    case PLL_STATE_RESET:    return "RESET";
-    case PLL_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
-    case PLL_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
-    case PLL_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
-    case PLL_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
-    case PLL_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
-    case PLL_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
+    case AD9545_STATE_INIT:    return "INIT";
+    case AD9545_STATE_RESET:    return "RESET";
+    case AD9545_STATE_SETUP_SYSCLK:    return "SETUP_SYSCLK";
+    case AD9545_STATE_SYSCLK_WAITLOCK: return ANSI_YELLOW  "SYSCLK_WAITLOCK"     ANSI_CLEAR;
+    case AD9545_STATE_SETUP:     return ANSI_GREEN  "SETUP"     ANSI_CLEAR;
+    case AD9545_STATE_RUN:   return ANSI_GREEN    "RUN"   ANSI_CLEAR;
+    case AD9545_STATE_ERROR:   return ANSI_RED    "ERROR"   ANSI_CLEAR;
+    case AD9545_STATE_FATAL:   return ANSI_RED    "FATAL"   ANSI_CLEAR;
     default: return "?";
     }
 }

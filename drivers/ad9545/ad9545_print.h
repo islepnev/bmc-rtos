@@ -14,8 +14,8 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_PLL_PRINT_H
-#define DEV_PLL_PRINT_H
+#ifndef AD9545_PRINT_H
+#define AD9545_PRINT_H
 
 #include "ad9545_setup.h"
 #include "ad9545_status_regs.h"
@@ -34,4 +34,4 @@ void ad9545_brief_status(const AD9545_Status *status);
 }
 #endif
 
-#endif // DEV_PLL_PRINT_H
+#endif // AD9545_PRINT_H

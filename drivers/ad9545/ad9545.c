@@ -85,7 +85,7 @@ bool ad9545_software_reset(BusInterface *bus)
            ad9545_write1(bus, 0x0000, 0);
 }
 
-bool ad9545_setup_sysclk(BusInterface *bus, const PllSysclkSetup_TypeDef *sysclkSetup)
+bool ad9545_setup_sysclk(BusInterface *bus, const AD9545_Sysclk_Setup_TypeDef *sysclkSetup)
 {
     return ad9545_write1(bus, AD9545_REG1_Sysclk_FB_DIV_Ratio, sysclkSetup->Sysclk_FB_DIV_Ratio) &&
            ad9545_write1(bus, AD9545_REG1_Sysclk_Input, sysclkSetup->Sysclk_Input) &&
@@ -100,7 +100,7 @@ bool ad9545_setup_sysclk(BusInterface *bus, const PllSysclkSetup_TypeDef *sysclk
            pllIoUpdate(bus);
 }
 
-static bool pllSetupOutputDrivers(BusInterface *bus, const Pll_OutputDrivers_Setup_TypeDef *setup)
+static bool pllSetupOutputDrivers(BusInterface *bus, const AD9545_OutputDrivers_Setup_TypeDef *setup)
 {
     return ad9545_write1(bus, AD9545_REG1_10D7, setup->Driver_Config.raw) &&
            ad9545_write1(bus, AD9545_REG1_10D8, setup->Driver_Config.raw) &&
@@ -109,7 +109,7 @@ static bool pllSetupOutputDrivers(BusInterface *bus, const Pll_OutputDrivers_Set
            ad9545_write1(bus, AD9545_REG1_14D8, setup->Driver_Config.raw);
 }
 
-static bool pllSetupDistribution0WithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistribution0WithUpdate(BusInterface *bus, const AD9545_Output_Dividers_Setup_TypeDef *setup)
 {
     // channel 0
     if (! (ad9545_write1(bus, AD9545_REG1_10DA, setup->Secondary_Clock_Path_0) &&
@@ -140,7 +140,7 @@ static bool pllSetupDistribution0WithUpdate(BusInterface *bus, const Pll_OutputD
     return true;
 }
 
-static bool pllSetupDistribution1WithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistribution1WithUpdate(BusInterface *bus, const AD9545_Output_Dividers_Setup_TypeDef *setup)
 {
     // channel 1
     if (! (ad9545_write1(bus, AD9545_REG1_14DA, setup->Secondary_Clock_Path_1) &&
@@ -168,13 +168,13 @@ static bool pllSetupDistribution1WithUpdate(BusInterface *bus, const Pll_OutputD
     return true;
 }
 
-static bool pllSetupDistributionWithUpdate(BusInterface *bus, const Pll_OutputDividers_Setup_TypeDef *setup)
+static bool pllSetupDistributionWithUpdate(BusInterface *bus, const AD9545_Output_Dividers_Setup_TypeDef *setup)
 {
     return pllSetupDistribution0WithUpdate(bus, setup) &&
            pllSetupDistribution1WithUpdate(bus, setup);
 }
 
-static bool pllSetupRef(BusInterface *bus, const PllRefSetup_TypeDef *refSetup)
+static bool pllSetupRef(BusInterface *bus, const AD9545_Ref_Setup_TypeDef *refSetup)
 {
     uint8_t OpControlGlobal = AD9545_OPER_CONTROL_DEFAULT;
 
@@ -198,7 +198,7 @@ static bool pllSetupRef(BusInterface *bus, const PllRefSetup_TypeDef *refSetup)
            ad9545_write1(bus, AD9545_REG1_2000, OpControlGlobal);
 }
 
-static bool pllWriteProfile(BusInterface *bus, PllChannel_TypeDef channel, int profileIndex, Pll_DPLL_Profile_TypeDef profile)
+static bool pllWriteProfile(BusInterface *bus, AD9545_Channel_TypeDef channel, int profileIndex, AD9545_DPLL_Profile_TypeDef profile)
 {
     uint16_t reg_offset = (channel == DPLL0) ? AD9545_REG1_1200 : AD9545_REG1_1600;
 
@@ -217,7 +217,7 @@ static bool pllWriteProfile(BusInterface *bus, PllChannel_TypeDef channel, int p
            ad9545_write3(bus, reg_offset + 0x17, profile.FastLock);
 }
 
-static bool pllSetupDPLLChannel(BusInterface *bus, const Pll_DPLL_Setup_TypeDef *dpll, PllChannel_TypeDef channel)
+static bool pllSetupDPLLChannel(BusInterface *bus, const AD9545_DPLL_Setup_TypeDef *dpll, AD9545_Channel_TypeDef channel)
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x400;
 
@@ -239,7 +239,7 @@ static bool pllSetupDPLL(BusInterface *bus, const ad9545_setup_t *d)
            pllSetupDPLLChannel(bus, &d->dpll1, DPLL1);
 }
 
-static bool pllSetupDPLLMode(BusInterface *bus, const Pll_DPLLMode_Setup_TypeDef *dpll_mode)
+static bool pllSetupDPLLMode(BusInterface *bus, const AD9545_DPLL_Mode_Setup_TypeDef *dpll_mode)
 {
     return ad9545_write1(bus, AD9545_REG1_2105, dpll_mode->dpll0_mode.raw) &&
            ad9545_write1(bus, AD9545_REG1_2205, dpll_mode->dpll1_mode.raw);
@@ -284,7 +284,7 @@ static bool pllReadRefStatus(BusInterface *bus, AD9545_Status *status)
     return true;
 }
 
-static bool pllReadDPLLChannelStatus(BusInterface *bus, DPLL_Status *dpll_status, PllChannel_TypeDef channel)
+static bool pllReadDPLLChannelStatus(BusInterface *bus, AD9545_DPLL_Status *dpll_status, AD9545_Channel_TypeDef channel)
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x100;
 

@@ -21,11 +21,11 @@
 
 #include "ad9545/ad9545.h"
 
-void update_pll_sensor_status(Dev_ad9545 *pll)
+void ad9545_update_pll_sensor_status(Dev_ad9545 *pll)
 {
     if (DEVICE_NORMAL != pll->dev.device_status)
         pll->dev.sensor = SENSOR_UNKNOWN;
-    if ((pll->priv.fsm_state != PLL_STATE_RUN) || (!pll->priv.status.sysclk.b.locked))
+    if ((pll->priv.fsm_state != AD9545_STATE_RUN) || (!pll->priv.status.sysclk.b.locked))
         pll->dev.sensor = SENSOR_CRITICAL;
     if (!pll->priv.status.dpll[0].lock_status.b.all_lock)
         pll->dev.sensor = SENSOR_WARNING;

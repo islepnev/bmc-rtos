@@ -21,16 +21,16 @@
 #include <stdint.h>
 
 typedef enum {
-    REFA = 0,
-    REFAA = 1,
-    REFB = 2,
-    REFBB = 3,
-} PllRef_TypeDef;
+    AD9545_REFA = 0,
+    AD9545_REFAA = 1,
+    AD9545_REFB = 2,
+    AD9545_REFBB = 3
+} AD9545_Ref_TypeDef;
 
 typedef enum {
     DPLL0 = 0,
-    DPLL1 = 1,
-} PllChannel_TypeDef;
+    DPLL1 = 1
+} AD9545_Channel_TypeDef;
 
 typedef struct {
     uint8_t Sysclk_FB_DIV_Ratio;
@@ -43,7 +43,7 @@ typedef struct {
     int64_t CompensationValue;
     uint8_t TDC_Compensation_Source;
     uint8_t DPLL_Compensation_Source;
-} PllSysclkSetup_TypeDef;
+} AD9545_Sysclk_Setup_TypeDef;
 
 typedef struct {
     uint8_t REFA_Receiver_Settings;
@@ -58,7 +58,7 @@ typedef struct {
     uint32_t REFB_Offset_Limit;
     uint32_t REFB_Validation_Timer;
     uint16_t REFB_Jitter_Tolerance;
-} PllRefSetup_TypeDef;
+} AD9545_Ref_Setup_TypeDef;
 
 typedef union
 {
@@ -71,28 +71,28 @@ typedef union
       uint8_t loopfilter_base:1;
   } b;
   uint8_t raw;
-} DPLL_Feedback_Mode_REG_Type;
+} AD9545_DPLL_Feedback_Mode_REG_Type;
 
 typedef struct {
     uint8_t Priority_and_Enable;
     uint8_t Profile_Ref_Source;
     uint8_t ZD_Feedback_Path;
-    DPLL_Feedback_Mode_REG_Type Feedback_Mode;
+    AD9545_DPLL_Feedback_Mode_REG_Type Feedback_Mode;
     uint32_t Loop_BW;
     uint32_t Hitless_FB_Divider;
     uint32_t Buildout_FB_Divider;
     uint32_t Buildout_FB_Fraction;
     uint32_t Buildout_FB_Modulus;
     uint32_t FastLock;
-} Pll_DPLL_Profile_TypeDef;
+} AD9545_DPLL_Profile_TypeDef;
 
-enum {DPLL_PROFILE_COUNT = 6};
+enum {AD9545_DPLL_PROFILE_COUNT = 6};
 typedef struct {
     uint64_t Freerun_Tuning_Word;
     uint32_t FTW_Offset_Clamp;
     uint8_t APLL_M_Divider;
-    Pll_DPLL_Profile_TypeDef profile[DPLL_PROFILE_COUNT];
-} Pll_DPLL_Setup_TypeDef;
+    AD9545_DPLL_Profile_TypeDef profile[AD9545_DPLL_PROFILE_COUNT];
+} AD9545_DPLL_Setup_TypeDef;
 
 typedef union
 {
@@ -105,11 +105,11 @@ typedef union
     uint32_t reserved:2;
   } b;
   uint8_t raw;
-} Driver_Config_REG_Type;
+} AD9545_Driver_Config_REG_Type;
 
 typedef struct {
-    Driver_Config_REG_Type Driver_Config;
-} Pll_OutputDrivers_Setup_TypeDef;
+    AD9545_Driver_Config_REG_Type Driver_Config;
+} AD9545_OutputDrivers_Setup_TypeDef;
 
 typedef union
 {
@@ -122,25 +122,25 @@ typedef union
     uint32_t enable_step_detect_ref_fault:1;
   } b;
   uint8_t raw;
-} DPLL_Mode_REG_Type;
+} AD9545_DPLL_Mode_REG_Type;
 
 typedef struct {
-    DPLL_Mode_REG_Type dpll0_mode;
-    DPLL_Mode_REG_Type dpll1_mode;
-} Pll_DPLLMode_Setup_TypeDef;
+    AD9545_DPLL_Mode_REG_Type dpll0_mode;
+    AD9545_DPLL_Mode_REG_Type dpll1_mode;
+} AD9545_DPLL_Mode_Setup_TypeDef;
 
 typedef enum {
     AutosyncMode_Manual = 0,
     AutosyncMode_Immediate = 1,
     AutosyncMode_DPLL_Phase_Lock = 2,
     AutosyncMode_DPLL_Freq_Lock = 3,
-} AutosyncMode_TypeDef;
+} AD9545_Autosync_Mode_TypeDef;
 
 typedef struct {
     uint8_t enable_ref_sync_0;
     uint8_t enable_ref_sync_1;
-    AutosyncMode_TypeDef autosync_mode_0;
-    AutosyncMode_TypeDef autosync_mode_1;
+    AD9545_Autosync_Mode_TypeDef autosync_mode_0;
+    AD9545_Autosync_Mode_TypeDef autosync_mode_1;
     uint8_t Secondary_Clock_Path_0;
     uint8_t Secondary_Clock_Path_1;
     uint8_t Automute_Control_0;
@@ -151,7 +151,7 @@ typedef struct {
     uint8_t Distribution_Divider_1_A;
     uint8_t Distribution_Divider_1_B;
 
-} Pll_OutputDividers_Setup_TypeDef;
+} AD9545_Output_Dividers_Setup_TypeDef;
 
 typedef enum {
     PROFILE_REF_SOURCE_A = 0,
@@ -163,7 +163,7 @@ typedef enum {
     PROFILE_REF_SOURCE_NCO0 = 8,
     PROFILE_REF_SOURCE_NCO1 = 9,
     PROFILE_REF_SOURCE_INVALID = 0xF,
-} ProfileRefSource_TypeDef;
+} AD9545_Profile_Ref_Source_TypeDef;
 
 enum {
     PROFILE_PRIORITY_DISABLED = 0,
@@ -209,13 +209,13 @@ enum {
 };
 
 typedef struct ad9545_setup_t {
-    Pll_OutputDrivers_Setup_TypeDef out_drivers;
-    Pll_OutputDividers_Setup_TypeDef out_dividers;
-    Pll_DPLL_Setup_TypeDef dpll0;
-    Pll_DPLL_Setup_TypeDef dpll1;
-    Pll_DPLLMode_Setup_TypeDef dpll_mode;
-    PllRefSetup_TypeDef ref;
-    PllSysclkSetup_TypeDef sysclk;
+    AD9545_OutputDrivers_Setup_TypeDef out_drivers;
+    AD9545_Output_Dividers_Setup_TypeDef out_dividers;
+    AD9545_DPLL_Setup_TypeDef dpll0;
+    AD9545_DPLL_Setup_TypeDef dpll1;
+    AD9545_DPLL_Mode_Setup_TypeDef dpll_mode;
+    AD9545_Ref_Setup_TypeDef ref;
+    AD9545_Sysclk_Setup_TypeDef sysclk;
 } ad9545_setup_t;
 
 #endif // AD9545_SETUP_REGS_H

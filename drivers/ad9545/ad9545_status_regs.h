@@ -31,7 +31,7 @@ typedef union
       uint8_t reserved:4;
   } b;
   uint8_t raw;
-} Eeprom_Status_REG_Type;
+} AD9545_Eeprom_Status_REG_Type;
 
 typedef union
 {
@@ -46,7 +46,7 @@ typedef union
       uint8_t reserved2:2;
   } b;
   uint8_t raw;
-} Sysclk_Status_REG_Type;
+} AD9545_Sysclk_Status_REG_Type;
 
 typedef union
 {
@@ -62,7 +62,7 @@ typedef union
       uint8_t aux_nco1_delta_overflow:1;
   } b;
   uint8_t raw;
-} Misc_Status_REG_Type;
+} AD9545_Misc_Status_REG_Type;
 
 typedef union
 {
@@ -77,7 +77,7 @@ typedef union
       uint8_t reserved:2;
   } b;
   uint8_t raw;
-} Ref_Status_REG_Type;
+} AD9545_Ref_Status_REG_Type;
 
 typedef union
 {
@@ -92,7 +92,7 @@ typedef union
       uint8_t reserved:2;
   } b;
   uint8_t raw;
-} DPLL_Active_Profile_REG_Type;
+} AD9545_DPLL_Active_Profile_REG_Type;
 
 typedef union
 {
@@ -107,7 +107,7 @@ typedef union
       uint8_t reserved:2;
   } b;
   uint8_t raw;
-} DPLL_Lock_Status_REG_Type;
+} AD9545_DPLL_Lock_Status_REG_Type;
 
 typedef union
 {
@@ -121,7 +121,7 @@ typedef union
       uint8_t reserved:1;
   } b;
   uint8_t raw;
-} DPLL_Operation_REG_Type;
+} AD9545_DPLL_Operation_REG_Type;
 
 typedef union
 {
@@ -136,30 +136,30 @@ typedef union
       uint8_t reserved:2;
   } b;
   uint8_t raw;
-} DPLL_State_REG_Type;
+} AD9545_DPLL_State_REG_Type;
 
 typedef struct {
-    DPLL_Active_Profile_REG_Type act_profile;
-    DPLL_Lock_Status_REG_Type lock_status;
-    DPLL_Operation_REG_Type operation;
-    DPLL_State_REG_Type state;
+    AD9545_DPLL_Active_Profile_REG_Type act_profile;
+    AD9545_DPLL_Lock_Status_REG_Type lock_status;
+    AD9545_DPLL_Operation_REG_Type operation;
+    AD9545_DPLL_State_REG_Type state;
     uint64_t ftw_history;
     uint16_t pld_tub;
     uint16_t fld_tub;
     uint8_t phase_slew;
     uint8_t phase_control_error;
-} DPLL_Status;
+} AD9545_DPLL_Status;
 
 enum { REF_INPUT_COUNT = 4};
 enum { DPLL_COUNT = 2};
 
 typedef struct {
-    Eeprom_Status_REG_Type eeprom;
-    Sysclk_Status_REG_Type sysclk;
-    Misc_Status_REG_Type misc;
+    AD9545_Eeprom_Status_REG_Type eeprom;
+    AD9545_Sysclk_Status_REG_Type sysclk;
+    AD9545_Misc_Status_REG_Type misc;
     int16_t internal_temp;
-    Ref_Status_REG_Type ref[REF_INPUT_COUNT];
-    DPLL_Status dpll[DPLL_COUNT];
+    AD9545_Ref_Status_REG_Type ref[REF_INPUT_COUNT];
+    AD9545_DPLL_Status dpll[DPLL_COUNT];
 } AD9545_Status;
 
 #endif // AD9545_STATUS_REGS_H

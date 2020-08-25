@@ -14,8 +14,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_AD9545_TYPES_H
-#define DEV_AD9545_TYPES_H
+
+#ifndef DEV_AD9545_H
+#define DEV_AD9545_H
 
 #include <stdint.h>
 
@@ -42,11 +43,11 @@ typedef struct Dev_ad9545 {
     Dev_ad9545_priv priv;
 } Dev_ad9545;
 
-void update_pll_sensor_status(Dev_ad9545 *pll);
+void ad9545_update_pll_sensor_status(Dev_ad9545 *pll);
 void pll_ad9545_clear_status(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_AD9545_TYPES_H
+#endif // DEV_AD9545_H
