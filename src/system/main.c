@@ -27,7 +27,6 @@
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"
 #include "stm32_hal.h"
-#include "tim.h"
 
 int main(void)
 {
@@ -43,7 +42,6 @@ int main(void)
     gpio_enable_clock();
     MX_GPIO_Init();
     led_all_set_state(true);
-    MX_TIM2_Init();
     init_periph();
 
     app_task_init();

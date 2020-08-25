@@ -46,16 +46,21 @@ bool test_hal_systick(void)
     uint32_t i = 0;
     const uint32_t tick_freq_hz = 1000U / uwTickFreq;
     const uint32_t cpu_cycles_per_tick = SystemCoreClock / tick_freq_hz; // loop cannot be faster than 1 cpu clock
+    int32_t cycles1=0, cycles2=0;
     while(1) {
         if (i > cpu_cycles_per_tick) {
             debug_printf("HAL systick timer %d Hz stopped\n", tick_freq_hz);
             return false;
         }
         const uint32_t tick = HAL_GetTick();
-        if (tick > start_ticks && tick_i1 == 0)
+        if (tick > start_ticks && tick_i1 == 0) {
             tick_i1 = i;
+            cycles1 = DWT->CYCCNT;
+        }
         if (tick > start_ticks+1) {
-            debug_printf("HAL systick timer %d Hz Ok\n", tick_freq_hz);
+            cycles2 = DWT->CYCCNT;
+            debug_printf("HAL systick timer %d Hz Ok, measured %d Hz\n", tick_freq_hz,
+                         SystemCoreClock / (cycles2-cycles1));
             break;
         }
         i++;
