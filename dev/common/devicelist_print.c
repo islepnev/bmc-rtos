@@ -35,6 +35,7 @@ const char *device_class_str(DeviceClass class)
     case DEV_CLASS_FPGA: return "FPGA";
     case DEV_CLASS_INA226: return "INA226";
     case DEV_CLASS_AD9545: return "AD9545";
+    case DEV_CLASS_AD9548: return "AD9548";
     case DEV_CLASS_PCA9548: return "PCA9548";
     case DEV_CLASS_POWERMON: return "PowerMon";
     case DEV_CLASS_SFP: return "SFP";

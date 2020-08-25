@@ -18,6 +18,7 @@
 #include "dev_fpga.h"
 
 #include "../ad9545/dev_ad9545.h"
+#include "../ad9548/dev_ad9548.h"
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "devicelist.h"
@@ -160,18 +161,33 @@ bool fpgaWriteBmcTemperature(DeviceBase *dev)
 bool fpgaWritePllStatus(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
+    uint16_t data = 0;
+#if ENABLE_AD9545
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
     const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);
 
-    uint16_t data = 0;
     if (SENSOR_NORMAL == d->sensor) {
         data |= 0x8;
     } else {
         if (priv->status.sysclk.b.pll0_locked)
             data |= 0x1;
     }
+#endif
+#if ENABLE_AD9548
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
+    if (!d || !d->priv)
+        return false;
+    const Dev_ad9548_priv *priv = (Dev_ad9548_priv *)device_priv_const(d);
+
+    if (SENSOR_NORMAL == d->sensor) {
+        data |= 0x8;
+    } else {
+        if (priv->status.DpllStat.b.dpll_freq_lock && priv->status.DpllStat.b.dpll_phase_lock)
+            data |= 0x1;
+    }
+#endif
     if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, data))
         return false;
     return true;
