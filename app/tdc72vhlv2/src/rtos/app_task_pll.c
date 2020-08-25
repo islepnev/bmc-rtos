@@ -43,7 +43,7 @@ static BusInterface pll_bus_info = {
 
 static void local_init(DeviceBase *parent) {
 //    init_ad9548_setup(&pll.priv.setup);
-//    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "PLL");
+    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "PLL");
 }
 
 static void pllTask(void const *arg)

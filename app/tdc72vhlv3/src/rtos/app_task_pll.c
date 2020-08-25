@@ -20,11 +20,13 @@
 #include <assert.h>
 #include <stdint.h>
 
-//#include "ad9548/ad9548.h"
-//#include "ad9548/dev_ad9548.h"
-//#include "ad9548/dev_ad9548_fsm.h"
+#include "ad9548/ad9548.h"
+#include "ad9548/ad9548_setup.h"
+#include "ad9548/dev_ad9548.h"
+#include "ad9548/dev_ad9548_fsm.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
+#include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "devicelist.h"
@@ -35,28 +37,28 @@ static const uint32_t pllTaskLoopDelay = 50;
 
 static BusInterface pll_bus_info = {
     .type = BUS_SPI,
-    .bus_number = 5,
+    .bus_number = SPI_BUS_INDEX_AD9548,
     .address = 0
 };
 
 
-//static Dev_ad9548 pll = {0};
+static Dev_ad9548 pll = {0};
 
 static void local_init(DeviceBase *parent)
 {
-//    init_ad9548_setup(&pll.priv.setup);
-//    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "Main PLL");
+    init_ad9548_setup(&pll.priv.setup);
+    create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "Main PLL");
 }
 
 static void pllTask(void const *arg)
 {
     (void) arg;
 
-//    ad9548_gpio_init(&pll.dev.bus);
+    ad9548_gpio_init(&pll.dev.bus);
 
     while(1) {
         bool power_on = enable_power && system_power_present;
-//        dev_ad9548_run(&pll, power_on);
+        dev_ad9548_run(&pll, power_on);
         osDelay(pllTaskLoopDelay);
     }
 }
