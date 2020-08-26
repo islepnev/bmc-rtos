@@ -85,7 +85,7 @@ static void init_ad9548_spi(int index)
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
     hspi->Init.Mode = SPI_MODE_MASTER;
-    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.Direction = SPI_DIRECTION_1LINE; // no MISO on TDC72VHL-v2
     hspi->Init.DataSize = SPI_DATASIZE_8BIT;
     hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
@@ -118,7 +118,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     {
         __HAL_RCC_SPI1_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = PLL_CS_Pin|PLL_SCLK_Pin|PLL_MOSI_Pin;
+        GPIO_InitStruct.Pin = AD9548_SPI_NSS_Pin|AD9548_SPI_SCLK_Pin|AD9548_SPI_MOSI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -171,7 +171,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     if (spiHandle->Instance==SPI1)
     {
         __HAL_RCC_SPI1_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOA, PLL_CS_Pin|PLL_SCLK_Pin|PLL_MOSI_Pin);
+        HAL_GPIO_DeInit(GPIOA, AD9548_SPI_NSS_Pin|AD9548_SPI_SCLK_Pin|AD9548_SPI_MOSI_Pin);
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
     }
     else if (spiHandle->Instance==SPI2)

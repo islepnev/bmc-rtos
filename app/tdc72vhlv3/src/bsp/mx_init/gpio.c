@@ -76,7 +76,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PLL_RESET_GPIO_Port, PLL_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SYSTEM_RDY_GPIO_Port, SYSTEM_RDY_Pin, GPIO_PIN_SET);
@@ -107,10 +107,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = PLL_IRQ_B_Pin;
+  GPIO_InitStruct.Pin = AD9548_IRQ_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(PLL_IRQ_B_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(AD9548_IRQ_B_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin */
   GPIO_InitStruct.Pin = LTM_PGOOD_Pin|VME_DET_B_Pin;
@@ -119,11 +119,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = PLL_RESET_Pin;
+  GPIO_InitStruct.Pin = AD9548_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PLL_RESET_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(AD9548_RESET_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = FPGA_CORE_PGOOD_Pin;

@@ -214,7 +214,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         // PLL AD9548
 #if ENABLE_AD9548
         __HAL_RCC_SPI5_CLK_ENABLE();
-        GPIO_InitStruct.Pin = PLL_SPI_SCLK_Pin|PLL_SPI_NSS_Pin|PLL_SPI_MOSI_Pin|PLL_SPI_MISO_Pin;
+        GPIO_InitStruct.Pin = AD9548_SPI_NSS_Pin|AD9548_SPI_SCLK_Pin|AD9548_SPI_MOSI_Pin|AD9548_SPI_MISO_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -255,7 +255,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     else if(spiHandle->Instance==SPI5) {
 #if ENABLE_AD9548
         __HAL_RCC_SPI5_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOF, PLL_SPI_SCLK_Pin|PLL_SPI_NSS_Pin|PLL_SPI_MOSI_Pin|PLL_SPI_MISO_Pin);
+        HAL_GPIO_DeInit(GPIOF, AD9548_SPI_NSS_Pin|AD9548_SPI_SCLK_Pin|AD9548_SPI_MOSI_Pin|AD9548_SPI_MISO_Pin);
 #endif
     }
 }

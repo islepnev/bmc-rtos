@@ -36,9 +36,9 @@ bool ad9548_gpio_init(BusInterface *bus)
 
 bool ad9548_gpio_test(BusInterface *bus)
 {
-#if defined (PLL_RESET_Pin) && defined (PLL_IRQ_B_Pin)
-    bool pin_reset = read_gpio_pin(PLL_RESET_GPIO_Port, PLL_RESET_Pin);
-    bool pin_irqb = read_gpio_pin(PLL_IRQ_B_GPIO_Port, PLL_IRQ_B_Pin);
+#if defined (AD9548_RESET_Pin) && defined (AD9548_IRQ_B_Pin)
+    bool pin_reset = read_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin);
+    bool pin_irqb = read_gpio_pin(AD9548_IRQ_B_GPIO_Port, AD9548_IRQ_B_Pin);
     if (!pin_reset)
         return true;
     else {
@@ -51,13 +51,13 @@ bool ad9548_gpio_test(BusInterface *bus)
 
 static void set_nss(bool state)
 {
-    write_gpio_pin(PLL_SPI_NSS_GPIO_Port, PLL_SPI_NSS_Pin, state);
+//    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
 }
 
 bool ad9548_reset(BusInterface *bus)
 {
-    write_gpio_pin(PLL_RESET_GPIO_Port, PLL_RESET_Pin, 1);
-    write_gpio_pin(PLL_RESET_GPIO_Port, PLL_RESET_Pin, 0);
+    write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 1);
+    write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 0);
     return true;
 }
 
@@ -82,7 +82,7 @@ uint8_t ad9548_read_register(BusInterface *bus, uint16_t address)
 
     data_out = 0x00; // dummy
     set_nss(0);
-    ret = spi_driver_tx_rx(spi, &data_out, &data_in, 1, 1000);
+    ret = spi_driver_rx(spi, &data_in, 1, 1000);
     set_nss(1);
 
     return data_in;

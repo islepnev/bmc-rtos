@@ -57,7 +57,7 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, PLL_LED_EN_B_Pin|FPGA_NSS_Pin|PLL_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, PLL_LED_EN_B_Pin|FPGA_NSS_Pin|AD9548_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LED_RED_B_Pin|LED_YELLOW_B_Pin|LED_GREEN_B_Pin, GPIO_PIN_SET);
@@ -66,7 +66,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, ADT_CS_B1_Pin|ADT_CS_B3_Pin|ADT_CS_B2_Pin|ADT_CS_B0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = PLL_LED_EN_B_Pin|FPGA_NSS_Pin|PLL_RESET_Pin;
+  GPIO_InitStruct.Pin = PLL_LED_EN_B_Pin|FPGA_NSS_Pin|AD9548_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -87,10 +87,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 //  /*Configure GPIO pin : PtPin */
-//  GPIO_InitStruct.Pin = PLL_IRQ_B_Pin;
+//  GPIO_InitStruct.Pin = AD9548_IRQ_B_Pin;
 //  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 //  GPIO_InitStruct.Pull = GPIO_PULLUP;
-//  HAL_GPIO_Init(PLL_IRQ_B_GPIO_Port, &GPIO_InitStruct);
+//  HAL_GPIO_Init(AD9548_IRQ_B_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
 //  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
