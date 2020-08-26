@@ -129,6 +129,14 @@ bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf,
     return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
 }
 
+bool spi_driver_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+{
+    if (!spi_driver_before_hal_call(__func__, hspi))
+        return false;
+    HAL_StatusTypeDef ret = HAL_SPI_Receive_IT(hspi, rxBuf, Size);
+    return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
+}
+
 bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
 {
     if (!spi_driver_before_hal_call(__func__, hspi))
