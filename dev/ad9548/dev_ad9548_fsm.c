@@ -61,21 +61,13 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         }
         break;
     case AD9548_STATE_RESET:
-//        ad9548_reset(bus);
-//        osDelay(50);
+        ad9548_reset(bus);
         if (!ad9548_software_reset(bus)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
             break;
         }
-        osDelay(50);
         d->dev.device_status = ad9548_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
-        osDelay(1000);
-        return;
         if (DEVICE_NORMAL == d->dev.device_status) {
-//            if (!ad9548_software_reset(bus)) {
-//                d->priv.fsm_state = AD9548_STATE_ERROR;
-//                break;
-//            }
             d->priv.fsm_state = AD9548_STATE_SETUP_SYSCLK;
             break;
         }

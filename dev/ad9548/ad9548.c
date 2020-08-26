@@ -51,7 +51,7 @@ bool ad9548_gpio_test(BusInterface *bus)
 
 static void set_nss(bool state)
 {
-//    write_gpio_pin(PLL_SPI_NSS_GPIO_Port, PLL_SPI_NSS_Pin, state);
+    write_gpio_pin(PLL_SPI_NSS_GPIO_Port, PLL_SPI_NSS_Pin, state);
 }
 
 bool ad9548_reset(BusInterface *bus)

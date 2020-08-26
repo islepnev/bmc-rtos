@@ -194,7 +194,6 @@ static void start_task_powermon( void const *arg)
 
         dev_digipot_run(&digipots);
 #endif
-        dev_thset_run(&thset);
 #if ENABLE_POWERMON
         task_powermon_run(&pm);
 #endif

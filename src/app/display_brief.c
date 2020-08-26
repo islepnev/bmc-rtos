@@ -22,6 +22,7 @@
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9545/ad9545_print.h"
 #include "ad9545/dev_ad9545_print.h"
+#include "ad9548/dev_ad9548_print.h"
 #include "app_shared_data.h"
 #include "dev_common_types.h"
 #include "devicelist.h"
@@ -80,9 +81,14 @@ void print_system_status(int y)
 void display_pll_detail(int y)
 {
 #ifdef ENABLE_AD9545
-    print_clearbox(y, DISPLAY_PLL_DETAIL_H);
+    print_clearbox(y, AD9545_DISPLAY_PLL_DETAIL_H);
     print_goto(y, 1);
     dev_ad9545_verbose_status();
+#endif
+#ifdef ENABLE_AD9548
+    print_clearbox(y, AD9548_DISPLAY_PLL_DETAIL_H);
+    print_goto(y, 1);
+    dev_ad9548_verbose_status();
 #endif
 }
 
@@ -106,9 +112,12 @@ void print_powermon(int y)
 
 void print_pll(int y)
 {
-#ifdef ENABLE_AD9545
     print_goto(y, 1);
+#if defined(ENABLE_AD9545)
     dev_ad9545_print_box();
+#elif defined(ENABLE_AD9548)
+    dev_ad9548_print_box();
+#else
 #endif
 }
 

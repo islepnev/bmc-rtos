@@ -24,14 +24,6 @@
 extern "C" {
 #endif
 
-struct __SPI_HandleTypeDef;
-
-extern struct __SPI_HandleTypeDef hspi1;
-extern struct __SPI_HandleTypeDef hspi2;
-extern struct __SPI_HandleTypeDef hspi3;
-extern struct __SPI_HandleTypeDef hspi4;
-extern struct __SPI_HandleTypeDef hspi5;
-
 void init_spi_peripherals(void);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,25 +14,17 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD9548_PRINT_H
-#define AD9548_PRINT_H
 
-#include "ad9548_setup.h"
-#include "ad9548_setup_regs.h"
-#include "ad9548_status_regs.h"
+#include "ad9548_regs_dpll.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//void pllPrintRefStatus(const Dev_ad9548 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9548 *d, PllChannel_TypeDef channel);
-void ad9548_verbose_setup(const ad9548_setup_t *setup);
-void ad9548_verbose_status(const AD9548_Status *status);
-void ad9548_brief_status(const AD9548_Status *status);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // AD9548_PRINT_H
+const AD9548_Dpll_TypeDef AD9548_Dpll_Default = {
+    .b.ftw = 0x224B2646EF7F,
+    .b.update_tw = 0,
+    .b.pullin_lower_limit = 0,
+    .b.pullin_upper_limit = 0xFFFFFF,
+    .b.dds_phase_offset_word = 0,
+    .b.fixed_phase_lock_offset = 0, // ps
+    .b.inc_phase_lock_offset_step_size = 0x3E8, // ps
+    .b.phase_slew_limit = 0, // ns/sec
+    .b.hist_acc_timer = 0x7530 // ms
+};

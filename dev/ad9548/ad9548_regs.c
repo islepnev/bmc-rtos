@@ -19,6 +19,7 @@
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
 
+/*
 // System Clock Settings
 const AD9548_SysClk_regs Default_PLL_SysClk = {
     {0x0100, 0b01000001},	// Charge Pump and Lock Detect Control
@@ -30,7 +31,7 @@ const AD9548_SysClk_regs Default_PLL_SysClk = {
     {0x0106, 0x01},			// System clock stability period, Bits[7:0] (default = 0x01)
     {0x0107, 0x00},			// System clock stability period, Bits[15:8] (default = 0x00)
     {0x0108, 0x00}			// System clock stability period, Bits[19:16] (default = 0x0, default period = 0x00001, or 1 ms)
-};
+}; */
 
 // Multifunction Pins
 const AD9548_MFPins_regs Default_PLL_MFPins = {
@@ -57,6 +58,7 @@ const AD9548_IRQ_regs Default_PLL_IRQ = {
     {0x0210, 0xFF},	// IRQ Mask for Reference Inputs (DD/D)
 };
 
+/*
 // DPLL Settings
 const AD9548_DPLL_regs Default_PLL_DPLL = {
     {0x0300, 0x7F},		// Free running frequency tuning word, Bits[7:0]
@@ -88,7 +90,7 @@ const AD9548_DPLL_regs Default_PLL_DPLL = {
     {0x031A, 0x00},		// History accumulation timer, Bits[23:16]
     {0x031B, 0x00}		// History Mode
 };
-
+*/
 const AD9548_OutClk_regs PLL_OutClk_ADC64VE = {
     {0x0400, 0x00},		// Distribution Settings
     {0x0401, 0x0F},		// Distribution Enable
@@ -116,6 +118,7 @@ const AD9548_OutClk_regs PLL_OutClk_ADC64VE = {
     {0x0417, 0x00}		// [5:0] Q3 divider, Bits[29:24]
 };
 
+/*
 const AD9548_RefIn_regs PLL_RefIn_ADC64VE = {
     {0x0500, 0x00},			// Reference Power-Down
     {0x0501, 0x00},			// Reference Logic Family (A, AA, B, BB)
@@ -126,6 +129,7 @@ const AD9548_RefIn_regs PLL_RefIn_ADC64VE = {
     {0x0506, 0b00001011},	// Manual Reference Profile Selection (DD/D) Profile 3
     {0x0507, 0x01}			// Phase Build-Out Switching
 };
+*/
 
 // Profile 0 - Dedicated to Ref A (for 125/2 MHz)
 const AD9548_Profile_regs PLL_Prof0_ADC64VE = {
@@ -372,6 +376,7 @@ const AD9548_OutClk_regs PLL_OutClk_TDC_VHLE = {
     {0x0417, 0x00}		// [5:0] Q3 divider, Bits[29:24]
 };
 
+/*
 // Reference Inputs Settings
 const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE = {
     {0x0500, 0x03},			// Reference Power-Down
@@ -383,6 +388,7 @@ const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE = {
     {0x0506, 0b00001011},	// Manual Reference Profile Selection (DD/D)
     {0x0507, 0x01}			// Phase Build-Out Switching
 };
+*/
 
 // Profile 0 Settings
 const AD9548_Profile_regs PLL_Prof0_TDC_VHLE = {
@@ -630,6 +636,7 @@ const AD9548_OutClk_regs PLL_OutClk_TQDC16VS = {
     {0x0417, 0x00}		// [5:0] Q3 divider, Bits[29:24]
 };
 
+/*
 // Reference Inputs Settings
 const AD9548_RefIn_regs PLL_RefIn_TQDC16VS = {
     {0x0500, 0x03},			// Reference Power-Down
@@ -641,6 +648,7 @@ const AD9548_RefIn_regs PLL_RefIn_TQDC16VS = {
     {0x0506, 0b00001011},	// Manual Reference Profile Selection (DD/D)
     {0x0507, 0x01}			// Phase Build-Out Switching
 };
+*/
 
 // Profile 0 - Dedicated to Ref A
 const AD9548_Profile_regs PLL_Prof0_TQDC16VS = {

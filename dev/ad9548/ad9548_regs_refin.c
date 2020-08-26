@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,25 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD9548_PRINT_H
-#define AD9548_PRINT_H
 
-#include "ad9548_setup.h"
-#include "ad9548_setup_regs.h"
-#include "ad9548_status_regs.h"
+#include "ad9548_regs_refin.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//void pllPrintRefStatus(const Dev_ad9548 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9548 *d, PllChannel_TypeDef channel);
-void ad9548_verbose_setup(const ad9548_setup_t *setup);
-void ad9548_verbose_status(const AD9548_Status *status);
-void ad9548_brief_status(const AD9548_Status *status);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // AD9548_PRINT_H
+const AD9548_RefIn_TypeDef AD9548_RefIn_Default = {
+    .b.powerdown.raw = 0x00,
+    .b.logic_family.raw = 0,
+    .b.manual_select.b.a = 0,
+    .b.manual_select.b.b = 1,
+    .b.manual_select.b.c = 2,
+    .b.manual_select.b.d = 3,
+    .b.manual_select.b.en_a = 0,
+    .b.manual_select.b.en_b = 0,
+    .b.manual_select.b.en_c = 0,
+    .b.manual_select.b.en_d = 0,
+    .b.phase_buildout_switching.b.priority = 1
+};

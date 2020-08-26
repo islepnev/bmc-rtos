@@ -20,9 +20,10 @@
 #include <assert.h>
 #include <stdint.h>
 
-//#include "ad9548/ad9548.h"
-//#include "ad9548/dev_ad9548.h"
-//#include "ad9548/dev_ad9548_fsm.h"
+#include "ad9548/ad9548.h"
+#include "ad9548/ad9548_setup.h"
+#include "ad9548/dev_ad9548.h"
+#include "ad9548/dev_ad9548_fsm.h"
 #include "app_shared_data.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
@@ -39,10 +40,10 @@ static BusInterface pll_bus_info = {
     .address = 0
 };
 
-//static Dev_ad9548 pll = {0};
+static Dev_ad9548 pll = {0};
 
 static void local_init(DeviceBase *parent) {
-//    init_ad9548_setup(&pll.priv.setup);
+    init_ad9548_setup(&pll.priv.setup);
     create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "PLL");
 }
 
@@ -50,11 +51,12 @@ static void pllTask(void const *arg)
 {
     (void) arg;
 
-//    ad9548_gpio_init(&pll.dev.bus);
+    ad9548_gpio_init(&pll.dev.bus);
 
     while(1) {
-        bool power_on = enable_power && system_power_present;
-//        dev_ad9548_run(&pll, power_on);
+        bool power_on = 1; // enable_power && system_power_present;
+        dev_ad9548_run(&pll, power_on);
+
         osDelay(pllTaskLoopDelay);
     }
 }

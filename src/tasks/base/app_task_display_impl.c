@@ -23,6 +23,7 @@
 
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9545/dev_ad9545_print.h"
+#include "ad9548/dev_ad9548_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
 #include "cmsis_os.h"
@@ -84,6 +85,16 @@ static const int DISPLAY_TEMP_Y = (0 + DISPLAY_SENSORS_Y + DISPLAY_SENSORS_HEIGH
 static const int DISPLAY_MAIN_Y = (1 + DISPLAY_TEMP_H + DISPLAY_TEMP_Y);
 static const int DISPLAY_MAIN_H = has_vxsiicm ? 5 : 4;
 static const int DISPLAY_PLL_Y = (0 + DISPLAY_MAIN_Y + DISPLAY_MAIN_H);
+#if ENABLE_AD9545
+static const int DISPLAY_PLL_H = AD9545_DISPLAY_PLL_H;
+static const int DISPLAY_PLL_DETAIL_H = AD9545_DISPLAY_PLL_DETAIL_H;
+#elif ENABLE_AD9548
+static const int DISPLAY_PLL_H = AD9548_DISPLAY_PLL_H;
+static const int DISPLAY_PLL_DETAIL_H = AD9548_DISPLAY_PLL_DETAIL_H;
+#else
+static const int DISPLAY_PLL_H = 0;
+static const int DISPLAY_PLL_DETAIL_H = 0;
+#endif
 static const int DISPLAY_AUXPLL_Y = (0 +DISPLAY_PLL_Y + DISPLAY_PLL_H);
 static const int DISPLAY_AUXPLL_H = has_auxpll ? 1 : 0;
 static const int DISPLAY_LOG_Y = (1 + DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H);

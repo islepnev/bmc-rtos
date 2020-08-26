@@ -25,6 +25,26 @@
 #include "ad9548_status_regs.h"
 #include "display.h"
 
+const char *getPllRefDescr(int refIndex)
+{
+    switch (refIndex) {
+    case 0:
+    case 1:
+        return "FPGA 125  MHz";
+    case 2:
+    case 3:
+        return "TTC  20.8 MHz";
+    case 4:
+    case 5:
+        return "VXS  125  MHz";
+    case 6:
+    case 7:
+        return "VCXO 62.5 MHz";
+    default:
+        return "";
+    }
+}
+
 //static int64_t pll_ftw_rel_ppb(const AD9548_Status *status)
 //{
 //    const DPLL_Status *dpll_status = &status->dpll;
@@ -219,22 +239,89 @@ void ad9548_verbose_setup(const ad9548_setup_t *setup)
 //    pllPrintDPLLSetup(&setup->dpll);
 }
 
+void ad9548_print_pll_dpll_status(uint8_t DpllStat)
+{
+    // DPLL status
+    printf(ANSI_CLEAR "  DPLL: %02X ", DpllStat);
+
+    if ((DpllStat >> 5) & 1)
+        printf (ANSI_GREEN "frequency lock");
+    else
+        printf (ANSI_RED "no frequency lock");
+    printf(" | ");
+
+    if ((DpllStat >> 4) & 1)
+        printf (ANSI_GREEN "phase lock");
+    else
+        printf (ANSI_RED "no phase lock");
+
+    if ((DpllStat >> 7) & 1)
+        printf (ANSI_RED " | offset slew limiting");
+
+    if ((DpllStat >> 6) & 1)
+        printf (ANSI_RED " | phase build-out");
+
+    if ((DpllStat >> 3) & 1)
+        printf (ANSI_RED " | reference switchover");
+
+    if ((DpllStat >> 2) & 1)
+        printf (ANSI_RED " | holdover mode");
+
+    if ((DpllStat >> 1) & 1)
+        printf (ANSI_GREEN " | active (closed-loop)");
+
+    if ((DpllStat >> 0) & 1)
+        printf (ANSI_RED " | free running (open-loop)");
+
+    printf(ANSI_CLEAR "\n");
+}
+
+void ad9548_print_pll_ref_status(const AD9548_Status *pllStatusRegs)
+{
+    printf(ANSI_CLEAR "  Reference inputs");
+    print_clear_eol();
+    uint8_t refPowerDown = pllStatusRegs->refPowerDown;
+    uint8_t refActive = pllStatusRegs->refActive;
+
+    const char *refPinName[4] = {"A", "B", "C", "D"};
+
+    for (int i=0; i<4; i++) {
+        int curRefDown = refPowerDown & (1<<(i*2));
+        int curRefActive = (refActive / 2 == i);
+        uint8_t status = (pllStatusRegs->refStatus[i*2]);
+        printf(ANSI_CLEAR "    " "%s %s %s",
+               curRefActive ? " *" : "  ",
+               refPinName[i],
+               getPllRefDescr(i*2));
+        if (curRefDown) {
+            printf(ANSI_GRAY " disabled");
+        } else {
+            if ((status >> 3) & 1) printf(ANSI_GREEN " VALID");
+            if ((status >> 2) & 1) printf(ANSI_RED   " FAULT");
+            if ((status >> 1) & 1) printf(ANSI_PUR   " FAST");
+            if ((status >> 0) & 1) printf(ANSI_PUR   " SLOW");
+        }
+        printf(ANSI_CLEAR);
+        print_clear_eol();
+    }
+}
+
 void ad9548_verbose_status(const AD9548_Status *status)
 {
-    printf("Sysclk status %02X %s%s%s\n",
+    printf("Sysclk status %02X %s%s%s",
            status->sysclk.raw,
            status->sysclk.b.locked ? " LOCKED" : "",
            status->sysclk.b.stable ? " STABLE" : "",
            status->sysclk.b.cal_busy ? " CAL_BUSY" : ""
            );
-//    pllPrintRefStatus(status, AD9548_REFA);
-//    pllPrintRefStatus(status, REFB);
-//    printf(" --- DPLL ---\n");
-//    pllPrintDPLLStatus(status);
+    print_clear_eol();
+    ad9548_print_pll_dpll_status(status->DpllStat.raw);
+    ad9548_print_pll_ref_status(status);
 }
 
 void ad9548_brief_status(const AD9548_Status *status)
 {
+    ad9548_print_pll_dpll_status(status->DpllStat.raw);
 ////    printf("PLL AD9548:      %s %s",
 ////           ad9548_state_str(d->fsm_state),
 ////           sensor_status_ansi_str(get_pll_sensor_status(d)));
