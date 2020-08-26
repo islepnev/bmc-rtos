@@ -60,7 +60,7 @@ static void print_log_lines(int y, int count, bool repaint)
         return;
     old_log_wptr = log_wptr;
     print_goto(y, 1);
-    if (log_start <= log_wptr) {
+    if (log_start <= log_wptr && max_count != LOG_BUF_SIZE) {
         for (uint32_t i=log_start; i<log_wptr; i++)
             print_log_entry(i);
     } else {
