@@ -27,6 +27,12 @@
 #include "spi.h"
 #include "stm32_hal.h"
 
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi5;
+
 enum {SPI_BUS_COUNT = 5};
 
 // interrupt wait semaphores

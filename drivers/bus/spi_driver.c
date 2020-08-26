@@ -64,28 +64,36 @@ bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Si
 }
 
 #else
-HAL_StatusTypeDef spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     if (!hspi)
         Error_Handler();
+    int dev_index = hspi_index(hspi);
+    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive(hspi, txBuf, rxBuf, Size, millisec);
+    spi_driver_release_dev_sem(dev_index);
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
-    return ret;
+    return HAL_OK == ret;
 }
 
-HAL_StatusTypeDef spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
+bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
 {
     if (!hspi)
         Error_Handler();
+    int dev_index = hspi_index(hspi);
+    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit(hspi, txBuf, Size, millisec);
+    spi_driver_release_dev_sem(dev_index);
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d error %d, %d\n", __func__, hspi_index(hspi), ret, hspi->ErrorCode);
     }
-    return ret;
+    return HAL_OK == ret;
 }
 #endif
 
