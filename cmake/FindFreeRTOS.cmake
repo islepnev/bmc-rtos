@@ -54,11 +54,11 @@ SET(CMSIS_OS_INC_FILE cmsis_os.h)
 SET(PORT_ARM_SRC_FILE port.c)
 SET(PORTMACRO_ARM_HEADER portmacro.h)
 
-IF(NOT FREERTOS_HEAP_IMPL)
-        MESSAGE(FATAL_ERROR "FREERTOS_HEAP_IMPL not defined. Define it to include proper heap implementation file.")
-ELSE()
-        SET(HEAP_IMP_FILE heap_${FREERTOS_HEAP_IMPL}.c)
-ENDIF()
+#IF(NOT FREERTOS_HEAP_IMPL)
+#        MESSAGE(FATAL_ERROR "FREERTOS_HEAP_IMPL not defined. Define it to include proper heap implementation file.")
+#ELSE()
+#        SET(HEAP_IMP_FILE heap_${FREERTOS_HEAP_IMPL}.c)
+#ENDIF()
 
 FIND_PATH(FREERTOS_COMMON_INC_DIR ${FREERTOS_HEADERS}
         PATH_SUFFIXES include
@@ -118,11 +118,11 @@ FIND_FILE(PORT_ARM_SOURCE ${PORT_ARM_SRC_FILE}
         CMAKE_FIND_ROOT_PATH_BOTH
 )
 
-FIND_FILE(HEAP_IMP_SOURCE ${HEAP_IMP_FILE}
-        PATH_SUFFIXES MemMang
-        HINTS ${FreeRTOS_DIR}/portable
-        CMAKE_FIND_ROOT_PATH_BOTH
-)
+#FIND_FILE(HEAP_IMP_SOURCE ${HEAP_IMP_FILE}
+#        PATH_SUFFIXES MemMang
+#        HINTS ${FreeRTOS_DIR}/portable
+#        CMAKE_FIND_ROOT_PATH_BOTH
+#)
 
 SET(FreeRTOS_INCLUDE_DIRS
         ${FREERTOS_COMMON_INC_DIR}
@@ -134,7 +134,7 @@ SET(FreeRTOS_SOURCES
         ${FREERTOS_SOURCES}
         ${CMSIS_OS_SOURCE}
         ${PORT_ARM_SOURCE}
-        ${HEAP_IMP_SOURCE}
+#        ${HEAP_IMP_SOURCE}
 )
 
 INCLUDE(FindPackageHandleStandardArgs)

@@ -5,7 +5,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 set(cpu 303cc)
 
 SET(STM32_CHIP STM32F303CC)
-set(HEAP_SIZE 16384) # 1/2 of A000 (40k) total
 set(HSE_VALUE 24000000)
 
 include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
@@ -46,8 +45,6 @@ STM32_SET_HSE_VALUE(STM32HAL_${cpu} ${HSE_VALUE})
 FIND_PACKAGE(FreeRTOS REQUIRED)
 
 add_library(FreeRTOS_${cpu} OBJECT ${FreeRTOS_SOURCES})
-
-target_compile_definitions(FreeRTOS_${cpu} PRIVATE -DHEAP_SIZE=${HEAP_SIZE})
 
 target_include_directories(FreeRTOS_${cpu} PUBLIC
     ${FreeRTOS_INCLUDE_DIRS}

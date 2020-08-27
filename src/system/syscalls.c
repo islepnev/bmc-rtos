@@ -11,18 +11,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "debug_helpers.h"
 #include "error_handler.h"
-
-#define FreeRTOS
-#define MAX_STACK_SIZE 0x2000
 
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
-
-#ifndef FreeRTOS
-  register char * stack_ptr asm("sp");
-#endif
 
 /*
  environ
@@ -31,6 +23,17 @@ extern int __io_getchar(void) __attribute__((weak));
  */
 char *__env[1] = { 0 };
 char **environ = __env;
+
+/*
+#include "FreeRTOSConfig.h"
+#include "debug_helpers.h"
+
+#define MAX_STACK_SIZE 0x2000
+#define FreeRTOS
+
+#ifndef FreeRTOS
+  register char * stack_ptr asm("sp");
+#endif
 
 caddr_t _sbrk(int incr)
 {
@@ -44,9 +47,9 @@ caddr_t _sbrk(int incr)
     prev_heap_end = heap_end;
 
 #ifdef FreeRTOS
-    /* Use the NVIC offset register to locate the main stack pointer. */
+    // Use the NVIC offset register to locate the main stack pointer.
     min_stack_ptr = (char*)(*(unsigned int *)*(unsigned int *)0xE000ED08);
-    /* Locate the STACK bottom address */
+    // Locate the STACK bottom address
     min_stack_ptr -= MAX_STACK_SIZE;
 
     if (heap_end + incr > min_stack_ptr)
@@ -63,11 +66,12 @@ caddr_t _sbrk(int incr)
     heap_end += incr;
     return (caddr_t) prev_heap_end;
 }
-
+*/
 int _write(int file, char *ptr, int len);
 
 int _close(int file)
 {
+    (void) file;
     return -1;
 }
 
@@ -86,6 +90,7 @@ int _fork(void)
 
 int _fstat(int file, struct stat *st)
 {
+    (void) file;
     st->st_mode = S_IFCHR;
     return 0;
 }
@@ -111,12 +116,14 @@ int _isatty(int file)
 
 int _kill(int pid, int sig)
 {
+    (void) pid; (void) sig;
     errno = EINVAL;
     return (-1);
 }
 
 int _lseek(int file, int ptr, int dir)
 {
+    (void) file; (void) ptr; (void) dir;
     return 0;
 }
 
@@ -159,6 +166,7 @@ int _read(int file, char *ptr, int len)
 
 int _stat(const char *filepath, struct stat *st)
 {
+    (void) filepath;
     st->st_mode = S_IFCHR;
     return 0;
 }

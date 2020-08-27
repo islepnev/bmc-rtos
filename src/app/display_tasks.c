@@ -71,7 +71,7 @@ void print_tasks()
 {
     const double freq = getRunTimeCounterFrequency();
     for (int i=0; i<task_count; i++) {
-        printf("%-15s\t%s\t%u\t%u\t%u\t%4.1f\t%9.3f\n",
+        printf("%-15s\t%s\t%u\t%u\t%u\t%4.1f\t%9.3f" ANSI_CLEAR_EOL "\n",
                task_list[i].name,
                task_state_str(task_list[i].state),
                task_list[i].prio,
@@ -112,30 +112,12 @@ void print_task_list(void)
 
 static void print_osThreadList(void)
 {
-    printf("Name          State  Priority  Stack   Num       CPU        Time\n");
-    static const char *div = "-----------------------------------------------------------------\n";
+    printf("Name          State  Priority  Stack   Num       CPU        Time" ANSI_CLEAR_EOL "\n");
+    static const char *div = "-----------------------------------------------------------------" ANSI_CLEAR_EOL "\n";
     printf("%s", div);
     print_task_list();
     printf("%s", div);
-    printf("B : Blocked, R : Ready, D : Deleted, S : Suspended\n");
-}
-
-static void print_RunTimeStats(void)
-{
-    static char statsBuffer[1000];
-    char *buf = statsBuffer;
-    strcpy(buf, "Task");
-    buf += strlen(buf);
-    for(int i = strlen("Task"); i < ( configMAX_TASK_NAME_LEN - 3 ); i++) {
-        *buf = ' ';
-        buf++;
-        *buf = '\0';
-    }
-    const char *hdr = "  Abs Time      % Time\r\n****************************************" ANSI_CLEAR_EOL "\n";
-    strcpy(buf, hdr);
-    buf += strlen(hdr);
-    vTaskGetRunTimeStats(buf);
-    printf("%s", statsBuffer);
+    printf("B : Blocked, R : Ready, D : Deleted, S : Suspended" ANSI_CLEAR_EOL "\n");
 }
 
 static void print_sysinfo_brief(void)
@@ -153,6 +135,12 @@ static void print_sysinfo_brief(void)
     printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
+static void print_meminfo(void)
+{
+    printf("Heap avail: %d" ANSI_CLEAR_EOL "\n",
+           xPortGetFreeHeapSize());
+}
+
 void display_tasks_page(int y)
 {
     int taskCount = uxTaskGetNumberOfTasks();
@@ -168,8 +156,9 @@ void display_tasks_page(int y)
     print_clearbox(threadlist_y, threadlist_lines);
     print_goto(threadlist_y, 1);
     print_osThreadList();
-    print_clear_eol();
     int cur_y = threadlist_y + threadlist_lines;
+    print_clear_eol(); cur_y++;
+    print_meminfo(); cur_y++;
 
 //    print_clearbox(runstats_y, runstats_lines);
 //    print_goto(runstats_y, 1);

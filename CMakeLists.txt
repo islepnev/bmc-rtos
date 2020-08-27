@@ -27,7 +27,6 @@ SET(LWIP_DIR ${MY_EXT_DIR}/lwip)
 
 SET(STM32_MIN_HEAP_SIZE 0x2000) # Minimum heap size for error detection at link-time
 SET(STM32_MIN_STACK_SIZE 0x400) # Minimum stack size for error detection at link-time
-SET(FREERTOS_HEAP_IMPL 4)
 
 PROJECT(bmc_rtos LANGUAGES C CXX)
 ENABLE_LANGUAGE(ASM)
