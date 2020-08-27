@@ -171,6 +171,8 @@ int _stat(const char *filepath, struct stat *st)
     return 0;
 }
 
+#define TERM_ADD_CLEAR_EOL 1
+
 /*
  write
  Write a character to a file. `libc' subroutines will use this system routine for output to all files, including stdout
@@ -182,16 +184,14 @@ int _write(int file, char *ptr, int len)
     char r = '\r';
     switch (file) {
     case STDOUT_FILENO: /*stdout*/
-        for (n = 0; n < len; n++) {
-            if (*ptr == '\n') {
-                __io_putchar(r);
-            }
-            __io_putchar(*ptr++);
-        }
-        break;
     case STDERR_FILENO: /* stderr */
         for (n = 0; n < len; n++) {
             if (*ptr == '\n') {
+#ifdef TERM_ADD_CLEAR_EOL
+                __io_putchar('\x1B');
+                __io_putchar('[');
+                __io_putchar('K');
+#endif
                 __io_putchar(r);
             }
             __io_putchar(*ptr++);
