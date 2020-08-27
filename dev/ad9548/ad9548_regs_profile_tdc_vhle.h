@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,25 +14,15 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef AD9548_PRINT_H
-#define AD9548_PRINT_H
 
-#include "ad9548_setup.h"
-#include "ad9548_setup_regs.h"
-#include "ad9548_status_regs.h"
+#ifndef AD9548_REGS_PROFILE_TDC_VHLE_H
+#define AD9548_REGS_PROFILE_TDC_VHLE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "ad9548_regs_profile.h"
 
-//void pllPrintRefStatus(const Dev_ad9548 *d, PllRef_TypeDef ref_input);
-//void pllPrintDPLLChannelStatus(const Dev_ad9548 *d, PllChannel_TypeDef channel);
-void ad9548_verbose_setup(const ad9548_setup_t *setup);
-void ad9548_verbose_status(const ad9548_setup_t *setup, const AD9548_Status *status);
-void ad9548_brief_status(const ad9548_setup_t *setup, const AD9548_Status *status);
+extern const AD9548_Profile_TypeDef PLL_Prof0_TDC_VHLE;
+extern const AD9548_Profile_TypeDef PLL_Prof1_TDC_VHLE;
+extern const AD9548_Profile_TypeDef PLL_Prof2_TDC_VHLE;
+extern const AD9548_Profile_TypeDef PLL_Prof3_TDC_VHLE;
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif // AD9548_PRINT_H
+#endif // AD9548_REGS_PROFILE_TDC_VHLE_H

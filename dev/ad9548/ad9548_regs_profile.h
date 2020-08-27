@@ -39,14 +39,31 @@ typedef union {
         uint16_t validation_timer: 16; // ms, up to 65.5 sec
         uint16_t redetect_timeout: 16; // ms, up to 65.5 sec
         uint16_t filter_alpha_0_linear: 16;
-        uint16_t filter_alpha_1_exp: 6;
-        uint16_t filter_alpha_2_exp: 3;
+        uint8_t filter_alpha_1_exp: 6;
+        uint8_t filter_alpha_2_exp: 3;
         uint32_t filter_beta_0_linear: 17;
-        uint16_t filter_beta_1_exp: 5;
-        uint16_t filter_beta_unused: 1;
+        uint8_t filter_beta_1_exp: 5;
+        uint8_t filter_beta_unused: 1;
         uint32_t filter_gamma_0_linear: 17;
-        uint16_t filter_gamma_1_exp: 5;
-        uint16_t filter_gamma_unused: 2;
+        uint8_t filter_gamma_1_exp: 5;
+        uint8_t filter_gamma_unused: 2;
+        uint32_t filter_delta_0_linear: 15;
+        uint8_t filter_delta_1_exp: 5;
+        uint8_t filter_alpha_3_exp: 4;
+        uint32_t R : 30;
+        uint32_t R_unused : 2;
+        uint32_t S : 30;
+        uint8_t S_unused : 2;
+        uint16_t V : 10;
+        uint8_t V_unused : 2;
+        uint16_t U : 10;
+        uint8_t U_unused : 2;
+        uint16_t phase_lock_threshold : 16; // ps
+        uint8_t phase_lock_fill_rate : 8;
+        uint8_t phase_lock_drain_rate : 8;
+        uint32_t freq_lock_threshold : 24; // ps
+        uint8_t freq_lock_fill_rate : 8;
+        uint8_t freq_lock_drain_rate : 8;
     } b;
     uint8_t v[PLL_PROF_SIZE];
 } AD9548_Profile_TypeDef;
@@ -56,8 +73,6 @@ typedef union {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern const AD9548_Profile_TypeDef AD9548_Profile_Default;
 
 #ifdef __cplusplus
 }

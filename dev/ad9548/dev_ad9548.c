@@ -21,22 +21,31 @@
 
 #include "ad9548/ad9548.h"
 
-void ad9548_update_pll_sensor_status(Dev_ad9548 *pll)
+SensorStatus ad9548_sensor_status(const Dev_ad9548 *pll)
 {
     if (DEVICE_NORMAL != pll->dev.device_status)
-        pll->dev.sensor = SENSOR_UNKNOWN;
+        return SENSOR_UNKNOWN;
     if ((pll->priv.fsm_state != AD9548_STATE_RUN) || (!pll->priv.status.sysclk.b.locked))
-        pll->dev.sensor = SENSOR_CRITICAL;
+        return SENSOR_CRITICAL;
     if (!
         (pll->priv.status.DpllStat.b.dpll_freq_lock &&
          pll->priv.status.DpllStat.b.dpll_phase_lock))
-        pll->dev.sensor = SENSOR_WARNING;
-    pll->dev.sensor = SENSOR_NORMAL;
+        return SENSOR_WARNING;
+    return SENSOR_NORMAL;
+}
+
+void ad9548_update_pll_sensor_status(Dev_ad9548 *pll)
+{
+    pll->dev.sensor = ad9548_sensor_status(pll);
 }
 
 void ad9548_clear_status(Dev_ad9548 *d)
 {
+    // clear all but sysclk
     memset(&d->priv.status.DpllStat, 0, sizeof(d->priv.status.DpllStat));
     memset(&d->priv.status.DpllStat2, 0, sizeof(d->priv.status.DpllStat2));
-//    memset(&d->priv.status.sysclk, 0, sizeof(d->priv.status.sysclk));
+    d->priv.status.refPowerDown = 0;
+    for (int i=0; i<8; i++)
+        d->priv.status.refStatus[i].raw = 0;
+    d->priv.status.holdover_ftw = 0;
 }

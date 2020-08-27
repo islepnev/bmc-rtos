@@ -22,6 +22,7 @@
 #include "ad9548.h"
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
+#include "ad9548_regs_profile_tdc_vhle.h"
 #include "log/log.h"
 
 uint16_t pll_unlock_cntr;
@@ -99,11 +100,6 @@ bool ad9548_calibrate_sysclk(BusInterface *bus, ad9548_setup_t *reg)
     return true;
 }
 
-bool ad9548_setup(BusInterface *bus, ad9548_setup_t *reg)
-{
-    return true;
-}
-
 bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
 {
     //	ad9548_write_register(bus, 0x0000, 0x10); // Enable 4-wire SPI
@@ -155,29 +151,25 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
         ad9548_write_register(bus, AD9545_REG_REFIN_BASE+i, reg->refin.v[i]);
     }
 
-    for (unsigned int i = 0; i < PLL_PROF_SIZE; i++)
-    {
-        ad9548_write_register(bus, reg->PLL_Prof0[i].address, reg->PLL_Prof0[i].data);
-    }
-
-    for (unsigned int i = 0; i < PLL_PROF_SIZE; i++)
-    {
-        ad9548_write_register(bus, reg->PLL_Prof1[i].address, reg->PLL_Prof1[i].data);
-    }
-
-    for (unsigned int i = 0; i < PLL_PROF_SIZE; i++)
-    {
-        ad9548_write_register(bus, reg->PLL_Prof2[i].address, reg->PLL_Prof2[i].data);
-    }
-
-    for (unsigned int i = 0; i < PLL_PROF_SIZE; i++)
-    {
-        ad9548_write_register(bus, reg->PLL_Prof3[i].address, reg->PLL_Prof3[i].data);
-    }
+    for (int i=0; i < PLL_PROF_SIZE; i++)
+        ad9548_write_register(bus, AD9545_REG_PROFILE_0_BASE+i, reg->prof[0].v[i]);
+    for (int i=0; i < PLL_PROF_SIZE; i++)
+        ad9548_write_register(bus, AD9545_REG_PROFILE_1_BASE+i, reg->prof[1].v[i]);
+    for (int i=0; i < PLL_PROF_SIZE; i++)
+        ad9548_write_register(bus, AD9545_REG_PROFILE_2_BASE+i, reg->prof[2].v[i]);
+    for (int i=0; i < PLL_PROF_SIZE; i++)
+        ad9548_write_register(bus, AD9545_REG_PROFILE_3_BASE+i, reg->prof[3].v[i]);
 
     ad9548_write_register(bus, 0x0A0D, 0xFF); // Start profile selection FSM
 
     ad9548_ioupdate(bus);
+    return true;
+}
+
+bool ad9548_setup(BusInterface *bus, ad9548_setup_t *setup)
+{
+    ad9548_initial_setup(bus, setup);
+    ad9548_ProfileConfig(bus, setup);
     return true;
 }
 
@@ -217,26 +209,26 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
     case BOARD_PLL_ADC64VE:
         COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_ADC64VE);
 //        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-        COPY_ARRAY(reg->PLL_Prof0, PLL_Prof0_ADC64VE);
-        COPY_ARRAY(reg->PLL_Prof1, PLL_Prof1_ADC64VE);
-        COPY_ARRAY(reg->PLL_Prof2, PLL_Prof2_ADC64VE);
-        COPY_ARRAY(reg->PLL_Prof3, PLL_Prof3_ADC64VE);
+//        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
         break;
     case BOARD_PLL_TDC_VHLE:
         COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_TDC_VHLE);
 //        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-        COPY_ARRAY(reg->PLL_Prof0, PLL_Prof0_TDC_VHLE);
-        COPY_ARRAY(reg->PLL_Prof1, PLL_Prof1_TDC_VHLE);
-        COPY_ARRAY(reg->PLL_Prof2, PLL_Prof2_TDC_VHLE);
-        COPY_ARRAY(reg->PLL_Prof3, PLL_Prof3_TDC_VHLE);
+        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
         break;
     case BOARD_PLL_TQDC16VS:
         COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_TQDC16VS);
 //        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-        COPY_ARRAY(reg->PLL_Prof0, PLL_Prof0_TQDC16VS);
-        COPY_ARRAY(reg->PLL_Prof1, PLL_Prof1_TQDC16VS);
-        COPY_ARRAY(reg->PLL_Prof2, PLL_Prof2_TQDC16VS);
-        COPY_ARRAY(reg->PLL_Prof3, PLL_Prof3_TQDC16VS);
+//        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
+//        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
         break;
     }
 }

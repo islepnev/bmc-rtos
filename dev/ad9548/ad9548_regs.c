@@ -130,7 +130,7 @@ const AD9548_RefIn_regs PLL_RefIn_ADC64VE = {
     {0x0507, 0x01}			// Phase Build-Out Switching
 };
 */
-
+/*
 // Profile 0 - Dedicated to Ref A (for 125/2 MHz)
 const AD9548_Profile_regs PLL_Prof0_ADC64VE = {
     {0x0600, 0x1B},		// Priorities
@@ -346,7 +346,7 @@ const AD9548_Profile_regs PLL_Prof3_ADC64VE = {
     {0x06E2, 0x20},		// Frequency lock fill rate, Bits[7:0]
     {0x06E3, 0x44}		// Frequency lock drain rate, Bits[7:0]
 };
-
+*/
 
 // Clock Distribution Output Settings
 const AD9548_OutClk_regs PLL_OutClk_TDC_VHLE = {
@@ -390,6 +390,7 @@ const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE = {
 };
 */
 
+/*
 // Profile 0 Settings
 const AD9548_Profile_regs PLL_Prof0_TDC_VHLE = {
     {0x0600, 0x1B},		// Priorities
@@ -605,7 +606,7 @@ const AD9548_Profile_regs PLL_Prof3_TDC_VHLE = {
     {0x06E2, 0x20},		// Frequency lock fill rate, Bits[7:0]
     {0x06E3, 0x44}		// Frequency lock drain rate, Bits[7:0]
 };
-
+*/
 
 
 // Clock Distribution Output Settings
@@ -650,6 +651,7 @@ const AD9548_RefIn_regs PLL_RefIn_TQDC16VS = {
 };
 */
 
+/*
 // Profile 0 - Dedicated to Ref A
 const AD9548_Profile_regs PLL_Prof0_TQDC16VS = {
     {0x0600, 0x1B},		// Priorities
@@ -865,3 +867,4 @@ const AD9548_Profile_regs PLL_Prof3_TQDC16VS = {
     {0x06E2, 0x20},		// Frequency lock fill rate, Bits[7:0]
     {0x06E3, 0x44}		// Frequency lock drain rate, Bits[7:0]
 };
+*/

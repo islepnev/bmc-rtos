@@ -20,16 +20,25 @@
 #include "ad9548.h"
 #include "ad9548_status_regs.h"
 
+typedef union {
+    uint64_t value:48;
+    uint8_t ch[6];
+} reg48_t;
+
 bool ad9548_read_status(BusInterface *bus, AD9548_Status *status)
 {
     ad9548_ioupdate(bus);
     status->sysclk.raw = ad9548_read_register(bus, 0x0D01);
-    status->DpllStat.raw =   ad9548_read_register(bus, 0x0D0A);
+    status->DpllStat.raw = ad9548_read_register(bus, 0x0D0A);
+    status->DpllStat2.raw = ad9548_read_register(bus, 0x0D0B);
     status->refPowerDown = ad9548_read_register(bus, 0x0500);
-    status->refActive = ad9548_read_register(bus, 0x0D0B) & 0x7;
     for (uint16_t i=0; i<8; i++) {
-        status->refStatus[i] = (ad9548_read_register(bus, 0x0D0C + i) & 0x0F);
+        status->refStatus[i].raw = ad9548_read_register(bus, 0x0D0C + i);
     }
+    reg48_t reg48;
+    for (int i=0; i<6; i++)
+        reg48.ch[i] = ad9548_read_register(bus, 0x0D14+i);
+    status->holdover_ftw = reg48.value;
     return true;
 }
 

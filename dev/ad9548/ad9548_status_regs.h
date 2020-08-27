@@ -76,8 +76,9 @@ typedef struct AD9548_Status
     AD9548_DPLL_Status_1_REG_Type DpllStat;
     AD9548_DPLL_Status_2_REG_Type DpllStat2;
     uint8_t refPowerDown;
-    uint8_t refActive;
-    uint8_t refStatus[8];
+    //uint8_t refActive;
+    AD9548_Ref_Status_REG_Type refStatus[8];
+    uint64_t holdover_ftw;
 } AD9548_Status;
 
 #endif // AD9548_STATUS_REGS_H

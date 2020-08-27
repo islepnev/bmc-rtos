@@ -54,24 +54,24 @@ extern const AD9548_IRQ_regs Default_PLL_IRQ;
 
 extern const AD9548_OutClk_regs PLL_OutClk_ADC64VE;
 //extern const AD9548_RefIn_regs PLL_RefIn_ADC64VE ;
-extern const AD9548_Profile_regs PLL_Prof0_ADC64VE;
-extern const AD9548_Profile_regs PLL_Prof1_ADC64VE;
-extern const AD9548_Profile_regs PLL_Prof2_ADC64VE;
-extern const AD9548_Profile_regs PLL_Prof3_ADC64VE;
+//extern const AD9548_Profile_regs PLL_Prof0_ADC64VE;
+//extern const AD9548_Profile_regs PLL_Prof1_ADC64VE;
+//extern const AD9548_Profile_regs PLL_Prof2_ADC64VE;
+//extern const AD9548_Profile_regs PLL_Prof3_ADC64VE;
 
 extern const AD9548_OutClk_regs PLL_OutClk_TDC_VHLE;
 //extern const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE;
-extern const AD9548_Profile_regs PLL_Prof0_TDC_VHLE;
-extern const AD9548_Profile_regs PLL_Prof1_TDC_VHLE;
-extern const AD9548_Profile_regs PLL_Prof2_TDC_VHLE;
-extern const AD9548_Profile_regs PLL_Prof3_TDC_VHLE;
+//extern const AD9548_Profile_regs PLL_Prof0_TDC_VHLE;
+//extern const AD9548_Profile_regs PLL_Prof1_TDC_VHLE;
+//extern const AD9548_Profile_regs PLL_Prof2_TDC_VHLE;
+//extern const AD9548_Profile_regs PLL_Prof3_TDC_VHLE;
 
 extern const AD9548_OutClk_regs PLL_OutClk_TQDC16VS;
 //extern const AD9548_RefIn_regs PLL_RefIn_TQDC16VS;
-extern const AD9548_Profile_regs PLL_Prof0_TQDC16VS;
-extern const AD9548_Profile_regs PLL_Prof1_TQDC16VS;
-extern const AD9548_Profile_regs PLL_Prof2_TQDC16VS;
-extern const AD9548_Profile_regs PLL_Prof3_TQDC16VS;
+//extern const AD9548_Profile_regs PLL_Prof0_TQDC16VS;
+//extern const AD9548_Profile_regs PLL_Prof1_TQDC16VS;
+//extern const AD9548_Profile_regs PLL_Prof2_TQDC16VS;
+//extern const AD9548_Profile_regs PLL_Prof3_TQDC16VS;
 
 typedef struct ad9548_setup_t {
     AD9548_Sysclk_TypeDef sysclk;//PLL_SysClk;
@@ -80,10 +80,7 @@ typedef struct ad9548_setup_t {
     AD9548_Dpll_TypeDef dpll;
     AD9548_OutClk_regs PLL_OutClk;
     AD9548_RefIn_TypeDef refin;// PLL_RefIn;
-    AD9548_Profile_regs PLL_Prof0;
-    AD9548_Profile_regs PLL_Prof1;
-    AD9548_Profile_regs PLL_Prof2;
-    AD9548_Profile_regs PLL_Prof3;
+    AD9548_Profile_TypeDef prof[8];
 } ad9548_setup_t;
 
 #endif // AD9548_SETUP_REGS_H

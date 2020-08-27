@@ -44,6 +44,7 @@ typedef struct Dev_ad9548 {
     Dev_ad9548_priv priv;
 } Dev_ad9548;
 
+SensorStatus ad9548_sensor_status(const Dev_ad9548 *pll);
 void ad9548_update_pll_sensor_status(Dev_ad9548 *pll);
 void ad9548_clear_status(Dev_ad9548 *d);
 

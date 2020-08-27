@@ -48,10 +48,10 @@ void dev_ad9548_verbose_status(void)
         return;
     const Dev_ad9548_priv *priv = (const Dev_ad9548_priv *)device_priv_const(d);
     printf(" --- AD9548 Setup ---\n");
-//    ad9548_verbose_setup(&priv->setup);
+    ad9548_verbose_setup(&priv->setup);
     printf(" --- AD9548 Status ---\n");
 //    printf("AD9548 device FSM state: %s\n", dev_ad9548_state_str(priv->fsm_state));
-    ad9548_verbose_status(&priv->status);
+    ad9548_verbose_status(&priv->setup, &priv->status);
     printf("\n");
 }
 
@@ -65,5 +65,5 @@ void dev_ad9548_print_box(void)
            dev_ad9548_state_str(priv->fsm_state),
            sensor_status_ansi_str(d->sensor));
     print_clear_eol();
-    ad9548_brief_status(&priv->status);
+    ad9548_brief_status(&priv->setup, &priv->status);
 }
