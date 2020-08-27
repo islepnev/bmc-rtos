@@ -20,11 +20,6 @@
 
 #include <stdint.h>
 
-#include "ad9548_regs_sysclk.h"
-#include "ad9548_regs_refin.h"
-#include "ad9548_regs_dpll.h"
-#include "ad9548_regs_profile.h"
-
 typedef struct PLL_Reg
 {
     uint16_t address;
@@ -43,7 +38,7 @@ enum {
 
     AD9545_REG_DPLL_BASE = 0x0300,
 
-    AD9545_REG_DISTRIB_OUT_BASE = 0x0400,
+    AD9545_REG_OUTPUT_BASE = 0x0400,
 
     AD9545_REG_REFIN_BASE = 0x0500,
 

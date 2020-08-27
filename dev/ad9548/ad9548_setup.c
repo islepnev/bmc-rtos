@@ -22,7 +22,7 @@
 #include "ad9548.h"
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
-#include "ad9548_regs_profile_tdc_vhle.h"
+#include "board_config_ad9548.h"
 #include "log/log.h"
 
 uint16_t pll_unlock_cntr;
@@ -119,12 +119,12 @@ bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
     }
     for (unsigned int i = 0; i < PLL_MFPINS_SIZE; i++)
     {
-        ad9548_write_register(bus, reg->PLL_MFPins[i].address, reg->PLL_MFPins[i].data);
+        ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]);
     }
 
-    for (unsigned int i = 0; i < PLL_IRQ_SIZE; i++)
+    for (unsigned int i = 0; i < PLL_IRQMASK_SIZE; i++)
     {
-        ad9548_write_register(bus, reg->PLL_IRQ[i].address, reg->PLL_IRQ[i].data);
+        ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+8+i, reg->irqmask.v[i]);
     }
 
     for (unsigned int i = 0; i < PLL_DPLL_SIZE; i++)
@@ -143,7 +143,7 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
 {
     for (unsigned int i = 0; i < PLL_OUTCLK_SIZE; i++)
     {
-        ad9548_write_register(bus, reg->PLL_OutClk[i].address, reg->PLL_OutClk[i].data);
+        ad9548_write_register(bus, AD9545_REG_OUTPUT_BASE, reg->output.v[i]);
     }
 
     for (unsigned int i = 0; i < PLL_REFIN_SIZE; i++)
@@ -188,52 +188,51 @@ void ad9548_Phase_Reset(BusInterface *bus)
     ad9548_write_register(bus, 0x0A0C, 0b00000100);
 }
 
-
-#define COPY_ARRAY(dest, src) \
-    do {\
-        memcpy(dest, src, sizeof(dest)); \
-    } while (0);
-
 void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 {
     memcpy(reg->sysclk.v, AD9548_Sysclk_Default.v, PLL_SYSCLK_SIZE);
-    memcpy(reg->PLL_MFPins, Default_PLL_MFPins, sizeof(Default_PLL_MFPins));
-    memcpy(reg->PLL_IRQ, Default_PLL_IRQ, sizeof(Default_PLL_IRQ));
+    memcpy(reg->mfpins.v, AD9548_MFPins_Default.v, PLL_MFPINS_SIZE);
+    memcpy(reg->irqmask.v, AD9548_IRQMask_Default.v, PLL_IRQMASK_SIZE);
     memcpy(reg->dpll.v, AD9548_Dpll_Default.v, PLL_DPLL_SIZE);
     memcpy(reg->refin.v, AD9548_RefIn_Default.v, PLL_REFIN_SIZE);
+    for (int i=0; i<4; i++)
+        PLL_Prof_default(&reg->prof[i]);
 
     switch (variant)
     {
     case BOARD_PLL_DEFAULT:
         // __attribute__ ((fallthrough));
     case BOARD_PLL_ADC64VE:
-        COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_ADC64VE);
-//        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-//        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->output.v, PLL_Output_ADC64VE.v, PLL_OUTCLK_SIZE);
+        memcpy(reg->prof[0].v, PLL_Prof0_ADC64VE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[1].v, PLL_Prof1_ADC64VE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[2].v, PLL_Prof2_ADC64VE.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[3].v, PLL_Prof3_ADC64VE.v, PLL_PROF_SIZE);
         break;
     case BOARD_PLL_TDC_VHLE:
-        COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_TDC_VHLE);
-//        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->output.v, PLL_Output_TDC_VHLE.v, PLL_OUTCLK_SIZE);
+        PLL_Prof0_TDC_VHLE(&reg->prof[0]);
+        PLL_Prof1_TDC_VHLE(&reg->prof[1]);
+        PLL_Prof2_TDC_VHLE(&reg->prof[2]);
+        PLL_Prof3_TDC_VHLE(&reg->prof[3]);
         break;
     case BOARD_PLL_TQDC16VS:
-        COPY_ARRAY(reg->PLL_OutClk, PLL_OutClk_TQDC16VS);
-//        COPY_ARRAY(reg->PLL_RefIn, &AD9548_RefIn_Default);
-//        memcpy(reg->prof[0].v, PLL_Prof0_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[1].v, PLL_Prof1_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[2].v, PLL_Prof2_TDC_VHLE.v, PLL_PROF_SIZE);
-//        memcpy(reg->prof[3].v, PLL_Prof3_TDC_VHLE.v, PLL_PROF_SIZE);
+        memcpy(reg->output.v, PLL_Output_TQDC16VS.v, PLL_OUTCLK_SIZE);
+        memcpy(reg->prof[0].v, PLL_Prof0_TQDC16VS.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[1].v, PLL_Prof1_TQDC16VS.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[2].v, PLL_Prof2_TQDC16VS.v, PLL_PROF_SIZE);
+        memcpy(reg->prof[3].v, PLL_Prof3_TQDC16VS.v, PLL_PROF_SIZE);
         break;
     }
 }
 
 void init_ad9548_setup(ad9548_setup_t *setup)
 {
-    ad9548_setProfile(setup, BOARD_PLL_TDC_VHLE); // FIXME
+#if defined (BOARD_ADC64VE)
+    ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
+#elif defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
+    ad9548_setProfile(setup, BOARD_PLL_TDC_VHLE);
+#elif defined (BOARD_TQDC16VS)
+    ad9548_setProfile(setup, BOARD_PLL_TQDC16VS);
+#endif
 }

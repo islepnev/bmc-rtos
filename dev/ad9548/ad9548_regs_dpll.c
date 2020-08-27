@@ -26,5 +26,5 @@ const AD9548_Dpll_TypeDef AD9548_Dpll_Default = {
     .b.fixed_phase_lock_offset = 0, // ps
     .b.inc_phase_lock_offset_step_size = 0x3E8, // ps
     .b.phase_slew_limit = 0, // ns/sec
-    .b.hist_acc_timer = 0x7530 // ms
+    .b.hist_acc_timer = 500 // 0x7530 // ms
 };

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,17 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BOARD_CONFIG_AD9548_H
-#define BOARD_CONFIG_AD9548_H
+#include "ad9548_regs_mfpins.h"
 
-#include "bsp.h"
-
-#include "ad9548_regs_adc64ve.h"
-#include "ad9548_regs_tdc_vhle.h"
-#include "ad9548_regs_tqdc16vs.h"
-
-#if defined (BOARD_TDC72VHLV3)
-#elif defined (BOARD_TDC72VHLV2)
-#else
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern const char *ad9548_ref_label(int refIndex);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // BOARD_CONFIG_AD9548_H
+const AD9548_MFPins_TypeDef AD9548_MFPins_Default = {
+    .m_pin = {
+        { .func = 64, .output = 1 },
+        { .func = 66, .output = 1 },
+        { .func = 68, .output = 1 },
+        { .func = 70, .output = 1 },
+        { .func =  7, .output = 1 },
+        { .func = 11, .output = 1 },
+        { .func = 21, .output = 1 },
+        { .func = 22, .output = 1 }
+    },
+};

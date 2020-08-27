@@ -19,10 +19,13 @@
 #define AD9548_SETUP_REGS_H
 
 #include "ad9548_regs.h"
-
-enum { PLL_MFPINS_SIZE	= 8};
-enum { PLL_IRQ_SIZE	    = 9};
-enum { PLL_OUTCLK_SIZE	= 24};
+#include "ad9548_regs_sysclk.h"
+#include "ad9548_regs_refin.h"
+#include "ad9548_regs_dpll.h"
+#include "ad9548_regs_profile.h"
+#include "ad9548_regs_output.h"
+#include "ad9548_regs_mfpins.h"
+#include "ad9548_regs_irqmask.h"
 
 typedef enum {
     AD9548_REFA = 0,
@@ -37,50 +40,14 @@ typedef enum {
 
 enum {AD9548_DPLL_PROFILE_COUNT = 8};
 
-
-//typedef PLL_Reg AD9548_SysClk_regs[PLL_SYSCLK_SIZE];
-typedef PLL_Reg AD9548_MFPins_regs[PLL_MFPINS_SIZE];
-typedef PLL_Reg AD9548_IRQ_regs[PLL_IRQ_SIZE];
-//typedef PLL_Reg AD9548_DPLL_regs[PLL_DPLL_SIZE];
-typedef PLL_Reg AD9548_OutClk_regs[PLL_OUTCLK_SIZE];
-//typedef PLL_Reg AD9548_RefIn_regs[PLL_REFIN_SIZE];
-typedef PLL_Reg AD9548_Profile_regs[PLL_PROF_SIZE];
-
-//extern const AD9548_SysClk_regs Default_PLL_SysClk;
-
-extern const AD9548_MFPins_regs Default_PLL_MFPins;
-extern const AD9548_IRQ_regs Default_PLL_IRQ;
-//extern const AD9548_DPLL_regs Default_PLL_DPLL;
-
-extern const AD9548_OutClk_regs PLL_OutClk_ADC64VE;
-//extern const AD9548_RefIn_regs PLL_RefIn_ADC64VE ;
-//extern const AD9548_Profile_regs PLL_Prof0_ADC64VE;
-//extern const AD9548_Profile_regs PLL_Prof1_ADC64VE;
-//extern const AD9548_Profile_regs PLL_Prof2_ADC64VE;
-//extern const AD9548_Profile_regs PLL_Prof3_ADC64VE;
-
-extern const AD9548_OutClk_regs PLL_OutClk_TDC_VHLE;
-//extern const AD9548_RefIn_regs PLL_RefIn_TDC_VHLE;
-//extern const AD9548_Profile_regs PLL_Prof0_TDC_VHLE;
-//extern const AD9548_Profile_regs PLL_Prof1_TDC_VHLE;
-//extern const AD9548_Profile_regs PLL_Prof2_TDC_VHLE;
-//extern const AD9548_Profile_regs PLL_Prof3_TDC_VHLE;
-
-extern const AD9548_OutClk_regs PLL_OutClk_TQDC16VS;
-//extern const AD9548_RefIn_regs PLL_RefIn_TQDC16VS;
-//extern const AD9548_Profile_regs PLL_Prof0_TQDC16VS;
-//extern const AD9548_Profile_regs PLL_Prof1_TQDC16VS;
-//extern const AD9548_Profile_regs PLL_Prof2_TQDC16VS;
-//extern const AD9548_Profile_regs PLL_Prof3_TQDC16VS;
-
 typedef struct ad9548_setup_t {
-    AD9548_Sysclk_TypeDef sysclk;//PLL_SysClk;
-    AD9548_MFPins_regs PLL_MFPins;
-    AD9548_IRQ_regs PLL_IRQ;
+    AD9548_Sysclk_TypeDef sysclk;
+    AD9548_MFPins_TypeDef mfpins;
+    AD9548_IRQMask_TypeDef irqmask;
     AD9548_Dpll_TypeDef dpll;
-    AD9548_OutClk_regs PLL_OutClk;
-    AD9548_RefIn_TypeDef refin;// PLL_RefIn;
-    AD9548_Profile_TypeDef prof[8];
+    AD9548_Output_TypeDef output;
+    AD9548_RefIn_TypeDef refin;
+    AD9548_Profile_TypeDef prof[AD9548_DPLL_PROFILE_COUNT];
 } ad9548_setup_t;
 
 #endif // AD9548_SETUP_REGS_H

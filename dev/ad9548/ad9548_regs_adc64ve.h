@@ -15,14 +15,24 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_REGS_PROFILE_TDC_VHLE_H
-#define AD9548_REGS_PROFILE_TDC_VHLE_H
+#ifndef AD9548_REGS_ADC64VE_H
+#define AD9548_REGS_ADC64VE_H
 
+#include "ad9548_regs_output.h"
 #include "ad9548_regs_profile.h"
 
-extern const AD9548_Profile_TypeDef PLL_Prof0_TDC_VHLE;
-extern const AD9548_Profile_TypeDef PLL_Prof1_TDC_VHLE;
-extern const AD9548_Profile_TypeDef PLL_Prof2_TDC_VHLE;
-extern const AD9548_Profile_TypeDef PLL_Prof3_TDC_VHLE;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // AD9548_REGS_PROFILE_TDC_VHLE_H
+extern const AD9548_Output_TypeDef PLL_Output_ADC64VE;
+extern const AD9548_Profile_TypeDef PLL_Prof0_ADC64VE;
+extern const AD9548_Profile_TypeDef PLL_Prof1_ADC64VE;
+extern const AD9548_Profile_TypeDef PLL_Prof2_ADC64VE;
+extern const AD9548_Profile_TypeDef PLL_Prof3_ADC64VE;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // AD9548_REGS_ADC64VE_H

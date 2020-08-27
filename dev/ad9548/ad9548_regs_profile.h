@@ -74,6 +74,8 @@ typedef union {
 extern "C" {
 #endif
 
+extern const AD9548_Profile_TypeDef *PLL_Prof_default(AD9548_Profile_TypeDef *p);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,4 +15,38 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ad9548_setup_regs.h"
+#include "board_config_ad9548.h"
+
+#include "bsp.h"
+
+#if defined(BOARD_TDC72VHLV3)
+const char *ad9548_ref_label(int refIndex)
+{
+    switch (refIndex) {
+    case 0:
+    case 1:
+        return "VCXO   125  MHz";
+    case 2:
+    case 3:
+        return "TTC    41.7 MHz";
+    case 4:
+    case 5:
+        return "VXS    41.7 MHz";
+    case 6:
+    case 7:
+        return "VCXO/3 41.7 MHz";
+    default:
+        return "?";
+    }
+}
+#elif defined BOARD_ADC64VE
+const char *ad9548_ref_label(int refIndex)
+{
+    return "?";
+}
+#else
+const char *ad9548_ref_label(int refIndex)
+{
+    return "?";
+}
+#endif

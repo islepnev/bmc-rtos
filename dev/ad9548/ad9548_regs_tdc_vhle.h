@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,24 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BOARD_CONFIG_AD9548_H
-#define BOARD_CONFIG_AD9548_H
+#ifndef AD9548_REGS_TDC_VHLE_H
+#define AD9548_REGS_TDC_VHLE_H
 
-#include "bsp.h"
-
-#include "ad9548_regs_adc64ve.h"
-#include "ad9548_regs_tdc_vhle.h"
-#include "ad9548_regs_tqdc16vs.h"
-
-#if defined (BOARD_TDC72VHLV3)
-#elif defined (BOARD_TDC72VHLV2)
-#else
-#endif
+#include "ad9548_regs_output.h"
+#include "ad9548_regs_profile.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const char *ad9548_ref_label(int refIndex);
+extern const AD9548_Output_TypeDef PLL_Output_TDC_VHLE;
+extern const AD9548_Profile_TypeDef *PLL_Prof0_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern const AD9548_Profile_TypeDef *PLL_Prof2_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern const AD9548_Profile_TypeDef *PLL_Prof3_TDC_VHLE(AD9548_Profile_TypeDef *p);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BOARD_CONFIG_AD9548_H
+#endif // AD9548_REGS_TDC_VHLE_H

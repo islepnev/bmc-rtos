@@ -18,8 +18,8 @@
 #ifndef DEV_AD9548_PRINT_H
 #define DEV_AD9548_PRINT_H
 
-enum { AD9548_DISPLAY_PLL_H = 5 };
-enum { AD9548_DISPLAY_PLL_DETAIL_H = 31 };
+enum { AD9548_DISPLAY_PLL_H = 7 };
+enum { AD9548_DISPLAY_PLL_DETAIL_H = 34 };
 
 #ifdef __cplusplus
 extern "C" {

@@ -15,9 +15,34 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef AD9548_REGS_PROFILE_TQDC16VS_H
-#define AD9548_REGS_PROFILE_TQDC16VS_H
+#ifndef AD9548_REGS_MFPINS_H
+#define AD9548_REGS_MFPINS_H
 
-#include "ad9548_regs_profile.h"
+#include <stdint.h>
 
-#endif // AD9548_REGS_PROFILE_TQDC16VS_H
+enum { PLL_MFPINS_SIZE = 8 };
+
+#pragma pack(push, 1)
+typedef struct {
+    uint8_t func:7;
+    uint8_t output:1;
+} AD9548_MFunction_TypeDef;
+
+typedef union {
+    AD9548_MFunction_TypeDef m_pin[8];
+    uint8_t v[PLL_MFPINS_SIZE];
+} AD9548_MFPins_TypeDef;
+
+#pragma pack(pop)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const AD9548_MFPins_TypeDef AD9548_MFPins_Default;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // AD9548_REGS_MFPINS_H

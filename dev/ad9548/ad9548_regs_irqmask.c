@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BOARD_CONFIG_AD9548_H
-#define BOARD_CONFIG_AD9548_H
+#include "ad9548_regs_irqmask.h"
 
-#include "bsp.h"
-
-#include "ad9548_regs_adc64ve.h"
-#include "ad9548_regs_tdc_vhle.h"
-#include "ad9548_regs_tqdc16vs.h"
-
-#if defined (BOARD_TDC72VHLV3)
-#elif defined (BOARD_TDC72VHLV2)
-#else
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern const char *ad9548_ref_label(int refIndex);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // BOARD_CONFIG_AD9548_H
+const AD9548_IRQMask_TypeDef AD9548_IRQMask_Default = {
+    .v = {
+        0x00,	// IRQ Pin Output Mode
+        0x33,	// IRQ Mask for SYSCLK
+        0x0F,	// IRQ Mask for Distribution Sync, Watchdog Timer, and EEPROM
+        0xFF,	// IRQ Mask for the Digital PLL
+        0x1F,	// IRQ Mask for History Update, Frequency Limit, and Phase Slew Limit
+        0xFF,	// IRQ Mask for Reference Inputs (AA/A)
+        0xFF,	// IRQ Mask for Reference Inputs (BB/B)
+        0xFF,	// IRQ Mask for Reference Inputs (CC/C)
+        0xFF	// IRQ Mask for Reference Inputs (DD/D)
+    }
+};

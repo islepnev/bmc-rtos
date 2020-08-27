@@ -24,9 +24,9 @@ const AD9548_RefIn_TypeDef AD9548_RefIn_Default = {
     .b.manual_select.b.b = 1,
     .b.manual_select.b.c = 2,
     .b.manual_select.b.d = 3,
-    .b.manual_select.b.en_a = 0,
+    .b.manual_select.b.en_a = 1,
     .b.manual_select.b.en_b = 0,
     .b.manual_select.b.en_c = 0,
-    .b.manual_select.b.en_d = 0,
+    .b.manual_select.b.en_d = 1,
     .b.phase_buildout_switching.b.priority = 1
 };

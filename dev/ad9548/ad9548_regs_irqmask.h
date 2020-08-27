@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,28 +15,29 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef BOARD_CONFIG_AD9548_H
-#define BOARD_CONFIG_AD9548_H
+#ifndef AD9548_REGS_IRQMASK_H
+#define AD9548_REGS_IRQMASK_H
 
-#include "bsp.h"
+#include <stdint.h>
 
-#include "ad9548_regs_adc64ve.h"
-#include "ad9548_regs_tdc_vhle.h"
-#include "ad9548_regs_tqdc16vs.h"
+enum { PLL_IRQMASK_SIZE = 9 };
 
-#if defined (BOARD_TDC72VHLV3)
-#elif defined (BOARD_TDC72VHLV2)
-#else
-#endif
+#pragma pack(push, 1)
+
+typedef union {
+    uint8_t v[PLL_IRQMASK_SIZE];
+} AD9548_IRQMask_TypeDef;
+
+#pragma pack(pop)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const char *ad9548_ref_label(int refIndex);
+extern const AD9548_IRQMask_TypeDef AD9548_IRQMask_Default;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BOARD_CONFIG_AD9548_H
+#endif // AD9548_REGS_IRQMASK_H
