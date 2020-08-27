@@ -183,5 +183,8 @@ void print_footer_line(void)
 
 void dev_eeprom_config_print(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM);
+    if (!d || !d->priv)
+        return;
     display_device_sensor_ansi_str("EEPROM[config]", DEV_CLASS_EEPROM);
 }

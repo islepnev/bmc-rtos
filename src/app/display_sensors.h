@@ -18,7 +18,11 @@
 #ifndef DISPLAY_SENSORS_H
 #define DISPLAY_SENSORS_H
 
+#if defined(ENABLE_SENSORS)
 enum {DISPLAY_SENSORS_HEIGHT = 16+2} ;
+#else
+enum {DISPLAY_SENSORS_HEIGHT = 0} ;
+#endif
 
 void print_sensors(int y);
 

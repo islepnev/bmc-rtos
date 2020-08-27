@@ -26,7 +26,11 @@
 extern "C" {
 #endif
 
+#if defined(ENABLE_POWERMON)
 enum { DISPLAY_POWERMON_H = 3 };
+#else
+enum { DISPLAY_POWERMON_H = 0 };
+#endif
 
 struct pm_sensor;
 void pm_sensor_print_header(void);
