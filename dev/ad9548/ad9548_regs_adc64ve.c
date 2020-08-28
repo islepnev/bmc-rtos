@@ -56,109 +56,51 @@ const AD9548_Output_TypeDef PLL_Output_ADC64VE = {
     .b.q_3 = 0
 };
 
-const AD9548_Profile_TypeDef PLL_Prof0_ADC64VE = {
-    .b.selection_priority=3,
-    .b.promoted_priority=3,
-    .b.ref_period=16000000,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=1000,
-    .b.filter_alpha_0_linear=39705,
-    .b.filter_alpha_1_exp=5,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=29,
-    .b.S=59,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof0_ADC64VE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 3;
+    p->b.promoted_priority = 3;
+    p->b.ref_period = 16000000;
+    p->b.R = 29;
+    p->b.S = 59;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof1_ADC64VE = {
-    .b.selection_priority=0,
-    .b.promoted_priority=0,
-    .b.ref_period=24000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=200,
-    .b.outer_tolerance=10,
-    .b.filter_alpha_0_linear=39705,
-    .b.filter_alpha_1_exp=5,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=19,
-    .b.S=59,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof1_ADC64VE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.ref_period = 24000000;
+    p->b.inner_tolerance = 200;
+    p->b.outer_tolerance = 10;
+    p->b.R = 19;
+    p->b.S = 59;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof2_ADC64VE = {
-    .b.selection_priority=0,
-    .b.promoted_priority=0,
-    .b.ref_period=48000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=200,
-    .b.filter_alpha_0_linear=39705,
-    .b.filter_alpha_1_exp=5,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=9,
-    .b.S=59,
-    .b.phase_lock_threshold=10000,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=500,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof2_ADC64VE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.ref_period = 48000000;
+    p->b.outer_tolerance = 200;
+    p->b.R = 9;
+    p->b.S = 59;
+    p->b.phase_lock_threshold = 10000;
+    p->b.freq_lock_threshold = 500;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof3_ADC64VE = {
-    .b.selection_priority=1,
-    .b.promoted_priority=1,
-    .b.ref_period=16000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=1000,
-    .b.filter_alpha_0_linear=39705,
-    .b.filter_alpha_1_exp=5,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=29,
-    .b.S=59,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof3_ADC64VE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 1;
+    p->b.promoted_priority = 1;
+    p->b.ref_period = 16000000;
+    p->b.R = 29;
+    p->b.S = 59;
+    return p;
+}

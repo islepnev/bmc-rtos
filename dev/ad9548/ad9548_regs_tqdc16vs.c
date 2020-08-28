@@ -56,110 +56,53 @@ const AD9548_Output_TypeDef PLL_Output_TQDC16VS = {
     .b.q_3 = 0
 };
 
-const AD9548_Profile_TypeDef PLL_Prof0_TQDC16VS = {
-    .b.selection_priority=3,
-    .b.promoted_priority=3,
-    .b.ref_period=8000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=200,
-    .b.filter_alpha_0_linear=52940,
-    .b.filter_alpha_1_exp=7,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=19,
-    .b.S=19,
-    .b.phase_lock_threshold=10000,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=500,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof0_TQDC16VS(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 3;
+    p->b.promoted_priority = 3;
+    p->b.ref_period = 8000000;
+    p->b.outer_tolerance = 200;
+    PLL_Prof_filter_3(p);
+    p->b.R = 19;
+    p->b.S = 19;
+    p->b.phase_lock_threshold = 10000;
+    p->b.freq_lock_threshold = 500;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof1_TQDC16VS = {
-    .b.selection_priority=0,
-    .b.promoted_priority=0,
-    .b.ref_period=24000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=1000,
-    .b.filter_alpha_0_linear=62039,
-    .b.filter_alpha_1_exp=0,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=999,
-    .b.S=2999,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof1_TQDC16VS(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.ref_period = 24000000;
+    PLL_Prof_filter_4(p);
+    p->b.R = 999;
+    p->b.S = 2999;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof2_TQDC16VS = {
-    .b.selection_priority=0,
-    .b.promoted_priority=0,
-    .b.ref_period=25000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=1000,
-    .b.filter_alpha_0_linear=33087,
-    .b.filter_alpha_1_exp=5,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=15,
-    .b.S=49,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof2_TQDC16VS(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.ref_period = 25000000;
+    PLL_Prof_filter_5(p);
+    p->b.R = 15;
+    p->b.S = 49;
+    return p;
+}
 
-const AD9548_Profile_TypeDef PLL_Prof3_TQDC16VS = {
-    .b.selection_priority=1,
-    .b.promoted_priority=1,
-    .b.ref_period=24000000,
-    .b.ref_period_padding=0,
-    .b.inner_tolerance=1000,
-    .b.outer_tolerance=1000,
-    .b.filter_alpha_0_linear=39705,
-    .b.filter_alpha_1_exp=6,
-    .b.filter_alpha_2_exp=0,
-    .b.filter_beta_0_linear=81944,
-    .b.filter_beta_1_exp=13,
-    .b.filter_gamma_0_linear=86346,
-    .b.filter_gamma_1_exp=13,
-    .b.filter_delta_0_linear=28989,
-    .b.filter_delta_1_exp=12,
-    .b.filter_alpha_3_exp=0,
-    .b.R=9,
-    .b.S=29,
-    .b.phase_lock_threshold=100,
-    .b.phase_lock_fill_rate=32,
-    .b.phase_lock_drain_rate=68,
-    .b.freq_lock_threshold=100,
-    .b.freq_lock_fill_rate=32,
-    .b.freq_lock_drain_rate=68
-};
+const AD9548_Profile_TypeDef *PLL_Prof3_TQDC16VS(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 1;
+    p->b.promoted_priority = 1;
+    p->b.ref_period = 24000000;
+    PLL_Prof_filter_2(p);
+    p->b.R = 9;
+    p->b.S = 29;
+    return p;
+}

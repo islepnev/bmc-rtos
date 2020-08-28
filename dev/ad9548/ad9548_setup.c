@@ -204,10 +204,10 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         // __attribute__ ((fallthrough));
     case BOARD_PLL_ADC64VE:
         memcpy(reg->output.v, PLL_Output_ADC64VE.v, PLL_OUTCLK_SIZE);
-        memcpy(reg->prof[0].v, PLL_Prof0_ADC64VE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[1].v, PLL_Prof1_ADC64VE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[2].v, PLL_Prof2_ADC64VE.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[3].v, PLL_Prof3_ADC64VE.v, PLL_PROF_SIZE);
+        PLL_Prof0_ADC64VE(&reg->prof[0]);
+        PLL_Prof1_ADC64VE(&reg->prof[1]);
+        PLL_Prof2_ADC64VE(&reg->prof[2]);
+        PLL_Prof3_ADC64VE(&reg->prof[3]);
         break;
     case BOARD_PLL_TDC_VHLE:
         memcpy(reg->output.v, PLL_Output_TDC_VHLE.v, PLL_OUTCLK_SIZE);
@@ -218,10 +218,10 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         break;
     case BOARD_PLL_TQDC16VS:
         memcpy(reg->output.v, PLL_Output_TQDC16VS.v, PLL_OUTCLK_SIZE);
-        memcpy(reg->prof[0].v, PLL_Prof0_TQDC16VS.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[1].v, PLL_Prof1_TQDC16VS.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[2].v, PLL_Prof2_TQDC16VS.v, PLL_PROF_SIZE);
-        memcpy(reg->prof[3].v, PLL_Prof3_TQDC16VS.v, PLL_PROF_SIZE);
+        PLL_Prof0_TQDC16VS(&reg->prof[0]);
+        PLL_Prof1_TQDC16VS(&reg->prof[1]);
+        PLL_Prof2_TQDC16VS(&reg->prof[2]);
+        PLL_Prof3_TQDC16VS(&reg->prof[3]);
         break;
     }
 }

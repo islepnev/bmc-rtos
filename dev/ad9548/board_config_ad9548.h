@@ -33,6 +33,8 @@
 extern "C" {
 #endif
 
+extern const uint64_t ad9548_dds_period_fs;
+
 extern const char *ad9548_ref_label(int refIndex);
 
 #ifdef __cplusplus

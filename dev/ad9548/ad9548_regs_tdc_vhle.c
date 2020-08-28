@@ -60,118 +60,55 @@ const AD9548_Output_TypeDef PLL_Output_TDC_VHLE = {
 const AD9548_Profile_TypeDef *PLL_Prof0_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
-    p->b.selection_priority=3;
-    p->b.promoted_priority=3;
-    p->b.ref_period=8000000;
-    p->b.inner_tolerance=1000;
-    p->b.outer_tolerance=200;
-    p->b.filter_alpha_0_linear=52940;
-    p->b.filter_alpha_1_exp=7;
-    p->b.filter_alpha_2_exp=0;
-    p->b.filter_beta_0_linear=81944;
-    p->b.filter_beta_1_exp=13;
-    p->b.filter_gamma_0_linear=86346;
-    p->b.filter_gamma_1_exp=13;
-    p->b.filter_delta_0_linear=28989;
-    p->b.filter_delta_1_exp=12;
-    p->b.filter_alpha_3_exp=0;
-    p->b.R=19;
-    p->b.S=19;
-    p->b.phase_lock_threshold=10000;
-    p->b.phase_lock_fill_rate=32;
-    p->b.phase_lock_drain_rate=68;
-    p->b.freq_lock_threshold=500;
-    p->b.freq_lock_fill_rate=32;
-    p->b.freq_lock_drain_rate=68;
+    p->b.selection_priority = 3;
+    p->b.promoted_priority = 3;
+    p->b.ref_period = 8000000;
+    p->b.R = 19;
+    p->b.S = 19;
+    p->b.phase_lock_threshold = 10000;
+    p->b.freq_lock_threshold = 500;
+    ad9548_profile_find_r_s(p, 125.0);
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_3(p);
     return p;
-};
+}
 
 // 41.7 MHz
 const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
-    p->b.selection_priority=0;
-    p->b.promoted_priority=0;
-    p->b.ref_period=24000000;
-    p->b.ref_period_padding=0;
-    p->b.inner_tolerance=1000;
-    p->b.outer_tolerance=1000;
-    p->b.filter_alpha_0_linear=62039;
-    p->b.filter_alpha_1_exp=0;
-    p->b.filter_alpha_2_exp=0;
-    p->b.filter_beta_0_linear=81944;
-    p->b.filter_beta_1_exp=13;
-    p->b.filter_gamma_0_linear=86346;
-    p->b.filter_gamma_1_exp=13;
-    p->b.filter_delta_0_linear=28989;
-    p->b.filter_delta_1_exp=12;
-    p->b.filter_alpha_3_exp=0;
-    p->b.R=999;
-    p->b.S=2999;
-    p->b.phase_lock_threshold=100;
-    p->b.phase_lock_fill_rate=32;
-    p->b.phase_lock_drain_rate=68;
-    p->b.freq_lock_threshold=100;
-    p->b.freq_lock_fill_rate=32;
-    p->b.freq_lock_drain_rate=68;
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.R = 999;
+    p->b.S = 2999;
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_4(p);
     return p;
 };
 
 // 40 MHz
 const AD9548_Profile_TypeDef *PLL_Prof2_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
-    p->b.selection_priority=0;
-    p->b.promoted_priority=0;
-    p->b.ref_period=25000000;
-    p->b.ref_period_padding=0;
-    p->b.inner_tolerance=1000;
-    p->b.outer_tolerance=1000;
-    p->b.filter_alpha_0_linear=33087;
-    p->b.filter_alpha_1_exp=5;
-    p->b.filter_alpha_2_exp=0;
-    p->b.filter_beta_0_linear=81944;
-    p->b.filter_beta_1_exp=13;
-    p->b.filter_gamma_0_linear=86346;
-    p->b.filter_gamma_1_exp=13;
-    p->b.filter_delta_0_linear=28989;
-    p->b.filter_delta_1_exp=12;
-    p->b.filter_alpha_3_exp=0;
-    p->b.R=15;
-    p->b.S=49;
-    p->b.phase_lock_threshold=100;
-    p->b.phase_lock_fill_rate=32;
-    p->b.phase_lock_drain_rate=68;
-    p->b.freq_lock_threshold=100;
-    p->b.freq_lock_fill_rate=32;
-    p->b.freq_lock_drain_rate=68;
+    PLL_Prof_default(p);
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    p->b.R = 15;
+    p->b.S = 49;
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_5(p);
     return p;
-};
+}
 
 // 41.7 MHz
 const AD9548_Profile_TypeDef *PLL_Prof3_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
-    p->b.selection_priority=2;
-    p->b.promoted_priority=2;
-    p->b.ref_period=24000000;
-    p->b.ref_period_padding=0;
-    p->b.inner_tolerance=1000;
-    p->b.outer_tolerance=1000;
-    p->b.filter_alpha_0_linear=39705;
-    p->b.filter_alpha_1_exp=6;
-    p->b.filter_alpha_2_exp=0;
-    p->b.filter_beta_0_linear=81944;
-    p->b.filter_beta_1_exp=13;
-    p->b.filter_gamma_0_linear=86346;
-    p->b.filter_gamma_1_exp=13;
-    p->b.filter_delta_0_linear=28989;
-    p->b.filter_delta_1_exp=12;
-    p->b.filter_alpha_3_exp=0;
-    p->b.R=9;
-    p->b.S=29;
-    p->b.phase_lock_threshold=100;
-    p->b.phase_lock_fill_rate=32;
-    p->b.phase_lock_drain_rate=68;
-    p->b.freq_lock_threshold=100;
-    p->b.freq_lock_fill_rate=32;
-    p->b.freq_lock_drain_rate=68;
+    PLL_Prof_default(p);
+    p->b.selection_priority = 2;
+    p->b.promoted_priority = 2;
+    p->b.ref_period = 24000000;
+    p->b.R = 9;
+    p->b.S = 29;
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_2(p);
     return p;
-};
+}

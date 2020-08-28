@@ -19,6 +19,8 @@
 
 #include "bsp.h"
 
+const uint64_t ad9548_dds_period_fs = 8000000; // design constant
+
 #if defined(BOARD_TDC72VHLV3)
 const char *ad9548_ref_label(int refIndex)
 {

@@ -36,8 +36,6 @@
 //    return twdelta/norm;
 //}
 
-static const uint64_t dds_period_fs = 8000000; // design constant
-
 double ad9548_profile_dds_freq(const AD9548_Profile_TypeDef *prof)
 {
     return 1e15 / prof->b.ref_period / (prof->b.R+1) *
@@ -258,7 +256,7 @@ void ad9548_print_pll_ref_status(const ad9548_setup_t *setup, const AD9548_Statu
 }
 
 static double fdds(void) {
-    return 1e15 / dds_period_fs;
+    return 1e15 / ad9548_dds_period_fs;
 }
 
 double ad9548_ftw_offset(const ad9548_setup_t *setup, const AD9548_Status *status)
