@@ -17,6 +17,7 @@
 
 #include "log.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,8 +28,13 @@
 #include "logbuffer.h"
 #include "logentry.h"
 
+osMutexId log_printf_mutex;
+osMutexDef(log_printf_mutex);
+
 void init_logging(void)
 {
+    log_printf_mutex = osMutexCreate(osMutex(log_printf_mutex));
+    assert(log_printf_mutex);
     init_logbuffer();
 }
 
@@ -39,24 +45,28 @@ void log_printf(LogPriority priority, const char *format, ...)
 {
     static va_list args;
 
+    osMutexWait(log_printf_mutex, osWaitForever);
     va_start(args, format);
     size_t n = vsnprintf(log_printf_buffer, sizeof log_printf_buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0)
         log_put_long(priority, osKernelSysTick(), log_printf_buffer);
+    osMutexRelease(log_printf_mutex);
 }
 
 void log_printf_debug(const char *format, ...)
 {
     static va_list args;
 
+    osMutexWait(log_printf_mutex, osWaitForever);
     va_start(args, format);
     size_t n = vsnprintf(log_printf_buffer, sizeof log_printf_buffer, format, args);
     va_end(args);
     size_t n_written = (n > buf_size) ? buf_size : n;
     if (n_written > 0)
         log_put_long(LOG_DEBUG, osKernelSysTick(), log_printf_buffer);
+    osMutexRelease(log_printf_mutex);
 }
 
 void log_put(LogPriority priority, const char *str)
