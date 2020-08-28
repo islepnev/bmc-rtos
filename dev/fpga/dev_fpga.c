@@ -32,6 +32,7 @@
 
 static uint16_t live_magic = 0x55AA;
 
+#if 0
 static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
     BusInterface *bus = &dev->bus;
@@ -40,8 +41,9 @@ static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16
            rdata &&
            (wdata == *rdata);
 }
+#endif
 
-static void fpga_write_live_magic(DeviceBase *dev)
+static bool fpga_write_live_magic(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
@@ -49,8 +51,8 @@ static void fpga_write_live_magic(DeviceBase *dev)
     live_magic++;
     uint16_t wdata1 = live_magic;
     uint16_t wdata2 = ~live_magic;
-    fpga_spi_hal_write_reg(bus, addr1, wdata1);
-    fpga_spi_hal_write_reg(bus, addr2, wdata2);
+    return fpga_spi_hal_write_reg(bus, addr1, wdata1) &&
+           fpga_spi_hal_write_reg(bus, addr2, wdata2);
 }
 
 bool fpga_check_live_magic(DeviceBase *dev)
@@ -59,16 +61,17 @@ bool fpga_check_live_magic(DeviceBase *dev)
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t rdata1 = 0, rdata2 = 0;
-    fpga_spi_hal_read_reg(bus, addr1, &rdata1);
-    fpga_spi_hal_read_reg(bus, addr2, &rdata2);
+    if (!fpga_spi_hal_read_reg(bus, addr1, &rdata1))
+        return false;
+    if (!fpga_spi_hal_read_reg(bus, addr2, &rdata2))
+        return false;
     uint16_t test1 = live_magic;
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
         log_put(LOG_ERR, "FPGA register contents unexpectedly changed");
         return false;
     }
-    fpga_write_live_magic(dev);
-    return true;
+    return fpga_write_live_magic(dev);
 }
 
 bool fpga_test(DeviceBase *dev)

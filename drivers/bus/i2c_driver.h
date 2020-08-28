@@ -30,13 +30,32 @@ extern "C" {
 struct __I2C_HandleTypeDef;
 
 void i2c_driver_init(void);
-bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c);
-bool i2c_driver_bus_ready(struct __I2C_HandleTypeDef *hi2c);
-bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, uint32_t Trials, uint32_t millisec);
-bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec);
+
+bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_bus_ready(struct __I2C_HandleTypeDef *hi2c)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr,
+                       uint32_t Trials, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
+                     uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
+                      uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
+                         uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress,
+                          uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

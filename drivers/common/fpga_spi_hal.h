@@ -46,8 +46,12 @@ enum {
     FPGA_SPI_ADDR_F = 0xF
 };
 
-bool fpga_spi_hal_read_reg(BusInterface *bus, uint16_t addr, uint16_t *data);
-bool fpga_spi_hal_write_reg(BusInterface *bus, uint16_t addr, uint16_t data);
+bool fpga_spi_hal_read_reg(BusInterface *bus, uint16_t addr, uint16_t *data)
+    __attribute__((warn_unused_result));
+
+bool fpga_spi_hal_write_reg(BusInterface *bus, uint16_t addr, uint16_t data)
+    __attribute__((warn_unused_result));
+
 void fpga_enable_interface(BusInterface *bus);
 void fpga_disable_interface(BusInterface *bus);
 
