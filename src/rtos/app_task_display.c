@@ -25,7 +25,7 @@
 
 static const uint32_t displayTaskLoopDelay = 50;
 osThreadId displayThreadId = NULL;
-enum { displayThreadStackSize = threadStackSize + 540 };
+enum { displayThreadStackSize = threadStackSize + 550 };
 
 static void start_display_task(void const *arg)
 {

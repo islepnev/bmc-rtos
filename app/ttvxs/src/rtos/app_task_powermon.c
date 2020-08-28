@@ -44,7 +44,7 @@
 #include "tmp421/dev_tmp421_fsm.h"
 
 osThreadId powermonThreadId = NULL;
-enum { powermonThreadStackSize = threadStackSize + 120 };
+enum { powermonThreadStackSize = threadStackSize + 140 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
 static BusInterface ttvxs_max31725_bus_info = {

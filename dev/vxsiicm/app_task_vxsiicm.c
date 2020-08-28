@@ -28,7 +28,7 @@
 #include "vxsiicm/dev_vxsiicm_types.h"
 
 osThreadId vxsiicThreadId = NULL;
-enum { vxsiicThreadStackSize = threadStackSize + 170 };
+enum { vxsiicThreadStackSize = threadStackSize + 180 };
 
 static const uint32_t vxsiicTaskLoopDelay = 10;
 
@@ -55,7 +55,7 @@ static void start_thread_vxsiicm( void const *arg)
     }
 }
 
-osThreadDef(vxsiicm, start_thread_vxsiicm,    osPriorityNormal, 1, vxsiicThreadStackSize);
+osThreadDef(vxsiicm, start_thread_vxsiicm,    osPriorityLow, 1, vxsiicThreadStackSize);
 
 void create_task_vxsiicm(DeviceBase *parent)
 {
