@@ -46,30 +46,30 @@ bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi)
 bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hspi_index(hspi);
-    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != spi_driver_wait_dev_mutex(dev_index, osWaitForever))
         return false;
     bool ret = spi_driver_tx_rx_internal(hspi, txBuf, rxBuf, Size, millisec);
-    spi_driver_release_dev_sem(dev_index);
+    spi_driver_release_dev_mutex(dev_index);
     return ret;
 }
 
 bool spi_driver_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hspi_index(hspi);
-    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != spi_driver_wait_dev_mutex(dev_index, osWaitForever))
         return false;
     bool ret = spi_driver_rx_internal(hspi, rxBuf, Size, millisec);
-    spi_driver_release_dev_sem(dev_index);
+    spi_driver_release_dev_mutex(dev_index);
     return ret;
 }
 
 bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
 {
     int dev_index = hspi_index(hspi);
-    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != spi_driver_wait_dev_mutex(dev_index, osWaitForever))
         return false;
     bool ret = spi_driver_tx_internal(hspi, txBuf, Size, millisec);
-    spi_driver_release_dev_sem(dev_index);
+    spi_driver_release_dev_mutex(dev_index);
     return ret;
 }
 
@@ -126,7 +126,7 @@ bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Si
 void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable)
 {
     int dev_index = hspi_index(hspi);
-    if (osOK != spi_driver_wait_dev_sem(dev_index, osWaitForever))
+    if (osOK != spi_driver_wait_dev_mutex(dev_index, osWaitForever))
         return;
     if (enable) {
         log_printf(LOG_INFO, "Enabling SPI%d", dev_index);
@@ -136,5 +136,5 @@ void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable)
         // HAL_SPI_Abort(hspi);
         HAL_SPI_DeInit(hspi);
     }
-    spi_driver_release_dev_sem(dev_index);
+    spi_driver_release_dev_mutex(dev_index);
 }

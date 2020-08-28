@@ -35,20 +35,21 @@ osSemaphoreId i2c2_it_sem;
 osSemaphoreId i2c3_it_sem;
 osSemaphoreId i2c4_it_sem;
 
-// device semaphores // TODO: use mutexes
-osSemaphoreId i2c1_dev_sem;
-osSemaphoreId i2c2_dev_sem;
-osSemaphoreId i2c3_dev_sem;
-osSemaphoreId i2c4_dev_sem;
+// device mutexes
+osMutexId i2c1_dev_mutex;
+osMutexId i2c2_dev_mutex;
+osMutexId i2c3_dev_mutex;
+osMutexId i2c4_dev_mutex;
 
 osSemaphoreDef(i2c1_it_sem);
 osSemaphoreDef(i2c2_it_sem);
 osSemaphoreDef(i2c3_it_sem);
 osSemaphoreDef(i2c4_it_sem);
-osSemaphoreDef(i2c1_dev_sem);
-osSemaphoreDef(i2c2_dev_sem);
-osSemaphoreDef(i2c3_dev_sem);
-osSemaphoreDef(i2c4_dev_sem);
+
+osMutexDef(i2c1_dev_mutex);
+osMutexDef(i2c2_dev_mutex);
+osMutexDef(i2c3_dev_mutex);
+osMutexDef(i2c4_dev_mutex);
 
 // transfer error flags
 static bool i2c_driver_transfer_error[I2C_BUS_COUNT] = {0};
@@ -98,15 +99,15 @@ bool i2c_driver_util_init(void)
         return false;
     }
 
-    // create device semaphores
-    i2c1_dev_sem = osSemaphoreCreate(osSemaphore(i2c1_dev_sem), 1);
-    i2c2_dev_sem = osSemaphoreCreate(osSemaphore(i2c2_dev_sem), 1);
-    i2c3_dev_sem = osSemaphoreCreate(osSemaphore(i2c3_dev_sem), 1);
-    i2c4_dev_sem = osSemaphoreCreate(osSemaphore(i2c4_dev_sem), 1);
-    if (NULL == i2c1_dev_sem
-        || NULL == i2c2_dev_sem
-        || NULL == i2c3_dev_sem
-        || NULL == i2c4_dev_sem
+    // create device mutexes
+    i2c1_dev_mutex = osMutexCreate(osMutex(i2c1_dev_mutex));
+    i2c2_dev_mutex = osMutexCreate(osMutex(i2c2_dev_mutex));
+    i2c3_dev_mutex = osMutexCreate(osMutex(i2c3_dev_mutex));
+    i2c4_dev_mutex = osMutexCreate(osMutex(i2c4_dev_mutex));
+    if (NULL == i2c1_dev_mutex
+        || NULL == i2c2_dev_mutex
+        || NULL == i2c3_dev_mutex
+        || NULL == i2c4_dev_mutex
         ) {
         assert(false);
         return false;
@@ -128,14 +129,14 @@ SemaphoreHandle_t i2c_driver_it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c)
     return NULL;
 }
 
-SemaphoreHandle_t i2c_driver_dev_sem_by_index(int index)
+osMutexId i2c_driver_dev_mutex_by_index(int index)
 {
     assert(index >=1 && index <= I2C_BUS_COUNT);
     switch (index) {
-    case 1: return i2c1_dev_sem;
-    case 2: return i2c2_dev_sem;
-    case 3: return i2c3_dev_sem;
-    case 4: return i2c4_dev_sem;
+    case 1: return i2c1_dev_mutex;
+    case 2: return i2c2_dev_mutex;
+    case 3: return i2c3_dev_mutex;
+    case 4: return i2c4_dev_mutex;
     default: return NULL;
     }
     return NULL;
@@ -185,22 +186,22 @@ void i2c_driver_release_it_sem(struct __I2C_HandleTypeDef *hi2c)
         osSemaphoreRelease(sem);
 }
 
-int32_t i2c_driver_wait_dev_sem(int index, uint32_t millisec)
+int32_t i2c_driver_wait_dev_mutex(int index, uint32_t millisec)
 {
-    SemaphoreHandle_t sem = i2c_driver_dev_sem_by_index(index);
-    assert(sem);
-    if (!sem)
+    osMutexId m = i2c_driver_dev_mutex_by_index(index);
+    assert(m);
+    if (!m)
         return osErrorValue;
-    int32_t ret =  osSemaphoreWait(sem, millisec);
+    int32_t ret =  osMutexWait(m, millisec);
     if (ret)
         log_printf(LOG_WARNING, "I2C%d device lock error\n", index);
     return  ret;
 }
 
-void i2c_driver_release_dev_sem(int index)
+void i2c_driver_release_dev_mutex(int index)
 {
-    SemaphoreHandle_t sem = i2c_driver_dev_sem_by_index(index);
-    assert(sem);
-    if (sem)
-        osSemaphoreRelease(sem);
+    osMutexId m = i2c_driver_dev_mutex_by_index(index);
+    assert(m);
+    if (m)
+        osMutexRelease(m);
 }
