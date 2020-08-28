@@ -21,7 +21,7 @@
 #include "logbuffer.h"
 
 #ifdef STM32F3
-enum {LOG_LINE_SIZE = 100};
+enum {LOG_LINE_SIZE = 50};
 #else
 enum {LOG_LINE_SIZE = 200};
 #endif
