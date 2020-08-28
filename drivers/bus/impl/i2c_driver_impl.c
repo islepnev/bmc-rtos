@@ -108,6 +108,11 @@ static bool i2c_driver_after_hal_call(const char *title, struct __I2C_HandleType
            i2c_driver_wait_complete(title, hi2c, DevAddress, millisec);
 }
 
+bool i2c_driver_bus_ready_internal(struct __I2C_HandleTypeDef *hi2c)
+{
+    return 0 == LL_I2C_IsActiveFlag_BUSY(hi2c->Instance);
+}
+
 bool i2c_driver_detect_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint32_t Trials, uint32_t millisec)
 {
     if (!i2c_driver_before_hal_call(__func__, hi2c, DevAddress))

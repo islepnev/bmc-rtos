@@ -73,7 +73,8 @@ typedef struct vxsiic_pp_mcu_sensors {
 } vxsiic_pp_mcu_sensors;
 
 typedef struct vxsiic_slot_status_t {
-   int present;
+    bool bus_ready;
+    int present;
    SensorStatus system_status;
    uint32_t ioexp;
    char module_id_str[MCU_ID_SIZE];

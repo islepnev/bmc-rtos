@@ -92,6 +92,20 @@ void sprint_i2c_error(char *buf, size_t size, uint32_t code)
                                                  );
 }
 
+bool vxsiic_detect_pp_eeprom(BusInterface *bus, uint8_t pp)
+{
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_EEPROM_I2C_ADDRESS;
+    return vxsiic_detect(&bus2, 2);
+}
+
+bool vxsiic_detect_pp_ioexp(BusInterface *bus, uint8_t pp)
+{
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_IOEXP_I2C_ADDRESS;
+    return vxsiic_detect(&bus2, 2);
+}
+
 bool vxsiic_read_pp_eeprom(BusInterface *bus, uint8_t pp, uint16_t reg, uint8_t *data)
 {
     BusInterface bus2 = *bus;

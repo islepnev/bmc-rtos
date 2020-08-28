@@ -24,6 +24,17 @@
 
 static const int I2C_TIMEOUT_MS = 25;
 
+bool vxsiic_bus_ready(BusInterface *bus)
+{
+    return i2c_driver_bus_ready(hi2c_handle(bus->bus_number));
+}
+
+bool vxsiic_detect(BusInterface *bus, uint8_t Trials)
+{
+    uint16_t DevAddress = bus->address << 1;
+    return i2c_driver_detect(hi2c_handle(bus->bus_number), DevAddress, Trials, I2C_TIMEOUT_MS);
+}
+
 bool vxsiic_read(BusInterface *bus, uint8_t *pData, uint16_t Size)
 {
     uint16_t DevAddress = bus->address << 1;

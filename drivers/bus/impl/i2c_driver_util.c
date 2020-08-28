@@ -35,7 +35,7 @@ osSemaphoreId i2c2_it_sem;
 osSemaphoreId i2c3_it_sem;
 osSemaphoreId i2c4_it_sem;
 
-// device semaphores
+// device semaphores // TODO: use mutexes
 osSemaphoreId i2c1_dev_sem;
 osSemaphoreId i2c2_dev_sem;
 osSemaphoreId i2c3_dev_sem;

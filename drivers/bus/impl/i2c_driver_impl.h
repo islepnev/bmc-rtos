@@ -31,6 +31,7 @@ struct __I2C_HandleTypeDef;
 
 void i2c_driver_log_error(const char *title, struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress);
 void i2c_driver_reset_internal(struct __I2C_HandleTypeDef *hi2c);
+bool i2c_driver_bus_ready_internal(struct __I2C_HandleTypeDef *hi2c);
 bool i2c_driver_detect_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint32_t Trials, uint32_t millisec);
 bool i2c_driver_read_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);
 bool i2c_driver_write_internal(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);

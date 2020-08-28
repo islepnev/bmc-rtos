@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+bool vxsiic_bus_ready(BusInterface *bus);
+bool vxsiic_detect(BusInterface *bus, uint8_t Trials);
 bool vxsiic_read(BusInterface *bus, uint8_t *pData, uint16_t Size);
 bool vxsiic_write(BusInterface *bus, uint8_t *pData, uint16_t Size);
 bool vxsiic_mem_read(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size);

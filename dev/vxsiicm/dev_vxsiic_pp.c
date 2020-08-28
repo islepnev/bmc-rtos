@@ -29,6 +29,15 @@
 #include "log/log.h"
 #include "vxsiic_hal.h"
 
+bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp)
+{
+    bool eeprom_ok = vxsiic_detect_pp_eeprom(&d->dev.bus, pp);
+    d->priv.status.slot[pp].pp_state.eeprom_found = eeprom_ok;
+    bool ioexp_ok = vxsiic_detect_pp_ioexp(&d->dev.bus, pp);
+    d->priv.status.slot[pp].pp_state.gpio_found = ioexp_ok;
+    return eeprom_ok || ioexp_ok;
+}
+
 static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
 {
     uint16_t addr = 0;
@@ -141,8 +150,6 @@ err:
 
 bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp)
 {
-//    if (! vxsiic_get_pp_i2c_status(pp))
-//        return false;
     bool eeprom = dev_vxsiic_read_pp_eeprom(d, pp);
     bool ioexp =  dev_vxsiic_read_pp_ioexp(d, pp);
     bool found = (eeprom || ioexp);

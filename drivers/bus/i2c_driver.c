@@ -41,16 +41,26 @@ bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c)
     return  HAL_I2C_STATE_READY == HAL_I2C_GetState(hi2c);
 }
 
+// Device-locked functions
+
 bool i2c_driver_bus_ready(struct __I2C_HandleTypeDef *hi2c)
 {
-    return i2c_driver_bus_ready_internal(hi2c);
+    int dev_index = hi2c_index(hi2c);
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
+    bool result = i2c_driver_bus_ready_internal(hi2c);
+    i2c_driver_release_dev_sem(dev_index);
+    return result;
 }
-
-// Device-locked functions
 
 bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, uint32_t Trials, uint32_t millisec)
 {
-    return i2c_driver_detect_internal(hi2c, deviceAddr, Trials, millisec);
+    int dev_index = hi2c_index(hi2c);
+    if (osOK != i2c_driver_wait_dev_sem(dev_index, osWaitForever))
+        return false;
+    bool result =  i2c_driver_detect_internal(hi2c, deviceAddr, Trials, millisec);
+    i2c_driver_release_dev_sem(dev_index);
+    return result;
 }
 
 bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
