@@ -145,7 +145,7 @@ void task_powermon_run (Dev_powermon *pm)
         pm_initialized = 1;
     }
     pmLoopCount++;
-    bool vmePresent = pm_read_liveInsert(priv);
+    // bool vmePresent = pm_read_liveInsert(priv);
     pm_read_pgood(priv->pgood);
     pm_sensors_arr *sensors = &priv->sensors;
     const bool input_power_normal = get_input_power_normal(sensors);

@@ -125,11 +125,14 @@ static void print_sysinfo_brief(void)
     printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u, HAL %lX\n", tskKERNEL_VERSION_NUMBER,
            __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
            osCMSIS >> 16, osCMSIS & 0xFFFF,
-           HAL_GetHalVersion()
+           (unsigned long)HAL_GetHalVersion()
            );
     printf("CPU %lX rev %lX, UID %08lX-%08lX-%08lX\n",
-           HAL_GetDEVID(), HAL_GetREVID(),
-           HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
+           (unsigned long)HAL_GetDEVID(),
+           (unsigned long)HAL_GetREVID(),
+           (unsigned long)HAL_GetUIDw0(),
+           (unsigned long)HAL_GetUIDw1(),
+           (unsigned long)HAL_GetUIDw2()
            );
 }
 

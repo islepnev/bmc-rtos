@@ -53,6 +53,7 @@ static void init_fpga_spi(int index)
     }
 }
 
+#ifdef ENABLE_AD9516
 static void init_ad9516_spi(int index)
 {
     SPI_HandleTypeDef *hspi = hspi_handle(index);
@@ -74,6 +75,7 @@ static void init_ad9516_spi(int index)
         Error_Handler();
     }
 }
+#endif
 
 static void init_adt7301_spi(int index)
 {

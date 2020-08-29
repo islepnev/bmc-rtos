@@ -102,7 +102,7 @@ static void menu_check_mail(void)
 
 static void print_menu_level(const menu_item_t *item)
 {
-    const menu_item_t *cur = item;
+    // const menu_item_t *cur = item;
     const int level = menu_level(item);
     // printf("L%d ", level);
     for (int i=1; i<=level; i++) {

@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "ad9545_setup.h"
 #include "ad9545_setup_regs.h"
@@ -182,7 +183,7 @@ static void pllPrintDPLLChannelStatus(const AD9545_Status *status, AD9545_Channe
 static void pllPrintDPLLChannelSetup(const AD9545_DPLL_Setup_TypeDef *dpll, AD9545_Channel_TypeDef channel)
 {
 
-    printf("DPLL%d profile[0] %s%s%s%s, FB %s%s FBdiv %u+%u/%u, BW %g Hz\n",
+    printf("DPLL%d profile[0] %s%s%s%s, FB %s%s FBdiv %lu+%lu/%lu, BW %g Hz\n",
            channel,
            (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_A) ? "RefA" : "",
            (dpll->profile[0].Profile_Ref_Source == PROFILE_REF_SOURCE_B) ? "RefB" : "",
@@ -195,7 +196,6 @@ static void pllPrintDPLLChannelSetup(const AD9545_DPLL_Setup_TypeDef *dpll, AD95
            dpll->profile[0].Buildout_FB_Modulus,
            dpll->profile[0].Loop_BW / 1e6
            );
-
 }
 
 void ad9545_verbose_setup(const ad9545_setup_t *setup)
@@ -206,11 +206,11 @@ void ad9545_verbose_setup(const ad9545_setup_t *setup)
     Pll_DPLLMode_Setup_TypeDef dpll_mode;
     PllSysclkSetup_TypeDef sysclk;
 */
-    printf("RefA: % 3g ns, Rdiv %u\n",
+    printf("RefA: % 3g ns, Rdiv %lu\n",
            setup->ref.REFA_Input_Period * 1e-9,
            setup->ref.REFA_R_Divider
            );
-    printf("RefB: % 3g ns, Rdiv %u\n",
+    printf("RefB: % 3g ns, Rdiv %lu\n",
            setup->ref.REFB_Input_Period * 1e-9,
            setup->ref.REFB_R_Divider
            );

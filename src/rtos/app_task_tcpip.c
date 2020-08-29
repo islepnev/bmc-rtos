@@ -26,7 +26,6 @@
 
 osThreadId tcpipThreadId = NULL;
 enum { tcpipThreadStackSize = configMINIMAL_STACK_SIZE + 240 };
-static const uint32_t tcpipTaskLoopDelay = 10;
 
 static void start_thread_tcpip( void const *arg)
 {

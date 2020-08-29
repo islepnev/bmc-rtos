@@ -24,12 +24,12 @@
 #include "devicelist.h"
 #include "log/log.h"
 
-static const uint32_t thermReadInterval = 300;
-static uint32_t thermReadTick = 0;
+//static const uint32_t thermReadInterval = 300;
+//static uint32_t thermReadTick = 0;
 
 // Temperature limits
-static const int16_t tempMinValid = -40;
-static const int16_t tempMaxValid = 150;
+//static const int16_t tempMinValid = -40;
+//static const int16_t tempMaxValid = 150;
 static const int16_t tempMinCrit = -30;
 static const int16_t tempMaxCrit = 80;
 static const int16_t tempMinWarn = 0;

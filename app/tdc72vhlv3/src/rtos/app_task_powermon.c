@@ -81,18 +81,21 @@ static BusInterface tdc_smbus_bus_info = {
     .address = 0
 };
 
+#if ENABLE_DIGIPOT
+static Dev_digipots digipots = {0};
+#endif
+
+static Dev_thset thset = {0};
+
+#if ENABLE_SFPIIC
 static BusInterface tdc_sfpiic_mux_bus_info = {
     .type = BUS_IIC,
     .bus_number = 4,
     .address = 0x74
 };
-
-#if ENABLE_DIGIPOT
-static Dev_digipots digipots = {0};
-#endif
-static Dev_thset thset = {0};
 static Dev_pca9548 pca9548 = {0};
 static Dev_sfpiic sfpiic = {0};
+#endif
 
 static void local_init(DeviceBase *parent)
 {

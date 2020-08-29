@@ -366,6 +366,7 @@ defined (PLL_M5_GPIO_Port) && defined (PLL_M6_GPIO_Port)
 // M0, M1, M2 do not have internal resistors
 void ad9545_gpio_init(BusInterface *bus)
 {
+    (void) bus;
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
