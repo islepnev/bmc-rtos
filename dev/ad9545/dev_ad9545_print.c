@@ -61,10 +61,9 @@ void dev_ad9545_print_box(void)
     if (!d || !d->priv)
         return;
     const Dev_ad9545_priv *priv = (const Dev_ad9545_priv *)device_priv_const(d);
-    printf("PLL AD9545:      %s %s",
+    printf("PLL AD9545:      %s %s\n",
            dev_ad9545_state_str(priv->fsm_state),
            sensor_status_ansi_str(d->sensor));
-    print_clear_eol();
     ad9545_brief_status(&priv->status);
 
 }
