@@ -18,10 +18,14 @@
 #ifndef DISPLAY_COMMON_H
 #define DISPLAY_COMMON_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
 
+static const int DISPLAY_PAGE_Y = 2;
+
 void display_clear_page(void);
-void display_devices_page(int y);
+void display_devices_page(int y, bool repaint);
 void print_header_line(void);
 void print_footer_line(void);
 SensorStatus get_device_sensor_status(DeviceClass device_class);

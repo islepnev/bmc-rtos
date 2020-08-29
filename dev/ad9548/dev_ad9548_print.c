@@ -64,6 +64,6 @@ void dev_ad9548_print_box(void)
     printf("PLL AD9548:      %s %s",
            dev_ad9548_state_str(priv->fsm_state),
            sensor_status_ansi_str(d->sensor));
-    print_clear_eol();
+    printf("\n");
     ad9548_brief_status(&priv->setup, &priv->status);
 }

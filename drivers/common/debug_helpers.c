@@ -23,6 +23,8 @@
 #include "bsp_tty.h"
 #include "stm32_ll.h"
 
+#define DEBUG_TERM_ADD_CLEAR_EOL 1
+
 static inline void debug_send_char(const char c)
 {
     // wait for UART ready
@@ -37,6 +39,11 @@ static inline void debug_print_impl(const char *ptr)
         if (*ptr == '\0')
             break;
         if (*ptr == '\n') {
+#ifdef DEBUG_TERM_ADD_CLEAR_EOL
+            debug_send_char('\x1B');
+            debug_send_char('[');
+            debug_send_char('K');
+#endif
             debug_send_char('\r');
         }
         debug_send_char(*ptr++);

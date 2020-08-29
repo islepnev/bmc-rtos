@@ -250,8 +250,7 @@ void ad9548_print_pll_ref_status(const ad9548_setup_t *setup, const AD9548_Statu
             }
 
         }
-        printf(ANSI_CLEAR);
-        print_clear_eol();
+        printf(ANSI_CLEAR "\n");
     }
 }
 
@@ -286,10 +285,10 @@ void ad9548_verbose_status(const ad9548_setup_t *setup, const AD9548_Status *sta
            status->sysclk.b.stable ? " STABLE" : "",
            status->sysclk.b.cal_busy ? " CAL_BUSY" : ""
            );
-    print_clear_eol();
+    printf("\n");
     ad9548_print_pll_dpll_status(setup, status);
-    printf(ANSI_CLEAR " --- Reference inputs --- ");
-    print_clear_eol();
+    printf(" --- Reference inputs --- ");
+    printf("\n");
     ad9548_print_pll_ref_status(setup, status);
     ad9548_print_ftw(setup, status);
 }

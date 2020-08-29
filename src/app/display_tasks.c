@@ -70,8 +70,8 @@ const char *task_state_str(eTaskState eCurrentState) {
 void print_tasks()
 {
     const double freq = getRunTimeCounterFrequency();
-    for (int i=0; i<task_count; i++) {
-        printf("%-15s\t%s\t%u\t%u\t%u\t%4.1f\t%9.3f" ANSI_CLEAR_EOL "\n",
+    for (unsigned int i=0; i<task_count; i++) {
+        printf("%-15s %s       %u     %6u   %2u      %5.1f    %9.3f\n",
                task_list[i].name,
                task_state_str(task_list[i].state),
                task_list[i].prio,
@@ -85,7 +85,7 @@ void print_tasks()
 
 void print_task_list(void)
 {
-    unsigned int uxArraySize = uxTaskGetNumberOfTasks();
+    int uxArraySize = uxTaskGetNumberOfTasks();
 
     TaskStatus_t *pxTaskStatusArray = pvPortMalloc(
         uxTaskGetNumberOfTasks() * sizeof(TaskStatus_t));
@@ -112,37 +112,35 @@ void print_task_list(void)
 
 static void print_osThreadList(void)
 {
-    printf("Name          State  Priority  Stack   Num       CPU        Time" ANSI_CLEAR_EOL "\n");
-    static const char *div = "-----------------------------------------------------------------" ANSI_CLEAR_EOL "\n";
+    printf("Name          State  Priority  Stack   Num       CPU        Time\n");
+    static const char *div = "-----------------------------------------------------------------\n";
     printf("%s", div);
     print_task_list();
     printf("%s", div);
-    printf("B : Blocked, R : Ready, D : Deleted, S : Suspended" ANSI_CLEAR_EOL "\n");
+    printf("B : Blocked, R : Ready, D : Deleted, S : Suspended\n");
 }
 
 static void print_sysinfo_brief(void)
 {
-    printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u", tskKERNEL_VERSION_NUMBER,
+    printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u, HAL %lX\n", tskKERNEL_VERSION_NUMBER,
            __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
-           osCMSIS >> 16, osCMSIS & 0xFFFF
+           osCMSIS >> 16, osCMSIS & 0xFFFF,
+           HAL_GetHalVersion()
            );
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
-    printf("CPU %lX rev %lX, HAL %lX, UID %08lX-%08lX-%08lX",
+    printf("CPU %lX rev %lX, UID %08lX-%08lX-%08lX\n",
            HAL_GetDEVID(), HAL_GetREVID(),
-           HAL_GetHalVersion(),
            HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2()
            );
-    printf("%s\n", ANSI_CLEAR_EOL ANSI_CLEAR);
 }
 
 static void print_meminfo(void)
 {
-    printf("Heap avail: %d" ANSI_CLEAR_EOL "\n",
-           xPortGetFreeHeapSize());
+    printf("Heap avail: %d\n",xPortGetFreeHeapSize());
 }
 
 void display_tasks_page(int y)
 {
+    static int oldTaskCount = 0;
     int taskCount = uxTaskGetNumberOfTasks();
     int sysinfo_lines = 2;
     int threadlist_y = y + sysinfo_lines + 1;
@@ -151,19 +149,14 @@ void display_tasks_page(int y)
 //    int runstats_lines = 2 + taskCount;
     print_goto(y, 1);
     print_sysinfo_brief();
-    print_clear_eol();
+    printf("\n");
 
-    print_clearbox(threadlist_y, threadlist_lines);
     print_goto(threadlist_y, 1);
     print_osThreadList();
     int cur_y = threadlist_y + threadlist_lines;
-    print_clear_eol(); cur_y++;
+    printf("\n"); cur_y++;
     print_meminfo(); cur_y++;
-
-//    print_clearbox(runstats_y, runstats_lines);
-//    print_goto(runstats_y, 1);
-//    print_RunTimeStats();
-//    print_clear_eol();
-//    int cur_y = runstats_y+runstats_lines;
-    print_clearbox(cur_y, screen_height - cur_y - 1);
+    for (int i=oldTaskCount; i<taskCount; i++)
+        printf("\n");
+    oldTaskCount = taskCount;
 }

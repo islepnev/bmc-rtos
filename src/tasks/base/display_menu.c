@@ -122,7 +122,7 @@ static int debug_print_menu_tree(const menu_item_t *item, int level)
     printf("%s    prev %s    next %s", item->text,
            item->prev ? item->prev->text : "---",
            item->next ? item->next->text : "---");
-    print_clear_eol();
+    printf("\n");
     if (item->children) {
         n += debug_print_menu_tree(item->children, level+1);
     }
@@ -139,19 +139,19 @@ void display_menu_page(int y, bool repaint)
         print_clearbox(y, screen_height - 2);
 
     print_goto(y, 1);
-    print_clear_eol(); y++;
+    printf("\n"); y++;
 
     assert(menu_current);
     const menu_item_t *parent = menu_current->parent;
     assert(parent);
 
     //    y += debug_print_menu_tree(parent, 0);
-    //    print_clear_eol(); y++;
-    //    print_clear_eol(); y++;
+    //    printf("\n"); y++;
+    //    printf("\n"); y++;
 
     print_menu_level(parent);
     printf(" %s", parent->text);
-    print_clear_eol(); y++;
+    printf("\n"); y++;
 
     const menu_item_t *start_item = parent->children;
     assert(start_item);
@@ -162,7 +162,7 @@ void display_menu_page(int y, bool repaint)
         bool hilight = (menu_current == item);
         printf("%s", hilight ? ANSI_BGR_RED : ANSI_BGR_DEF);
         //print_menu_level(item);
-        printf(" (%d)  %s%s" ANSI_BGR_DEF ANSI_CLEAR_EOL "\n",
+        printf(" (%d)  %s%s" ANSI_BGR_DEF "\n",
                item->command, item->text, item->children ? "..." : "");
         item = item->next;
         if (item == start_item)

@@ -61,5 +61,5 @@ void print_thset_line(void)
     }
     const SensorStatus status = dev_thset_thermStatus();
     printf("%s", sensor_status_ansi_str(status));
-    print_clear_eol();
+    printf("\n");
 }

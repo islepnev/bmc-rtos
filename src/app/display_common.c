@@ -62,21 +62,20 @@ void display_device_sensor_ansi_str(const char *name, DeviceClass device_class)
 {
     printf("%s %s", name,
            device_sensor_status_ansi_str(device_class));
-    print_clear_eol();
+    printf("\n");
 }
 
 void display_clear_page(void)
 {
-    print_clearbox(2, screen_height - 2);
+    print_clearbox(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y);
 }
 
-void display_devices_page(int y)
+void display_devices_page(int y, bool repaint)
 {
-    display_clear_page();
     print_goto(y, 1);
-    printf("Device list" ANSI_CLEAR_EOL "\n");
-    devicelist_print(deviceList.list[0], 0);
-    printf(ANSI_CLEAR_EOL);
+    printf("Device list\n"); y++;
+    devicelist_print(deviceList.list[0], 0); y += deviceList.count;
+    printf("\n");
 }
 
 static void print_uptime_str(void)

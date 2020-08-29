@@ -22,9 +22,7 @@
 #include "app_task_heartbeat.h"
 #include "app_task_main.h"
 #include "app_task_pll.h"
-#ifdef ENABLE_POWERMON
 #include "app_task_powermon.h"
-#endif
 #include "bsp.h"
 
 #if !defined(BOARD_TDC72)
@@ -54,9 +52,7 @@ void create_tasks(void)
     // create_task_heartbeat(); // no need, see main task
     create_task_display();
     create_task_cli();
-#ifdef ENABLE_POWERMON
     create_task_powermon(&topdevice);
-#endif
     create_task_main();
 #if ENABLE_AD9516
     create_task_auxpll(&topdevice);

@@ -84,11 +84,10 @@ void devicelist_print(DeviceBase *d, int depth)
                bus->bus_number,
                bus->address
                );
-    printf("    %s '%s'%s%s\n",
+    printf("    %s '%s'%s\n",
            device_class_str(d->device_class),
            d->name,
-           deviceStatusResultStr(d->device_status),
-           ANSI_CLEAR_EOL);
+           deviceStatusResultStr(d->device_status));
 
     DeviceBase *p = d->children;
     while (p) {

@@ -48,8 +48,8 @@ const char *sensor_status_str(SensorStatus status)
 void display_boards_page(int y, bool repaint)
 {
     print_goto(y, 1);
-    printf("Boards" ANSI_CLEAR_EOL "\n");
-    printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll" ANSI_CLEAR_EOL "\n");
+    printf("Boards\n");
+    printf(" # exp  merr serr BMC  FPGA     up   all power therm  misc  fpga   pll\n");
     int cur_y = y + 2;
     const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
     if (d && d->priv) {
@@ -60,9 +60,9 @@ void display_boards_page(int y, bool repaint)
             const vxsiic_slot_status_t *status = &vxsiicm->status.slot[i];
             const char *label = vxsiic_map_slot_to_label[i];
             if (0 == status->present)
-                printf("%2s" ANSI_CLEAR_EOL "\n", label);
+                printf("%2s\n", label);
             else
-                printf("%2s  %s%s %4lu %4lu %2u.%-2u  %02lX %7lu  %s  %s  %s  %s  %s  %s" ANSI_CLEAR_EOL "\n",
+                printf("%2s  %s%s %4lu %4lu %2u.%-2u  %02lX %7lu  %s  %s  %s  %s  %s  %s\n",
                        label,
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
@@ -83,8 +83,4 @@ void display_boards_page(int y, bool repaint)
         }
         cur_y += VXSIIC_SLOTS;
     }
-
-    // print_clearbox(y+2+line, VXSIIC_SLOTS-line);
-    if (repaint)
-        print_clearbox(cur_y, screen_height - 1 - cur_y);
 }

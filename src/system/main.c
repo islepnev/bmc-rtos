@@ -15,7 +15,6 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ansi_escape_codes.h"
 #include "app_task_init.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
@@ -47,7 +46,7 @@ int main(void)
     app_task_init();
     create_tasks();
     led_all_set_state(false);
-    debug_printf("Starting kernel" ANSI_CLEAR_EOL "\n");
+    debug_printf("Starting kernel\n");
 
     /* Start scheduler */
     osKernelStart();

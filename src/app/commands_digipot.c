@@ -50,7 +50,7 @@ static void clear_keybuf(void)
 //    for (int i=0; i<KEYBUF_SIZE; i++)
 //        printf("%02X ", (uint8_t)keybuf[i]);
 //    printf("' len=%d", keybuf_len);
-//    printf("%s\n", ANSI_CLEAR_EOL);
+//    printf("\n");
 //}
 
 int digipot_screen_selected = 0;

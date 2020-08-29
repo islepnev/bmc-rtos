@@ -259,10 +259,10 @@ void ad9545_brief_status(const AD9545_Status *status)
     if (1) {
         printf("  Ref A:");
         pllPrintRefStatusBits(status->ref[AD9545_REFA]);
-        printf("%s\n", ANSI_CLEAR_EOL);
+        printf("\n");
         printf("  Ref B:");
         pllPrintRefStatusBits(status->ref[AD9545_REFB]);
-        printf("%s\n", ANSI_CLEAR_EOL);
+        printf("\n");
         for (int channel=0; channel<DPLL_COUNT; channel++) {
             int64_t ppb0 = pll_ftw_rel_ppb(status, (AD9545_Channel_TypeDef)channel);
             const char *ref0str = "";
@@ -276,10 +276,10 @@ void ad9545_brief_status(const AD9545_Status *status)
                    ref0str,
                    (int64_t)ppb0
                    );
-            printf("%s\n", ANSI_CLEAR_EOL);
+            printf("\n");
         }
     } else {
         for (int i=0; i<4; i++)
-            printf("%s\n", ANSI_CLEAR_EOL);
+            printf("\n");
     }
 }

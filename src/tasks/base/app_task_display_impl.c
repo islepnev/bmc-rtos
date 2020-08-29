@@ -47,7 +47,6 @@ const uint32_t DISPLAY_REFRESH_TIME_MS = 2000;
 const uint32_t DISPLAY_REPAINT_TIME_MS = 10000;
 const uint32_t DISPLAY_RESET_TIME_MS = 60000; // full reset terminal
 static uint32_t displayUpdateCount = 0;
-static int force_refresh = 0;
 
 #if defined(BOARD_TDC64) || defined(BOARD_TDC72)
 static const bool has_digipots = true;
@@ -73,7 +72,6 @@ static const bool has_vxsiicm = true;
 static const bool has_vxsiicm = false;
 #endif
 
-static const int DISPLAY_PAGE_Y = 2;
 static const int DISPLAY_SYS_STATUS_Y = 2;
 static const int DISPLAY_SYS_STATUS_H = 1;
 static const int DISPLAY_POWERMON_Y = (DISPLAY_SYS_STATUS_Y + DISPLAY_SYS_STATUS_H);
@@ -114,43 +112,45 @@ static void print_main(int y)
     print_fpga();
 }
 
-static int old_enable_stats_display = 0;
-
 static void display_summary_page(int y, bool repaint)
 {
     print_goto(y, 1);
-    if (repaint)
-        print_clearbox(y, DISPLAY_SENSORS_Y-y);
+
     print_system_status(DISPLAY_SYS_STATUS_Y);
     print_powermon(DISPLAY_POWERMON_Y);
     if (has_digipots)
         print_digipots();
 
-//    if (repaint)
-//        print_clearbox(DISPLAY_SENSORS_Y, DISPLAY_TEMP_Y - DISPLAY_SENSORS_Y);
     print_sensors(DISPLAY_SENSORS_Y); // always repaint
 
-//    if (repaint)
-//        print_clearbox(DISPLAY_TEMP_Y, DISPLAY_LOG_Y - DISPLAY_TEMP_Y);
     print_goto(DISPLAY_TEMP_Y, 1);
     print_thset_line(); // always repaint
-    print_clear_eol();
+    printf("\n");
     print_main(DISPLAY_MAIN_Y);
     if (DISPLAY_PLL_Y + DISPLAY_PLL_H < screen_height-1)
     print_pll(DISPLAY_PLL_Y);
     if (has_auxpll && DISPLAY_AUXPLL_Y + DISPLAY_AUXPLL_H < screen_height-1)
         print_auxpll(DISPLAY_AUXPLL_Y);
 
-    print_clear_eol();
+    printf("\n");
     print_log_messages(DISPLAY_LOG_Y, screen_height-1-DISPLAY_LOG_Y, repaint);
+}
+
+void clear_page_contents(void)
+{
+    print_clearbox(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y);
 }
 
 void display_page_contents(display_mode_t mode, bool repaint)
 {
     static display_mode_t old_mode;
-    if (old_mode != mode)
+    if (old_mode != mode) {
         repaint = true;
-    old_mode = mode;
+        old_mode = mode;
+    }
+    if (repaint)
+        display_clear_page();
+
     switch (display_mode) {
     case DISPLAY_MENU:
         display_menu_page(DISPLAY_PAGE_Y, repaint);
@@ -167,8 +167,6 @@ void display_page_contents(display_mode_t mode, bool repaint)
 #endif
         break;
     case DISPLAY_PLL_DETAIL:
-        if (repaint)
-            display_clear_page();
         display_pll_detail(DISPLAY_PAGE_Y);
         display_auxpll_detail(DISPLAY_AUXPLL_DETAIL_Y);
         break;
@@ -184,7 +182,7 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_tasks_page(DISPLAY_PAGE_Y);
         break;
     case DISPLAY_DEVICES:
-        display_devices_page(DISPLAY_PAGE_Y);
+        display_devices_page(DISPLAY_PAGE_Y, repaint);
         break;
     case DISPLAY_MODE_COUNT:
         break;
