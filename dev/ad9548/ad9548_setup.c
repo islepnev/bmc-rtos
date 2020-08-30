@@ -23,45 +23,50 @@
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
 #include "board_config_ad9548.h"
+#include "cmsis_os.h"
 #include "log/log.h"
 
 uint16_t pll_unlock_cntr;
 
-void ad9548_output_sync(BusInterface *bus)
+bool ad9548_output_sync(BusInterface *bus)
 {
-    ad9548_write_register(bus, 0x0A02, 0x02);
-    ad9548_ioupdate(bus);
-    ad9548_write_register(bus, 0x0A02, 0x00);
-    ad9548_ioupdate(bus);
+    return
+        ad9548_write_register(bus, 0x0A02, 0x02) &&
+        ad9548_ioupdate(bus) &&
+        ad9548_write_register(bus, 0x0A02, 0x00) &&
+        ad9548_ioupdate(bus);
 }
 
-void ad9548_poll_irq_state(BusInterface *bus)
+bool ad9548_poll_irq_state(BusInterface *bus)
 {
+    bool ok = true;
     bool irqFound = false;
     // Read IRQ status
     uint8_t irq_flags[8];
     for (uint16_t i=0; i<8; i++) {
-        irq_flags[i] = ad9548_read_register(bus, 0x0D02 + i);
+        ok &= ad9548_read_register(bus, 0x0D02 + i, &irq_flags[i]);
     }
     // Clear IRQ bits
     for (uint16_t i=0; i<8; i++) {
         if (irq_flags[i]) {
             irqFound = true;
-            ad9548_write_register(bus, 0x0A04 + i, irq_flags[i]);
+            ok &= ad9548_write_register(bus, 0x0A04 + i, irq_flags[i]);
         }
     }
     if (irqFound)
-        ad9548_ioupdate(bus);
+        ok &= ad9548_ioupdate(bus);
     if (irq_flags[2] & 1) {
         // If locked on the input B, synchronize phase
-        if ((ad9548_read_register(bus, 0x0D0B) & 0b00000111) == 0b010)
-        {
-            ad9548_output_sync(bus);
+        uint8_t data;
+        ok &= ad9548_read_register(bus, 0x0D0B, &data);
+        if ((data & 0b00000111) == 0b010) {
+            ok &= ad9548_output_sync(bus);
         }
     }
     if (irq_flags[2] & 2) {
         pll_unlock_cntr++;
     }
+    return ok;
 }
 
 bool ad9548_software_reset(BusInterface *bus)
@@ -81,111 +86,131 @@ bool ad9548_software_reset(BusInterface *bus)
 
 bool ad9548_setup_sysclk(BusInterface *bus, ad9548_setup_t *reg)
 {
+    bool ok = true;
     for (unsigned int i = 0; i < PLL_SYSCLK_SIZE; i++)
     {
-        //ad9548_write_register(bus, reg->PLL_SysClk[i].address, reg->PLL_SysClk[i].data);
-        ad9548_write_register(bus, AD9545_REG_SYSCLK_BASE+i, reg->sysclk.v[i]);
+        // ok &= ad9548_write_register(bus, reg->PLL_SysClk[i].address, reg->PLL_SysClk[i].data);
+        ok &= ad9548_write_register(bus, AD9545_REG_SYSCLK_BASE+i, reg->sysclk.v[i]);
     }
 
-    ad9548_ioupdate(bus);
-    return true;
+    ok &= ad9548_ioupdate(bus);
+    return ok;
 }
 
 bool ad9548_calibrate_sysclk(BusInterface *bus, ad9548_setup_t *reg)
 {
-    ad9548_write_register(bus, 0x0A02, 0x01);	// Initiate the system clock calibration process
-    ad9548_ioupdate(bus);
-    ad9548_write_register(bus, 0x0A02, 0x00);	// Clear the initiation bit
-    ad9548_ioupdate(bus);
-    return true;
+    (void) reg;
+    return
+        ad9548_write_register(bus, 0x0A02, 0x01) &&	// Initiate the system clock calibration process
+        ad9548_ioupdate(bus) &&
+        ad9548_write_register(bus, 0x0A02, 0x00) &&	// Clear the initiation bit
+        ad9548_ioupdate(bus);
 }
 
 bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
 {
     //	ad9548_write_register(bus, 0x0000, 0x10); // Enable 4-wire SPI
-    ad9548_setup_sysclk(bus, reg);
-    ad9548_calibrate_sysclk(bus, reg);
-    bool sysclk_ok = false;
-    for(int i=0; i<1000; i++) {
-        AD9548_Sysclk_Status_REG_Type sysclk;
-        sysclk.raw = ad9548_read_register(bus, 0x0D01);
-        sysclk_ok = sysclk.b.locked && !sysclk.b.cal_busy && sysclk.b.stable;
-        if (sysclk_ok) {
-            break;
-        }
-    }
-    if (!sysclk_ok) {
+    if (!ad9548_setup_sysclk(bus, reg))
         return false;
+    if (!ad9548_calibrate_sysclk(bus, reg))
+        return false;
+
+    bool sysclk_ok = false;
+    for(int i=0; i<100; i++) {
+        AD9548_Sysclk_Status_REG_Type sysclk;
+        if (!ad9548_read_register(bus, 0x0D01, &sysclk.raw)) {
+            sysclk.raw = 0;
+            return false;
+        }
+        sysclk_ok = sysclk.b.locked && !sysclk.b.cal_busy && sysclk.b.stable;
+        if (sysclk_ok)
+            break;
+        osDelay(1);
     }
+    if (!sysclk_ok)
+        return false;
+
     for (unsigned int i = 0; i < PLL_MFPINS_SIZE; i++)
     {
-        ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]);
+        if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]))
+            return false;
     }
 
     for (unsigned int i = 0; i < PLL_IRQMASK_SIZE; i++)
     {
-        ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+8+i, reg->irqmask.v[i]);
+        if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+8+i, reg->irqmask.v[i]))
+            return false;
     }
 
     for (unsigned int i = 0; i < PLL_DPLL_SIZE; i++)
     {
-        ad9548_write_register(bus, AD9545_REG_DPLL_BASE+i, reg->dpll.v[i]);
+        if (!ad9548_write_register(bus, AD9545_REG_DPLL_BASE+i, reg->dpll.v[i]))
+            return false;
     }
 
-    ad9548_ioupdate(bus);
+    if (!ad9548_ioupdate(bus))
+        return false;
 
-    ad9548_poll_irq_state(bus); // clear pending IRQs
+    if (!ad9548_poll_irq_state(bus))
+        return false; // clear pending IRQs
 
-    return sysclk_ok;
+    return true;
 }
 
 bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
 {
     for (unsigned int i = 0; i < PLL_OUTCLK_SIZE; i++)
     {
-        ad9548_write_register(bus, AD9545_REG_OUTPUT_BASE, reg->output.v[i]);
+        if (!ad9548_write_register(bus, AD9545_REG_OUTPUT_BASE, reg->output.v[i]))
+            return false;
     }
 
     for (unsigned int i = 0; i < PLL_REFIN_SIZE; i++)
     {
-        ad9548_write_register(bus, AD9545_REG_REFIN_BASE+i, reg->refin.v[i]);
+        if (!ad9548_write_register(bus, AD9545_REG_REFIN_BASE+i, reg->refin.v[i]))
+            return false;
     }
 
-    for (int i=0; i < PLL_PROF_SIZE; i++)
-        ad9548_write_register(bus, AD9545_REG_PROFILE_0_BASE+i, reg->prof[0].v[i]);
-    for (int i=0; i < PLL_PROF_SIZE; i++)
-        ad9548_write_register(bus, AD9545_REG_PROFILE_1_BASE+i, reg->prof[1].v[i]);
-    for (int i=0; i < PLL_PROF_SIZE; i++)
-        ad9548_write_register(bus, AD9545_REG_PROFILE_2_BASE+i, reg->prof[2].v[i]);
-    for (int i=0; i < PLL_PROF_SIZE; i++)
-        ad9548_write_register(bus, AD9545_REG_PROFILE_3_BASE+i, reg->prof[3].v[i]);
+    int base[4] = {
+        AD9545_REG_PROFILE_0_BASE,
+        AD9545_REG_PROFILE_1_BASE,
+        AD9545_REG_PROFILE_2_BASE,
+        AD9545_REG_PROFILE_3_BASE
+    };
+    for (int b=0; b<4; b++) {
+        for (int i=0; i < PLL_PROF_SIZE; i++)
+            if (!ad9548_write_register(bus, base[b]+i, reg->prof[b].v[i]))
+                return false;
+    }
 
-    ad9548_write_register(bus, 0x0A0D, 0xFF); // Start profile selection FSM
+    if (!ad9548_write_register(bus, 0x0A0D, 0xFF))
+        return false; // Start profile selection FSM
 
-    ad9548_ioupdate(bus);
+    if (!ad9548_ioupdate(bus))
+        return false;
     return true;
 }
 
 bool ad9548_setup(BusInterface *bus, ad9548_setup_t *setup)
 {
-    ad9548_initial_setup(bus, setup);
-    ad9548_ProfileConfig(bus, setup);
-    return true;
+    return
+        ad9548_initial_setup(bus, setup) &&
+        ad9548_ProfileConfig(bus, setup);
 }
 
-void ad9548_Phase_Shift_Right(BusInterface *bus)
+bool ad9548_Phase_Shift_Right(BusInterface *bus)
 {
-    ad9548_write_register(bus, 0x0A0C, 0b00000001);
+    return ad9548_write_register(bus, 0x0A0C, 0b00000001);
 }
 
-void ad9548_Phase_Shift_Left(BusInterface *bus)
+bool ad9548_Phase_Shift_Left(BusInterface *bus)
 {
-    ad9548_write_register(bus, 0x0A0C, 0b00000010);
+    return ad9548_write_register(bus, 0x0A0C, 0b00000010);
 }
 
-void ad9548_Phase_Reset(BusInterface *bus)
+bool ad9548_Phase_Reset(BusInterface *bus)
 {
-    ad9548_write_register(bus, 0x0A0C, 0b00000100);
+    return ad9548_write_register(bus, 0x0A0C, 0b00000100);
 }
 
 void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)

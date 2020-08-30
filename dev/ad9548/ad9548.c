@@ -28,14 +28,15 @@
 enum {DEVICE_ID_AD9548 = 0x48};
 enum {REVISION_ID_AD9548 = 0xC6};
 
-bool ad9548_gpio_init(BusInterface *bus)
+void ad9548_gpio_init(BusInterface *bus)
 {
+    (void) bus;
     // TODO: setup GPIO pins
-    return true;
 }
 
 bool ad9548_gpio_test(BusInterface *bus)
 {
+    (void) bus;
 #if defined (AD9548_RESET_Pin) && defined (AD9548_IRQ_B_Pin)
     bool pin_reset = read_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin);
     bool pin_irqb = read_gpio_pin(AD9548_IRQ_B_GPIO_Port, AD9548_IRQ_B_Pin);
@@ -51,17 +52,20 @@ bool ad9548_gpio_test(BusInterface *bus)
 
 static void set_nss(bool state)
 {
+    (void) state;
 //    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
 }
 
 bool ad9548_reset(BusInterface *bus)
 {
+    (void) bus;
+
     write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 1);
     write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 0);
     return true;
 }
 
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address)
+bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)
 {
     struct __SPI_HandleTypeDef *spi = hspi_handle(bus->bus_number);
     uint8_t data_out = 0x00;
@@ -85,7 +89,9 @@ uint8_t ad9548_read_register(BusInterface *bus, uint16_t address)
     ret = spi_driver_rx(spi, &data_in, 1, 1000);
     set_nss(1);
 
-    return data_in;
+    if (data)
+        *data = data_in;
+    return ret;
 }
 
 bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
@@ -120,15 +126,18 @@ bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
     return true;
 }
 
-void ad9548_ioupdate(BusInterface *bus)
+bool ad9548_ioupdate(BusInterface *bus)
 {
-    ad9548_write_register(bus, 0x0005, 0x01);
+    return ad9548_write_register(bus, 0x0005, 0x01);
 }
 
 bool ad9548_detect(BusInterface *bus)
 {
-    uint8_t device_id = ad9548_read_register(bus, 0x3);
-    uint8_t revision_id = ad9548_read_register(bus, 0x2);
+    uint8_t device_id;
+    uint8_t revision_id;
+    if (!ad9548_read_register(bus, 0x3, &device_id) ||
+        !ad9548_read_register(bus, 0x2, &revision_id))
+        return false;
     log_printf(LOG_DEBUG, "AD9548 ID: %02X %02X", device_id, revision_id);
     if (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548) return true;
     return false;

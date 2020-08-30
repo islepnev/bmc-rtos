@@ -34,13 +34,25 @@ typedef enum {
 extern "C" {
 #endif
 
-bool ad9548_gpio_init(BusInterface *bus);
-bool ad9548_gpio_test(BusInterface *bus);
-bool ad9548_reset(BusInterface *bus);
-uint8_t ad9548_read_register(BusInterface *bus, uint16_t address);
-bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value);
-void ad9548_ioupdate(BusInterface *bus);
-bool ad9548_detect(BusInterface *bus);
+void ad9548_gpio_init(BusInterface *bus);
+
+bool ad9548_gpio_test(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
+bool ad9548_reset(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
+bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)
+    __attribute__((warn_unused_result));
+
+bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
+    __attribute__((warn_unused_result));
+
+bool ad9548_ioupdate(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
+bool ad9548_detect(BusInterface *bus)
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

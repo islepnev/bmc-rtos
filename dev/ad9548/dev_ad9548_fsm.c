@@ -61,8 +61,7 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         }
         break;
     case AD9548_STATE_RESET:
-        ad9548_reset(bus);
-        if (!ad9548_software_reset(bus)) {
+        if (!ad9548_reset(bus) || !ad9548_software_reset(bus)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
             break;
         }

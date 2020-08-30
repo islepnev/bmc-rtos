@@ -27,25 +27,25 @@ typedef union {
 
 bool ad9548_read_status(BusInterface *bus, AD9548_Status *status)
 {
-    ad9548_ioupdate(bus);
-    status->sysclk.raw = ad9548_read_register(bus, 0x0D01);
-    status->DpllStat.raw = ad9548_read_register(bus, 0x0D0A);
-    status->DpllStat2.raw = ad9548_read_register(bus, 0x0D0B);
-    status->refPowerDown = ad9548_read_register(bus, 0x0500);
+    bool ok = true;
+    ok &= ad9548_ioupdate(bus);
+    ok &= ad9548_read_register(bus, 0x0D01, &status->sysclk.raw);
+    ok &= ad9548_read_register(bus, 0x0D0A, &status->DpllStat.raw);
+    ok &= ad9548_read_register(bus, 0x0D0B, &status->DpllStat2.raw);
+    ok &= ad9548_read_register(bus, 0x0500, &status->refPowerDown);
     for (uint16_t i=0; i<8; i++) {
-        status->refStatus[i].raw = ad9548_read_register(bus, 0x0D0C + i);
+        ok &= ad9548_read_register(bus, 0x0D0C + i, &status->refStatus[i].raw);
     }
     reg48_t reg48;
     for (int i=0; i<6; i++)
-        reg48.ch[i] = ad9548_read_register(bus, 0x0D14+i);
+        ok &= ad9548_read_register(bus, 0x0D14+i, &reg48.ch[i]);
     status->holdover_ftw = reg48.value;
-    return true;
+    return ok;
 }
 
 bool ad9548_read_sysclk_status(BusInterface *bus, AD9548_Status *status)
 {
-    status->sysclk.raw = ad9548_read_register(bus, 0x0D01);
-    return true;
+    return ad9548_read_register(bus, 0x0D01, &status->sysclk.raw);
 }
 
 bool ad9548_isDpllLocked(AD9548_Status *status)
