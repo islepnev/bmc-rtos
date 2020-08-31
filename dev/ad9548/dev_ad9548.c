@@ -49,3 +49,10 @@ void ad9548_clear_status(Dev_ad9548 *d)
         d->priv.status.refStatus[i].raw = 0;
     d->priv.status.holdover_ftw = 0;
 }
+
+bool ad9548_running(Dev_ad9548 *d)
+{
+    if (!d)
+        return false;
+    return d->priv.fsm_state == AD9548_STATE_RUN;
+}

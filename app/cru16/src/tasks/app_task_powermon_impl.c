@@ -284,7 +284,6 @@ void task_powermon_run (Dev_powermon *pm)
     }
 
     system_power_present = get_critical_power_valid(sensors);
-    bsp_update_system_powergood_pin(system_power_present);
     if ((priv->pmState == PM_STATE_RAMP)
             || (priv->pmState == PM_STATE_RUN)
             ) {

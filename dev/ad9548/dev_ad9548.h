@@ -31,6 +31,17 @@
 extern "C" {
 #endif
 
+typedef enum {
+    AD9548_STATE_INIT,
+    AD9548_STATE_RESET,
+    AD9548_STATE_SETUP_SYSCLK,
+    AD9548_STATE_SYSCLK_WAITLOCK,
+    AD9548_STATE_SETUP,
+    AD9548_STATE_RUN,
+    AD9548_STATE_ERROR,
+    AD9548_STATE_FATAL
+} ad9548_state_t;
+
 typedef struct Dev_ad9548_priv {
     ad9548_setup_t setup;
     AD9548_Status status;
@@ -47,6 +58,7 @@ typedef struct Dev_ad9548 {
 SensorStatus ad9548_sensor_status(const Dev_ad9548 *pll);
 void ad9548_update_pll_sensor_status(Dev_ad9548 *pll);
 void ad9548_clear_status(Dev_ad9548 *d);
+bool ad9548_running(Dev_ad9548 *d);
 
 #ifdef __cplusplus
 }

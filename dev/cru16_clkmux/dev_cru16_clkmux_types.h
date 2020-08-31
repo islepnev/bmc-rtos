@@ -18,6 +18,7 @@
 #ifndef DEV_CRU16_CLKMUX_TYPES_H
 #define DEV_CRU16_CLKMUX_TYPES_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "devicebase.h"
@@ -27,12 +28,21 @@ extern "C" {
 #endif
 
 typedef enum {
+    CRU16_CLKMUX_STATE_RESET,
+    CRU16_CLKMUX_STATE_RUN,
+    CRU16_CLKMUX_STATE_PAUSE,
+    CRU16_CLKMUX_STATE_ERROR
+} cru16_clkmux_state_t;
+
+typedef enum {
     CRU16_PLL_SOURCE_DIV3 = 0,
     CRU16_PLL_SOURCE_FMC = 1,
     CRU16_PLL_SOURCE_EXT = 2,
 } cru16_pll_source_t;
 
 typedef struct Dev_cru16_clkmux_priv {
+    uint32_t stateStartTick;
+    cru16_clkmux_state_t fsm_state;
     cru16_pll_source_t pll_source;
 } Dev_cru16_clkmux_priv;
 
@@ -40,6 +50,8 @@ typedef struct Dev_cru16_clkmux {
     DeviceBase dev;
     Dev_cru16_clkmux_priv priv;
 } Dev_cru16_clkmux;
+
+bool cru16_clkmux_running(Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }

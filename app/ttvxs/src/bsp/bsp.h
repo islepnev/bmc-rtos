@@ -63,6 +63,7 @@ extern "C" {
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
 void sfpiic_switch_enable(bool enable);
+void bsp_update_system_powergood_pin(bool power_good);
 
 #ifdef __cplusplus
 }

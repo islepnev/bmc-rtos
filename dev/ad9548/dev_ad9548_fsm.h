@@ -24,17 +24,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    AD9548_STATE_INIT,
-    AD9548_STATE_RESET,
-    AD9548_STATE_SETUP_SYSCLK,
-    AD9548_STATE_SYSCLK_WAITLOCK,
-    AD9548_STATE_SETUP,
-    AD9548_STATE_RUN,
-    AD9548_STATE_ERROR,
-    AD9548_STATE_FATAL
-} ad9548_state_t;
-
 struct Dev_ad9548;
 void dev_ad9548_run(struct Dev_ad9548 *dev, bool enable);
 

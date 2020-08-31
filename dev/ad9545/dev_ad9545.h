@@ -30,6 +30,17 @@
 extern "C" {
 #endif
 
+typedef enum {
+    AD9545_STATE_INIT,
+    AD9545_STATE_RESET,
+    AD9545_STATE_SETUP_SYSCLK,
+    AD9545_STATE_SYSCLK_WAITLOCK,
+    AD9545_STATE_SETUP,
+    AD9545_STATE_RUN,
+    AD9545_STATE_ERROR,
+    AD9545_STATE_FATAL
+} ad9545_state_t;
+
 typedef struct Dev_ad9545_priv {
     ad9545_setup_t setup;
     AD9545_Status status;
@@ -45,6 +56,7 @@ typedef struct Dev_ad9545 {
 
 void ad9545_update_pll_sensor_status(Dev_ad9545 *pll);
 void pll_ad9545_clear_status(Dev_ad9545 *d);
+bool ad9545_running(Dev_ad9545 *d);
 
 #ifdef __cplusplus
 }

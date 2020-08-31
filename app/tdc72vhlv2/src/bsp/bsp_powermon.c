@@ -107,10 +107,6 @@ double pm_get_fpga_power_w(const Dev_powermon_priv *p)
     return 0;
 }
 
-void bsp_update_system_powergood_pin(bool power_good)
-{
-}
-
 void switch_power(Dev_powermon_priv *p, bool state)
 {
 }

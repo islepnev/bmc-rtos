@@ -25,6 +25,7 @@
 #include "ad9545/dev_ad9545_fsm.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
+#include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "devicelist.h"
@@ -79,6 +80,8 @@ static void pllTask(void const *arg)
         dev_ttvxs_clkmux_run(&clkmux);
         bool power_on = enable_power && system_power_present;
         dev_ad9545_run(&pll, power_on);
+        bool clock_ready = ttvxs_clkmux_running(&clkmux) && ad9545_running(&pll);
+        bsp_update_system_powergood_pin(clock_ready);
         osDelay(pllTaskLoopDelay);
     }
 }

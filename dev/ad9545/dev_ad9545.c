@@ -40,3 +40,10 @@ void pll_ad9545_clear_status(Dev_ad9545 *d)
     memset(&d->priv.status.ref, 0, sizeof(d->priv.status.ref));
     memset(&d->priv.status.dpll, 0, sizeof(d->priv.status.dpll));
 }
+
+bool ad9545_running(Dev_ad9545 *d)
+{
+    if (!d)
+        return false;
+    return d->priv.fsm_state == AD9545_STATE_RUN;
+}

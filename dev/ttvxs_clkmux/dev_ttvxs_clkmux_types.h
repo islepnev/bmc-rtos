@@ -18,6 +18,7 @@
 #ifndef DEV_TTVXS_CLKMUX_TYPES_H
 #define DEV_TTVXS_CLKMUX_TYPES_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "devicebase.h"
@@ -27,12 +28,21 @@ extern "C" {
 #endif
 
 typedef enum {
+    TTVXS_CLKMUX_STATE_RESET,
+    TTVXS_CLKMUX_STATE_RUN,
+    TTVXS_CLKMUX_STATE_PAUSE,
+    TTVXS_CLKMUX_STATE_ERROR
+} ttvxs_clkmux_state_t;
+
+typedef enum {
     TTVXS_PLL_SOURCE_DIV3 = 0,
     TTVXS_PLL_SOURCE_FMC = 1,
     TTVXS_PLL_SOURCE_EXT = 2,
 } ttvxs_pll_source_t;
 
 typedef struct Dev_ttvxs_clkmux_priv {
+    uint32_t stateStartTick;
+    ttvxs_clkmux_state_t fsm_state;
     ttvxs_pll_source_t pll_source;
 } Dev_ttvxs_clkmux_priv;
 
@@ -40,6 +50,8 @@ typedef struct Dev_ttvxs_clkmux {
     DeviceBase dev;
     Dev_ttvxs_clkmux_priv priv;
 } Dev_ttvxs_clkmux;
+
+bool ttvxs_clkmux_running(Dev_ttvxs_clkmux *d);
 
 #ifdef __cplusplus
 }

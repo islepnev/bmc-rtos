@@ -88,6 +88,7 @@ uint32_t read_pcb_version(void)  __attribute__((warn_unused_result));
 void update_board_version(int powermon_count);
 bool fpga_done_pin_present(void);
 void sfpiic_switch_enable(bool enable);
+void bsp_update_system_powergood_pin(bool power_good);
 
 #ifdef __cplusplus
 }

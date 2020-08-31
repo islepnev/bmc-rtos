@@ -129,11 +129,6 @@ double pm_get_fpga_power_w(const Dev_powermon_priv *p)
     return 0;
 }
 
-void bsp_update_system_powergood_pin(bool power_good)
-{
-    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
-}
-
 void switch_power(Dev_powermon_priv *p, bool state)
 {
     // turn off only when failed
