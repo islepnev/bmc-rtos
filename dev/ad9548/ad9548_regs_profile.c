@@ -34,6 +34,8 @@ void ad9548_profile_find_r_s(AD9548_Profile_TypeDef *p, double ref_MHz)
         double f_tdc = 1e15 / ref_period_fs / r;
         if (f_tdc > 10e6) // limit 10 MHz
             continue;
+        if (f_tdc > 1.0e5) // test
+            continue;
         int s = lround(r / ratio);
         double diff = fabs(ratio - 1.0 * r / s);
         if (diff < min) {
@@ -139,8 +141,8 @@ const AD9548_Profile_TypeDef *PLL_Prof_default(AD9548_Profile_TypeDef *p)
     p->b.U=0;
     p->b.validation_timer=100;
     p->b.redetect_timeout=100;
-    p->b.inner_tolerance=1000;
-    p->b.outer_tolerance=1000;
+    p->b.inner_tolerance=50000;
+    p->b.outer_tolerance=20000;
     p->b.phase_lock_threshold=100;
     p->b.phase_lock_fill_rate=32;
     p->b.phase_lock_drain_rate=68;

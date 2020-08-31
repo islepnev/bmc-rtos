@@ -73,8 +73,8 @@ validation %d ms; redetect %d ms\n",
     //       prof->b.filter_gamma_1_exp,
     //       prof->b.filter_delta_0_linear,
     //       prof->b.filter_delta_1_exp);
-    // printf("R: %d, S: %d, U: %d, V: %d\n",
-    //       prof->b.R, prof->b.S, prof->b.U, prof->b.V);
+     printf("R: %d, S: %d, U: %d, V: %d\n",
+           prof->b.R, prof->b.S, prof->b.U, prof->b.V);
     printf("phase_lock: %.0f ps, fill %d, drain %d, freq_lock: %d μs, fill %d, drain %d\n",
            prof->b.phase_lock_threshold * (prof->b.phase_lock_scale ? 1e3 : 1),
            prof->b.phase_lock_fill_rate,
@@ -150,10 +150,9 @@ void ad9548_verbose_setup(const ad9548_setup_t *setup)
 {
     ad9548_print_sysclk_setup(setup);
     ad9548_print_dpll_setup(setup);
-    ad9548_print_profile(setup, 0);
-    ad9548_print_profile(setup, 1);
-    ad9548_print_profile(setup, 2);
-    ad9548_print_profile(setup, 3);
+    for (int i=0; i<AD9548_DPLL_PROFILE_COUNT; i++)
+        if (setup->prof[i].b.ref_period > 0)
+            ad9548_print_profile(setup, i);
     ad9548_print_output_setup(setup);
 }
 

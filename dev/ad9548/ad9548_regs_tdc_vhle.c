@@ -57,58 +57,73 @@ const AD9548_Output_TypeDef PLL_Output_TDC_VHLE = {
 };
 
 // 125 MHz lowest priority
-const AD9548_Profile_TypeDef *PLL_Prof0_TDC_VHLE(AD9548_Profile_TypeDef *p)
+const AD9548_Profile_TypeDef *PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
-    p->b.selection_priority = 3;
-    p->b.promoted_priority = 3;
-    p->b.ref_period = 8000000;
-    p->b.R = 19;
-    p->b.S = 19;
-    p->b.phase_lock_threshold = 10000;
-    p->b.freq_lock_threshold = 500;
+    p->b.selection_priority = 7;
+    p->b.promoted_priority = 7;
+//    p->b.ref_period = 8000000;
+//    p->b.R = 19;
+//    p->b.S = 19;
+//    p->b.phase_lock_threshold = 10000;
+//    p->b.freq_lock_threshold = 500;
     ad9548_profile_find_r_s(p, 125.0);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_3(p);
     return p;
 }
 
-// 41.7 MHz
-const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
+// 40 MHz - TTC
+const AD9548_Profile_TypeDef *PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 0;
     p->b.promoted_priority = 0;
-    p->b.R = 999;
-    p->b.S = 2999;
-    PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_4(p);
-    return p;
-};
-
-// 40 MHz
-const AD9548_Profile_TypeDef *PLL_Prof2_TDC_VHLE(AD9548_Profile_TypeDef *p)
-{
-    PLL_Prof_default(p);
-    p->b.selection_priority = 0;
-    p->b.promoted_priority = 0;
-    p->b.R = 15;
-    p->b.S = 49;
+    //    p->b.R = 15;
+    //    p->b.S = 49;
+    ad9548_profile_find_r_s(p, 40.0);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_5(p);
     return p;
 }
 
-// 41.7 MHz
-const AD9548_Profile_TypeDef *PLL_Prof3_TDC_VHLE(AD9548_Profile_TypeDef *p)
+// 41.7 MHz - TTC
+const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
-    p->b.selection_priority = 2;
-    p->b.promoted_priority = 2;
-    p->b.ref_period = 24000000;
-    p->b.R = 9;
-    p->b.S = 29;
+    p->b.selection_priority = 0;
+    p->b.promoted_priority = 0;
+    ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_2(p);
+    PLL_Prof_filter_5(p);
+    return p;
+}
+
+// 41.7 MHz - VXS
+const AD9548_Profile_TypeDef *PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 5;
+    p->b.promoted_priority = 5;
+//    p->b.R = 999;
+//    p->b.S = 2999;
+    ad9548_profile_find_r_s(p, 125.0/3);
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_4(p);
+    return p;
+};
+
+// 41.7 MHz - VCXO/3
+const AD9548_Profile_TypeDef *PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 6;
+    p->b.promoted_priority = 6;
+//    p->b.ref_period = 24000000;
+//    p->b.R = 9;
+//    p->b.S = 29;
+    ad9548_profile_find_r_s(p, 125.0/3);
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_4(p);
     return p;
 }

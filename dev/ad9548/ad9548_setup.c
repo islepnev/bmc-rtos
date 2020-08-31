@@ -171,13 +171,17 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
             return false;
     }
 
-    int base[4] = {
+    int base[AD9548_DPLL_PROFILE_COUNT] = {
         AD9545_REG_PROFILE_0_BASE,
         AD9545_REG_PROFILE_1_BASE,
         AD9545_REG_PROFILE_2_BASE,
-        AD9545_REG_PROFILE_3_BASE
+        AD9545_REG_PROFILE_3_BASE,
+        AD9545_REG_PROFILE_4_BASE,
+        AD9545_REG_PROFILE_5_BASE,
+        AD9545_REG_PROFILE_6_BASE,
+        AD9545_REG_PROFILE_7_BASE
     };
-    for (int b=0; b<4; b++) {
+    for (int b=0; b<AD9548_DPLL_PROFILE_COUNT; b++) {
         for (int i=0; i < PLL_PROF_SIZE; i++)
             if (!ad9548_write_register(bus, base[b]+i, reg->prof[b].v[i]))
                 return false;
@@ -220,7 +224,7 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
     memcpy(reg->irqmask.v, AD9548_IRQMask_Default.v, PLL_IRQMASK_SIZE);
     memcpy(reg->dpll.v, AD9548_Dpll_Default.v, PLL_DPLL_SIZE);
     memcpy(reg->refin.v, AD9548_RefIn_Default.v, PLL_REFIN_SIZE);
-    for (int i=0; i<4; i++)
+    for (int i=0; i<AD9548_DPLL_PROFILE_COUNT; i++)
         PLL_Prof_default(&reg->prof[i]);
 
     switch (variant)
@@ -236,10 +240,11 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         break;
     case BOARD_PLL_TDC_VHLE:
         memcpy(reg->output.v, PLL_Output_TDC_VHLE.v, PLL_OUTCLK_SIZE);
-        PLL_Prof0_TDC_VHLE(&reg->prof[0]);
+        PLL_Prof7_TDC_VHLE(&reg->prof[7]);
+        PLL_Prof6_TDC_VHLE(&reg->prof[6]);
+        PLL_Prof5_TDC_VHLE(&reg->prof[5]);
         PLL_Prof1_TDC_VHLE(&reg->prof[1]);
-        PLL_Prof2_TDC_VHLE(&reg->prof[2]);
-        PLL_Prof3_TDC_VHLE(&reg->prof[3]);
+        PLL_Prof4_TDC_VHLE(&reg->prof[4]);
         break;
     case BOARD_PLL_TQDC16VS:
         memcpy(reg->output.v, PLL_Output_TQDC16VS.v, PLL_OUTCLK_SIZE);
