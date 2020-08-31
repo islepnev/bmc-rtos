@@ -34,7 +34,7 @@ void ad9548_profile_find_r_s(AD9548_Profile_TypeDef *p, double ref_MHz)
         double f_tdc = 1e15 / ref_period_fs / r;
         if (f_tdc > 10e6) // limit 10 MHz
             continue;
-        if (f_tdc > 1.0e5) // test
+        if (f_tdc > 83.4e3) // limit 83.4 kHz
             continue;
         int s = lround(r / ratio);
         double diff = fabs(ratio - 1.0 * r / s);
@@ -131,6 +131,142 @@ const AD9548_Profile_TypeDef *PLL_Prof_filter_5(AD9548_Profile_TypeDef *p)
     p->b.filter_delta_0_linear = 28989;
     p->b.filter_delta_1_exp = 12;
     p->b.filter_alpha_3_exp = 0;
+    return p;
+}
+
+/*
+ * S divider 1500, bandwidth 500 Hz, phase margin 88 deg, 3rd pole 10 kHz 3 dB
+ * Sysclk 933.12 MHz
+ * PFD 83.33 kHz DDS 125 MHz
+ * 10.64013671875
+-0.000266179442406
+-0.000299416482449
+0.002159833908081
+
+*/
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S1500_500Hz(AD9548_Profile_TypeDef *p)
+{
+    p->b.filter_alpha_0_linear = 43582;
+    p->b.filter_alpha_1_exp = 0;
+    p->b.filter_alpha_2_exp = 4;
+    p->b.filter_alpha_3_exp = 0;
+    p->b.filter_beta_0_linear = 71452;
+    p->b.filter_beta_1_exp = 11;
+    p->b.filter_beta_unused = 0;
+    p->b.filter_gamma_0_linear = 80374;
+    p->b.filter_gamma_1_exp = 11;
+    p->b.filter_gamma_unused = 0;
+    p->b.filter_delta_0_linear = 18118;
+    p->b.filter_delta_1_exp = 8;
+    return p;
+}
+
+
+
+/*
+ * S divider 15, bandwidth 500 Hz, phase margin 88 deg, 3rd pole 10 kHz 3 dB
+ * Sysclk 933.12 MHz
+ * PFD 8.333 MHz DDS 125 MHz
+ * a  0.106401443481445
+ * b -0.000266179442406
+ * g -0.000299416482449
+ * d  0.002159833908081
+*/
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_500Hz(AD9548_Profile_TypeDef *p)
+{
+    p->b.filter_alpha_0_linear = 55785;
+    p->b.filter_alpha_1_exp = 3;
+    p->b.filter_alpha_2_exp = 0;
+    p->b.filter_alpha_3_exp = 0;
+    p->b.filter_beta_0_linear = 71452;
+    p->b.filter_beta_1_exp = 11;
+    p->b.filter_beta_unused = 0;
+    p->b.filter_gamma_0_linear = 80374;
+    p->b.filter_gamma_1_exp = 11;
+    p->b.filter_gamma_unused = 0;
+    p->b.filter_delta_0_linear = 18118;
+    p->b.filter_delta_1_exp = 8;
+    return p;
+}
+
+
+/*
+ * S divider 15, bandwidth 5 kHz, phase margin 88 deg, 3rd pole 100 kHz 3 dB
+ * Sysclk 933.12 MHz
+ * PFD 8.333 MHz DDS 125 MHz
+ * a  10.64013671875
+ * b -0.002661794424057
+ * g -0.002994149923325
+ * d  0.021598815917969
+*/
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_5000Hz(AD9548_Profile_TypeDef *p)
+{
+    p->b.filter_alpha_0_linear = 43582;
+    p->b.filter_alpha_1_exp = 0;
+    p->b.filter_alpha_2_exp = 4;
+    p->b.filter_alpha_3_exp = 0;
+    p->b.filter_beta_0_linear = 89315;
+    p->b.filter_beta_1_exp = 8;
+    p->b.filter_beta_unused = 0;
+    p->b.filter_gamma_0_linear = 100467;
+    p->b.filter_gamma_1_exp = 8;
+    p->b.filter_gamma_unused = 0;
+    p->b.filter_delta_0_linear = 22648;
+    p->b.filter_delta_1_exp = 5;
+    return p;
+}
+
+/*
+ * S divider 15, bandwidth 50 Hz, phase margin 88 deg, 3rd pole 1 kHz 3 dB
+ * Sysclk 933.12 MHz
+ * PFD 8.333 MHz DDS 125 MHz
+ * 0.001064032316208
+ * -2.6618130505085E-05
+ * -2.99415551126003E-05
+ * 0.000215984880924
+*/
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_50Hz(AD9548_Profile_TypeDef *p)
+{
+    p->b.filter_alpha_0_linear = 35703;
+    p->b.filter_alpha_1_exp = 9;
+    p->b.filter_alpha_2_exp = 0;
+    p->b.filter_alpha_3_exp = 0;
+    p->b.filter_beta_0_linear = 114324;
+    p->b.filter_beta_1_exp = 15;
+    p->b.filter_beta_unused = 0;
+    p->b.filter_gamma_0_linear = 128598;
+    p->b.filter_gamma_1_exp = 15;
+    p->b.filter_gamma_unused = 0;
+    p->b.filter_delta_0_linear = 28989;
+    p->b.filter_delta_1_exp = 12;
+    return p;
+}
+
+/*
+ * S divider 15, bandwidth 5 Hz, phase margin 88 deg, 3rd pole 1 kHz 3 dB
+ * Sysclk 933.12 MHz
+ * PFD 8.333 MHz DDS 125 MHz
+ * 1.22035853564739E-05
+-2.61297100223601E-06
+-2.99414386972785E-06
+0.000215984880924
+ *
+ *
+*/
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_5Hz(AD9548_Profile_TypeDef *p)
+{
+    p->b.filter_alpha_0_linear = 52414;
+    p->b.filter_alpha_1_exp = 16;
+    p->b.filter_alpha_2_exp = 0;
+    p->b.filter_alpha_3_exp = 0;
+    p->b.filter_beta_0_linear = 89781;
+    p->b.filter_beta_1_exp = 18;
+    p->b.filter_beta_unused = 0;
+    p->b.filter_gamma_0_linear = 102878;
+    p->b.filter_gamma_1_exp = 18;
+    p->b.filter_gamma_unused = 0;
+    p->b.filter_delta_0_linear = 28989;
+    p->b.filter_delta_1_exp = 12;
     return p;
 }
 

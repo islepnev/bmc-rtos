@@ -69,7 +69,7 @@ const AD9548_Profile_TypeDef *PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p)
 //    p->b.freq_lock_threshold = 500;
     ad9548_profile_find_r_s(p, 125.0);
     PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_3(p);
+    PLL_Prof_filter_S1500_500Hz(p);
     return p;
 }
 
@@ -95,7 +95,7 @@ const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
     p->b.promoted_priority = 0;
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_5(p);
+    PLL_Prof_filter_S1500_500Hz(p);
     return p;
 }
 
@@ -109,7 +109,7 @@ const AD9548_Profile_TypeDef *PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p)
 //    p->b.S = 2999;
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_4(p);
+    PLL_Prof_filter_S1500_500Hz(p);
     return p;
 };
 
@@ -124,6 +124,6 @@ const AD9548_Profile_TypeDef *PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p)
 //    p->b.S = 29;
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
-    PLL_Prof_filter_4(p);
+    PLL_Prof_filter_S1500_500Hz(p);
     return p;
 }

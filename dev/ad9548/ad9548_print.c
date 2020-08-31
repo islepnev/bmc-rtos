@@ -75,7 +75,7 @@ validation %d ms; redetect %d ms\n",
     //       prof->b.filter_delta_1_exp);
      printf("R: %d, S: %d, U: %d, V: %d\n",
            prof->b.R, prof->b.S, prof->b.U, prof->b.V);
-    printf("phase_lock: %.0f ps, fill %d, drain %d, freq_lock: %d μs, fill %d, drain %d\n",
+    printf("phase_lock: %.0f ps, fill %d, drain %d, freq_lock: %d ps, fill %d, drain %d\n",
            prof->b.phase_lock_threshold * (prof->b.phase_lock_scale ? 1e3 : 1),
            prof->b.phase_lock_fill_rate,
            prof->b.phase_lock_drain_rate,
