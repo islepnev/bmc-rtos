@@ -29,6 +29,11 @@ static double max(double x, double y)
     return (x > y) ? x : y;
 }
 
+static double sqr(double x)
+{
+    return pow(x, 2);
+}
+
 static void ad9548_quantize_a(double a, int *qa0, int *qa1, int *qa2, int *qa3)
 {
     int w = (a < 1) ? -ceil(log2(a)) : 0;
@@ -92,4 +97,37 @@ void ad9548_profile_set_iir(AD9548_Profile_TypeDef *p, const double coef[4])
     p->b.filter_gamma_1_exp = g1;
     p->b.filter_delta_0_linear = d0;
     p->b.filter_delta_1_exp = d1;
+}
+
+/**
+ * @brief ad9548_design_iir
+ * @param fs system clock frequency, Hz
+ * @param D PLL feedback divide ratio (S+1+U/V, register values)
+ * @param fp open loop bandwidth, Hz
+ * @param theta phase margin, radians
+ * @param foffset frequency offset, Hz
+ * @param atten desired attenuation in dB at offset from PLL output frequency
+ */
+bool ad9548_design_iir(double fs, double D, double fp, double theta, double foffset, double atten, double coef[4])
+{
+    double wp = 2 * M_PI * fp;
+    double T1 = (1-sin(theta)) / (wp * cos(theta));
+    double woffset = 2 * M_PI * foffset;
+    double T3 = sqrt(pow(10, atten/10) - 1) / woffset;
+    if (T3 > 1/(5*fp))
+        return false;
+
+    double T1T3 = T1*T3 + sqr(T1+T3);
+    double wc = (T1+T3)*tan(theta) / T1T3 *
+                (sqrt(1+(T1T3)/sqr((T1+T3)*tan(theta))) - 1);
+
+    double T2 = 1./(sqr(wc) * (T1+T3));
+    double K = 30517578125.0 / pow(2, 33) * fs;
+
+    coef[0] = (sqr(wc) * T2 * D) / (T1*K) *
+              sqrt((1+sqr(wc*T1)) * (1+sqr(wc*T3)) / (1+sqr(wc * T2)));
+    coef[1] = -32. / fs * (1/T1 - 1/T2);
+    coef[2] = -32. / (fs * T1);
+    coef[3] = 32. / (fs * T3);
+    return true;
 }

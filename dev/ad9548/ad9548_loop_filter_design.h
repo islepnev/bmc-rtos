@@ -18,6 +18,8 @@
 #ifndef AD9548_LOOP_FILTER_DESIGN_H
 #define AD9548_LOOP_FILTER_DESIGN_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,6 +27,8 @@ extern "C" {
 #include "ad9548_regs_profile.h"
 
 void ad9548_profile_set_iir(AD9548_Profile_TypeDef *p, const double coef[4]);
+bool ad9548_design_iir(double fs, double D, double fp, double theta,
+                       double foffset, double atten, double coef[4]);
 
 #ifdef __cplusplus
 }
