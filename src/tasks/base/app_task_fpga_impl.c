@@ -68,6 +68,7 @@ static bool read_done(void)
 static int old_fpga_done = -1;
 static int fpga_detect_fail_count = 0;
 static int fpga_error_count = 0;
+static bool load_timeout = 0;
 
 void fpga_task_run(Dev_fpga *d)
 {
@@ -100,6 +101,7 @@ void fpga_task_run(Dev_fpga *d)
         d->priv.id_read = 0;
         fpga_detect_fail_count = 0;
         fpga_error_count = 0;
+        load_timeout = 0;
         if (fpga_enable) {
             d->priv.state = FPGA_STATE_LOAD;
             d->priv.fpga_load_start_tick = osKernelSysTick();
@@ -121,13 +123,21 @@ void fpga_task_run(Dev_fpga *d)
             break;
         }
         if (stateTicks(&d->priv) > LOAD_DELAY_TICKS) {
-            log_put(LOG_ERR, "FPGA load timeout");
-            d->priv.state = FPGA_STATE_ERROR;
+            if (!load_timeout) {
+                load_timeout = true;
+                log_put(LOG_ERR, "FPGA load timeout");
+            }
+            // d->priv.state = FPGA_STATE_ERROR;
         }
         break;
     case FPGA_STATE_RESET:
         if (!fpga_power_present) {
             d->priv.state = FPGA_STATE_STANDBY;
+            break;
+        }
+        if (fpga_done_pin_present() && !fpga_done) {
+            load_timeout = 0;
+            d->priv.state = FPGA_STATE_LOAD;
             break;
         }
         d->dev.device_status = DEVICE_UNKNOWN;
