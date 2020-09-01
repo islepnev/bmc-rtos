@@ -103,6 +103,8 @@ SensorStatus get_sfpiic_sensor_status(void)
     if (!priv)
         return SENSOR_UNKNOWN;
     SensorStatus status = SENSOR_NORMAL;
+    if (!sfpiic_running(priv))
+        return SENSOR_UNKNOWN;
     for (int i=0; i<SFPIIC_CH_CNT; i++) {
         const SensorStatus sfp_status = priv->status.sfp[i].system_status;
         if (sfp_status > status)

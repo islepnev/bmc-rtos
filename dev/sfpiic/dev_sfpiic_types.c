@@ -15,12 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_cru16_clkmux_types.h"
+#include "dev_sfpiic_types.h"
 
-bool cru16_clkmux_running(const Dev_cru16_clkmux *d)
+bool sfpiic_running(const Dev_sfpiic_priv *d)
 {
     if (!d)
         return false;
-    return d->priv.fsm_state == CRU16_CLKMUX_STATE_RUN ||
-           d->priv.fsm_state == CRU16_CLKMUX_STATE_PAUSE;
+    return d->fsm_state == SFPIIC_STATE_RUN ||
+           d->fsm_state == SFPIIC_STATE_PAUSE;
 }

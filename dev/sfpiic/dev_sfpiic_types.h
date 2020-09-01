@@ -89,7 +89,7 @@ typedef struct sfpiic_status_t sfpiic_status_t;
 
 enum { SFPIIC_PORT_NAME_LEN = 16 };
 typedef struct Dev_sfpiic_priv {
-    sfpiic_state_t state;
+    sfpiic_state_t fsm_state;
     uint32_t stateStartTick;
     sfpiic_status_t status;
     uint32_t portCount;
@@ -112,5 +112,7 @@ typedef struct Dev_sfpiic {
     Dev_pca9548 *mux;
     Dev_sfpiic_priv priv;
 } Dev_sfpiic;
+
+bool sfpiic_running(const Dev_sfpiic_priv *d);
 
 #endif // DEV_SFPIIC_TYPES_H

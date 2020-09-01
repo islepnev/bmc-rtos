@@ -29,57 +29,57 @@ static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 void task_sfpiic_run(Dev_sfpiic *p, bool power_on)
 {
-    const sfpiic_state_t old_state = p->priv.state;
+    const sfpiic_state_t old_state = p->priv.fsm_state;
     const DeviceStatus old_device_status = p->dev.device_status;
     const uint32_t stateTicks = osKernelSysTick() - p->priv.stateStartTick;
 
     if (!power_on) {
-        if (p->priv.state != SFPIIC_STATE_SHUTDOWN) {
-            p->priv.state = SFPIIC_STATE_SHUTDOWN;
+        if (p->priv.fsm_state != SFPIIC_STATE_SHUTDOWN) {
+            p->priv.fsm_state = SFPIIC_STATE_SHUTDOWN;
             static const sfpiic_status_t zz = {0};
             p->priv.status = zz;
             p->dev.device_status = DEVICE_UNKNOWN;
         }
     }
-    switch (p->priv.state) {
+    switch (p->priv.fsm_state) {
     case SFPIIC_STATE_SHUTDOWN: {
         p->dev.device_status = DEVICE_UNKNOWN;
         if (power_on)
-            p->priv.state = SFPIIC_STATE_RESET;
+            p->priv.fsm_state = SFPIIC_STATE_RESET;
         break;
     }
     case SFPIIC_STATE_RESET: {
         if (stateTicks > POWERON_DELAY_TICKS) {
             if (DEVICE_NORMAL == dev_sfpiic_detect(p)) {
-                p->priv.state = SFPIIC_STATE_RUN;
+                p->priv.fsm_state = SFPIIC_STATE_RUN;
             }
         }
         break;
     }
     case SFPIIC_STATE_RUN:
         if (DEVICE_NORMAL != dev_sfpiic_update(p)) {
-            p->priv.state = SFPIIC_STATE_ERROR;
+            p->priv.fsm_state = SFPIIC_STATE_ERROR;
             break;
         }
-        p->priv.state = SFPIIC_STATE_PAUSE;
+        p->priv.fsm_state = SFPIIC_STATE_PAUSE;
         break;
     case SFPIIC_STATE_PAUSE:
         if (stateTicks > POLL_DELAY_TICKS) {
-            p->priv.state = SFPIIC_STATE_RUN;
+            p->priv.fsm_state = SFPIIC_STATE_RUN;
         }
         break;
     case SFPIIC_STATE_ERROR:
-        if (old_state != p->priv.state) {
+        if (old_state != p->priv.fsm_state) {
         }
         if (stateTicks > ERROR_DELAY_TICKS) {
-            p->priv.state = SFPIIC_STATE_RESET;
+            p->priv.fsm_state = SFPIIC_STATE_RESET;
         }
         break;
     }
     if (old_device_status != p->dev.device_status)
         dev_log_status_change(&p->dev);
 
-    if (old_state != p->priv.state) {
+    if (old_state != p->priv.fsm_state) {
         p->priv.stateStartTick = osKernelSysTick();
     }
 }

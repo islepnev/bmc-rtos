@@ -51,7 +51,7 @@ typedef struct Dev_cru16_clkmux {
     Dev_cru16_clkmux_priv priv;
 } Dev_cru16_clkmux;
 
-bool cru16_clkmux_running(Dev_cru16_clkmux *d);
+bool cru16_clkmux_running(const Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }
