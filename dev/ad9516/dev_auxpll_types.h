@@ -52,6 +52,7 @@ typedef struct Dev_auxpll {
 } Dev_auxpll;
 
 SensorStatus get_auxpll_sensor_status(void);
+bool ad9516_running(Dev_auxpll *d);
 
 #ifdef __cplusplus
 }

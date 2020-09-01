@@ -76,16 +76,7 @@ static void run(void)
     dev_ttvxs_clkmux_run(&clkmux);
     const bool power_on = enable_power && system_power_present;
     dev_ad9545_run(&pll, power_on);
-    static bool old_clock_ready = 0;
-    const bool clock_ready = ttvxs_clkmux_running(&clkmux) && ad9545_running(&pll);
-    if (old_clock_ready != clock_ready) {
-        bsp_update_system_powergood_pin(clock_ready);
-        if (clock_ready)
-            log_printf(LOG_INFO, "clock ready");
-        else
-            log_printf(LOG_WARNING, "clock not ready");
-        old_clock_ready = clock_ready;
-    }
+    main_clock_ready = ttvxs_clkmux_running(&clkmux) && ad9545_running(&pll);
 }
 
 static void pllTask(void const *arg)

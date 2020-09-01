@@ -18,6 +18,7 @@
 #include "app_task_main_impl.h"
 
 #include "app_shared_data.h"
+#include "bsp.h"
 #include "device_status_log.h"
 #include "led_gpio_hal.h"
 #include "log/log.h"
@@ -25,6 +26,28 @@
 #include "system_status.h"
 
 static uint32_t mainloopCount = 0;
+
+void check_clock_ready(void)
+{
+    static bool old_clock_ready = false;
+    bool clock_ready = enable_power && system_power_present;
+#if defined(ENABLE_AD9545) || defined(ENABLE_AD9548)
+    clock_ready &= main_clock_ready;
+#endif
+
+#if defined(ENABLE_AD9516)
+    clock_ready &= aux_clock_ready;
+#endif
+
+    if (old_clock_ready != clock_ready) {
+        bsp_update_system_powergood_pin(clock_ready);
+        if (clock_ready)
+            log_printf(LOG_INFO, "clock ready");
+        else
+            log_printf(LOG_WARNING, "clock not ready");
+        old_clock_ready = clock_ready;
+    }
+}
 
 void task_main_init(void)
 {
@@ -45,7 +68,7 @@ void task_main_run(void)
         log_printf(prio, "System status is %s", sensor_status_text(systemStatus));
         old_status = systemStatus;
     }
-
+    check_clock_ready();
 
     // read SD card status
     // getDevices()->sd.detect_b = read_gpio_pin(uSD_Detect_GPIO_Port, uSD_Detect_Pin);

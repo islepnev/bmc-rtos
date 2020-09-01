@@ -57,6 +57,7 @@ static void auxpllTask(void const *arg)
     while(1) {
         bool enable = enable_power && system_power_present;
         auxpll_task_run(&d, enable);
+        aux_clock_ready = ad9516_running(&d);
         osDelay(auxpllTaskLoopDelay);
     }
 }

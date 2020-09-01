@@ -24,6 +24,9 @@ int enable_power = 1;
 bool eth_link_up = false;
 int app_ipv4 = 0;
 
+bool main_clock_ready = false;
+bool aux_clock_ready = false;
+
 int screen_width = 100;
 int screen_height = 35;
 bool screen_size_set = 0;

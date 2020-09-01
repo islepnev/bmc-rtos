@@ -48,6 +48,9 @@ extern int screen_width;
 extern int screen_height;
 extern bool screen_size_set;
 
+extern bool main_clock_ready;
+extern bool aux_clock_ready;
+
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);
 void schedule_display_reset(void);

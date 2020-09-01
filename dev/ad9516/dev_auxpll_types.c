@@ -42,3 +42,10 @@ SensorStatus get_auxpll_sensor_status(void)
         return SENSOR_WARNING;
     return SENSOR_NORMAL;
 }
+
+bool ad9516_running(Dev_auxpll *d)
+{
+    if (!d)
+        return false;
+    return d->priv.fsm_state == AUXPLL_STATE_RUN;
+}
