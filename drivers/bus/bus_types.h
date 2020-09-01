@@ -34,6 +34,7 @@ typedef struct BusInterface {
     BusType type;
     int bus_number;
     BusIndex address;
+    struct DeviceBase *dev;
 } BusInterface;
 
 extern const BusInterface null_bus_info;

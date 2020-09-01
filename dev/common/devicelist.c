@@ -41,6 +41,7 @@ void create_device(DeviceBase *parent, DeviceBase *d, void *priv, DeviceClass de
 {
     d->device_class = device_class;
     d->bus = bus;
+    d->bus.dev = d;
     strncpy(d->name, name, sizeof(d->name) - 1);
     d->name[sizeof(d->name)-1] = '\0';
     d->priv = priv;

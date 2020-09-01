@@ -23,6 +23,7 @@
 
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
+#include "devicebase.h"
 #include "error_handler.h"
 #include "i2c.h"
 #include "i2c_driver_util.h"
@@ -35,8 +36,11 @@ void i2c_driver_log_error(const char *title, BusInterface *bus)
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     if (bus->bus_number == 1 && hi2c->ErrorCode == HAL_I2C_ERROR_AF)
         return; // FIXME: no message for vxsiicm
-    log_printf(LOG_WARNING, "%s: I2C %d.%02X %s%s%s%s%s%s%s%s%s (error code 0x%04X)\n",
-               title, bus->bus_number, bus->address,
+    log_printf(LOG_WARNING, "I2C %d.%02X %s '%s' %s:%s%s%s%s%s%s%s%s%s (error code 0x%04X)\n",
+               bus->bus_number, bus->address,
+               bus->dev ? device_class_str(bus->dev->device_class) : "",
+               bus->dev ? bus->dev->name : "",
+               title,
                (hi2c->ErrorCode & HAL_I2C_ERROR_BERR)          ? " BERR" : "",
                (hi2c->ErrorCode & HAL_I2C_ERROR_ARLO)          ? " ARLO" : "",
                (hi2c->ErrorCode & HAL_I2C_ERROR_AF)            ? " ACKF" : "",
@@ -66,13 +70,21 @@ static bool i2c_driver_wait_complete(const char *title, BusInterface *bus, uint3
     const uint16_t DevAddress = bus->address << 1;
     int32_t status = i2c_driver_wait_it_sem(hi2c, millisec);
     if (status != osOK) {
-        log_printf(LOG_CRIT, "%s: I2C %d.%02X timeout\n", title, bus->bus_number, bus->address);
+        log_printf(LOG_CRIT, "I2C %d.%02X %s '%s' %s: timeout\n",
+                   bus->bus_number, bus->address,
+                   bus->dev ? device_class_str(bus->dev->device_class) : "",
+                   bus->dev ? bus->dev->name : "",
+                   title);
         HAL_I2C_Master_Abort_IT(hi2c, DevAddress);
         i2c_driver_reset_internal(bus);
         return false;
     }
     if (! i2c_driver_is_transfer_ok(hi2c)) {
-        log_printf(LOG_CRIT, "%s: I2C %d.%02X transfer failed\n", title, bus->bus_number, bus->address);
+        log_printf(LOG_CRIT, "I2C %d.%02X %s '%s' %s: transfer failed\n",
+                   bus->bus_number, bus->address,
+                   bus->dev ? device_class_str(bus->dev->device_class) : "",
+                   bus->dev ? bus->dev->name : "",
+                   title);
         return false;
     }
     return true;
@@ -91,15 +103,21 @@ static bool i2c_driver_before_hal_call(const char *title, BusInterface *bus)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     if (hi2c->State == HAL_I2C_STATE_RESET) {
-        log_printf(LOG_CRIT, "%s: I2C %d not initialized\n",
-                   title, bus->bus_number);
+        log_printf(LOG_CRIT, "I2C %d.%02X %s '%s' %s: peripheral not initialized\n",
+                   bus->bus_number, bus->address,
+                   bus->dev ? device_class_str(bus->dev->device_class) : "",
+                   bus->dev ? bus->dev->name : "",
+                   title);
         return false;
     }
     assert(hi2c->State == HAL_I2C_STATE_READY);
     i2c_driver_clear_transfer_error(hi2c);
     if (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance)) {
-        log_printf(LOG_CRIT, "%s: I2C %d.%02X bus busy\n",
-                   title, bus->bus_number, bus->address);
+        log_printf(LOG_CRIT, "I2C %d.%02X %s '%s' %s: bus busy\n",
+                   bus->bus_number, bus->address,
+                   bus->dev ? device_class_str(bus->dev->device_class) : "",
+                   bus->dev ? bus->dev->name : "",
+                   title);
         i2c_driver_reset_internal(bus);
         return false;
     }
@@ -122,53 +140,53 @@ bool i2c_driver_detect_internal(BusInterface *bus, uint32_t Trials, uint32_t mil
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     const uint16_t DevAddress = (bus->address << 1) | 1; // set read bit
-    if (!i2c_driver_before_hal_call(__func__, bus))
+    if (!i2c_driver_before_hal_call("detect", bus))
         return false;
     HAL_StatusTypeDef ret = HAL_I2C_IsDeviceReady(hi2c, DevAddress, Trials, millisec);
     if (HAL_OK == ret)
         return true;
     if (hi2c->ErrorCode != HAL_I2C_ERROR_AF && hi2c->ErrorCode != HAL_I2C_ERROR_TIMEOUT)
-        i2c_driver_log_error(__func__, bus);
+        i2c_driver_log_error("detect", bus);
     return false;
-    // return i2c_driver_check_hal_ret(__func__, hi2c, DevAddress, ret);
+    // return i2c_driver_check_hal_ret("detect", hi2c, DevAddress, ret);
 }
 
 bool i2c_driver_read_internal(BusInterface *bus, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     const uint16_t DevAddress = (bus->address << 1) | 1; // set read bit
-    if (!i2c_driver_before_hal_call(__func__, bus))
+    if (!i2c_driver_before_hal_call("read", bus))
         return false;
     HAL_StatusTypeDef ret = HAL_I2C_Master_Receive_IT(hi2c, DevAddress, pData, Size);
-    return i2c_driver_after_hal_call(__func__, bus, ret, millisec);
+    return i2c_driver_after_hal_call("read", bus, ret, millisec);
 }
 
 bool i2c_driver_write_internal(BusInterface *bus, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     const uint16_t DevAddress = bus->address << 1;
-    if (!i2c_driver_before_hal_call(__func__, bus))
+    if (!i2c_driver_before_hal_call("write", bus))
         return false;
     HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit_IT(hi2c, DevAddress, pData, Size);
-    return i2c_driver_after_hal_call(__func__, bus, ret, millisec);
+    return i2c_driver_after_hal_call("write", bus, ret, millisec);
 }
 
 bool i2c_driver_mem_read_internal(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     const uint16_t DevAddress = (bus->address << 1) | 1; // set read bit
-    if (!i2c_driver_before_hal_call(__func__, bus))
+    if (!i2c_driver_before_hal_call("mem read", bus))
         return false;
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Read_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
-    return i2c_driver_after_hal_call(__func__, bus, ret, millisec);
+    return i2c_driver_after_hal_call("mem read", bus, ret, millisec);
 }
 
 bool i2c_driver_mem_write_internal(BusInterface *bus, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
 {
     struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
     const uint16_t DevAddress = bus->address << 1;
-    if (!i2c_driver_before_hal_call(__func__, bus))
+    if (!i2c_driver_before_hal_call("mem write", bus))
         return false;
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size);
-    return i2c_driver_after_hal_call(__func__, bus, ret, millisec);
+    return i2c_driver_after_hal_call("mem write", bus, ret, millisec);
 }
