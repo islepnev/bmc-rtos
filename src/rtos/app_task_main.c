@@ -37,7 +37,7 @@ static void start_thread_main(void const *arg)
     }
 }
 
-osThreadDef(main, start_thread_main, osPriorityNormal,      1, mainThreadStackSize);
+osThreadDef(main, start_thread_main, osPriorityNormal, 1, mainThreadStackSize);
 
 void create_task_main(void)
 {

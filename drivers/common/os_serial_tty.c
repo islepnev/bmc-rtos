@@ -26,6 +26,8 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 
+uint32_t tty_uart_errors = 0;
+
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
 osMessageQDef(message_q_ttytx, 1, uint32_t);
 osMessageQId (message_q_ttyrx_id);
@@ -60,6 +62,19 @@ void serial_console_interrupt_handler(USART_TypeDef *usart)
     }
     if (LL_USART_IsActiveFlag_ORE(usart)) {
         LL_USART_ClearFlag_ORE(usart);
+        tty_uart_errors++;
+    }
+    if (LL_USART_IsActiveFlag_FE(usart)) {
+        LL_USART_ClearFlag_FE(usart);
+        tty_uart_errors++;
+    }
+    if (LL_USART_IsActiveFlag_PE(usart)) {
+        LL_USART_ClearFlag_PE(usart);
+        tty_uart_errors++;
+    }
+    if (LL_USART_IsActiveFlag_NE(usart)) {
+        LL_USART_ClearFlag_NE(usart);
+        tty_uart_errors++;
     }
 }
 
