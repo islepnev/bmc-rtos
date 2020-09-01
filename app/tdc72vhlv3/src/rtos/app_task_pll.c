@@ -30,10 +30,11 @@
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "devicelist.h"
+#include "log/log.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize + 80 };
-static const uint32_t pllTaskLoopDelay = 50;
+static const uint32_t pllTaskLoopPeriod = 50;
 
 static BusInterface pll_bus_info = {
     .type = BUS_SPI,
@@ -50,6 +51,22 @@ static void local_init(DeviceBase *parent)
     create_device(parent, &pll.dev, &pll.priv, DEV_CLASS_AD9548, pll_bus_info, "Main PLL");
 }
 
+static void run(void)
+{
+    const bool power_on = enable_power && system_power_present;
+    dev_ad9548_run(&pll, power_on);
+    static bool old_clock_ready = 0;
+    const bool clock_ready = ad9548_running(&pll);
+    if (old_clock_ready != clock_ready) {
+        bsp_update_system_powergood_pin(clock_ready);
+        if (clock_ready)
+            log_printf(LOG_INFO, "clock ready");
+        else
+            log_printf(LOG_WARNING, "clock not ready");
+        old_clock_ready = clock_ready;
+    }
+}
+
 static void pllTask(void const *arg)
 {
     (void) arg;
@@ -57,13 +74,19 @@ static void pllTask(void const *arg)
     ad9548_gpio_init(&pll.dev.bus);
 
     while(1) {
-        bool power_on = enable_power && system_power_present;
-        dev_ad9548_run(&pll, power_on);
-        osDelay(pllTaskLoopDelay);
+        const uint32_t start = osKernelSysTick();
+        run();
+        const uint32_t finish = osKernelSysTick();
+        const uint32_t elapsed = finish - start;
+        if (elapsed > pllTaskLoopPeriod) {
+            log_printf(LOG_NOTICE, "%s task time %.3f s", "pll", elapsed / 1000.00);
+        }
+        const int32_t delay = pllTaskLoopPeriod - elapsed;
+        osDelay(delay > 1 ? delay : 1);
     }
 }
 
-osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
+osThreadDef(pll, pllTask, osPriorityBelowNormal, 1, pllThreadStackSize);
 
 void create_task_pll(DeviceBase *parent)
 {

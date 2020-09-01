@@ -25,15 +25,17 @@
 #include "ad9545/dev_ad9545_fsm.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
+#include "bsp.h"
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "devicelist.h"
 #include "eeprom_config/dev_eeprom_config.h"
 #include "eeprom_config/dev_eeprom_config_fsm.h"
+#include "log/log.h"
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize + 150 };
-static const uint32_t pllTaskLoopDelay = 30;
+static const uint32_t pllTaskLoopPeriod = 30;
 
 static BusInterface pll_bus_info = {
     .type = BUS_IIC,
@@ -56,6 +58,26 @@ static void local_init(DeviceBase *parent) {
     create_device(parent, &eeprom.dev, &eeprom.priv, DEV_CLASS_EEPROM, eeprom_config_bus_info, "EEPROM-Config");
 }
 
+static void run(void)
+{
+    if (system_power_present) // issue #688, #734
+        dev_eeprom_config_run(&eeprom);
+    else
+        eeprom.dev.device_status = DEVICE_UNKNOWN;
+    const bool power_on = enable_power && system_power_present;
+    dev_ad9545_run(&pll, power_on);
+    static bool old_clock_ready = 0;
+    const bool clock_ready = ad9545_running(&pll);
+    if (old_clock_ready != clock_ready) {
+        bsp_update_system_powergood_pin(clock_ready);
+        if (clock_ready)
+            log_printf(LOG_INFO, "clock ready");
+        else
+            log_printf(LOG_WARNING, "clock not ready");
+        old_clock_ready = clock_ready;
+    }
+}
+
 static void pllTask(void const *arg)
 {
     (void) arg;
@@ -63,17 +85,19 @@ static void pllTask(void const *arg)
     ad9545_gpio_init(&pll.dev.bus);
 
     while(1) {
-        if (system_power_present) // issue #688, #734
-            dev_eeprom_config_run(&eeprom);
-        else
-            eeprom.dev.device_status = DEVICE_UNKNOWN;
-        bool power_on = enable_power && system_power_present;
-        dev_ad9545_run(&pll, power_on);
-        osDelay(pllTaskLoopDelay);
+        const uint32_t start = osKernelSysTick();
+        run();
+        const uint32_t finish = osKernelSysTick();
+        const uint32_t elapsed = finish - start;
+        if (elapsed > pllTaskLoopPeriod) {
+            log_printf(LOG_NOTICE, "%s task time %.3f s", "pll", elapsed / 1000.00);
+        }
+        const int32_t delay = pllTaskLoopPeriod - elapsed;
+        osDelay(delay > 1 ? delay : 1);
     }
 }
 
-osThreadDef(pll, pllTask, osPriorityBelowNormal,      1, pllThreadStackSize);
+osThreadDef(pll, pllTask, osPriorityBelowNormal, 1, pllThreadStackSize);
 
 void create_task_pll(DeviceBase *parent)
 {
