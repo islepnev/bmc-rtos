@@ -23,9 +23,7 @@
 #include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "gpio.h"
-#include "i2c.h"
 #include "log/log.h"
-#include "stm32_hal.h"
 #include "vxsiic_hal.h"
 #include "vxsiic_iic_driver.h"
 
@@ -78,19 +76,19 @@ bool vxsiic_mux_select(BusInterface *bus, uint8_t subdevice, uint8_t channel, bo
 //    return true;
 //}
 
-void sprint_i2c_error(char *buf, size_t size, uint32_t code)
-{
-    snprintf(buf, size, "%08lX%s%s%s%s%s%s%s",
-             code,
-             (code &  HAL_I2C_ERROR_BERR) ? " BERR" : "",
-             (code &  HAL_I2C_ERROR_ARLO) ? " ARLO" : "",
-             (code &  HAL_I2C_ERROR_AF) ? " AF" : "",
-             (code &  HAL_I2C_ERROR_OVR) ?  " OVR" : "",
-             (code &  HAL_I2C_ERROR_DMA) ?  " DMA" : "",
-             (code &  HAL_I2C_ERROR_TIMEOUT) ? " TIMEOUT" : "",
-             (code &  HAL_I2C_ERROR_DMA_PARAM) ? " DMA_PARAM" : ""
-                                                 );
-}
+//static void sprint_i2c_error(char *buf, size_t size, uint32_t code)
+//{
+//    snprintf(buf, size, "%08lX%s%s%s%s%s%s%s",
+//             code,
+//             (code &  HAL_I2C_ERROR_BERR) ? " BERR" : "",
+//             (code &  HAL_I2C_ERROR_ARLO) ? " ARLO" : "",
+//             (code &  HAL_I2C_ERROR_AF) ? " AF" : "",
+//             (code &  HAL_I2C_ERROR_OVR) ?  " OVR" : "",
+//             (code &  HAL_I2C_ERROR_DMA) ?  " DMA" : "",
+//             (code &  HAL_I2C_ERROR_TIMEOUT) ? " TIMEOUT" : "",
+//             (code &  HAL_I2C_ERROR_DMA_PARAM) ? " DMA_PARAM" : ""
+//                                                 );
+//}
 
 bool vxsiic_detect_pp_eeprom(BusInterface *bus, uint8_t pp)
 {
@@ -110,14 +108,14 @@ bool vxsiic_read_pp_eeprom(BusInterface *bus, uint8_t pp, uint16_t reg, uint8_t 
 {
     BusInterface bus2 = *bus;
     bus2.address = PAYLOAD_BOARD_EEPROM_I2C_ADDRESS;
-    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_16BIT, data, 1);
+    return vxsiic_mem_read16(&bus2, reg, data, 1);
 }
 
 bool vxsiic_read_pp_ioexp(BusInterface *bus, uint8_t pp, uint8_t reg, uint8_t *data)
 {
     BusInterface bus2 = *bus;
     bus2.address = PAYLOAD_BOARD_IOEXP_I2C_ADDRESS;
-    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_8BIT, data, 1);
+    return vxsiic_mem_read8(&bus2, reg, data, 1);
 }
 
 bool vxsiic_read_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t *data)
@@ -125,7 +123,7 @@ bool vxsiic_read_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t 
     BusInterface bus2 = *bus;
     bus2.address = PAYLOAD_BOARD_MCU_I2C_ADDRESS;
     enum {Size = 4};
-    return vxsiic_mem_read(&bus2, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_read16(&bus2, reg, (uint8_t *)data, Size);
 }
 
 bool vxsiic_write_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t data)
@@ -133,5 +131,5 @@ bool vxsiic_write_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t
     BusInterface bus2 = *bus;
     bus2.address = PAYLOAD_BOARD_MCU_I2C_ADDRESS;
     enum {Size = 4};
-    return vxsiic_mem_write(&bus2, reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)data, Size);
+    return vxsiic_mem_write16(&bus2, reg, (uint8_t *)data, Size);
 }

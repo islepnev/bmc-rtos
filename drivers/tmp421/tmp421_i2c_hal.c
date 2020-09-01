@@ -19,27 +19,20 @@
 #include "tmp421_i2c_hal.h"
 
 #include "bus/i2c_driver.h"
-#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
-#include "i2c.h"
-#include "stm32_hal.h"
 
 static const int I2C_TIMEOUT_MS = 50;
 
 bool tmp421_detect(BusInterface *bus)
 {
-    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
-    uint16_t DevAddress = bus->address << 1;
     uint32_t Trials = 2;
-    return i2c_driver_detect(hi2c, DevAddress, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(bus, Trials, I2C_TIMEOUT_MS);
 }
 
 bool tmp421_read(BusInterface *bus, uint8_t reg, uint8_t *data)
 {
-    struct __I2C_HandleTypeDef *hi2c = hi2c_handle(bus->bus_number);
-    uint16_t DevAddress = bus->address << 1;
     uint8_t tmp;
-    if (! i2c_driver_mem_read(hi2c, DevAddress, reg, I2C_MEMADD_SIZE_8BIT,
-                             &tmp, 1, I2C_TIMEOUT_MS))
+    if (! i2c_driver_mem_read8(bus, reg,
+                              &tmp, 1, I2C_TIMEOUT_MS))
         return false;
     if (data)
         *data = tmp;
