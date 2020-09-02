@@ -18,6 +18,8 @@
 #ifndef INIT_SYSCLK_H
 #define INIT_SYSCLK_H
 
-void SystemClock_Config(void);
+#include "clock.h"
+
+sysclk_source_t SystemClock_Config(void);
 
 #endif // INIT_SYSCLK_H

@@ -43,11 +43,8 @@ void init_periph(void)
 
     // i2c_driver_init();
 
-    debug_print("SPI driver init...");
+    debug_print("SPI init...");
     spi_driver_init();
-    debug_print(" Ok\n");
-
-    debug_print("SPI peripherals init...");
     init_spi_peripherals();
     debug_print(" Ok\n");
 }

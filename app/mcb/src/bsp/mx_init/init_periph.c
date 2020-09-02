@@ -23,28 +23,48 @@
 #include "spi.h"
 #include "usart.h"
 
+#include "ansi_escape_codes.h"
 #include "bus/i2c_driver.h"
 #include "bus/spi_driver.h"
+#include "debug_helpers.h"
 
 void init_periph(void)
 {
-  //  MX_FMC_Init();
+    //  MX_FMC_Init();
 
-  i2c_driver_init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_I2C3_Init();
-  MX_I2C4_Init();
+    MX_USART1_UART_Init(); // front-panel usb
+    MX_USART2_UART_Init(); // mezzanine usb
+    //  MX_USART6_UART_Init();
+    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL"\n\nUART init Ok\n");
 
-  //  MX_QUADSPI_Init();
-  //  MX_SDMMC1_SD_Init();
-  spi_driver_init();
-  init_spi_peripherals();
+    debug_print("I2C init...");
+    i2c_driver_init();
+    MX_I2C1_Init();
+    MX_I2C2_Init();
+    MX_I2C3_Init();
+    MX_I2C4_Init();
+    debug_print(" Ok\n");
 
-  MX_USART1_UART_Init(); // front-panel usb
-  MX_USART2_UART_Init(); // mezzanine usb
-  //  MX_USART6_UART_Init();
+    //  MX_QUADSPI_Init();
+    //  MX_SDMMC1_SD_Init();
 
-  MX_ADC1_Init();
-  MX_RTC_Init();
+    debug_print("SPI init...");
+    spi_driver_init();
+    init_spi_peripherals();
+    debug_print(" Ok\n");
+
+    debug_print("ADC init...");
+    if (!MX_ADC1_Init()) {
+        debug_printf("FAILED\n");
+    } else {
+        debug_print(" Ok\n");
+    }
+
+    debug_print("RTC init...");
+    if (!MX_RTC_Init()) {
+        debug_printf("FAILED\n");
+    } else {
+        debug_print(" Ok\n");
+    }
+
 }

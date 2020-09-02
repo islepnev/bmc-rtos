@@ -17,6 +17,7 @@
 
 #include "app_task_init.h"
 #include "app_tasks.h"
+#include "clock.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "gpio.h"
@@ -25,6 +26,7 @@
 #include "init_periph.h"
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"
+#include "log/log.h"
 #include "stm32_hal.h"
 
 int main(void)
@@ -35,7 +37,7 @@ int main(void)
 #endif
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
-    SystemClock_Config();
+    sysclk_source_t sysclk_source = SystemClock_Config();
 
     /* Initialize all configured peripherals */
     gpio_enable_clock();
@@ -45,6 +47,11 @@ int main(void)
 
     app_task_init();
     create_tasks();
+    if (sysclk_source == SYSCLK_HSI)
+        log_printf(LOG_WARNING, "System clock: internal oscillator");
+    if (sysclk_source == SYSCLK_HSE)
+        log_printf(LOG_INFO, "System clock: external");
+
     led_all_set_state(false);
     debug_printf("Starting kernel\n");
 

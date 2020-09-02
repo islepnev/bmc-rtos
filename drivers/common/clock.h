@@ -24,6 +24,11 @@
 extern "C" {
 #endif
 
+typedef enum {
+    SYSCLK_HSI,
+    SYSCLK_HSE
+} sysclk_source_t;
+
 bool test_cpu_tick(void);
 bool test_hal_systick(void);
 bool test_timers(void);

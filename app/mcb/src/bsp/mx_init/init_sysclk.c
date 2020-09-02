@@ -21,18 +21,21 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_ll_rcc.h"
 
-void SystemClock_Config(void)
+// nothing to do without clock configured
+static __attribute__((noreturn)) void Clock_Error_Handler(void)
+{
+    while (1) {}
+}
+
+static bool SystemClock_Config_HSE(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    /** Configure the main internal regulator output voltage
-  */
     __HAL_RCC_PWR_CLK_ENABLE();
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-    /** Initializes the CPU, AHB and APB busses clocks
-  */
+
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -43,17 +46,12 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLQ = 8;
     RCC_OscInitStruct.PLL.PLLR = 7; // 2..7
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Activate the Over-Drive mode
-  */
+        return false;
+
+
     if (HAL_PWREx_EnableOverDrive() != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Initializes the CPU, AHB and APB busses clocks
-  */
+        return false;
+
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                                   |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -62,9 +60,8 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_6) != HAL_OK)
-    {
-        Error_Handler();
-    }
+        return false;
+
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2
                                                |RCC_PERIPHCLK_USART6|RCC_PERIPHCLK_I2C1
                                                |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C3
@@ -81,7 +78,18 @@ void SystemClock_Config(void)
     PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
     PeriphClkInitStruct.Sdmmc1ClockSelection = RCC_SDMMC1CLKSOURCE_CLK48;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-        Error_Handler();
-    }
+        return false;
+    return true;
+}
+
+sysclk_source_t SystemClock_Config(void)
+{
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    if (SystemClock_Config_HSE())
+        return SYSCLK_HSE;
+//    if (SystemClock_Config_HSI())
+//        return SYSCLK_HSI;
+    Clock_Error_Handler();
 }

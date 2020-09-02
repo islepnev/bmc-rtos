@@ -23,8 +23,8 @@
 extern "C" {
 #endif
 
-void app_exit_handler(int result);
-void Error_Handler(void);
+__attribute__((noreturn)) void app_exit_handler(int result);
+__attribute__((noreturn)) void Error_Handler(void);
 
 /*
 #include "FreeRTOS.h"
