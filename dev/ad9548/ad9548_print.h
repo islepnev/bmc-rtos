@@ -30,6 +30,7 @@ extern "C" {
 void ad9548_verbose_setup(const ad9548_setup_t *setup);
 void ad9548_verbose_status(const ad9548_setup_t *setup, const AD9548_Status *status);
 void ad9548_brief_status(const ad9548_setup_t *setup, const AD9548_Status *status);
+void ad9548_print_irq_status(const AD9548_IRQMask_TypeDef *irq);
 
 #ifdef __cplusplus
 }

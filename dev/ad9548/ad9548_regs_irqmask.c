@@ -17,16 +17,23 @@
 
 #include "ad9548_regs_irqmask.h"
 
-const AD9548_IRQMask_TypeDef AD9548_IRQMask_Default = {
-    .v = {
-        0x00,	// IRQ Pin Output Mode
-        0x33,	// IRQ Mask for SYSCLK
-        0x0F,	// IRQ Mask for Distribution Sync, Watchdog Timer, and EEPROM
-        0xFF,	// IRQ Mask for the Digital PLL
-        0x1F,	// IRQ Mask for History Update, Frequency Limit, and Phase Slew Limit
-        0xFF,	// IRQ Mask for Reference Inputs (AA/A)
-        0xFF,	// IRQ Mask for Reference Inputs (BB/B)
-        0xFF,	// IRQ Mask for Reference Inputs (CC/C)
-        0xFF	// IRQ Mask for Reference Inputs (DD/D)
-    }
-};
+void AD9548_IRQPinMode_Default(AD9548_IRQPinMode_TypeDef *p)
+{
+    p->b.mode = 0;
+}
+
+void AD9548_IRQMask_Default(AD9548_IRQMask_TypeDef *p)
+{
+    for (int i=0; i<PLL_IRQMASK_SIZE; i++)
+        p->v[i] = 0xFF; // enable all
+    // ignore these interrupts
+    p->b.hist_updated = 0;
+    //    p->v[0] = 0x33;	// IRQ Mask for SYSCLK
+    //    p->v[1] = 0x0F;	// IRQ Mask for Distribution Sync; Watchdog Timer; and EEPROM
+    //    p->v[2] = 0xFF;	// IRQ Mask for the Digital PLL
+    //    p->v[3] = 0x1F;	// IRQ Mask for History Update; Frequency Limit; and Phase Slew Limit
+    //    p->v[4] = 0xFF;	// IRQ Mask for Reference Inputs (AA/A)
+    //    p->v[5] = 0xFF;	// IRQ Mask for Reference Inputs (BB/B)
+    //    p->v[6] = 0xFF;	// IRQ Mask for Reference Inputs (CC/C)
+    //    p->v[7] = 0xFF;	// IRQ Mask for Reference Inputs (DD/D)
+}

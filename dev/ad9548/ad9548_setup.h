@@ -34,7 +34,7 @@ bool ad9548_software_reset(BusInterface *bus)
 bool ad9548_output_sync(BusInterface *bus)
     __attribute__((warn_unused_result));
 
-bool ad9548_poll_irq_state(BusInterface *bus)
+bool ad9548_poll_irq_state(BusInterface *bus, ad9548_setup_t *reg)
     __attribute__((warn_unused_result));
 
 bool ad9548_setup_sysclk(BusInterface *bus, ad9548_setup_t *reg)

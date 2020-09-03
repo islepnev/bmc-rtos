@@ -25,12 +25,12 @@
 extern "C" {
 #endif
 
-extern const AD9548_Output_TypeDef PLL_Output_TDC_VHLE;
-extern const AD9548_Profile_TypeDef *PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern void PLL_Output_TDC_VHLE(AD9548_Output_TypeDef *p);
+extern void PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern void PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern void PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern void PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p);
+extern void PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p);
 
 #ifdef __cplusplus
 }

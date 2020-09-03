@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "ad9548.h"
+#include "ad9548_print.h"
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
 #include "board_config_ad9548.h"
@@ -31,41 +32,49 @@ uint16_t pll_unlock_cntr;
 bool ad9548_output_sync(BusInterface *bus)
 {
     return
-        ad9548_write_register(bus, 0x0A02, 0x02) &&
+        ad9548_write_register(bus, AD9545_REG_OPCONTROL_BASE+2, 0x02) &&
         ad9548_ioupdate(bus) &&
-        ad9548_write_register(bus, 0x0A02, 0x00) &&
+        ad9548_write_register(bus, AD9545_REG_OPCONTROL_BASE+2, 0x00) &&
         ad9548_ioupdate(bus);
 }
 
-bool ad9548_poll_irq_state(BusInterface *bus)
+bool ad9548_poll_irq_state(BusInterface *bus, ad9548_setup_t *reg)
 {
     bool ok = true;
     bool irqFound = false;
     // Read IRQ status
-    uint8_t irq_flags[8];
+    AD9548_IRQMask_TypeDef irq_flags;
     for (uint16_t i=0; i<8; i++) {
-        ok &= ad9548_read_register(bus, 0x0D02 + i, &irq_flags[i]);
+        if (! ad9548_read_register(bus, 0x0D02 + i, &irq_flags.v[i]))
+            return false;
     }
     // Clear IRQ bits
     for (uint16_t i=0; i<8; i++) {
-        if (irq_flags[i]) {
+        if (irq_flags.v[i]) {
             irqFound = true;
-            ok &= ad9548_write_register(bus, 0x0A04 + i, irq_flags[i]);
+            if (! ad9548_write_register(bus, 0x0A04 + i, irq_flags.v[i]))
+                return false;
         }
     }
-    if (irqFound)
-        ok &= ad9548_ioupdate(bus);
-    if (irq_flags[2] & 1) {
+    if (irqFound) {
+        if (! ad9548_ioupdate(bus))
+            return false;
+    }
+    if (irq_flags.b.dpll_phase_locked) {
         // If locked on the input B, synchronize phase
         uint8_t data;
-        ok &= ad9548_read_register(bus, 0x0D0B, &data);
-        if ((data & 0b00000111) == 0b010) {
-            ok &= ad9548_output_sync(bus);
+        if (! ad9548_read_register(bus, 0x0D0B, &data))
+            return false;
+        uint8_t active_ref = data & 0b00000111;
+        if (active_ref == 0b010) {
+            if (! ad9548_output_sync(bus))
+                return false;
         }
     }
-    if (irq_flags[2] & 2) {
+    if (irq_flags.b.dpll_phase_unlocked) {
         pll_unlock_cntr++;
     }
+    ad9548_print_irq_status(&irq_flags); // debug only
     return ok;
 }
 
@@ -135,10 +144,12 @@ bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
         if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]))
             return false;
     }
+    if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+8, reg->irqpin.raw))
+        return false;
 
     for (unsigned int i = 0; i < PLL_IRQMASK_SIZE; i++)
     {
-        if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+8+i, reg->irqmask.v[i]))
+        if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+9+i, reg->irqmask.v[i]))
             return false;
     }
 
@@ -151,7 +162,7 @@ bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
     if (!ad9548_ioupdate(bus))
         return false;
 
-    if (!ad9548_poll_irq_state(bus))
+    if (!ad9548_poll_irq_state(bus, reg))
         return false; // clear pending IRQs
 
     return true;
@@ -199,7 +210,8 @@ bool ad9548_setup(BusInterface *bus, ad9548_setup_t *setup)
 {
     return
         ad9548_initial_setup(bus, setup) &&
-        ad9548_ProfileConfig(bus, setup);
+        ad9548_ProfileConfig(bus, setup) &&
+        ad9548_output_sync(bus);
 }
 
 bool ad9548_Phase_Shift_Right(BusInterface *bus)
@@ -221,7 +233,8 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 {
     memcpy(reg->sysclk.v, AD9548_Sysclk_Default.v, PLL_SYSCLK_SIZE);
     memcpy(reg->mfpins.v, AD9548_MFPins_Default.v, PLL_MFPINS_SIZE);
-    memcpy(reg->irqmask.v, AD9548_IRQMask_Default.v, PLL_IRQMASK_SIZE);
+    AD9548_IRQPinMode_Default(&reg->irqpin);
+    AD9548_IRQMask_Default(&reg->irqmask);
     memcpy(reg->dpll.v, AD9548_Dpll_Default.v, PLL_DPLL_SIZE);
     memcpy(reg->refin.v, AD9548_RefIn_Default.v, PLL_REFIN_SIZE);
     for (int i=0; i<AD9548_DPLL_PROFILE_COUNT; i++)
@@ -239,7 +252,7 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         PLL_Prof3_ADC64VE(&reg->prof[3]);
         break;
     case BOARD_PLL_TDC_VHLE:
-        memcpy(reg->output.v, PLL_Output_TDC_VHLE.v, PLL_OUTCLK_SIZE);
+        PLL_Output_TDC_VHLE(&reg->output);
         PLL_Prof7_TDC_VHLE(&reg->prof[7]);
         PLL_Prof6_TDC_VHLE(&reg->prof[6]);
         PLL_Prof5_TDC_VHLE(&reg->prof[5]);

@@ -25,6 +25,7 @@
 #include "ad9548_status_regs.h"
 #include "board_config_ad9548.h"
 #include "display.h"
+#include "log/log.h"
 
 //static int64_t pll_ftw_rel_ppb(const AD9548_Status *status)
 //{
@@ -73,7 +74,7 @@ validation %d ms; redetect %d ms\n",
     //       prof->b.filter_gamma_1_exp,
     //       prof->b.filter_delta_0_linear,
     //       prof->b.filter_delta_1_exp);
-     printf("R: %d, S: %d, U: %d, V: %d\n",
+    printf("R: %d, S: %d, U: %d, V: %d\n",
            prof->b.R, prof->b.S, prof->b.U, prof->b.V);
     printf("phase_lock: %.0f ps, fill %d, drain %d, freq_lock: %d ps, fill %d, drain %d\n",
            prof->b.phase_lock_threshold * (prof->b.phase_lock_scale ? 1e3 : 1),
@@ -146,6 +147,107 @@ static void ad9548_print_output_setup(const ad9548_setup_t *setup)
            output->b.out_3_invert, output->b.out_3_cmos_invert);
 }
 
+static void ad9548_print_irq_setup(const ad9548_setup_t *setup)
+{
+    const AD9548_IRQMask_TypeDef *irqmask = &setup->irqmask;
+    printf("IRQ mask:");
+    for (int i=0; i<PLL_IRQMASK_SIZE; i++)
+        printf(" %02X", irqmask->v[i]);
+    printf("\n");
+}
+
+void ad9548_print_irq_status(const AD9548_IRQMask_TypeDef *irq)
+{
+    //    for (int i=0; i<8; i++) {
+    //        if (irq_flags.v[i] & ~0/*reg->irqmask.v[i]*/) {
+    //            log_printf(LOG_INFO, "irq[%d] %02X", i, irq_flags.v[i]);
+    //        }
+    //    }
+    if (irq->v[0])
+        log_printf(
+            irq->b.sysclk_unlocked ? LOG_ERR : LOG_INFO,
+            "ad9548 sysclk:%s%s%s%s",
+            irq->b.sysclk_cal_started ? " cal_started" : "",
+            irq->b.sysclk_cal_complete ? " cal_complete" : "",
+            irq->b.sysclk_locked ? " locked" : "",
+            irq->b.sysclk_unlocked ? " unlocked" : ""
+            );
+    if (irq->v[1])
+        log_printf(
+            LOG_INFO,
+            "ad9548:%s%s%s%s",
+            irq->b.eeprom_complete ? " eeprom_complete" : "",
+            irq->b.eeprom_fault ? " eeprom_fault" : "",
+            irq->b.watchdog_timer ? " watchdog_timer" : "",
+            irq->b.dist_sync ? " dist_sync" : ""
+            );
+    if (irq->v[2])
+        log_printf(
+            (irq->b.dpll_phase_unlocked || irq->b.dpll_freq_unlocked)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548 dpll:%s%s%s%s%s%s%s%s",
+            irq->b.dpll_phase_locked ? " phase_locked" : "",
+            irq->b.dpll_phase_unlocked ? " phase_unlocked" : "",
+            irq->b.dpll_freq_locked ? " freq_locked" : "",
+            irq->b.dpll_freq_unlocked ? " freq_unlocked" : "",
+            irq->b.dpll_holdover ? " holdover" : "",
+            irq->b.dpll_freerun ? " freerun" : "",
+            irq->b.dpll_closed ? " closed_loop" : "",
+            irq->b.dpll_switching ? " switching" : ""
+            );
+    if (irq->v[3])
+        log_printf(
+            (irq->b.phase_slew_limited || irq->b.freq_clamped)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548:%s%s%s%s%s",
+            irq->b.phase_slew_limited ? " phase_slew_limited" : "",
+            irq->b.phase_slew_unlimited ? " phase_slew_unlimited" : "",
+            irq->b.freq_clamped ? " freq_clamped" : "",
+            irq->b.freq_unclamped ? " freq_unclamped" : "",
+            irq->b.hist_updated ? " hist_updated" : ""
+            );
+    if (irq->v[4])
+        log_printf(
+            (irq->b.ref_a_fault)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548 ref_a:%s%s%s%s",
+            irq->b.ref_a_fault ? " fault" : "",
+            irq->b.ref_a_fault_cleared ? " fault_cleared" : "",
+            irq->b.ref_a_validated ? " validated" : "",
+            irq->b.ref_a_new_profile ? " new_profile" : ""
+            );
+    if (irq->v[5])
+        log_printf(
+            (irq->b.ref_b_fault)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548 ref_b:%s%s%s%s",
+            irq->b.ref_b_fault ? " fault" : "",
+            irq->b.ref_b_fault_cleared ? " fault_cleared" : "",
+            irq->b.ref_b_validated ? " validated" : "",
+            irq->b.ref_b_new_profile ? " new_profile" : ""
+            );
+    if (irq->v[6])
+        log_printf(
+            (irq->b.ref_c_fault)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548 ref_c:%s%s%s%s",
+            irq->b.ref_c_fault ? " fault" : "",
+            irq->b.ref_c_fault_cleared ? " fault_cleared" : "",
+            irq->b.ref_c_validated ? " validated" : "",
+            irq->b.ref_c_new_profile ? " new_profile" : ""
+            );
+    if (irq->v[7])
+        log_printf(
+            (irq->b.ref_d_fault)
+                ? LOG_WARNING : LOG_INFO,
+            "ad9548 ref_d:%s%s%s%s",
+            irq->b.ref_d_fault ? " fault" : "",
+            irq->b.ref_d_fault_cleared ? " fault_cleared" : "",
+            irq->b.ref_d_validated ? " validated" : "",
+            irq->b.ref_d_new_profile ? " new_profile" : ""
+            );
+}
+
 void ad9548_verbose_setup(const ad9548_setup_t *setup)
 {
     ad9548_print_sysclk_setup(setup);
@@ -154,6 +256,7 @@ void ad9548_verbose_setup(const ad9548_setup_t *setup)
         if (setup->prof[i].b.ref_period > 0)
             ad9548_print_profile(setup, i);
     ad9548_print_output_setup(setup);
+    ad9548_print_irq_setup(setup);
 }
 
 void ad9548_print_pll_dpll_status(const ad9548_setup_t *setup, const AD9548_Status *status)

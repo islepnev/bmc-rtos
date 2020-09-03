@@ -17,47 +17,48 @@
 
 #include "ad9548_regs_tdc_vhle.h"
 
-const AD9548_Output_TypeDef PLL_Output_TDC_VHLE = {
-    .b.powerdown_0 = 0,
-    .b.powerdown_1 = 0,
-    .b.powerdown_2 = 0,
-    .b.powerdown_3 = 0,
-    .b.receiver_mode = 0,
-    .b.ext_distrib_resistor = 0,
-    .b.en_0 = 1,
-    .b.en_1 = 1,
-    .b.en_2 = 1,
-    .b.en_3 = 1,
-    .b.sync_mask_0 = 0,
-    .b.sync_mask_1 = 0,
-    .b.sync_mask_2 = 0,
-    .b.sync_mask_3 = 0,
-    .b.sync_source = 1,
-    .b.autosync_mode = 2,
-    .b.out_0_mode = 4,
-    .b.out_0_drive = 0,
-    .b.out_0_invert = 0,
-    .b.out_0_cmos_invert = 0,
-    .b.out_1_mode = 4,
-    .b.out_1_drive = 0,
-    .b.out_1_invert = 0,
-    .b.out_1_cmos_invert = 0,
-    .b.out_2_mode = 4,
-    .b.out_2_drive = 0,
-    .b.out_2_invert = 0,
-    .b.out_2_cmos_invert = 0,
-    .b.out_3_mode = 4,
-    .b.out_3_drive = 1,
-    .b.out_3_invert = 0,
-    .b.out_3_cmos_invert = 0,
-    .b.q_0 = 0,
-    .b.q_1 = 0,
-    .b.q_2 = 2,
-    .b.q_3 = 2
-};
+void PLL_Output_TDC_VHLE(AD9548_Output_TypeDef *p)
+{
+    p->b.powerdown_0 = 0;
+    p->b.powerdown_1 = 0;
+    p->b.powerdown_2 = 0;
+    p->b.powerdown_3 = 0;
+    p->b.receiver_mode = 0;
+    p->b.ext_distrib_resistor = 0;
+    p->b.en_0 = 1;
+    p->b.en_1 = 1;
+    p->b.en_2 = 1;
+    p->b.en_3 = 1;
+    p->b.sync_mask_0 = 0;
+    p->b.sync_mask_1 = 0;
+    p->b.sync_mask_2 = 0;
+    p->b.sync_mask_3 = 0;
+    p->b.sync_source = 1;
+    p->b.autosync_mode = 2;
+    p->b.out_0_mode = 4;
+    p->b.out_0_drive = 0;
+    p->b.out_0_invert = 0;
+    p->b.out_0_cmos_invert = 0;
+    p->b.out_1_mode = 4;
+    p->b.out_1_drive = 0;
+    p->b.out_1_invert = 0;
+    p->b.out_1_cmos_invert = 0;
+    p->b.out_2_mode = 4;
+    p->b.out_2_drive = 0;
+    p->b.out_2_invert = 0;
+    p->b.out_2_cmos_invert = 0;
+    p->b.out_3_mode = 4;
+    p->b.out_3_drive = 1;
+    p->b.out_3_invert = 0;
+    p->b.out_3_cmos_invert = 0;
+    p->b.q_0 = 0;
+    p->b.q_1 = 0;
+    p->b.q_2 = 2;
+    p->b.q_3 = 2;
+}
 
 // 125 MHz lowest priority
-const AD9548_Profile_TypeDef *PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p)
+void PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 7;
@@ -70,11 +71,10 @@ const AD9548_Profile_TypeDef *PLL_Prof7_TDC_VHLE(AD9548_Profile_TypeDef *p)
     ad9548_profile_find_r_s(p, 125.0);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_S1500_500Hz(p);
-    return p;
 }
 
 // 40 MHz - TTC
-const AD9548_Profile_TypeDef *PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p)
+void PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 0;
@@ -84,11 +84,10 @@ const AD9548_Profile_TypeDef *PLL_Prof4_TDC_VHLE(AD9548_Profile_TypeDef *p)
     ad9548_profile_find_r_s(p, 40.0);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_5(p);
-    return p;
 }
 
 // 41.7 MHz - TTC
-const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
+void PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 0;
@@ -96,11 +95,10 @@ const AD9548_Profile_TypeDef *PLL_Prof1_TDC_VHLE(AD9548_Profile_TypeDef *p)
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_S1500_500Hz(p);
-    return p;
 }
 
 // 41.7 MHz - VXS
-const AD9548_Profile_TypeDef *PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p)
+void PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 5;
@@ -110,11 +108,10 @@ const AD9548_Profile_TypeDef *PLL_Prof5_TDC_VHLE(AD9548_Profile_TypeDef *p)
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_S1500_500Hz(p);
-    return p;
 };
 
 // 41.7 MHz - VCXO/3
-const AD9548_Profile_TypeDef *PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p)
+void PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p)
 {
     PLL_Prof_default(p);
     p->b.selection_priority = 6;
@@ -125,5 +122,4 @@ const AD9548_Profile_TypeDef *PLL_Prof6_TDC_VHLE(AD9548_Profile_TypeDef *p)
     ad9548_profile_find_r_s(p, 125.0/3);
     PLL_Prof_derive_ref_period(p);
     PLL_Prof_filter_S1500_500Hz(p);
-    return p;
 }

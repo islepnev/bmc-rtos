@@ -43,6 +43,7 @@ enum {AD9548_DPLL_PROFILE_COUNT = 8};
 typedef struct ad9548_setup_t {
     AD9548_Sysclk_TypeDef sysclk;
     AD9548_MFPins_TypeDef mfpins;
+    AD9548_IRQPinMode_TypeDef irqpin;
     AD9548_IRQMask_TypeDef irqmask;
     AD9548_Dpll_TypeDef dpll;
     AD9548_Output_TypeDef output;

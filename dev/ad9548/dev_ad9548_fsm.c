@@ -145,6 +145,9 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         d->priv.status.sysclk.raw = 0;
     }
     if (d->priv.fsm_state == AD9548_STATE_RUN) {
+        if (!ad9548_poll_irq_state(bus, &d->priv.setup)) {
+            d->priv.fsm_state = AD9548_STATE_ERROR;
+        }
         if (!ad9548_read_status(bus, &d->priv.status)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
         }
