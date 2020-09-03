@@ -39,7 +39,7 @@ void ad9548_gpio_init(BusInterface *bus);
 bool ad9548_gpio_test(BusInterface *bus)
     __attribute__((warn_unused_result));
 
-bool ad9548_reset(BusInterface *bus)
+bool ad9548_write_reset_pin(BusInterface *bus, bool reset)
     __attribute__((warn_unused_result));
 
 bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)

@@ -46,6 +46,7 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
             d->priv.fsm_state = AD9548_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
             ad9548_clear_status(d);
+            ad9548_write_reset_pin(bus, true);
             log_put(LOG_INFO, "PLL AD9548 shutdown");
         }
         return;
@@ -53,6 +54,7 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
     const ad9548_state_t old_state = d->priv.fsm_state;
     switch(d->priv.fsm_state) {
     case AD9548_STATE_INIT:
+        ad9548_write_reset_pin(bus, false);
         if (ad9548_gpio_test(bus)) {
             d->priv.fsm_state = AD9548_STATE_RESET;
         } else {
@@ -61,7 +63,9 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         }
         break;
     case AD9548_STATE_RESET:
-        if (!ad9548_reset(bus) || !ad9548_software_reset(bus)) {
+        if (!ad9548_write_reset_pin(bus, true) ||
+            !ad9548_write_reset_pin(bus, false) ||
+            !ad9548_software_reset(bus)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
             break;
         }

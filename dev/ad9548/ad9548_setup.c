@@ -172,7 +172,7 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
 {
     for (unsigned int i = 0; i < PLL_OUTCLK_SIZE; i++)
     {
-        if (!ad9548_write_register(bus, AD9545_REG_OUTPUT_BASE, reg->output.v[i]))
+        if (!ad9548_write_register(bus, AD9545_REG_OUTPUT_BASE+i, reg->output.v[i]))
             return false;
     }
 

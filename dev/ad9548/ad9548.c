@@ -56,12 +56,11 @@ static void set_nss(bool state)
 //    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
 }
 
-bool ad9548_reset(BusInterface *bus)
+bool ad9548_write_reset_pin(BusInterface *bus, bool reset)
 {
     (void) bus;
 
-    write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 1);
-    write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, 0);
+    write_gpio_pin(AD9548_RESET_GPIO_Port, AD9548_RESET_Pin, reset);
     return true;
 }
 
