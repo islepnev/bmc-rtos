@@ -22,6 +22,7 @@
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "devicelist.h"
+#include "fpga_mcu_regs_v2_0.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"
@@ -137,9 +138,14 @@ bool fpgaDetect(Dev_fpga *d)
 bool fpgaWriteBmcVersion(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
+    bmc_version_t bmc_version;
+    bmc_version.b.major = VERSION_MAJOR_NUM;
+    bmc_version.b.minor = VERSION_MINOR_NUM;
+    uint16_t bmc_revision = VERSION_PATCH_NUM;
+
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, bmc_version.raw))
         return false;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, bmc_revision))
         return false;
     return true;
 }
@@ -164,19 +170,18 @@ bool fpgaWriteBmcTemperature(DeviceBase *dev)
 bool fpgaWritePllStatus(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
-    uint16_t data = 0;
+    fpga_mcu_reg_pll_t pll = {0};
+    uint16_t unlock_count = 0;
 #if ENABLE_AD9545
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
     const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);
 
-    if (SENSOR_NORMAL == d->sensor) {
-        data |= 0x8;
-    } else {
-        if (priv->status.sysclk.b.pll0_locked)
-            data |= 0x1;
-    }
+    pll.b.locked = (SENSOR_NORMAL == d->sensor) &&
+                 priv->status.sysclk.b.pll0_locked;
+    pll.b.ref_a_valid = priv->status.ref[0].b.valid;
+    pll.b.ref_b_valid = priv->status.ref[2].b.valid;
 #endif
 #if ENABLE_AD9548
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
@@ -184,14 +189,19 @@ bool fpgaWritePllStatus(DeviceBase *dev)
         return false;
     const Dev_ad9548_priv *priv = (Dev_ad9548_priv *)device_priv_const(d);
 
-    if (SENSOR_NORMAL == d->sensor) {
-        data |= 0x8;
-    } else {
-        if (priv->status.DpllStat.b.dpll_freq_lock && priv->status.DpllStat.b.dpll_phase_lock)
-            data |= 0x1;
-    }
+    unlock_count = priv->status.pll_unlock_cntr <= 65535
+                       ? priv->status.pll_unlock_cntr : 65535;
+    bool pll_locked = priv->status.DpllStat.b.dpll_freq_lock && priv->status.DpllStat.b.dpll_phase_lock;
+    pll.b.locked = (pll_locked && (SENSOR_NORMAL == d->sensor));
+    pll.b.active_ref = priv->status.DpllStat2.b.active_ref >> 1;
+    pll.b.ref_a_valid = priv->status.refStatus[0].b.valid;
+    pll.b.ref_b_valid = priv->status.refStatus[2].b.valid;
+    pll.b.ref_c_valid = priv->status.refStatus[4].b.valid;
+    pll.b.ref_d_valid = priv->status.refStatus[6].b.valid;
 #endif
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, data))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, pll.raw))
+        return false;
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_2, unlock_count))
         return false;
     return true;
 }

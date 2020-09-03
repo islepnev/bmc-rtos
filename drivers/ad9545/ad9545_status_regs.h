@@ -160,6 +160,7 @@ typedef struct {
     int16_t internal_temp;
     AD9545_Ref_Status_REG_Type ref[REF_INPUT_COUNT];
     AD9545_DPLL_Status dpll[DPLL_COUNT];
+    uint32_t pll_unlock_cntr;
 } AD9545_Status;
 
 #endif // AD9545_STATUS_REGS_H

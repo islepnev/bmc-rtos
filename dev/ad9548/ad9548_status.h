@@ -27,6 +27,9 @@
 extern "C" {
 #endif
 
+bool ad9548_poll_irq_state(BusInterface *bus, AD9548_Status *status)
+    __attribute__((warn_unused_result));
+
 bool ad9548_read_status(BusInterface *bus, AD9548_Status *status);
 bool ad9548_read_sysclk_status(BusInterface *bus, AD9548_Status *status);
 bool ad9548_isDpllLocked(AD9548_Status *status);

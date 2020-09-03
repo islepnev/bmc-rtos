@@ -79,6 +79,7 @@ typedef struct AD9548_Status
     //uint8_t refActive;
     AD9548_Ref_Status_REG_Type refStatus[8];
     uint64_t holdover_ftw;
+    uint32_t pll_unlock_cntr;
 } AD9548_Status;
 
 #endif // AD9548_STATUS_REGS_H

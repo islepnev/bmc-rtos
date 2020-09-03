@@ -27,8 +27,6 @@
 #include "cmsis_os.h"
 #include "log/log.h"
 
-uint16_t pll_unlock_cntr;
-
 bool ad9548_output_sync(BusInterface *bus)
 {
     return
@@ -36,46 +34,6 @@ bool ad9548_output_sync(BusInterface *bus)
         ad9548_ioupdate(bus) &&
         ad9548_write_register(bus, AD9545_REG_OPCONTROL_BASE+2, 0x00) &&
         ad9548_ioupdate(bus);
-}
-
-bool ad9548_poll_irq_state(BusInterface *bus, ad9548_setup_t *reg)
-{
-    bool ok = true;
-    bool irqFound = false;
-    // Read IRQ status
-    AD9548_IRQMask_TypeDef irq_flags;
-    for (uint16_t i=0; i<8; i++) {
-        if (! ad9548_read_register(bus, 0x0D02 + i, &irq_flags.v[i]))
-            return false;
-    }
-    // Clear IRQ bits
-    for (uint16_t i=0; i<8; i++) {
-        if (irq_flags.v[i]) {
-            irqFound = true;
-            if (! ad9548_write_register(bus, 0x0A04 + i, irq_flags.v[i]))
-                return false;
-        }
-    }
-    if (irqFound) {
-        if (! ad9548_ioupdate(bus))
-            return false;
-    }
-    if (irq_flags.b.dpll_phase_locked) {
-        // If locked on the input B, synchronize phase
-        uint8_t data;
-        if (! ad9548_read_register(bus, 0x0D0B, &data))
-            return false;
-        uint8_t active_ref = data & 0b00000111;
-        if (active_ref == 0b010) {
-            if (! ad9548_output_sync(bus))
-                return false;
-        }
-    }
-    if (irq_flags.b.dpll_phase_unlocked) {
-        pll_unlock_cntr++;
-    }
-    ad9548_print_irq_status(&irq_flags); // debug only
-    return ok;
 }
 
 bool ad9548_software_reset(BusInterface *bus)
