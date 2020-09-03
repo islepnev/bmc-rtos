@@ -232,7 +232,7 @@ bool ad9548_Phase_Reset(BusInterface *bus)
 void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 {
     memcpy(reg->sysclk.v, AD9548_Sysclk_Default.v, PLL_SYSCLK_SIZE);
-    memcpy(reg->mfpins.v, AD9548_MFPins_Default.v, PLL_MFPINS_SIZE);
+    AD9548_MFPins_Default(&reg->mfpins);
     AD9548_IRQPinMode_Default(&reg->irqpin);
     AD9548_IRQMask_Default(&reg->irqmask);
     memcpy(reg->dpll.v, AD9548_Dpll_Default.v, PLL_DPLL_SIZE);

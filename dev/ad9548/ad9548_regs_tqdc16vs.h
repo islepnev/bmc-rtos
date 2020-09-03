@@ -26,10 +26,10 @@ extern "C" {
 #endif
 
 extern const AD9548_Output_TypeDef PLL_Output_TQDC16VS;
-extern const AD9548_Profile_TypeDef *PLL_Prof0_TQDC16VS(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof1_TQDC16VS(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof2_TQDC16VS(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof3_TQDC16VS(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof0_TQDC16VS(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof1_TQDC16VS(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof2_TQDC16VS(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof3_TQDC16VS(AD9548_Profile_TypeDef *p);
 
 #ifdef __cplusplus
 }

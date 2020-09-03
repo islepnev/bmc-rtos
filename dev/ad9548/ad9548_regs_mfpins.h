@@ -29,7 +29,7 @@ typedef struct {
 } AD9548_MFunction_TypeDef;
 
 typedef union {
-    AD9548_MFunction_TypeDef m_pin[8];
+    AD9548_MFunction_TypeDef m_pin[PLL_MFPINS_SIZE];
     uint8_t v[PLL_MFPINS_SIZE];
 } AD9548_MFPins_TypeDef;
 
@@ -39,7 +39,7 @@ typedef union {
 extern "C" {
 #endif
 
-extern const AD9548_MFPins_TypeDef AD9548_MFPins_Default;
+void AD9548_MFPins_Default(AD9548_MFPins_TypeDef *p);
 
 #ifdef __cplusplus
 }

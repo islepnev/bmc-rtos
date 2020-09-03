@@ -75,13 +75,13 @@ extern "C" {
 #endif
 
 void ad9548_profile_find_r_s(AD9548_Profile_TypeDef *p, double ref_MHz);
-extern const AD9548_Profile_TypeDef *PLL_Prof_default(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_filter_1(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_filter_2(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_filter_3(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_filter_4(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_filter_5(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof_derive_ref_period(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_default(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_1(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_2(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_3(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_4(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_5(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_derive_ref_period(AD9548_Profile_TypeDef *p);
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_500Hz(AD9548_Profile_TypeDef *p);
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_5000Hz(AD9548_Profile_TypeDef *p);
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_50Hz(AD9548_Profile_TypeDef *p);

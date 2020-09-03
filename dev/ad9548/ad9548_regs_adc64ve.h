@@ -26,10 +26,10 @@ extern "C" {
 #endif
 
 extern const AD9548_Output_TypeDef PLL_Output_ADC64VE;
-extern const AD9548_Profile_TypeDef *PLL_Prof0_ADC64VE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof1_ADC64VE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof2_ADC64VE(AD9548_Profile_TypeDef *p);
-extern const AD9548_Profile_TypeDef *PLL_Prof3_ADC64VE(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof0_ADC64VE(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof1_ADC64VE(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof2_ADC64VE(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof3_ADC64VE(AD9548_Profile_TypeDef *p);
 
 #ifdef __cplusplus
 }

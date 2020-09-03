@@ -109,8 +109,8 @@ typedef union {
 extern "C" {
 #endif
 
-extern void AD9548_IRQPinMode_Default(AD9548_IRQPinMode_TypeDef *p);
-extern void AD9548_IRQMask_Default(AD9548_IRQMask_TypeDef *p);
+void AD9548_IRQPinMode_Default(AD9548_IRQPinMode_TypeDef *p);
+void AD9548_IRQMask_Default(AD9548_IRQMask_TypeDef *p);
 
 #ifdef __cplusplus
 }
