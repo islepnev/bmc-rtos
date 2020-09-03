@@ -98,7 +98,7 @@ static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
             goto err;
         map[i] = data;
     }
-    status->mcu_info.bmc_ver = map[1];
+    status->mcu_info.bmc_ver.raw = map[1];
     status->mcu_info.module_id = map[2];
     status->mcu_info.enc_status.w = map[3];
     status->mcu_info.iic_stats.ops = map[4];

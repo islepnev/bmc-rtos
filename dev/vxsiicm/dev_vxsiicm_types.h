@@ -58,10 +58,19 @@ typedef struct vxsiic_pp_state_t {
     bool mcu_sensors_ok;
 } vxsiic_pp_state_t;
 
+typedef union {
+    struct {
+        uint16_t minor : 8;
+        uint16_t major : 8;
+        uint16_t patch : 16;
+    } b;
+    uint32_t raw;
+} bmc_ver_t;
+
 typedef struct vxsiic_pp_mcu_info {
     uint32_t magic;
     uint32_t uptime;
-    uint32_t bmc_ver;
+    bmc_ver_t bmc_ver;
     uint32_t module_id;
     iic_stats_t iic_stats;
     encoded_system_status_t enc_status;
