@@ -65,7 +65,6 @@ void auxpllPrint(void)
     }
     const Dev_auxpll_priv *priv = (const Dev_auxpll_priv *)device_priv_const(d);
 
-    printf("PLL AD9516: %s  %s", auxpllStateStr(priv->fsm_state),
+    printf("PLL AD9516: %s  %s\n", auxpllStateStr(priv->fsm_state),
            sensor_status_ansi_str(get_auxpll_sensor_status()));
-    print_clear_eol();
 }

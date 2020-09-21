@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include "ansi_escape_codes.h"
+#include "app_name.h"
 #include "app_shared_data.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
@@ -31,7 +32,7 @@
 #include "freertos_stats.h"
 #include "mac_address.h"
 #include "rtc_util.h"
-#include "stm32f7xx_hal.h"
+#include "stm32_hal.h"
 #include "version.h"
 
 SensorStatus get_device_sensor_status(DeviceClass device_class)
@@ -61,24 +62,23 @@ void display_device_sensor_ansi_str(const char *name, DeviceClass device_class)
 {
     printf("%s %s", name,
            device_sensor_status_ansi_str(device_class));
-    print_clear_eol();
+    printf("\n");
 }
 
 void display_clear_page(void)
 {
-    print_clearbox(2, screen_height - 2);
+    print_clearbox(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y);
 }
 
-void display_devices_page(int y)
+void display_devices_page(int y, bool repaint)
 {
-    display_clear_page();
     print_goto(y, 1);
-    printf("Device list" ANSI_CLEAR_EOL "\n");
-    devicelist_print(deviceList.list[0], 0);
-    printf(ANSI_CLEAR_EOL);
+    printf("Device list\n"); y++;
+    devicelist_print(deviceList.list[0], 0); y += deviceList.count;
+    printf("\n");
 }
 
-static void print_uptime_str(void)
+static int snprintf_uptime(char *str, size_t size)
 {
     unsigned int ss = osKernelSysTick() / osKernelSysTickFrequency;
     unsigned int dd = ss / 86400;
@@ -87,11 +87,9 @@ static void print_uptime_str(void)
     ss -= hh*3600;
     unsigned int mm = ss / 60;
     ss -= mm*60;
-    if (dd > 1)
-        printf("%u days ", dd);
-    if (dd == 1)
-        printf("%u day ", dd);
-    printf("%2u:%02u:%02u", hh, mm, ss);
+    return snprintf(str, size,
+                    "%u day%s %2u:%02u:%02u",
+                    dd, (dd==1) ? "": "s", hh, mm, ss);
 }
 
 static void print_rtc_str(void)
@@ -103,21 +101,35 @@ static void print_rtc_str(void)
     printf("%s", buf);
 }
 
+static const char min_title_len = 40;
+
 void print_clock(void)
 {
-    int col = screen_width - 37;
-    if (col > 60) {
-        print_goto(1, col);
-        printf("Uptime: ");
-        print_uptime_str();
+    printf(ANSI_BGR_BLUE ANSI_GRAY);
+    int col = 1 + screen_width;
 #ifdef HAL_RTC_MODULE_ENABLED
-        printf("  ");
-        print_rtc_str();
-#endif
+    col -= 1 + 19 + 1; // ' datetime '
+    if (col >= min_title_len) {
+        print_goto(1, col);
+        printf(ANSI_CLEAR_EOL " ");
+        print_rtc_str(); // 19 chars
+        printf(" ");
     }
+#endif
+
+    enum { bufsize = 32};
+    static char buf[bufsize];
+    buf[sizeof(buf)-1] = 0;
+    int len = snprintf_uptime(buf, bufsize);
+    col -= 9 + len + 1;
+    if (col >= min_title_len) {
+        print_goto(1, col);
+        printf(" Uptime: %s ", buf);
+    }
+    printf(ANSI_CLEAR);
 }
 
-void print_header_line(void)
+void print_header_line(bool repaint)
 {
     print_goto(1, 1);
         // Title
@@ -142,13 +154,10 @@ void print_header_line(void)
                 ANSI_BGR_BLUE);
     }
 #endif
-    printf(" %u MHz", (unsigned int)(HAL_RCC_GetHCLKFreq()/1000000));
+    printf("  %u MHz", (unsigned int)(HAL_RCC_GetHCLKFreq()/1000000));
     printf(" %3u%%", (unsigned int)freertos_get_cpu_load_percent());
     printf("     %s" ANSI_BGR_BLUE ANSI_CLEAR_EOL,
            enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ");
-    printf(ANSI_CLEAR_EOL);
-
-    print_clock();
     printf(ANSI_CLEAR);
 }
 
@@ -182,5 +191,8 @@ void print_footer_line(void)
 
 void dev_eeprom_config_print(void)
 {
+    const DeviceBase *d = find_device_const(DEV_CLASS_EEPROM);
+    if (!d || !d->priv)
+        return;
     display_device_sensor_ansi_str("EEPROM[config]", DEV_CLASS_EEPROM);
 }

@@ -39,31 +39,50 @@ static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 
-static uint32_t stateTicks(Dev_fpga_priv *p)
+static uint32_t stateTicks(const Dev_fpga_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
+}
+
+static bool read_init_b(void)
+{
+    if (! fpga_done_pin_present())
+        return 1;
+#ifdef FPGA_INIT_B_Pin
+    return read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
+#else
+    return 1;
+#endif
+}
+static bool read_done(void)
+{
+    if (! fpga_done_pin_present())
+        return 1;
+#ifdef FPGA_DONE_Pin
+    return read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
+#else
+    return 1;
+#endif
 }
 
 static int old_fpga_done = -1;
 static int fpga_detect_fail_count = 0;
 static int fpga_error_count = 0;
+static bool load_timeout = 0;
 
 void fpga_task_run(Dev_fpga *d)
 {
     const fpga_state_t old_state = d->priv.state;
-    if (fpga_done_pin_present()) {
-        d->priv.initb = read_gpio_pin(FPGA_INIT_B_GPIO_Port, FPGA_INIT_B_Pin);
-        d->priv.done = read_gpio_pin(FPGA_DONE_GPIO_Port, FPGA_DONE_Pin);
-    } else {
-        d->priv.initb = 1;
-        d->priv.done = 1;
-    }
-    int fpga_core_power_present = false;
+    d->priv.initb = read_init_b();
+    d->priv.done = read_done();
+    int fpga_core_power_present = true;
+#ifdef ENABLE_POWERMON
     const Dev_powermon_priv *priv = get_powermon_priv_const();
     if (priv) {
         const pm_sensors_arr *sensors = &priv->sensors;
         fpga_core_power_present = get_fpga_core_power_present(sensors);
     }
+#endif
     int fpga_power_present = enable_power && fpga_core_power_present;
     int fpga_enable = fpga_power_present && d->priv.initb;
 //    int fpga_loading = fpga_power_present && d->priv.initb && !d->priv.done;
@@ -82,6 +101,7 @@ void fpga_task_run(Dev_fpga *d)
         d->priv.id_read = 0;
         fpga_detect_fail_count = 0;
         fpga_error_count = 0;
+        load_timeout = 0;
         if (fpga_enable) {
             d->priv.state = FPGA_STATE_LOAD;
             d->priv.fpga_load_start_tick = osKernelSysTick();
@@ -103,13 +123,21 @@ void fpga_task_run(Dev_fpga *d)
             break;
         }
         if (stateTicks(&d->priv) > LOAD_DELAY_TICKS) {
-            log_put(LOG_ERR, "FPGA load timeout");
-            d->priv.state = FPGA_STATE_ERROR;
+            if (!load_timeout) {
+                load_timeout = true;
+                log_put(LOG_ERR, "FPGA load timeout");
+            }
+            // d->priv.state = FPGA_STATE_ERROR;
         }
         break;
     case FPGA_STATE_RESET:
         if (!fpga_power_present) {
             d->priv.state = FPGA_STATE_STANDBY;
+            break;
+        }
+        if (fpga_done_pin_present() && !fpga_done) {
+            load_timeout = 0;
+            d->priv.state = FPGA_STATE_LOAD;
             break;
         }
         d->dev.device_status = DEVICE_UNKNOWN;

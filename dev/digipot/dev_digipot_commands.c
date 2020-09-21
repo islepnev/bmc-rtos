@@ -22,46 +22,45 @@
 #include "dev_digipot.h"
 #include "ipc.h"
 
-void digipot_process_command(Dev_digipots_priv *d, const CommandDigipots *cmd)
+bool digipot_process_command(Dev_digipots_priv *d, const CommandDigipots *cmd)
 {
     if (!cmd || cmd->arg >= MAX_DIGIPOT_COUNT)
-        return;
+        return false;
     Dev_ad5141 *p = &d->pot[cmd->arg];
     switch (cmd->command_id) {
     case COMMAND_DIGIPOTS_RESET:
-        dev_ad5141_reset(p);
-        break;
+        return dev_ad5141_reset(p);
     case COMMAND_DIGIPOTS_INC:
-        dev_ad5141_inc(p);
-        break;
+        return dev_ad5141_inc(p);
     case COMMAND_DIGIPOTS_DEC:
-        dev_ad5141_dec(p);
-        break;
+        return dev_ad5141_dec(p);
     case COMMAND_DIGIPOTS_WRITE:
-        dev_ad5141_write(p);
-        break;
+        return dev_ad5141_write(p);
     default:
         break;
     }
+    return true;
 }
 
 static const int POT_MAX_MAIL_BATCH = 10;
 
-void digipot_check_mail(Dev_digipots_priv *d)
+bool digipot_check_mail(Dev_digipots_priv *d)
 {
+    bool ok = true;
     assert(mq_cmd_digipots_id);
     if (!mq_cmd_digipots_id)
-        return;
+        return false;
     for (int i=0; i<POT_MAX_MAIL_BATCH; i++) {
         osEvent event = osMailGet(mq_cmd_digipots_id, 0);
         if (osEventMail != event.status) {
-            return;
+            return true;
         }
         CommandDigipots *mail = (CommandDigipots *) event.value.p;
         assert(mail);
         if (!mail)
-            return;
-        digipot_process_command(d, mail);
-        osMailFree(mq_cmd_digipots_id, mail);
+            return false;
+        ok &= digipot_process_command(d, mail);
+        ok &= (osOK == osMailFree(mq_cmd_digipots_id, mail));
     }
+    return ok;
 }

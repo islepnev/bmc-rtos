@@ -46,12 +46,12 @@ typedef union {
     uint8_t all;
 } clkmux_gpiob;
 
-static void dev_clkmux_set_pll_source(Dev_cru16_clkmux *d)
+static bool dev_clkmux_set_pll_source(Dev_cru16_clkmux *d)
 {
     clkmux_gpiob data;
     data.all = 0;
     data.bit.pll_bypass = 0;
-    mcp23017_write(MCP23017_GPIOB, data.all);
+    return mcp23017_write(MCP23017_GPIOB, data.all);
 }
 
 enum {
@@ -68,12 +68,13 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 */
-static void dev_clkmux_set_crsw1(Dev_cru16_clkmux *d)
+static bool dev_clkmux_set_crsw1(Dev_cru16_clkmux *d)
 {
+    bool ok = true;
     clkmux_gpiob data;
     data.all = 0;
     data.bit.pll_bypass = 0;
-    mcp23017_write(MCP23017_GPIOB, data.all);
+    ok &= mcp23017_write(MCP23017_GPIOB, data.all);
     int crsw1_output_map[4] = {
         CRSW1_IN_AD9516,
         CRSW1_IN_PLL0B_CRSWQ2,
@@ -83,16 +84,17 @@ static void dev_clkmux_set_crsw1(Dev_cru16_clkmux *d)
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw1_output_map[i];
         data.bit.crsw_sout = i;
-        mcp23017_write(MCP23017_GPIOB, data.all);
+        ok &= mcp23017_write(MCP23017_GPIOB, data.all);
         data.bit.crsw_load = 1;
-        mcp23017_write(MCP23017_GPIOB, data.all);
+        ok &= mcp23017_write(MCP23017_GPIOB, data.all);
         data.bit.crsw_load = 0;
-        mcp23017_write(MCP23017_GPIOB, data.all);
+        ok &= mcp23017_write(MCP23017_GPIOB, data.all);
         data.bit.crsw_conf = 1;
-        mcp23017_write(MCP23017_GPIOB, data.all);
+        ok &= mcp23017_write(MCP23017_GPIOB, data.all);
         data.bit.crsw_conf = 0;
-        mcp23017_write(MCP23017_GPIOB, data.all);
+        ok &= mcp23017_write(MCP23017_GPIOB, data.all);
     }
+    return ok;
 }
 
 /*
@@ -158,8 +160,9 @@ unknown:
 
 DeviceStatus dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d)
 {
-    dev_clkmux_set_pll_source(d);
-    dev_clkmux_set_crsw1(d);
+    bool ok = true;
+    ok &= dev_clkmux_set_pll_source(d);
+    ok &= dev_clkmux_set_crsw1(d);
 //    dev_clkmux_set_crsw2(d);
-    return DEVICE_NORMAL;
+    return ok ? DEVICE_NORMAL : DEVICE_FAIL;
 }

@@ -30,20 +30,21 @@ extern "C" {
 #endif
 
 struct __SPI_HandleTypeDef;
-
+struct SPI_TypeDef;
 void spi_driver_raise_transfer_error(struct __SPI_HandleTypeDef *hspi);
 void spi_driver_clear_transfer_error(struct __SPI_HandleTypeDef *hspi);
 bool spi_driver_is_transfer_ok(struct __SPI_HandleTypeDef *hspi);
 
 bool spi_driver_util_init(void);
 SemaphoreHandle_t spi_driver_it_sem_by_hspi(struct __SPI_HandleTypeDef *hspi);
-SemaphoreHandle_t spi_driver_dev_sem_by_index(int index);
+osMutexId spi_driver_dev_mutex_by_index(int index);
 int hspi_index(struct __SPI_HandleTypeDef *hspi);
 struct __SPI_HandleTypeDef *hspi_handle(BusIndex index);
+void *spi_instance(int index);
 int32_t spi_driver_wait_it_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec);
 void spi_driver_release_it_sem(struct __SPI_HandleTypeDef *hspi);
-int32_t spi_driver_wait_dev_sem(int index, uint32_t millisec);
-void spi_driver_release_dev_sem(int index);
+int32_t spi_driver_wait_dev_mutex(int index, uint32_t millisec);
+void spi_driver_release_dev_mutex(int index);
 
 #ifdef __cplusplus
 }

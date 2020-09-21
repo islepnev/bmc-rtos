@@ -25,7 +25,7 @@
 #include "cmsis_os.h"
 #include "i2c.h"
 #include "log/log.h"
-#include "stm32f7xx_ll_i2c.h"
+#include "stm32_ll.h"
 
 #define SLAVE_OWN_ADDRESS 0x33
 
@@ -78,7 +78,8 @@ static void Slave_Complete_Callback(void)
 
 void i2c_event_interrupt_handler(void)
 {
-    if (LL_I2C_IsActiveFlag_ADDR(I2C1))
+    volatile uint32_t ISR = I2C1->ISR;
+    if (ISR & I2C_ISR_ADDR)
     {
         if (SLAVE_OWN_ADDRESS == (LL_I2C_GetAddressMatchCode(I2C1) >> 1))
         {
@@ -104,12 +105,12 @@ void i2c_event_interrupt_handler(void)
             log_put(LOG_ERR, "vxsiic: I2C event interrupt address error");
         }
     }
-    else if (LL_I2C_IsActiveFlag_NACK(I2C1))
+    else if (ISR & I2C_ISR_NACKF)
     {
 //        debug_printf("%d NACK\n", byte_count);
         LL_I2C_ClearFlag_NACK(I2C1);
     }
-    else if (LL_I2C_IsActiveFlag_STOP(I2C1))
+    else if (ISR & I2C_ISR_STOPF)
     {
 //        debug_printf("%d STOP\n", byte_count);
         LL_I2C_ClearFlag_STOP(I2C1);
@@ -121,13 +122,13 @@ void i2c_event_interrupt_handler(void)
         byte_count = 0;
         rx_buf_len = 0;
     }
-    else if (LL_I2C_IsActiveFlag_TXIS(I2C1))
+    else if (ISR & I2C_ISR_TXIS)
     {
 //        debug_printf("%d TXIS\n", byte_count);
         Slave_Ready_To_Transmit_Callback();
         byte_count++;
     }
-    else if (LL_I2C_IsActiveFlag_RXNE(I2C1)) {
+    else if (ISR & I2C_ISR_RXNE) {
 //        debug_printf("%d RXNE\n", byte_count);
         uint8_t rx = LL_I2C_ReceiveData8(I2C1);
         if (byte_count == 0) {
@@ -146,7 +147,11 @@ void i2c_event_interrupt_handler(void)
         }
         byte_count++;
     }
-    else if (!LL_I2C_IsActiveFlag_TXE(I2C1))
+    else if (ISR & I2C_ISR_BUSY)
+    {
+        // bus busy
+    }
+    else if (ISR & I2C_ISR_TXE)
     {
         /* Do nothing */
         /* This Flag will be set by hardware when the TXDR register is empty */
@@ -155,7 +160,9 @@ void i2c_event_interrupt_handler(void)
     else
     {
         vxsiic_i2c_stats.errors++;
-        log_put(LOG_ERR, "vxsiic: unexpected I2C event interrupt");
+        log_printf(LOG_ERR, "vxsiic: unexpected I2C event interrupt, ISR=%08X, addr %02X %s",
+                   ISR, LL_I2C_GetAddressMatchCode(I2C1) >> 1,
+                   (LL_I2C_DIRECTION_READ == LL_I2C_GetTransferDirection(I2C1)) ? "read" : "write");
     }
 }
 

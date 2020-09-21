@@ -26,6 +26,7 @@
 
 void print_sensors(int y)
 {
+#if defined(ENABLE_POWERMON) && defined (ENABLE_SENSORS)
     const PmState pmState = get_powermon_state();
     if (pmState == PM_STATE_INIT) {
         print_clearbox(y, DISPLAY_SENSORS_HEIGHT);
@@ -33,4 +34,5 @@ void print_sensors(int y)
         print_goto(y, 1);
         print_sensors_box();
     }
+#endif
 }

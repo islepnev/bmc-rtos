@@ -22,45 +22,6 @@
 
 #include "ansi_escape_codes.h"
 
-const char *device_class_str(DeviceClass class)
-{
-    switch (class) {
-    case DEV_CLASS_0: return "none";
-    case DEV_CLASS_VIRTUAL: return "Virtual";
-    case DEV_CLASS_AD5141: return "AD5141";
-    case DEV_CLASS_AD9516: return "AD9516";
-    case DEV_CLASS_CLKMUX: return "clkmux";
-    case DEV_CLASS_DIGIPOTS: return "DigiPots";
-    case DEV_CLASS_EEPROM: return "EEPROM";
-    case DEV_CLASS_FPGA: return "FPGA";
-    case DEV_CLASS_INA226: return "INA226";
-    case DEV_CLASS_AD9545: return "AD9545";
-    case DEV_CLASS_PCA9548: return "PCA9548";
-    case DEV_CLASS_POWERMON: return "PowerMon";
-    case DEV_CLASS_SFP: return "SFP";
-    case DEV_CLASS_SFPIIC: return "SFPIIC";
-    case DEV_CLASS_THSET: return "Thermometers";
-    case DEV_CLASS_ADT7301: return "ADT7301";
-    case DEV_CLASS_MAX31725: return "MAX31725";
-    case DEV_CLASS_TMP421: return "TMP421";
-    case DEV_CLASS_VXSIICM: return "VXSIICM";
-    case DEV_CLASS_VXSIICS: return "VXSIICS";
-    default:
-        assert(0);
-        return "?";
-    }
-}
-
-const char *bus_type_str(BusType type)
-{
-    switch (type) {
-    case BUS_NONE: return "";
-    case BUS_IIC: return "IIC";
-    case BUS_SPI: return "SPI";
-    default: assert(0); return "?";
-    }
-}
-
 void devicelist_print(DeviceBase *d, int depth)
 {
     if (!d) {
@@ -83,11 +44,10 @@ void devicelist_print(DeviceBase *d, int depth)
                bus->bus_number,
                bus->address
                );
-    printf("    %s '%s'%s%s\n",
+    printf("    %s '%s'%s\n",
            device_class_str(d->device_class),
            d->name,
-           deviceStatusResultStr(d->device_status),
-           ANSI_CLEAR_EOL);
+           deviceStatusResultStr(d->device_status));
 
     DeviceBase *p = d->children;
     while (p) {

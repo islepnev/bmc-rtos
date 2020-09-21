@@ -18,25 +18,28 @@
 #include "mcp23017_i2c_hal.h"
 
 #include "bus/i2c_driver.h"
-#include "i2c.h"
-
-static I2C_HandleTypeDef * const hi2c = &hi2c4;
 
 static const int I2C_TIMEOUT_MS = 10;
 
 enum { MCP23017_BASE_I2C_ADDRESS = 0x20 };
 
+static BusInterface bus = {
+    .type = BUS_IIC,
+    .bus_number = 4,
+    .address = MCP23017_BASE_I2C_ADDRESS
+};
+
 bool mcp23017_detect(void)
 {
     uint32_t Trials = 2;
-    return i2c_driver_detect(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, Trials, I2C_TIMEOUT_MS);
+    return i2c_driver_detect(&bus, Trials, I2C_TIMEOUT_MS);
 }
 
 bool mcp23017_read(uint8_t reg, uint8_t *data)
 {
     enum {Size = 1};
     uint8_t pData[Size];
-    if (! i2c_driver_mem_read(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS))
+    if (! i2c_driver_mem_read8(&bus, reg, pData, Size, I2C_TIMEOUT_MS))
         return false;
     if (data) {
         *data = pData[0];
@@ -49,7 +52,7 @@ static bool mcp23017_write_internal(uint8_t reg, uint8_t data)
     enum {Size = 1};
     uint8_t pData[Size];
     pData[0] = data;
-    return i2c_driver_mem_write(hi2c, MCP23017_BASE_I2C_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, pData, Size, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write8(&bus, reg, pData, Size, I2C_TIMEOUT_MS);
 }
 
 bool mcp23017_write(uint8_t reg, uint8_t data)

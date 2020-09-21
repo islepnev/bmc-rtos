@@ -28,9 +28,16 @@ extern "C" {
 #endif
 
 void ad9516_test_loop(BusInterface *bus);
-bool ad9516_read1(BusInterface *bus, uint16_t reg, uint8_t *data);
-bool ad9516_write1(BusInterface *bus, uint16_t reg, uint8_t data);
-bool ad9516_write_config(BusInterface *bus, uint8_t data);
+
+bool ad9516_read1(BusInterface *bus, uint16_t reg, uint8_t *data)
+    __attribute__((warn_unused_result));
+
+bool ad9516_write1(BusInterface *bus, uint16_t reg, uint8_t data)
+    __attribute__((warn_unused_result));
+
+bool ad9516_write_config(BusInterface *bus, uint8_t data)
+    __attribute__((warn_unused_result));
+
 void ad9516_enable_interface(BusInterface *bus);
 void ad9516_disable_interface(BusInterface *bus);
 

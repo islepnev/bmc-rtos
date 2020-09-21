@@ -27,6 +27,8 @@
 
 #define WEBSERVER_THREAD_PRIO    ((TCPIP_THREAD_PRIO) - 1)
 
+enum { httpThreadStackSize = configMINIMAL_STACK_SIZE + 80 };
+
 static void http_server_serve(struct netconn *conn)
 {
     struct netbuf *inbuf;
@@ -80,7 +82,7 @@ static void http_server_netconn_thread(void *arg)
 
 void http_server_init(void)
 {
-    sys_thread_new("http", http_server_netconn_thread, NULL, 2*DEFAULT_THREAD_STACKSIZE, WEBSERVER_THREAD_PRIO);
+    sys_thread_new("http", http_server_netconn_thread, NULL, httpThreadStackSize, WEBSERVER_THREAD_PRIO);
 }
 
 int http_server_write_impl(struct http_server_t *server, const char *str)

@@ -118,12 +118,12 @@
 #define FPGA_SCLK_Pin GPIO_PIN_7
 #define FPGA_TX_GPIO_Port GPIOC
 #define FPGA_TX_Pin GPIO_PIN_6
-#define LED_RED_B_GPIO_Port GPIOC
-#define LED_RED_B_Pin GPIO_PIN_0
+#define LED_GREEN_B_GPIO_Port GPIOC
+#define LED_GREEN_B_Pin GPIO_PIN_0
+#define LED_RED_B_GPIO_Port GPIOA
+#define LED_RED_B_Pin GPIO_PIN_6
 #define LED_YELLOW_B_GPIO_Port GPIOA
 #define LED_YELLOW_B_Pin GPIO_PIN_3
-#define LED_GREEN_B_GPIO_Port GPIOA
-#define LED_GREEN_B_Pin GPIO_PIN_6
 #define GPIO1_GPIO_Port GPIOI
 #define GPIO1_Pin GPIO_PIN_13
 #define GPIO2_GPIO_Port GPIOH

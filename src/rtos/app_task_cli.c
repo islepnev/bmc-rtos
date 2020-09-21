@@ -24,7 +24,7 @@
 #include "cmsis_os.h"
 
 osThreadId cliThreadId = NULL;
-enum { cliThreadStackSize = threadStackSize };
+enum { cliThreadStackSize = threadStackSize + 110};
 
 osThreadDef(cli, cliTask,    osPriorityNormal, 1, cliThreadStackSize);
 

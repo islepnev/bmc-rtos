@@ -23,19 +23,55 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "bus/bus_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct __I2C_HandleTypeDef;
-
 void i2c_driver_init(void);
-bool i2c_driver_get_master_ready(struct __I2C_HandleTypeDef *hi2c);
-bool i2c_driver_detect(struct __I2C_HandleTypeDef *hi2c, uint16_t deviceAddr, uint32_t Trials, uint32_t millisec);
-bool i2c_driver_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_mem_read(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec);
-bool i2c_driver_mem_write(struct __I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec);
+
+bool i2c_driver_get_master_ready(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_bus_ready(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_detect(BusInterface *bus,
+                       uint32_t Trials, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_read(BusInterface *bus,
+                     uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_write(BusInterface *bus,
+                      uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+//bool i2c_driver_mem_read(BusInterface *bus,
+//                         uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
+//    __attribute__((warn_unused_result));
+
+//bool i2c_driver_mem_write(BusInterface *bus,
+//                          uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t millisec)
+//    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_read8(BusInterface *bus,
+                           uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_read16(BusInterface *bus,
+                            uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_write8(BusInterface *bus,
+                           uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool i2c_driver_mem_write16(BusInterface *bus,
+                            uint16_t MemAddress, uint8_t *pData, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

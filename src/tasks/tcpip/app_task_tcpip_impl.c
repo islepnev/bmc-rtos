@@ -30,6 +30,9 @@
 #include "sntp/sntp_client.h"
 #include "snmp/snmp_agent.h"
 
+enum { eth_phy_pollThreadStackSize = configMINIMAL_STACK_SIZE + 130 };
+enum { dhcpThreadStackSize = configMINIMAL_STACK_SIZE + 120 };
+
 /* Semaphore to signal Ethernet Link state update */
 osSemaphoreId Netif_LinkSemaphore = NULL;
 /* Ethernet link thread Argument */
@@ -80,7 +83,7 @@ static void Netif_Config(void)
   link_arg.netif = &gnetif;
   link_arg.semaphore = Netif_LinkSemaphore;
   /* Create the Ethernet link handler thread */
-  osThreadDef(eth_phy_poll, ethernetif_set_link, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadDef(eth_phy_poll, ethernetif_set_link, osPriorityNormal, 0, eth_phy_pollThreadStackSize);
   osThreadCreate (osThread(eth_phy_poll), &link_arg);
 
   /* Start DHCP negotiation for a network interface (IPv4) */
@@ -115,7 +118,7 @@ void task_tcpip_init()
 
 #ifdef USE_DHCP
   /* Start DHCPClient */
-  osThreadDef(DHCP, DHCP_thread, TCPIP_THREAD_PRIO, 0, configMINIMAL_STACK_SIZE * 2);
+  osThreadDef(DHCP, DHCP_thread, TCPIP_THREAD_PRIO, 0, dhcpThreadStackSize);
   osThreadCreate (osThread(DHCP), &gnetif);
 #endif
 

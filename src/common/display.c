@@ -19,11 +19,6 @@
 
 #include <stdio.h>
 
-void print_clear_eol(void)
-{
-    printf("%s\n", ANSI_CLEAR_EOL);
-}
-
 void print_goto(int line, int col)
 {
     printf("\x1B[%d;%dH", line, col);

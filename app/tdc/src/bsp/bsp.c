@@ -31,9 +31,13 @@ int pcb_version = 0;
 
 uint32_t read_pcb_version(void)
 {
+#if defined(BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
+    return 0;
+#else
     bool a0 = read_gpio_pin(PCB_VER_A0_GPIO_Port, PCB_VER_A0_Pin);
     bool a1 = read_gpio_pin(PCB_VER_A1_GPIO_Port, PCB_VER_A1_Pin);
     return a1 * 2 + a0;
+#endif
 }
 
 #ifdef BOARD_TDC72
@@ -62,11 +66,20 @@ void update_board_version(int powermon_count)
 
 bool fpga_done_pin_present(void)
 {
+#if defined(BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
+    return false;
+#else
     return true;
+#endif
 }
 #endif
 
 void sfpiic_switch_enable(bool enable)
 {
     write_gpio_pin(MON_SMB_SW_RST_B_GPIO_Port,  MON_SMB_SW_RST_B_Pin, enable);
+}
+
+void bsp_update_system_powergood_pin(bool power_good)
+{
+    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
 }

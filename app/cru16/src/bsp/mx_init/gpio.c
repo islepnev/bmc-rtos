@@ -23,6 +23,14 @@
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 
+#ifndef STM32F769xx
+#error "STM32F769xx should be defined"
+#endif
+
+#ifdef STM32F746xx
+#error "STM32F746xx should NOT be defined"
+#endif
+
 typedef struct {
     GPIO_TypeDef* GPIOx;
     uint16_t pin;
@@ -44,18 +52,6 @@ void MX_GPIO_Init(void)
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOI_CLK_ENABLE();
-  __HAL_RCC_GPIOJ_CLK_ENABLE();
-  __HAL_RCC_GPIOK_CLK_ENABLE();
 
   // PCB VER
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

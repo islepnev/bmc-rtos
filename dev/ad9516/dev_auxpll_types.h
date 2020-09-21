@@ -38,6 +38,7 @@ typedef enum {
 
 typedef struct Dev_auxpll_priv {
     AD9516_Status status;
+    uint32_t stateStartTick;
     AuxPllState fsm_state;
     uint32_t recoveryCount;
     bool enable_out_6;
@@ -52,6 +53,7 @@ typedef struct Dev_auxpll {
 } Dev_auxpll;
 
 SensorStatus get_auxpll_sensor_status(void);
+bool ad9516_running(Dev_auxpll *d);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@
 #include "cmsis_os.h"
 #include "led_gpio_hal.h"
 
-enum { heartbeatThreadStackSize = threadStackSize };
+enum { heartbeatThreadStackSize = threadStackSize + 20 };
 
 static const int mainQUEUE_SEND_FREQUENCY_MS = 200;
 

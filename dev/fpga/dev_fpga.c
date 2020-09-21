@@ -18,9 +18,11 @@
 #include "dev_fpga.h"
 
 #include "../ad9545/dev_ad9545.h"
+#include "../ad9548/dev_ad9548.h"
 #include "bsp_fpga.h"
 #include "dev_fpga_types.h"
 #include "devicelist.h"
+#include "fpga_mcu_regs_v2_0.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"
@@ -31,6 +33,7 @@
 
 static uint16_t live_magic = 0x55AA;
 
+#if 0
 static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
     BusInterface *bus = &dev->bus;
@@ -39,8 +42,9 @@ static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16
            rdata &&
            (wdata == *rdata);
 }
+#endif
 
-static void fpga_write_live_magic(DeviceBase *dev)
+static bool fpga_write_live_magic(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
@@ -48,8 +52,8 @@ static void fpga_write_live_magic(DeviceBase *dev)
     live_magic++;
     uint16_t wdata1 = live_magic;
     uint16_t wdata2 = ~live_magic;
-    fpga_spi_hal_write_reg(bus, addr1, wdata1);
-    fpga_spi_hal_write_reg(bus, addr2, wdata2);
+    return fpga_spi_hal_write_reg(bus, addr1, wdata1) &&
+           fpga_spi_hal_write_reg(bus, addr2, wdata2);
 }
 
 bool fpga_check_live_magic(DeviceBase *dev)
@@ -58,16 +62,17 @@ bool fpga_check_live_magic(DeviceBase *dev)
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t rdata1 = 0, rdata2 = 0;
-    fpga_spi_hal_read_reg(bus, addr1, &rdata1);
-    fpga_spi_hal_read_reg(bus, addr2, &rdata2);
+    if (!fpga_spi_hal_read_reg(bus, addr1, &rdata1))
+        return false;
+    if (!fpga_spi_hal_read_reg(bus, addr2, &rdata2))
+        return false;
     uint16_t test1 = live_magic;
     uint16_t test2 = ~live_magic;
     if ((rdata1 != test1) || (rdata2 != test2)) {
         log_put(LOG_ERR, "FPGA register contents unexpectedly changed");
         return false;
     }
-    fpga_write_live_magic(dev);
-    return true;
+    return fpga_write_live_magic(dev);
 }
 
 bool fpga_test(DeviceBase *dev)
@@ -133,9 +138,14 @@ bool fpgaDetect(Dev_fpga *d)
 bool fpgaWriteBmcVersion(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, VERSION_MAJOR_NUM))
+    bmc_version_t bmc_version;
+    bmc_version.b.major = VERSION_MAJOR_NUM;
+    bmc_version.b.minor = VERSION_MINOR_NUM;
+    uint16_t bmc_revision = VERSION_PATCH_NUM;
+
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, bmc_version.raw))
         return false;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, VERSION_MINOR_NUM))
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, bmc_revision))
         return false;
     return true;
 }
@@ -160,19 +170,38 @@ bool fpgaWriteBmcTemperature(DeviceBase *dev)
 bool fpgaWritePllStatus(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
+    fpga_mcu_reg_pll_t pll = {0};
+    uint16_t unlock_count = 0;
+#if ENABLE_AD9545
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
     if (!d || !d->priv)
         return false;
     const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);
 
-    uint16_t data = 0;
-    if (SENSOR_NORMAL == d->sensor) {
-        data |= 0x8;
-    } else {
-        if (priv->status.sysclk.b.pll0_locked)
-            data |= 0x1;
-    }
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, data))
+    pll.b.locked = (SENSOR_NORMAL == d->sensor) &&
+                 priv->status.sysclk.b.pll0_locked;
+    pll.b.ref_a_valid = priv->status.ref[0].b.valid;
+    pll.b.ref_b_valid = priv->status.ref[2].b.valid;
+#endif
+#if ENABLE_AD9548
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
+    if (!d || !d->priv)
+        return false;
+    const Dev_ad9548_priv *priv = (Dev_ad9548_priv *)device_priv_const(d);
+
+    unlock_count = priv->status.pll_unlock_cntr <= 65535
+                       ? priv->status.pll_unlock_cntr : 65535;
+    bool pll_locked = priv->status.DpllStat.b.dpll_freq_lock && priv->status.DpllStat.b.dpll_phase_lock;
+    pll.b.locked = (pll_locked && (SENSOR_NORMAL == d->sensor));
+    pll.b.active_ref = priv->status.DpllStat2.b.active_ref >> 1;
+    pll.b.ref_a_valid = priv->status.refStatus[0].b.valid;
+    pll.b.ref_b_valid = priv->status.refStatus[2].b.valid;
+    pll.b.ref_c_valid = priv->status.refStatus[4].b.valid;
+    pll.b.ref_d_valid = priv->status.refStatus[6].b.valid;
+#endif
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, pll.raw))
+        return false;
+    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_2, unlock_count))
         return false;
     return true;
 }
@@ -184,7 +213,11 @@ bool fpgaWriteSystemStatus(DeviceBase *dev)
     data = getSystemStatus();
     if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_A, data))
         return false;
+#ifdef ENABLE_POWERMON
     data = getPowermonStatus();
+#else
+    data = 0;
+#endif
     if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_B, data))
         return false;
     data = getPllStatus();
@@ -193,6 +226,7 @@ bool fpgaWriteSystemStatus(DeviceBase *dev)
     return true;
 }
 
+#ifdef ENABLE_SENSORS
 static bool fpgaWriteSensorsByIndex(DeviceBase *dev, int *indices, int count)
 {
     const Dev_powermon_priv *p = get_powermon_priv_const();
@@ -219,3 +253,10 @@ bool fpgaWriteSensors(DeviceBase *dev)
     return fpgaWriteSensorsByIndex(
         dev, fpga_sensor_map.indices, fpga_sensor_map.count);
 }
+#else
+bool fpgaWriteSensors(DeviceBase *dev)
+{
+    return true;
+}
+#endif
+

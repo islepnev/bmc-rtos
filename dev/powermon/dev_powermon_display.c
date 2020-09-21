@@ -25,22 +25,6 @@
 #include "dev_powermon_types.h"
 #include "display.h"
 
-const char *sensor_status_str(SensorStatus status)
-{
-    switch (status) {
-    case SENSOR_UNKNOWN:
-        return ANSI_GRAY   "none" ANSI_CLEAR;
-    case SENSOR_NORMAL:
-        return ANSI_GREEN  "NORM" ANSI_CLEAR;
-    case SENSOR_WARNING:
-        return ANSI_YELLOW "WARN" ANSI_CLEAR;
-    case SENSOR_CRITICAL:
-        return ANSI_RED    "CRIT" ANSI_CLEAR;
-    default:
-        return "????";
-    }
-}
-
 const char *monStateStr(MonState state)
 {
     switch(state) {
@@ -71,8 +55,7 @@ const char *pmStateStr(PmState state)
 
 void pm_sensor_print_header(void)
 {
-    printf("%10s %6s %6s %6s %5s", "       ", "  V  ", "  A  ", " A max ", "  W  ");
-    print_clear_eol();
+    printf("%10s %6s %6s %6s %5s\n", "       ", "  V  ", "  A  ", " A max ", "  W  ");
 }
 
 void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
@@ -116,7 +99,7 @@ static void monPrintValues(const Dev_powermon_priv *p)
         const pm_sensors_arr *sensors = &p->sensors;
         for (int i=0; i<sensors->count; i++) {
             pm_sensor_print(&sensors->arr[i], monIsOn(p->sw, (SensorIndex)i));
-            print_clear_eol();
+            printf("\n");
         }
     }
 }
@@ -127,12 +110,11 @@ void print_sensors_box(void)
     if (!priv)
         return;
     SensorStatus sensorStatus = pm_sensors_getStatus(priv);
-    printf("VME power: %4.1f W, %4.1f W max, FPGA: %4.1f W %s",
+    printf("VME power: %4.1f W, %4.1f W max, FPGA: %4.1f W %s\n",
            pm_get_power_w(priv),
            pm_get_power_max_w(priv),
            pm_get_fpga_power_w(priv),
            sensor_status_ansi_str(sensorStatus));
-    print_clear_eol();
     monPrintValues(priv);
 }
 
@@ -142,18 +124,17 @@ static void print_pm_switches(const pm_switches sw)
     for (int i=0; i<POWER_SWITCH_COUNT; i++) {
         printf("%s %s   ", psw_label((PowerSwitchIndex)i), sw[i] ? STR_ON : STR_OFF);
     }
-    print_clear_eol();
+    printf("\n");
 }
 
 static void pm_pgood_print(const pm_pgoods pgood)
 {
-    //    printf("Live insert: %s", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
-    //    print_clear_eol();
+    //    printf("Live insert: %s\n", pm.vmePresent ? STR_RESULT_ON : STR_RESULT_OFF);
     printf("Power good: ");
     for (int i=0; i<POWER_GOOD_COUNT; i++) {
         printf("%s %s   ", pgood_label((PowerGoodIndex)i), pgood[i] ? STR_ON : STR_OFF);
     }
-    print_clear_eol();
+    printf("\n");
 }
 
 void print_powermon_box(void)
@@ -163,8 +144,7 @@ void print_powermon_box(void)
         return;
     const PmState pmState = get_powermon_state();
     //    print_clearbox(DISPLAY_POWERMON_Y, DISPLAY_POWERMON_H);
-    printf("Powermon: %-20s   Sensors: %s", pmStateStr(pmState), monStateStr(priv->monState));
-    print_clear_eol();
+    printf("Powermon: %-20s   Sensors: %s\n", pmStateStr(pmState), monStateStr(priv->monState));
 //    if (pmState == PM_STATE_INIT) {
 //        print_clearbox(DISPLAY_POWERMON_Y+1, DISPLAY_POWERMON_H-1);
 //    } else {

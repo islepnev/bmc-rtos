@@ -19,19 +19,21 @@
 
 #include "bsp.h"
 #include "bus/i2c_driver.h"
-#include "bus/impl/i2c_driver_util.h" // FIXME: use index, not handle
-#include "i2c.h"
 
 static const int I2C_TIMEOUT_MS = 10;
 
+bool ad5141_detect(BusInterface *bus)
+{
+    int Trials = 2;
+    return i2c_driver_detect(bus, Trials, I2C_TIMEOUT_MS);
+}
+
 bool ad5141_write(BusInterface *bus, uint8_t ctrl_addr, uint8_t data)
 {
-    uint16_t DevAddress = bus->address << 1;
-    return i2c_driver_mem_write(hi2c_handle(bus->bus_number), DevAddress, ctrl_addr, I2C_MEMADD_SIZE_8BIT, &data, 1, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_write8(bus, ctrl_addr, &data, 1, I2C_TIMEOUT_MS);
 }
 
 bool ad5141_read(BusInterface *bus, uint16_t command, uint8_t *data)
 {
-    uint16_t DevAddress = bus->address << 1;
-    return i2c_driver_mem_read(hi2c_handle(bus->bus_number), DevAddress, command, I2C_MEMADD_SIZE_16BIT, data, 1, I2C_TIMEOUT_MS);
+    return i2c_driver_mem_read16(bus, command, data, 1, I2C_TIMEOUT_MS);
 }

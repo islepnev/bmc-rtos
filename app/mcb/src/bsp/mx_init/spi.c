@@ -19,14 +19,12 @@
 
 #include "spi.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
+#include "bus/impl/spi_driver_util.h"
 #include "error_handler.h"
-#include "stm32f7xx_hal_cortex.h"
-#include "stm32f7xx_hal_def.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_gpio.h"
-#include "stm32f7xx_hal_rcc.h"
-#include "stm32f7xx_hal_spi.h"
+#include "stm32_hal.h"
+#include "stm32_init_periph.h"
 
 SPI_HandleTypeDef hspi1 = {0};
 SPI_HandleTypeDef hspi2 = {0};
@@ -34,72 +32,63 @@ SPI_HandleTypeDef hspi3 = {0};
 SPI_HandleTypeDef hspi4 = {0};
 SPI_HandleTypeDef hspi5 = {0};
 
-static void MX_SPI2_Init(void)
+static void init_ad9516_spi(int index)
 {
-    hspi2.Instance = SPI2;
-    hspi2.Init.Mode = SPI_MODE_MASTER;
-    hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi2.Init.CRCPolynomial = 7;
-    hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
 #ifdef TTVXS_1_0
     // ADT7301
-    hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
-    hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
-    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-    hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
+    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi->Init.NSS = SPI_NSS_HARD_OUTPUT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
 #else
     // AD9516-4
-    hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
-    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
-    hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-    hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi->Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi->Init.NSS = SPI_NSS_HARD_OUTPUT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 #endif
-    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
-
 }
 
-// PI3     ------> SPI2_MOSI
-// PI2     ------> SPI2_MISO
-// PI1     ------> SPI2_SCK
-// PI0     ------> SPI2_NSS
-
-// PF7     ------> SPI5_SCK
-// PF9     ------> SPI5_MOSI
-// PF8     ------> SPI5_MISO
-
-static void MX_SPI5_Init(void)
+static void init_fpga_spi(int index)
 {
-    hspi5.Instance = SPI5;
-    hspi5.Init.Mode = SPI_MODE_MASTER;
-    hspi5.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi5.Init.DataSize = SPI_DATASIZE_16BIT;
-    hspi5.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi5.Init.CLKPhase = SPI_PHASE_2EDGE;
-    hspi5.Init.NSS = SPI_NSS_SOFT;
-    hspi5.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-    hspi5.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi5.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi5.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi5.Init.CRCPolynomial = 7;
-    hspi5.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-    hspi5.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-    if (HAL_SPI_Init(&hspi5) != HAL_OK) {
+    // FPGA
+    SPI_HandleTypeDef *hspi = hspi_handle(index);
+    hspi->Instance = spi_instance(index);
+    hspi->Init.Mode = SPI_MODE_MASTER;
+    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.DataSize = SPI_DATASIZE_16BIT;
+    hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
+    hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
+    hspi->Init.NSS = SPI_NSS_SOFT;
+    hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi->Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi->Init.CRCPolynomial = 7;
+    hspi->Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+    hspi->Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    if (HAL_SPI_Init(hspi) != HAL_OK) {
         Error_Handler();
     }
 }
 
 static void SPI2_synchronize(void)
 {
-    __HAL_RCC_GPIOI_CLK_ENABLE();
-
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     // force NSS high
@@ -126,10 +115,10 @@ static void SPI2_synchronize(void)
     HAL_GPIO_WritePin(SPI2_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
 }
 
-void MX_SPI_Init(void)
+void init_spi_peripherals(void)
 {
-    MX_SPI2_Init();
-    MX_SPI5_Init();
+    init_ad9516_spi(SPI_BUS_INDEX_AD9516);
+    init_fpga_spi(SPI_BUS_INDEX_FPGA);
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
@@ -138,7 +127,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     if (spiHandle->Instance==SPI2) {
         SPI2_synchronize();
         __HAL_RCC_SPI2_CLK_ENABLE();
-        __HAL_RCC_GPIOI_CLK_ENABLE();
+
         GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; // OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -158,7 +147,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
         HAL_GPIO_Init(FPGA_NSS_GPIO_Port, &GPIO_InitStruct);
 
         __HAL_RCC_SPI5_CLK_ENABLE();
-        __HAL_RCC_GPIOF_CLK_ENABLE();
+
         GPIO_InitStruct.Pin = FPGA_SCLK_Pin|FPGA_MOSI_Pin|FPGA_MISO_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;

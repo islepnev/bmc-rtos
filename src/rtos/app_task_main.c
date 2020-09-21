@@ -19,11 +19,11 @@
 
 #include <assert.h>
 
-#include "app_task_main_impl.h"
+#include "base/app_task_main_impl.h"
 #include "app_tasks.h"
 #include "cmsis_os.h"
 
-enum { mainThreadStackSize = threadStackSize };
+enum { mainThreadStackSize = threadStackSize + 70 };
 static const uint32_t mainTaskLoopDelay = 10;
 
 static void start_thread_main(void const *arg)
@@ -37,7 +37,7 @@ static void start_thread_main(void const *arg)
     }
 }
 
-osThreadDef(main, start_thread_main, osPriorityNormal,      1, mainThreadStackSize);
+osThreadDef(main, start_thread_main, osPriorityNormal, 1, mainThreadStackSize);
 
 void create_task_main(void)
 {

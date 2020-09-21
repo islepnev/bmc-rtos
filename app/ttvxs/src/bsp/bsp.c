@@ -61,3 +61,8 @@ void sfpiic_switch_enable(bool enable)
 {
     write_gpio_pin(I2C_RESET3_B_GPIO_Port,  I2C_RESET3_B_Pin, enable);
 }
+
+void bsp_update_system_powergood_pin(bool power_good)
+{
+    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
+}

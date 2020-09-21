@@ -33,5 +33,7 @@ typedef struct DeviceBase {
     struct DeviceBase *next;
 } DeviceBase;
 
+const char *device_class_str(DeviceClass c);
+const char *bus_type_str(BusType t);
 
 #endif // DEVICEBASE_H

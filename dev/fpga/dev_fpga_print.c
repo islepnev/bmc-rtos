@@ -52,5 +52,5 @@ void dev_fpga_print_box(void)
         printf("%04X", priv->id);
     printf(ANSI_CLEAR_EOL ANSI_COL30 "%9s ", fpga_state_str(priv->state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
-    print_clear_eol();
+    printf("\n");
 }

@@ -27,9 +27,8 @@
 #include "log/log.h"
 #include "spi.h"
 #include "spi_driver_util.h"
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
-#include "stm32f7xx_ll_spi.h"
+#include "stm32_hal.h"
+#include "stm32_ll.h"
 
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error
@@ -69,7 +68,10 @@ static bool spi_driver_wait_complete(const char *title, struct __SPI_HandleTypeD
     int32_t status = spi_driver_wait_it_sem(hspi, millisec);
     if (status != osOK) {
         log_printf(LOG_CRIT, "%s: SPI %d timeout\n", title, hspi_index(hspi));
-        HAL_SPI_Abort_IT(hspi);
+        int ret = HAL_SPI_Abort_IT(hspi);
+        if (HAL_OK != ret) {
+            log_printf(LOG_CRIT, "%s: SPI %d abort failed: %d\n", title, hspi_index(hspi), ret);
+        }
         spi_driver_reset_internal(hspi);
         return false;
     }
@@ -96,6 +98,11 @@ static bool spi_driver_before_hal_call(const char *title, struct __SPI_HandleTyp
                    title, hspi_index(hspi));
         return false;
     }
+    if (hspi->State != HAL_SPI_STATE_READY) {
+        log_printf(LOG_CRIT, "%s: SPI %d not ready: %d\n",
+                   title, hspi_index(hspi), hspi->State);
+        return false;
+    }
     assert(hspi->State == HAL_SPI_STATE_READY);
     spi_driver_clear_transfer_error(hspi);
     if (LL_SPI_IsActiveFlag_BSY(hspi->Instance)) {
@@ -119,6 +126,14 @@ bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf,
     if (!spi_driver_before_hal_call(__func__, hspi))
         return false;
     HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
+    return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
+}
+
+bool spi_driver_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+{
+    if (!spi_driver_before_hal_call(__func__, hspi))
+        return false;
+    HAL_StatusTypeDef ret = HAL_SPI_Receive_IT(hspi, rxBuf, Size);
     return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
 }
 

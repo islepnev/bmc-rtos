@@ -30,7 +30,7 @@ static void print_log_entry(uint32_t index)
     struct LogEntry ent;
     log_get(index, &ent);
     const char *prefix = "";
-    const char *suffix = ANSI_CLEAR_EOL ANSI_CLEAR;
+    const char *suffix = ANSI_CLEAR;
     switch (ent.priority) {
     case LOG_EMERG: prefix = ANSI_PUR; break;
     case LOG_ALERT: prefix = ANSI_PUR; break;
@@ -44,7 +44,7 @@ static void print_log_entry(uint32_t index)
     }
     printf("%s%8ld.%03ld %s%s", prefix,
            ent.tick/1000, ent.tick%1000, ent.str, suffix);
-    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("\n");
 }
 
 static uint32_t old_log_wptr = 0;
@@ -60,7 +60,7 @@ static void print_log_lines(int y, int count, bool repaint)
         return;
     old_log_wptr = log_wptr;
     print_goto(y, 1);
-    if (log_start <= log_wptr) {
+    if (log_start <= log_wptr && max_count != LOG_BUF_SIZE) {
         for (uint32_t i=log_start; i<log_wptr; i++)
             print_log_entry(i);
     } else {
@@ -70,7 +70,7 @@ static void print_log_lines(int y, int count, bool repaint)
             print_log_entry(i);
     }
     for (uint32_t i=log_count; i<max_count; i++)
-        print_clear_eol();
+        printf("\n");
 }
 
 void print_log_messages(int y, int count, bool repaint)
@@ -83,7 +83,7 @@ void display_log_page(int y, int count, bool repaint)
 {
     if (repaint) {
         print_goto(y, 1);
-        printf("Log messages" ANSI_CLEAR_EOL "\n");
+        printf("Log messages\n");
     }
     print_log_lines(y+1, count, repaint);
 }

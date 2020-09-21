@@ -114,7 +114,7 @@ const char *dev_sfpiic_connector_str(uint8_t value)
 
 static void sfpPrintSummaryHeader(void)
 {
-    printf("%-6s  %-6s  %-4s  %-11s  %-16s %-16s %-16s %5s  %5s  %6s  %6s  %6s",
+    printf("%-6s  %-6s  %-4s  %-11s  %-16s %-16s %-16s %5s  %5s  %6s  %6s  %6s\n",
            "Port", // 6
            "Type", // 6
            "Conn", // 4
@@ -128,20 +128,19 @@ static void sfpPrintSummaryHeader(void)
            "Tx dBm", // 6
            "Bias" // 6
            );
-    print_clear_eol();
 }
 
 void sfpPrintSummaryStatus(const Dev_sfpiic_priv *d)
 {
     const uint32_t now = osKernelSysTick();
     sfpPrintSummaryHeader();
-    print_clear_eol();
+    printf("\n");
     for (uint32_t i=0; i<d->portCount; i++) {
         const int portIndex = d->portIndex[i];
         const sfpiic_ch_status_t *status = &d->status.sfp[portIndex];
         printf("%-6s  ", d->portName[portIndex]);
         if (!status->present) {
-            print_clear_eol();
+            printf("\n");
             continue;
         }
         switch (status->ch_state) {
@@ -189,14 +188,13 @@ void sfpPrintSummaryStatus(const Dev_sfpiic_priv *d)
             printf(" STATE_ERROR");
             break;
         }
-        print_clear_eol();
+        printf("\n");
     }
 }
 
 void sfpPrintChannelHeader(void)
 {
-    printf("  Port  Lane  Rx dBm  Tx dBm    Bias");
-    print_clear_eol();
+    printf("  Port  Lane  Rx dBm  Tx dBm    Bias\n");
 }
 
 static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
@@ -217,8 +215,7 @@ static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
             sfpPrintChannelHeader();
             print_header=0;
         } else {
-            printf("-------------------------------------");
-            print_clear_eol();
+            printf("-------------------------------------\n");
         }
         bool dom_updated = (uint32_t)(now - status->dom_updated_timetick) < STALE_TIMEOUT_TICKS;
         for (int ch=0; ch<4; ch++) {
@@ -230,13 +227,13 @@ static void sfpPrintChannelStatus(const Dev_sfpiic_priv *d)
                                      status->bias_cur[ch]
                    );
             printf(ANSI_CLEAR);
-            print_clear_eol();
+            printf("\n");
         }
     }
     // clear screen area
     for (int i=0; i<skip_count; i++) {
         for (int j=0; j<5; j++)
-            print_clear_eol();
+            printf("\n");
     }
 }
 
@@ -251,7 +248,7 @@ void display_sfpiic_page(int y)
     // sff8472_show_all(priv->status.sfp[3].diag);
 
     sfpPrintSummaryStatus(priv);
-    print_clear_eol();
+    printf("\n");
     sfpPrintChannelStatus(priv);
 }
 
@@ -260,6 +257,5 @@ void dev_sfpiic_print(void)
     const Dev_sfpiic_priv *priv = get_sfpiic_priv_const();
     if (!priv)
         return;
-    printf("SFPIIC:  %s", sensor_status_ansi_str(get_sfpiic_sensor_status()));
-    print_clear_eol();
+    printf("SFPIIC:  %s\n", sensor_status_ansi_str(get_sfpiic_sensor_status()));
 }

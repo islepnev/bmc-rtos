@@ -23,12 +23,12 @@
 
 #include "devicebase.h"
 #include "ipmi_sensor_types.h"
+#include "vxsiic_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum {VXSIIC_SLOTS = 18};
 //enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
 
@@ -58,10 +58,19 @@ typedef struct vxsiic_pp_state_t {
     bool mcu_sensors_ok;
 } vxsiic_pp_state_t;
 
+typedef union {
+    struct {
+        uint16_t minor : 8;
+        uint16_t major : 8;
+        uint16_t patch : 16;
+    } b;
+    uint32_t raw;
+} bmc_ver_t;
+
 typedef struct vxsiic_pp_mcu_info {
     uint32_t magic;
     uint32_t uptime;
-    uint32_t bmc_ver;
+    bmc_ver_t bmc_ver;
     uint32_t module_id;
     iic_stats_t iic_stats;
     encoded_system_status_t enc_status;
@@ -73,7 +82,8 @@ typedef struct vxsiic_pp_mcu_sensors {
 } vxsiic_pp_mcu_sensors;
 
 typedef struct vxsiic_slot_status_t {
-   int present;
+    bool bus_ready;
+    int present;
    SensorStatus system_status;
    uint32_t ioexp;
    char module_id_str[MCU_ID_SIZE];
@@ -90,6 +100,7 @@ typedef struct vxsiic_status_t {
 
 typedef struct Dev_vxsiicm_priv {
     DeviceBase dev;
+    uint32_t stateStartTick;
     vxsiic_status_t status;
 } Dev_vxsiicm_priv;
 
@@ -109,8 +120,6 @@ void struct_vxs_i2c_init(Dev_vxsiicm *d);
 //    vxsiic_i2c_board_stats_t pp[VXSIIC_SLOTS];
 //} vxsiic_i2c_stats_t;
 
-extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
-extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
 uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d);
 
 #ifdef __cplusplus

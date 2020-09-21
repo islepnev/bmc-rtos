@@ -25,6 +25,13 @@
 #include "error_handler.h"
 #include "log/log.h"
 #include "spi.h"
+#include "stm32_hal.h"
+
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi5;
 
 enum {SPI_BUS_COUNT = 5};
 
@@ -35,12 +42,12 @@ osSemaphoreId spi3_it_sem;
 osSemaphoreId spi4_it_sem;
 osSemaphoreId spi5_it_sem;
 
-// device semaphores
-osSemaphoreId spi1_dev_sem;
-osSemaphoreId spi2_dev_sem;
-osSemaphoreId spi3_dev_sem;
-osSemaphoreId spi4_dev_sem;
-osSemaphoreId spi5_dev_sem;
+// device mutexes
+osMutexId spi1_dev_mutex;
+osMutexId spi2_dev_mutex;
+osMutexId spi3_dev_mutex;
+osMutexId spi4_dev_mutex;
+osMutexId spi5_dev_mutex;
 
 osSemaphoreDef(spi1_it_sem);
 osSemaphoreDef(spi2_it_sem);
@@ -48,11 +55,11 @@ osSemaphoreDef(spi3_it_sem);
 osSemaphoreDef(spi4_it_sem);
 osSemaphoreDef(spi5_it_sem);
 
-osSemaphoreDef(spi1_dev_sem);
-osSemaphoreDef(spi2_dev_sem);
-osSemaphoreDef(spi3_dev_sem);
-osSemaphoreDef(spi4_dev_sem);
-osSemaphoreDef(spi5_dev_sem);
+osMutexDef(spi1_dev_mutex);
+osMutexDef(spi2_dev_mutex);
+osMutexDef(spi3_dev_mutex);
+osMutexDef(spi4_dev_mutex);
+osMutexDef(spi5_dev_mutex);
 
 // transfer error flags
 static bool spi_driver_transfer_error[SPI_BUS_COUNT] = {0};
@@ -96,23 +103,27 @@ bool spi_driver_util_init(void)
         assert(false);
         return false;
     }
-    osSemaphoreWait(spi1_it_sem, osWaitForever);
-    osSemaphoreWait(spi2_it_sem, osWaitForever);
-    osSemaphoreWait(spi3_it_sem, osWaitForever);
-    osSemaphoreWait(spi4_it_sem, osWaitForever);
-    osSemaphoreWait(spi5_it_sem, osWaitForever);
+    if ((xSemaphoreTake(spi1_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi2_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi3_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi4_it_sem, 0) != pdTRUE) ||
+        (xSemaphoreTake(spi5_it_sem, 0) != pdTRUE)
+        ) {
+        assert(false);
+        return false;
+    }
 
-    // create device semaphores
-    spi1_dev_sem = osSemaphoreCreate(osSemaphore(spi1_dev_sem), 1);
-    spi2_dev_sem = osSemaphoreCreate(osSemaphore(spi2_dev_sem), 1);
-    spi3_dev_sem = osSemaphoreCreate(osSemaphore(spi3_dev_sem), 1);
-    spi4_dev_sem = osSemaphoreCreate(osSemaphore(spi4_dev_sem), 1);
-    spi5_dev_sem = osSemaphoreCreate(osSemaphore(spi5_dev_sem), 1);
-    if (NULL == spi1_dev_sem
-        || NULL == spi2_dev_sem
-        || NULL == spi3_dev_sem
-        || NULL == spi4_dev_sem
-        || NULL == spi5_dev_sem
+    // create device mutexes
+    spi1_dev_mutex = osMutexCreate(osMutex(spi1_dev_mutex));
+    spi2_dev_mutex = osMutexCreate(osMutex(spi2_dev_mutex));
+    spi3_dev_mutex = osMutexCreate(osMutex(spi3_dev_mutex));
+    spi4_dev_mutex = osMutexCreate(osMutex(spi4_dev_mutex));
+    spi5_dev_mutex = osMutexCreate(osMutex(spi5_dev_mutex));
+    if (NULL == spi1_dev_mutex
+        || NULL == spi2_dev_mutex
+        || NULL == spi3_dev_mutex
+        || NULL == spi4_dev_mutex
+        || NULL == spi5_dev_mutex
         ) {
         assert(false);
         return false;
@@ -136,15 +147,15 @@ SemaphoreHandle_t spi_driver_it_sem_by_hspi(struct __SPI_HandleTypeDef *hspi)
     return NULL;
 }
 
-SemaphoreHandle_t spi_driver_dev_sem_by_index(int index)
+osMutexId spi_driver_dev_mutex_by_index(int index)
 {
     assert(index >=1 && index <= SPI_BUS_COUNT);
     switch (index) {
-    case 1: return spi1_dev_sem;
-    case 2: return spi2_dev_sem;
-    case 3: return spi3_dev_sem;
-    case 4: return spi4_dev_sem;
-    case 5: return spi5_dev_sem;
+    case 1: return spi1_dev_mutex;
+    case 2: return spi2_dev_mutex;
+    case 3: return spi3_dev_mutex;
+    case 4: return spi4_dev_mutex;
+    case 5: return spi5_dev_mutex;
     default: return NULL;
     }
     return NULL;
@@ -182,6 +193,32 @@ struct __SPI_HandleTypeDef * hspi_handle(BusIndex index)
     return NULL;
 }
 
+inline void *spi_instance(int index)
+{
+#ifdef SPI1
+    if (index == 1)
+        return SPI1;
+#endif
+#ifdef SPI2
+    if (index == 2)
+        return SPI2;
+#endif
+#ifdef SPI3
+    if (index == 3)
+        return SPI3;
+#endif
+#ifdef SPI4
+    if (index == 4)
+        return SPI4;
+#endif
+#ifdef SPI5
+    if (index == 5)
+        return SPI5;
+#endif
+    assert(false);
+    return NULL;
+}
+
 int32_t spi_driver_wait_it_sem(struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
     SemaphoreHandle_t sem = spi_driver_it_sem_by_hspi(hspi);
@@ -198,23 +235,23 @@ void spi_driver_release_it_sem(struct __SPI_HandleTypeDef *hspi)
         osSemaphoreRelease(sem);
 }
 
-int32_t spi_driver_wait_dev_sem(int index, uint32_t millisec)
+int32_t spi_driver_wait_dev_mutex(int index, uint32_t millisec)
 {
-    SemaphoreHandle_t sem = spi_driver_dev_sem_by_index(index);
-    assert(sem);
-    if (!sem)
+    osMutexId m = spi_driver_dev_mutex_by_index(index);
+    assert(m);
+    if (!m)
         return osErrorValue;
-    int32_t ret =  osSemaphoreWait(sem, millisec);
+    int32_t ret =  osMutexWait(m, millisec);
     if (ret)
         log_printf(LOG_WARNING, "spi%d device lock error\n", index);
     return  ret;
 }
 
-void spi_driver_release_dev_sem(int index)
+void spi_driver_release_dev_mutex(int index)
 {
-    SemaphoreHandle_t sem = spi_driver_dev_sem_by_index(index);
-    assert(sem);
-    if (sem)
-        osSemaphoreRelease(sem);
+    osMutexId m = spi_driver_dev_mutex_by_index(index);
+    assert(m);
+    if (m)
+        osMutexRelease(m);
 }
 

@@ -32,6 +32,7 @@ struct __SPI_HandleTypeDef;
 void i2c_driver_log_error(const char *title, struct __SPI_HandleTypeDef *hspi);
 void i2c_driver_reset_internal(struct __SPI_HandleTypeDef *hspi);
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
+bool spi_driver_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
 bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
 
 #ifdef __cplusplus

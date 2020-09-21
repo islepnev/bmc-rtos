@@ -24,17 +24,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    PLL_STATE_INIT,
-    PLL_STATE_RESET,
-    PLL_STATE_SETUP_SYSCLK,
-    PLL_STATE_SYSCLK_WAITLOCK,
-    PLL_STATE_SETUP,
-    PLL_STATE_RUN,
-    PLL_STATE_ERROR,
-    PLL_STATE_FATAL
-} ad9545_state_t;
-
 struct Dev_ad9545;
 void dev_ad9545_run(struct Dev_ad9545 *dev, bool enable);
 

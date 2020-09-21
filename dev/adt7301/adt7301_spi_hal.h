@@ -27,7 +27,8 @@
 extern "C" {
 #endif
 
-bool adt7301_read(BusInterface *bus, int16_t *data);
+bool adt7301_read(BusInterface *bus, int16_t *data)
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

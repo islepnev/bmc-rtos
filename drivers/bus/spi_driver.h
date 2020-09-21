@@ -28,9 +28,22 @@ extern "C" {
 struct __SPI_HandleTypeDef;
 
 void spi_driver_init(void);
-bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi);
-bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
-bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
+
+bool spi_driver_get_master_ready(struct __SPI_HandleTypeDef *hspi)
+    __attribute__((warn_unused_result));
+
+bool spi_driver_tx_rx(struct __SPI_HandleTypeDef *hspi,
+                      uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool spi_driver_rx(struct __SPI_HandleTypeDef *hspi,
+                   uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
+bool spi_driver_tx(struct __SPI_HandleTypeDef *hspi,
+                       uint8_t *txBuf, uint16_t Size, uint32_t millisec)
+    __attribute__((warn_unused_result));
+
 void spi_enable_interface(struct __SPI_HandleTypeDef *hspi, bool enable);
 
 #ifdef __cplusplus

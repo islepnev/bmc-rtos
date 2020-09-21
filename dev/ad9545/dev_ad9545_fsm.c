@@ -24,7 +24,7 @@
 #include "dev_ad9545.h"
 #include "log/log.h"
 
-static uint32_t stateTicks(Dev_ad9545_priv *p)
+static uint32_t stateTicks(const Dev_ad9545_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
 }
@@ -40,8 +40,8 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
 {
     BusInterface *bus = &d->dev.bus;
     if (!enable) {
-        if (d->priv.fsm_state != PLL_STATE_INIT) {
-            d->priv.fsm_state = PLL_STATE_INIT;
+        if (d->priv.fsm_state != AD9545_STATE_INIT) {
+            d->priv.fsm_state = AD9545_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
             pll_ad9545_clear_status(d);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
@@ -50,118 +50,118 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
     }
     const ad9545_state_t old_state = d->priv.fsm_state;
     switch(d->priv.fsm_state) {
-    case PLL_STATE_INIT:
+    case AD9545_STATE_INIT:
         if (ad9545_gpio_test(bus)) {
-            d->priv.fsm_state = PLL_STATE_RESET;
+            d->priv.fsm_state = AD9545_STATE_RESET;
         } else {
             log_put(LOG_ERR, "PLL AD9545 GPIO test fail");
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
         }
         break;
-    case PLL_STATE_RESET:
+    case AD9545_STATE_RESET:
         ad9545_reset(bus);
         osDelay(50);
         d->dev.device_status = ad9545_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
         if (DEVICE_NORMAL == d->dev.device_status) {
             if (!ad9545_software_reset(bus)) {
-                d->priv.fsm_state = PLL_STATE_ERROR;
+                d->priv.fsm_state = AD9545_STATE_ERROR;
                 break;
             }
-            d->priv.fsm_state = PLL_STATE_SETUP_SYSCLK;
+            d->priv.fsm_state = AD9545_STATE_SETUP_SYSCLK;
             break;
         }
         if (stateTicks(&d->priv) > 2000) {
             log_put(LOG_ERR, "PLL AD9545 not found");
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
         break;
-    case PLL_STATE_SETUP_SYSCLK:
+    case AD9545_STATE_SETUP_SYSCLK:
         if (!ad9545_setup_sysclk(bus, &d->priv.setup.sysclk)) {
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
         if (!ad9545_calibrate_sysclk(bus)) {
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
-        d->priv.fsm_state = PLL_STATE_SYSCLK_WAITLOCK;
+        d->priv.fsm_state = AD9545_STATE_SYSCLK_WAITLOCK;
         break;
-    case PLL_STATE_SYSCLK_WAITLOCK:
+    case AD9545_STATE_SYSCLK_WAITLOCK:
         if (d->priv.status.sysclk.b.locked && d->priv.status.sysclk.b.stable) {
-            d->priv.fsm_state = PLL_STATE_SETUP;
+            d->priv.fsm_state = AD9545_STATE_SETUP;
         }
         if (stateTicks(&d->priv) > 2000) {
             log_put(LOG_ERR, "PLL AD9545 sysclock lock timeout");
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
         }
         break;
-    case PLL_STATE_SETUP:
+    case AD9545_STATE_SETUP:
         if (!ad9545_setup(bus, &d->priv.setup)) {
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
-        d->priv.fsm_state = PLL_STATE_RUN;
+        d->priv.fsm_state = AD9545_STATE_RUN;
         break;
-    case PLL_STATE_RUN:
+    case AD9545_STATE_RUN:
         if (!d->priv.status.sysclk.b.locked) {
             log_put(LOG_ERR, "PLL AD9545 sysclock unlocked");
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
         d->priv.recoveryCount = 0;
         break;
-    case PLL_STATE_ERROR:
+    case AD9545_STATE_ERROR:
         if (d->priv.recoveryCount > 3) {
-            d->priv.fsm_state = PLL_STATE_FATAL;
+            d->priv.fsm_state = AD9545_STATE_FATAL;
             log_put(LOG_CRIT, "PLL AD9545 fatal error");
             break;
         }
         if (stateTicks(&d->priv) > 1000) {
             d->priv.recoveryCount++;
-            d->priv.fsm_state = PLL_STATE_INIT;
+            d->priv.fsm_state = AD9545_STATE_INIT;
         }
         break;
-    case PLL_STATE_FATAL:
+    case AD9545_STATE_FATAL:
         d->dev.device_status = DEVICE_FAIL;
         if (stateTicks(&d->priv) > 2000) {
             // recover
             d->priv.recoveryCount = 0;
-            d->priv.fsm_state = PLL_STATE_INIT;
+            d->priv.fsm_state = AD9545_STATE_INIT;
         }
         break;
     default:
-        d->priv.fsm_state = PLL_STATE_INIT;
+        d->priv.fsm_state = AD9545_STATE_INIT;
     }
 
-    if (d->priv.fsm_state != PLL_STATE_INIT &&
-            d->priv.fsm_state != PLL_STATE_RESET &&
-            d->priv.fsm_state != PLL_STATE_ERROR &&
-            d->priv.fsm_state != PLL_STATE_FATAL) {
+    if (d->priv.fsm_state != AD9545_STATE_INIT &&
+            d->priv.fsm_state != AD9545_STATE_RESET &&
+            d->priv.fsm_state != AD9545_STATE_ERROR &&
+            d->priv.fsm_state != AD9545_STATE_FATAL) {
         if (!ad9545_read_sysclk_status(bus, &d->priv.status)) {
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
         }
     } else {
         d->priv.status.sysclk.raw = 0;
     }
-    if (d->priv.fsm_state == PLL_STATE_RUN) {
+    if (d->priv.fsm_state == AD9545_STATE_RUN) {
         if (!ad9545_read_status(bus, &d->priv.status)) {
-            d->priv.fsm_state = PLL_STATE_ERROR;
+            d->priv.fsm_state = AD9545_STATE_ERROR;
         }
     } else {
         pll_ad9545_clear_status(d);
     }
-    update_pll_sensor_status(d);
+    ad9545_update_pll_sensor_status(d);
 
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
         d->priv.stateStartTick = osKernelSysTick();
     }
-    if (stateChanged && (old_state != PLL_STATE_RESET)) {
-        if (d->priv.fsm_state == PLL_STATE_ERROR) {
+    if (stateChanged && (old_state != AD9545_STATE_RESET)) {
+        if (d->priv.fsm_state == AD9545_STATE_ERROR) {
             log_put(LOG_ERR, "PLL AD9545 interface error");
         }
-        if (d->priv.fsm_state == PLL_STATE_RUN) {
+        if (d->priv.fsm_state == AD9545_STATE_RUN) {
             log_put(LOG_INFO, "PLL AD9545 started");
         }
     }

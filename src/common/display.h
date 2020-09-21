@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#define ANSI_COL_RESULTS ANSI_CLEAR_EOL ANSI_COL50
+#define ANSI_COL_RESULTS ANSI_CLEAR_EOL ANSI_COL60
 
 #define STR_ON  ANSI_GREEN "ON " ANSI_CLEAR
 #define STR_OFF ANSI_GRAY  "OFF" ANSI_CLEAR
@@ -39,7 +39,6 @@ extern "C" {
 #define STR_RESULT_CRIT    ANSI_COL_RESULTS ANSI_RED    "CRITICAL" ANSI_CLEAR
 #define STR_RESULT_FAIL    ANSI_COL_RESULTS ANSI_RED    "FAIL"     ANSI_CLEAR
 
-void print_clear_eol(void);
 void print_clearbox(int line1, int height);
 void print_goto(int line, int col);
 void print_get_screen_size(void);

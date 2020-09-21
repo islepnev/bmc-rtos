@@ -22,9 +22,9 @@
 #include "ad9516/dev_auxpll_print.h"
 #include "ad9545/ad9545_print.h"
 #include "ad9545/dev_ad9545_print.h"
+#include "ad9548/dev_ad9548_print.h"
 #include "app_shared_data.h"
 #include "dev_common_types.h"
-#include "dev_digipot_print.h"
 #include "devicelist.h"
 #include "digipot/dev_digipot.h"
 #include "display.h"
@@ -58,7 +58,7 @@ void print_digipots(void)
     if (Ok) {
         printf(Ok ? STR_RESULT_NORMAL : STR_RESULT_WARNING);
     }
-    printf("%s\n", ANSI_CLEAR_EOL);
+    printf("\n");
 }
 
 void print_footer(bool repaint)
@@ -74,41 +74,56 @@ void print_system_status(int y)
     const SensorStatus systemStatus = getSystemStatus();
     printf("System status: %s",
            sensor_status_ansi_str(systemStatus));
-    print_clear_eol();
+    printf("\n");
 
 }
 
 void display_pll_detail(int y)
 {
-    print_clearbox(y, DISPLAY_PLL_DETAIL_H);
+#ifdef ENABLE_AD9545
     print_goto(y, 1);
     dev_ad9545_verbose_status();
+#endif
+#ifdef ENABLE_AD9548
+    print_goto(y, 1);
+    dev_ad9548_verbose_status();
+#endif
 }
 
 void display_auxpll_detail(int y)
 {
-    print_clearbox(y, DISPLAY_AUXPLL_DETAIL_H);
+#ifdef ENABLE_AD9516
     print_goto(y, 1);
     printf(" --- AD9516 Status ---\n");
     auxpllPrintStatus();
+#endif
 }
 
 void print_powermon(int y)
 {
+#ifdef ENABLE_POWERMON
     print_goto(y, 1);
     print_powermon_box();
+#endif
 }
 
 void print_pll(int y)
 {
     print_goto(y, 1);
+#if defined(ENABLE_AD9545)
     dev_ad9545_print_box();
+#elif defined(ENABLE_AD9548)
+    dev_ad9548_print_box();
+#else
+#endif
 }
 
 void print_auxpll(int y)
 {
+#ifdef ENABLE_AD9516
     print_goto(y, 1);
     auxpllPrint();
+#endif
 }
 
 void print_fpga(void)

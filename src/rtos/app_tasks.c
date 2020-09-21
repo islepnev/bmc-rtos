@@ -26,17 +26,18 @@
 #include "bsp.h"
 
 #if !defined(BOARD_TDC72)
-#include "app_task_auxpll.h"
+#include "ad9516/app_task_auxpll.h"
 #endif
-#include "app_task_fpga.h"
+#include "fpga/app_task_fpga.h"
 #if defined(BOARD_TTVXS)
-#include "app_task_vxsiicm.h"
+#include "vxsiicm/app_task_vxsiicm.h"
 #else
-#include "app_task_vxsiics.h"
+#include "vxsiics/app_task_vxsiics.h"
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
 #include "app_task_tcpip.h"
 #endif
+#include "app_task_adc.h"
 
 #include "dev_common_types.h"
 #include "devicelist.h"
@@ -48,22 +49,25 @@ void create_tasks(void)
     BusInterface bus = {0};
     create_device(0, &topdevice, 0, DEV_CLASS_VIRTUAL, bus, "Device Root");
 
-    create_task_heartbeat();
+    // create_task_heartbeat(); // no need, see main task
     create_task_display();
     create_task_cli();
     create_task_powermon(&topdevice);
     create_task_main();
-#if !defined(BOARD_TDC72)
+#if ENABLE_AD9516
     create_task_auxpll(&topdevice);
 #endif
     create_task_pll(&topdevice);
     create_task_fpga(&topdevice);
-#if defined(BOARD_TTVXS)
+#ifdef ENABLE_VXSIICM
     create_task_vxsiicm(&topdevice);
 #else
+#ifdef ENABLE_VXSIICS
     create_task_vxsiics();
+#endif
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     create_task_tcpip();
 #endif
+    create_task_adc();
 }

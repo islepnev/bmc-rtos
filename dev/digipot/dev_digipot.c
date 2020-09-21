@@ -24,33 +24,37 @@
 #include "ad5141/ad5141.h"
 #include "ad5141/ad5141_i2c_hal.h"
 
-void dev_ad5141_reset(Dev_ad5141 *d)
+bool dev_ad5141_reset(Dev_ad5141 *d)
 {
     if (d->dev.device_status == DEVICE_NORMAL)
-        ad5141_reset(&d->dev.bus);
+        return ad5141_reset(&d->dev.bus);
+    return false;
 }
 
-void dev_ad5141_inc(Dev_ad5141 *d)
+bool dev_ad5141_inc(Dev_ad5141 *d)
 {
     if (d->dev.device_status == DEVICE_NORMAL)
-        ad5141_inc_rdac(&d->dev.bus);
+        return ad5141_inc_rdac(&d->dev.bus);
+    return false;
 }
 
-void dev_ad5141_dec(Dev_ad5141 *d)
+bool dev_ad5141_dec(Dev_ad5141 *d)
 {
     if (d->dev.device_status == DEVICE_NORMAL)
-        ad5141_dec_rdac(&d->dev.bus);
+        return ad5141_dec_rdac(&d->dev.bus);
+    return false;
 }
 
-void dev_ad5141_write(Dev_ad5141 *d)
+bool dev_ad5141_write(Dev_ad5141 *d)
 {
     if (d->dev.device_status == DEVICE_NORMAL)
-        ad5141_copy_rdac_to_eeprom(&d->dev.bus);
+        return ad5141_copy_rdac_to_eeprom(&d->dev.bus);
+    return false;
 }
 
 static DeviceStatus dev_ad5141_detect(Dev_ad5141 *d)
 {
-    bool detected = ad5141_nop(&d->dev.bus);
+    bool detected = ad5141_detect(&d->dev.bus) && ad5141_nop(&d->dev.bus);
     d->dev.device_status = detected ? DEVICE_NORMAL : DEVICE_UNKNOWN;
     return d->dev.device_status;
 }
@@ -68,13 +72,14 @@ int digipot_detect(Dev_digipots *d)
     return count;
 }
 
-void digipot_read_rdac_all(Dev_digipots *d)
+bool digipot_read_rdac_all(Dev_digipots *d)
 {
     for (uint i=0; i<d->priv.count; i++) {
         Dev_ad5141 *p = &d->priv.pot[i];
         if (p->dev.device_status != DEVICE_NORMAL)
             continue;
         if (! ad5141_read_rdac(&p->dev.bus, &p->priv.value))
-            break;
+            return false;
     }
+    return true;
 }

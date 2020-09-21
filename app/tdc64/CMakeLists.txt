@@ -7,7 +7,17 @@ SET(BSP_DIR ${MY_TOP_DIR}/app/tdc/src)
 
 SET(ELF ${BOARD}_rtos.elf)
 
-BMC_TARGET_PRE(${ELF})
+set(cpu 769ni)
+SET(STM32_CHIP STM32F769NIH)
+
+include(../components.cmake)
+
+include(${MY_TOP_DIR}/cmake/gcc_stm32.cmake)
+include(${MY_TOP_DIR}/cmake/bmc_target.cmake)
+
+include(${PLATFORM_DIR}/Filelists.cmake)
+
+BMC_TARGET_PRE(${ELF} ${BOARD})
 
 #subdirs(${MY_LIB_DIR}/dev)
 #subdirs(${MY_LIB_DIR}/drivers)
@@ -31,13 +41,13 @@ file(GLOB BSP_SRCS
     ${BSP_DIR}/tasks/*.c
 )
 
-file(GLOB_RECURSE Dev_HEADERS
-    ${MY_LIB_DIR}/dev/*.h
-)
+#file(GLOB_RECURSE Dev_HEADERS
+#    ${MY_LIB_DIR}/dev/*.h
+#)
 
-file(GLOB_RECURSE Dev_SRCS
-    ${MY_LIB_DIR}/dev/*.c
-)
+#file(GLOB_RECURSE Dev_SRCS
+#    ${MY_LIB_DIR}/dev/*.c
+#)
 
 file(GLOB_RECURSE Drivers_HEADERS
     ${MY_LIB_DIR}/drivers/*.h
@@ -63,7 +73,7 @@ file(GLOB Src_SOURCES
 #    ${MY_SRC_DIR}/eth/*.c
     ${MY_SRC_DIR}/ipc/*.c
     ${MY_SRC_DIR}/rtos/*.c
-    ${MY_SRC_DIR}/system/init/*.c
+    ${MY_SRC_DIR}/system/*.c
     ${MY_SRC_DIR}/tasks/base/*.c
 #    ${MY_SRC_DIR}/tasks/http/*.c
 #    ${MY_SRC_DIR}/tasks/snmp/*.c
@@ -74,17 +84,18 @@ file(GLOB Src_SOURCES
 
 set(BmcApp_HEADERS
     ${BSP_HEADERS}
-    ${Dev_HEADERS}
+#    ${Dev_HEADERS}
     ${Drivers_HEADERS}
     ${Src_HEADERS}
 )
 
 set(BmcApp_SRCS
     ${BSP_SRCS}
-    ${Dev_SRCS}
+#    ${Dev_SRCS}
     ${Drivers_SRCS}
     ${Src_SOURCES}
     ${App_SOURCES}
+    ${PLATFORM_SOURCES}
 )
 
 target_sources(${ELF} PRIVATE
@@ -92,9 +103,6 @@ target_sources(${ELF} PRIVATE
     ${BmcApp_SRCS}
 )
 TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
-    ${LWIP_DIR}/src/include
-    ${CMSIS_INCLUDE_DIRS}
-    ${STM32HAL_INCLUDE_DIR}
     ${BSP_DIR}
     ${BSP_DIR}/bsp
     ${BSP_DIR}/bsp/mx_init
@@ -103,12 +111,14 @@ TARGET_INCLUDE_DIRECTORIES(${ELF} PRIVATE
     ${MY_LIB_DIR}/dev
     ${MY_LIB_DIR}/dev/common
     ${MY_LIB_DIR}/drivers
+    ${MY_LIB_DIR}/drivers/common
     ${MY_SRC_DIR}/app
     ${MY_SRC_DIR}/common
 #    ${MY_SRC_DIR}/eth
     ${MY_SRC_DIR}/ipc
     ${MY_SRC_DIR}/rtos
-    ${MY_SRC_DIR}/system/init
+    ${MY_SRC_DIR}/system
     ${MY_SRC_DIR}/tasks
+    ${PLATFORM_INCLUDE_DIRS}
 )
-BMC_TARGET_POST(${ELF})
+BMC_TARGET_POST(${ELF} ${cpu})

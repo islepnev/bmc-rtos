@@ -25,7 +25,7 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t stateTicks(Dev_max31725_priv *p)
+static uint32_t stateTicks(const Dev_max31725_priv *p)
 {
     return osKernelSysTick() - p->state_start_tick;
 }
@@ -33,8 +33,8 @@ static uint32_t stateTicks(Dev_max31725_priv *p)
 void dev_max31725_run(Dev_max31725 *p, bool power_on)
 {
     Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
-#ifdef BOARD_TTVXS
-    // issue #657
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
+    // issues #657, 684
     if (!power_on) {
         if (d->state != MAX31725_STATE_SHUTDOWN) {
             d->state = MAX31725_STATE_SHUTDOWN;

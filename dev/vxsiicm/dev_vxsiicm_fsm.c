@@ -29,10 +29,9 @@ static const uint32_t POLL_DELAY_TICKS  = 100;
 static vxsiic_state_t state = VXSIIC_STATE_RESET;
 static vxsiic_state_t old_state = VXSIIC_STATE_RESET;
 
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(const Dev_vxsiicm_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 
@@ -54,7 +53,7 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
             state = VXSIIC_STATE_ERROR;
         break;
     case VXSIIC_STATE_PAUSE:
-        if (stateTicks() > POLL_DELAY_TICKS) {
+        if (stateTicks(&d->priv) > POLL_DELAY_TICKS) {
             state = VXSIIC_STATE_RUN;
         }
         break;
@@ -63,7 +62,7 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
         if (old_state != state) {
             log_printf(LOG_ERR, "VXS IIC error");
         }
-        if (stateTicks() > ERROR_DELAY_TICKS) {
+        if (stateTicks(&d->priv) > ERROR_DELAY_TICKS) {
             state = VXSIIC_STATE_RESET;
         }
         break;
@@ -72,6 +71,6 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
 
     if (old_state != state) {
         old_state = state;
-        stateStartTick = osKernelSysTick();
+        d->priv.stateStartTick = osKernelSysTick();
     }
 }

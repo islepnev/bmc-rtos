@@ -37,13 +37,13 @@ bool i2c_driver_is_transfer_ok(struct __I2C_HandleTypeDef *hi2c);
 
 bool i2c_driver_util_init(void);
 SemaphoreHandle_t i2c_driver_it_sem_by_hi2c(struct __I2C_HandleTypeDef *hi2c);
-SemaphoreHandle_t i2c_driver_dev_sem_by_index(int index);
+SemaphoreHandle_t i2c_driver_dev_mutex_by_index(int index);
 int hi2c_index(struct __I2C_HandleTypeDef *hi2c);
 struct __I2C_HandleTypeDef *hi2c_handle(BusIndex index);
 int32_t i2c_driver_wait_it_sem(struct __I2C_HandleTypeDef *hi2c, uint32_t millisec);
 void i2c_driver_release_it_sem(struct __I2C_HandleTypeDef *hi2c);
-int32_t i2c_driver_wait_dev_sem(int index, uint32_t millisec);
-void i2c_driver_release_dev_sem(int index);
+int32_t i2c_driver_wait_dev_mutex(int index, uint32_t millisec);
+void i2c_driver_release_dev_mutex(int index);
 
 #ifdef __cplusplus
 }

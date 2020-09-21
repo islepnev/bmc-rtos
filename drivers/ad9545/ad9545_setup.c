@@ -29,7 +29,7 @@ double sysclkVcoFreq(void)
 }
 static const double sysclk_rel_offset = 0; // -2.5e-6;
 
-void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
+void init_PllSysclkSetup(AD9545_Sysclk_Setup_TypeDef *d)
 {
     d->Sysclk_FB_DIV_Ratio = sysclk_fb_div;
     d->Sysclk_Input = 0x01;
@@ -43,7 +43,7 @@ void init_PllSysclkSetup(PllSysclkSetup_TypeDef *d)
     d->DPLL_Compensation_Source = 0x11;
 }
 
-void init_PllRefSetup(PllRefSetup_TypeDef *d)
+void init_PllRefSetup(AD9545_Ref_Setup_TypeDef *d)
 {
     // RefA
     d->REFA_Receiver_Settings = 0x01;
@@ -63,17 +63,17 @@ void init_PllRefSetup(PllRefSetup_TypeDef *d)
 
 static uint64_t get_dpll0_default_ftw(void)
 {
-    const double targetFreq = 312.5e6;
+    const double targetFreq = APLL0_Frequency / APLL0_M_Divider; // 312.5e6;
     return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
 }
 
 static uint64_t get_dpll1_default_ftw(void)
 {
-    const double targetFreq = 325e6;
+    const double targetFreq = APLL1_Frequency / APLL1_M_Divider; // 325e6;
     return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
 }
 
-uint64_t get_dpll_default_ftw(PllChannel_TypeDef channel)
+uint64_t get_dpll_default_ftw(AD9545_Channel_TypeDef channel)
 {
     switch (channel) {
     case DPLL0:
@@ -105,20 +105,20 @@ void find_fraction(double r, int *pa, int *pb)
     }
 }
 
-static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
+static void init_DPLL0_Setup(AD9545_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL0);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 8;
+    d->APLL_M_Divider = APLL0_M_Divider;
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
-    d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
+    d->profile[0].ZD_Feedback_Path = DPLL0_ZD_FB_Path;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
-    d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
+    d->profile[0].Feedback_Mode.b.enable_ext_zd = DPLL0_EXT_ZD;
     d->profile[0].Loop_BW = (uint32_t)DPLL0_BW_HZ * 1000000; // microHertz
     d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
-    Pll_OutputDividers_Setup_TypeDef outputDivSetup;
+    AD9545_Output_Dividers_Setup_TypeDef outputDivSetup;
     init_Pll_OutputDividers_Setup(&outputDivSetup);
     double FB_DIV = 2.0*PLL_REFA_DIV * outputDivSetup.Distribution_Divider_0_A / d->APLL_M_Divider;
     int a = 1;
@@ -135,20 +135,20 @@ static void init_DPLL0_Setup(Pll_DPLL_Setup_TypeDef *d)
 //    d->profile[1].Feedback_Mode.b.enable_ext_zd = 0;
 }
 
-static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
+static void init_DPLL1_Setup(AD9545_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL1);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 10;
+    d->APLL_M_Divider = APLL1_M_Divider;
     // Translation Profile 1.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
-    d->profile[0].ZD_Feedback_Path = PROFILE_INT_ZD_FEEDBACK_OUT1A;
+    d->profile[0].ZD_Feedback_Path = DPLL1_ZD_FB_Path;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
-    d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;
+    d->profile[0].Feedback_Mode.b.enable_ext_zd = DPLL1_EXT_ZD;
     d->profile[0].Loop_BW = DPLL1_BW_HZ * 1000000UL; // microHertz
     d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
-    Pll_OutputDividers_Setup_TypeDef outputDivSetup;
+    AD9545_Output_Dividers_Setup_TypeDef outputDivSetup;
     init_Pll_OutputDividers_Setup(&outputDivSetup);
     double FB_DIV = 2.0 * PLL_REFA_DIV * outputDivSetup.Distribution_Divider_1_A / d->APLL_M_Divider;
     int a = 1;
@@ -168,7 +168,7 @@ static void init_DPLL1_Setup(Pll_DPLL_Setup_TypeDef *d)
 //    d->profile[1].Feedback_Mode.b.enable_ext_zd = 0;
 }
 
-void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel)
+void init_DPLL_Setup(AD9545_DPLL_Setup_TypeDef *d, AD9545_Channel_TypeDef channel)
 {
     switch(channel) {
     case DPLL0:
@@ -180,7 +180,7 @@ void init_DPLL_Setup(Pll_DPLL_Setup_TypeDef *d, PllChannel_TypeDef channel)
     }
 }
 
-void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d)
+void init_Pll_OutputDrivers_Setup(AD9545_OutputDrivers_Setup_TypeDef *d)
 {
     d->Driver_Config.raw = 0;
     d->Driver_Config.b.enable_hcsl = 1;
@@ -188,7 +188,7 @@ void init_Pll_OutputDrivers_Setup(Pll_OutputDrivers_Setup_TypeDef *d)
     d->Driver_Config.b.driver_mode = 0;
 }
 
-void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d)
+void init_Pll_DPLLMode_Setup(AD9545_DPLL_Mode_Setup_TypeDef *d)
 {
     d->dpll0_mode.raw = 0;
     d->dpll0_mode.b.force_freerun = 0;
@@ -205,7 +205,7 @@ void init_Pll_DPLLMode_Setup(Pll_DPLLMode_Setup_TypeDef *d)
     d->dpll1_mode.b.enable_step_detect_ref_fault = 0;
 }
 
-void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d)
+void init_Pll_OutputDividers_Setup(AD9545_Output_Dividers_Setup_TypeDef *d)
 {
     d->enable_ref_sync_0 = 1;
     d->enable_ref_sync_1 = 1;
@@ -215,9 +215,9 @@ void init_Pll_OutputDividers_Setup(Pll_OutputDividers_Setup_TypeDef *d)
     d->Secondary_Clock_Path_1 = 0x0; // 0x06;
     d->Automute_Control_0 = 0; // 0xFC;
     d->Automute_Control_1 = 0;
-    d->Distribution_Divider_0_A = PLL_DIST_DIV_0;
-    d->Distribution_Divider_0_B = PLL_DIST_DIV_0;
-    d->Distribution_Divider_0_C = PLL_DIST_DIV_0;
-    d->Distribution_Divider_1_A = PLL_DIST_DIV_1;
-    d->Distribution_Divider_1_B = PLL_DIST_DIV_1;
+    d->Distribution_Divider_0_A = PLL_DIST_DIV_0_A;
+    d->Distribution_Divider_0_B = PLL_DIST_DIV_0_B;
+    d->Distribution_Divider_0_C = PLL_DIST_DIV_0_C;
+    d->Distribution_Divider_1_A = PLL_DIST_DIV_1_A;
+    d->Distribution_Divider_1_B = PLL_DIST_DIV_1_B;
 }

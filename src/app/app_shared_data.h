@@ -39,7 +39,7 @@ typedef enum {
 } display_mode_t;
 
 extern bool system_power_present;
-extern int enable_pll_run;
+//extern int enable_pll_run;
 extern display_mode_t display_mode;
 extern int enable_power;
 extern bool eth_link_up;
@@ -47,6 +47,9 @@ extern int app_ipv4;
 extern int screen_width;
 extern int screen_height;
 extern bool screen_size_set;
+
+extern bool main_clock_ready;
+extern bool aux_clock_ready;
 
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);

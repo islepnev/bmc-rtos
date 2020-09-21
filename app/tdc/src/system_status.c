@@ -67,7 +67,6 @@ SensorStatus getSystemStatus()
     const SensorStatus sfpiicStatus = get_sfpiic_sensor_status();
     const SensorStatus fpgaStatus = getFpgaStatus();
     const SensorStatus pllStatus = getPllStatus();
-    const SensorStatus ad9516Status = get_auxpll_sensor_status();
     const SensorStatus digipotStatus = get_digipot_sensor_status();
 //    const SensorStatus vxsiicStatus = pollVxsiicStatus(dev);
     SensorStatus systemStatus = SENSOR_NORMAL;
@@ -83,8 +82,11 @@ SensorStatus getSystemStatus()
         systemStatus = pllStatus;
     if (digipotStatus > systemStatus)
         systemStatus = digipotStatus;
+#ifdef ENABLE_AD9516
+    const SensorStatus ad9516Status = get_auxpll_sensor_status();
     if (ad9516Status > systemStatus)
         systemStatus = ad9516Status;
+#endif
 
 //    if (vxsiicStatus > systemStatus)
 //        systemStatus = vxsiicStatus;

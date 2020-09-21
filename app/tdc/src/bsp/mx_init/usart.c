@@ -19,6 +19,7 @@
 
 #include "usart.h"
 
+#include "bsp.h"
 #include "bsp_pin_defs.h"
 #include "error_handler.h"
 #include "stm32f7xx.h"
@@ -114,6 +115,9 @@ void MX_USART3_UART_Init(void)
   LL_USART_Init(USART3, &USART_InitStruct);
   // LL_USART_EnableAutoBaudRate(USART3);
   LL_USART_SetAutoBaudRateMode(USART3, LL_USART_AUTOBAUD_DETECT_ON_STARTBIT);
+  if (USART3_SWAP_RXTX) {
+      LL_USART_SetTXRXSwap(USART3, LL_USART_TXRX_SWAPPED); // bug #738
+  }
   LL_USART_ConfigAsyncMode(USART3);
   LL_USART_Enable(USART3);
 

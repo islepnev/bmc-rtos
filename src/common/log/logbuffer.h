@@ -25,7 +25,11 @@
 extern "C" {
 #endif
 
+#ifdef STM32F3
+enum {LOG_BUF_SIZE = 40};
+#else
 enum {LOG_BUF_SIZE = 100};
+#endif
 
 struct LogEntry;
 typedef struct LogEntry LogEntry;

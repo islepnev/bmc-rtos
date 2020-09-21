@@ -26,20 +26,9 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;
 
-typedef enum {
-    CLKMUX_STATE_RESET,
-    CLKMUX_STATE_RUN,
-    CLKMUX_STATE_PAUSE,
-    CLKMUX_STATE_ERROR,
-} clkmux_state_t;
-
-static clkmux_state_t state = CLKMUX_STATE_RESET;
-static clkmux_state_t old_state = CLKMUX_STATE_RESET;
-
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(const Dev_cru16_clkmux_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 static void struct_vxs_i2c_init(Dev_cru16_clkmux *d)
@@ -50,41 +39,42 @@ static void struct_vxs_i2c_init(Dev_cru16_clkmux *d)
 
 void dev_cru16_clkmux_run(Dev_cru16_clkmux *d)
 {
+    Dev_cru16_clkmux_priv *p = &d->priv;
+    cru16_clkmux_state_t old_state = p->fsm_state;
+
     if (!enable_power || !system_power_present) {
-        state = CLKMUX_STATE_RESET;
+        p->fsm_state = CRU16_CLKMUX_STATE_RESET;
         d->dev.device_status = DEVICE_UNKNOWN;
         return;
     }
-    switch (state) {
-    case CLKMUX_STATE_RESET: {
+    switch (p->fsm_state) {
+    case CRU16_CLKMUX_STATE_RESET: {
         struct_vxs_i2c_init(d);
         DeviceStatus status = dev_cru16_clkmux_detect(d);
         if (status == DEVICE_NORMAL)
-            state = CLKMUX_STATE_RUN;
+            p->fsm_state = CRU16_CLKMUX_STATE_RUN;
         break;
     }
-    case CLKMUX_STATE_RUN:
-        if (DEVICE_NORMAL == dev_cru16_clkmux_set(d))
-            state = CLKMUX_STATE_PAUSE;
-        else
-            state = CLKMUX_STATE_ERROR;
-        break;
-    case CLKMUX_STATE_PAUSE:
-        if (stateTicks() > POLL_DELAY_TICKS) {
-            state = CLKMUX_STATE_RUN;
-        }
-        break;
-    case CLKMUX_STATE_ERROR:
-        if (old_state != state) {
+    case CRU16_CLKMUX_STATE_RUN:
+        if (DEVICE_NORMAL == dev_cru16_clkmux_set(d)) {
+            p->fsm_state = CRU16_CLKMUX_STATE_PAUSE;
+        } else {
+            p->fsm_state = CRU16_CLKMUX_STATE_ERROR;
             log_printf(LOG_ERR, "CLKMUX IIC error");
         }
-        if (stateTicks() > ERROR_DELAY_TICKS) {
-            state = CLKMUX_STATE_RESET;
+        break;
+    case CRU16_CLKMUX_STATE_PAUSE:
+        if (stateTicks(p) > POLL_DELAY_TICKS) {
+            p->fsm_state = CRU16_CLKMUX_STATE_RUN;
+        }
+        break;
+    case CRU16_CLKMUX_STATE_ERROR:
+        if (stateTicks(p) > ERROR_DELAY_TICKS) {
+            p->fsm_state = CRU16_CLKMUX_STATE_RESET;
         }
         break;
     }
-    if (old_state != state) {
-        old_state = state;
-        stateStartTick = osKernelSysTick();
+    if (old_state != p->fsm_state) {
+        p->stateStartTick = osKernelSysTick();
     }
 }

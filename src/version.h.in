@@ -18,36 +18,18 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+#define VERSION_MAJOR_NUM @GIT_TAG_MAJOR_NUM@
+#define VERSION_MINOR_NUM @GIT_TAG_MINOR_NUM@
+#define VERSION_PATCH_NUM @GIT_COMMIT_COUNT@
+//#define VERSION_STR "@GIT_DESCR@"
 
-#include "bsp.h"
-#ifdef BOARD_CRU16
-#define APP_NAME_STR "CRU16 BMC"
-#endif
-#ifdef BOARD_TDC64
-#define APP_NAME_STR "TDC64VHLE BMC"
-#endif
-#ifdef BOARD_TDC72
-#define APP_NAME_STR "TDC72VXS4 BMC"
-#endif
-#ifdef BOARD_TTVXS
-#define APP_NAME_STR "TTVXS BMC"
-#endif
-
-#define VERSION_MAJOR_NUM @PROJECT_VERSION_MAJOR@
-#define VERSION_MINOR_NUM @PROJECT_VERSION_MINOR@
-#define GIT_BRANCH @GIT_BRANCH@
-#define GIT_COMMIT_HASH @GIT_COMMIT_HASH@
-#define GIT_DESCR @GIT_DESCR@
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) " (" xstr(GIT_DESCR) ")"
-
-#ifdef __cplusplus
-}
+#if VERSION_PATCH_NUM
+#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM) "-" xstr(VERSION_PATCH_NUM)
+#else
+#define VERSION_STR xstr(VERSION_MAJOR_NUM) "." xstr(VERSION_MINOR_NUM)
 #endif
 
 #endif // VERSION_H

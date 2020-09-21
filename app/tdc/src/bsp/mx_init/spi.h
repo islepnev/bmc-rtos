@@ -24,8 +24,7 @@
 extern "C" {
 #endif
 
-#include "stm32f7xx_hal_dma.h"
-#include "stm32f7xx_hal_spi.h"
+#include "stm32_hal.h"
 
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
@@ -33,9 +32,7 @@ extern SPI_HandleTypeDef hspi3;
 extern SPI_HandleTypeDef hspi4;
 extern SPI_HandleTypeDef hspi5;
 
-void MX_SPI1_Init(void);
-void MX_SPI4_Init(void);
-
+void init_spi_peripherals(void);
 
 #ifdef __cplusplus
 }

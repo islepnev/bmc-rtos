@@ -58,7 +58,9 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
             *data = BMC_MAGIC;
             break;
         case 1:
-            *data = ((uint32_t)(VERSION_MAJOR_NUM) << 16) | (uint16_t)(VERSION_MINOR_NUM);
+            *data = ((uint32_t)(VERSION_PATCH_NUM) << 16) |
+                    (uint16_t)(VERSION_MAJOR_NUM << 8) |
+                    (uint16_t)(VERSION_MINOR_NUM);
             break;
         case 2:
             *data = get_fpga_id();

@@ -46,10 +46,9 @@ static const uint32_t sensor_read_interval_run = 100;
 static const uint32_t sensor_read_interval_ramp = 10;
 static uint32_t sensorReadTick = 0;
 
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(const Dev_powermon_priv *p)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - p->stateStartTick;
 }
 
 static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
@@ -134,7 +133,7 @@ static void change_state(Dev_powermon_priv *p, PmState state)
     if (p->pmState == state)
         return;
     p->pmState = state;
-    stateStartTick = osKernelSysTick();
+    p->stateStartTick = osKernelSysTick();
 }
 
 void task_powermon_run (Dev_powermon *pm)
@@ -188,7 +187,7 @@ void task_powermon_run (Dev_powermon *pm)
             change_state(priv, PM_STATE_RAMP);
             break;
         }
-        if (stateTicks() > INIT_TIMEOUT_TICKS) {
+        if (stateTicks(priv) > INIT_TIMEOUT_TICKS) {
             log_put(LOG_NOTICE, "No input power");
             change_state(priv, PM_STATE_OFF);
         }
@@ -208,7 +207,7 @@ void task_powermon_run (Dev_powermon *pm)
             log_put(LOG_NOTICE, "Critical power supplies ready");
             change_state(priv, PM_STATE_RUN);
         }
-        if (stateTicks() > RAMP_TIMEOUT_TICKS) {
+        if (stateTicks(priv) > RAMP_TIMEOUT_TICKS) {
             log_put(LOG_ERR, "Critical power supplies failure");
             change_state(priv, PM_STATE_PWRFAIL);
         }
@@ -233,7 +232,7 @@ void task_powermon_run (Dev_powermon *pm)
             change_state(priv, PM_STATE_ERROR);
             break;
         }
-        if (TEST_RESTART && (stateTicks() > 5000)) {
+        if (TEST_RESTART && (stateTicks(priv) > 5000)) {
             change_state(priv, PM_STATE_OFF);
             break;
         }
@@ -254,13 +253,13 @@ void task_powermon_run (Dev_powermon *pm)
         // dev_switchPower(&dev.pm, false);
         break;
     case PM_STATE_FAILWAIT:
-        if (stateTicks() > POWERFAIL_DELAY_TICKS) {
+        if (stateTicks(priv) > POWERFAIL_DELAY_TICKS) {
             change_state(priv, PM_STATE_STANDBY);
         }
         break;
     case PM_STATE_ERROR:
 //        dev_switchPower(&dev.pm, false);
-        if (stateTicks() > ERROR_DELAY_TICKS) {
+        if (stateTicks(priv) > ERROR_DELAY_TICKS) {
             change_state(priv, PM_STATE_OFF);
         }
         break;
@@ -284,7 +283,6 @@ void task_powermon_run (Dev_powermon *pm)
     }
 
     system_power_present = get_critical_power_valid(sensors);
-    bsp_update_system_powergood_pin(system_power_present);
     if ((priv->pmState == PM_STATE_RAMP)
             || (priv->pmState == PM_STATE_RUN)
             ) {

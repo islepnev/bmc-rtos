@@ -32,6 +32,12 @@ enum {POWERMON_SENSORS_PCB_4_1 = 13};
 enum {POWERMON_SENSORS_PCB_4_2 = 15};
 enum {POWERMON_SENSORS = POWERMON_SENSORS_PCB_4_2};
 #endif
+#ifdef BOARD_TDC72VHLV2
+enum {POWERMON_SENSORS = 0};
+#endif
+#ifdef BOARD_TDC72VHLV3
+enum {POWERMON_SENSORS = 0};
+#endif
 
 typedef enum {
     SENSOR_5VPC,

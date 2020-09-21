@@ -21,10 +21,7 @@
 
 #include "dev_vxsiicm_types.h"
 
+bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp);
 bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp);
-//HAL_StatusTypeDef dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp);
-//HAL_StatusTypeDef dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp);
-//HAL_StatusTypeDef dev_vxsiic_read_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t *data);
-//HAL_StatusTypeDef dev_vxsiic_write_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t data);
 
 #endif // DEV_VXSIIC_PP_H

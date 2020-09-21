@@ -23,10 +23,9 @@
 #include "dev_auxpll_types.h"
 #include "log/log.h"
 
-static uint32_t stateStartTick = 0;
-static uint32_t stateTicks(void)
+static uint32_t stateTicks(const Dev_auxpll_priv *d)
 {
-    return osKernelSysTick() - stateStartTick;
+    return osKernelSysTick() - d->stateStartTick;
 }
 
 void auxpll_clear_status(Dev_auxpll *d)
@@ -68,7 +67,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
             d->priv.fsm_state = AUXPLL_STATE_SETUP;
             break;
         }
-        if (stateTicks() > 2000) {
+        if (stateTicks(&d->priv) > 2000) {
             log_put(LOG_ERR, "AUXPLL AD9516 not found");
             d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
@@ -94,7 +93,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
             log_put(LOG_CRIT, "AUXPLL AD9516 fatal error");
             break;
         }
-        if (stateTicks() > 1000) {
+        if (stateTicks(&d->priv) > 1000) {
             ad9516_disable_interface(&d->dev.bus);
             d->priv.recoveryCount++;
             d->priv.fsm_state = AUXPLL_STATE_INIT;
@@ -102,7 +101,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
         break;
     case AUXPLL_STATE_FATAL:
         d->dev.device_status = DEVICE_FAIL;
-        if (stateTicks() > 2000) {
+        if (stateTicks(&d->priv) > 2000) {
             // recover
             d->priv.recoveryCount = 0;
             d->priv.fsm_state = AUXPLL_STATE_INIT;
@@ -126,7 +125,7 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
     }
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
-        stateStartTick = osKernelSysTick();
+        d->priv.stateStartTick = osKernelSysTick();
     }
     if (stateChanged && (old_state != AUXPLL_STATE_RESET)) {
         if (d->priv.fsm_state == AUXPLL_STATE_ERROR) {
