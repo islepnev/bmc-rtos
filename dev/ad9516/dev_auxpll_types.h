@@ -38,6 +38,7 @@ typedef enum {
 
 typedef struct Dev_auxpll_priv {
     AD9516_Status status;
+    uint32_t stateStartTick;
     AuxPllState fsm_state;
     uint32_t recoveryCount;
     bool enable_out_6;

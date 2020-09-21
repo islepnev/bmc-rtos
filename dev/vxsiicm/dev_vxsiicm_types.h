@@ -100,6 +100,7 @@ typedef struct vxsiic_status_t {
 
 typedef struct Dev_vxsiicm_priv {
     DeviceBase dev;
+    uint32_t stateStartTick;
     vxsiic_status_t status;
 } Dev_vxsiicm_priv;
 

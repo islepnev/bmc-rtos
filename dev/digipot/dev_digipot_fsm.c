@@ -27,7 +27,7 @@
 static const uint32_t DETECT_TIMEOUT_TICKS = 1000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 
-static uint32_t stateTicks(Dev_digipots_priv *p)
+static uint32_t stateTicks(const Dev_digipots_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
 }

@@ -39,7 +39,7 @@ static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
 
-static uint32_t stateTicks(Dev_fpga_priv *p)
+static uint32_t stateTicks(const Dev_fpga_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
 }

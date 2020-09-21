@@ -26,7 +26,7 @@
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;
 
-static uint32_t stateTicks(Dev_cru16_clkmux_priv *p)
+static uint32_t stateTicks(const Dev_cru16_clkmux_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
 }

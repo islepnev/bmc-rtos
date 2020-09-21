@@ -26,7 +26,7 @@
 #include "dev_ad9548.h"
 #include "log/log.h"
 
-static uint32_t stateTicks(Dev_ad9548_priv *p)
+static uint32_t stateTicks(const Dev_ad9548_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
 }
