@@ -78,7 +78,7 @@ void display_devices_page(int y, bool repaint)
     printf("\n");
 }
 
-static void print_uptime_str(void)
+static int snprintf_uptime(char *str, size_t size)
 {
     unsigned int ss = osKernelSysTick() / osKernelSysTickFrequency;
     unsigned int dd = ss / 86400;
@@ -87,11 +87,9 @@ static void print_uptime_str(void)
     ss -= hh*3600;
     unsigned int mm = ss / 60;
     ss -= mm*60;
-    if (dd > 1)
-        printf("%u days ", dd);
-    if (dd == 1)
-        printf("%u day ", dd);
-    printf("%2u:%02u:%02u", hh, mm, ss);
+    return snprintf(str, size,
+                    "%u day%s %2u:%02u:%02u",
+                    dd, (dd==1) ? "": "s", hh, mm, ss);
 }
 
 static void print_rtc_str(void)
@@ -103,17 +101,29 @@ static void print_rtc_str(void)
     printf("%s", buf);
 }
 
+static const char min_title_len = 40;
+
 void print_clock(void)
 {
-    int col = screen_width - 37;
-    if (col > 60) {
-        print_goto(1, col);
-        printf("Uptime: ");
-        print_uptime_str();
+    int col = 1+screen_width;
 #ifdef HAL_RTC_MODULE_ENABLED
-        printf("  ");
-        print_rtc_str();
+    col -= 1 + 19 + 1; // ' datetime '
+    if (col >= min_title_len) {
+        print_goto(1, col);
+        printf(ANSI_CLEAR_EOL " ");
+        print_rtc_str(); // 19 chars
+        printf(" ");
+    }
 #endif
+
+    enum { bufsize = 32};
+    static char buf[bufsize];
+    buf[sizeof(buf)-1] = 0;
+    int len = snprintf_uptime(buf, bufsize);
+    col -= 9 + len + 1;
+    if (col >= min_title_len) {
+        print_goto(1, col);
+        printf(" Uptime: %s ", buf);
     }
 }
 
