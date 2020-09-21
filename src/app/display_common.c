@@ -105,7 +105,8 @@ static const char min_title_len = 40;
 
 void print_clock(void)
 {
-    int col = 1+screen_width;
+    printf(ANSI_BGR_BLUE ANSI_GRAY);
+    int col = 1 + screen_width;
 #ifdef HAL_RTC_MODULE_ENABLED
     col -= 1 + 19 + 1; // ' datetime '
     if (col >= min_title_len) {
@@ -125,9 +126,10 @@ void print_clock(void)
         print_goto(1, col);
         printf(" Uptime: %s ", buf);
     }
+    printf(ANSI_CLEAR);
 }
 
-void print_header_line(void)
+void print_header_line(bool repaint)
 {
     print_goto(1, 1);
         // Title
@@ -156,9 +158,6 @@ void print_header_line(void)
     printf(" %3u%%", (unsigned int)freertos_get_cpu_load_percent());
     printf("     %s" ANSI_BGR_BLUE ANSI_CLEAR_EOL,
            enable_power ? ANSI_BGR_BLUE "           " : ANSI_BGR_RED " Power-OFF ");
-    printf(ANSI_CLEAR_EOL);
-
-    print_clock();
     printf(ANSI_CLEAR);
 }
 

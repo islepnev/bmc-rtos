@@ -236,10 +236,6 @@ void display_task_run(void)
         print_get_screen_size();
     }
 
-    if (time_updated) {
-        printf(ANSI_CLEAR ANSI_NORM ANSI_HIDE_CURSOR);
-        print_header_line();
-    }
     if (refresh_flag)
         display_refresh_tick = now;
     if (repaint_flag)
@@ -252,13 +248,20 @@ void display_task_run(void)
     }
 
     printf(ANSI_CLEAR ANSI_NORM ANSI_HIDE_CURSOR);
-    if (!time_updated)
-        print_header_line();
-    print_footer(repaint_flag);
-    print_goto(2, 1);
-    display_page_contents(display_mode, repaint_flag);
-    // print_get_screen_size();
-    // print_footer(repaint_flag);
+
+    if (refresh_flag) {
+        print_header_line(repaint_flag);
+    }
+    if (time_updated || refresh_flag) {
+        print_clock();
+    }
+    if (refresh_flag) {
+        print_footer(repaint_flag);
+        print_goto(2, 1);
+        display_page_contents(display_mode, repaint_flag);
+        // print_get_screen_size();
+        // print_footer(repaint_flag);
+    }
     print_prompt();
     displayUpdateCount++;
 }
