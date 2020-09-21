@@ -63,13 +63,13 @@ void init_PllRefSetup(AD9545_Ref_Setup_TypeDef *d)
 
 static uint64_t get_dpll0_default_ftw(void)
 {
-    const double targetFreq = 312.5e6;
+    const double targetFreq = APLL0_Frequency / APLL0_M_Divider; // 312.5e6;
     return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
 }
 
 static uint64_t get_dpll1_default_ftw(void)
 {
-    const double targetFreq = 325e6;
+    const double targetFreq = APLL1_Frequency / APLL1_M_Divider; // 325e6;
     return (1ULL << 48) * (targetFreq / sysclkVcoFreq());
 }
 
@@ -109,13 +109,13 @@ static void init_DPLL0_Setup(AD9545_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL0);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 8;
+    d->APLL_M_Divider = APLL0_M_Divider;
     // Translation Profile 0.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
-    d->profile[0].ZD_Feedback_Path = PROFILE_EXT_ZD_FEEDBACK_REFB;
+    d->profile[0].ZD_Feedback_Path = DPLL0_ZD_FB_Path;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
-    d->profile[0].Feedback_Mode.b.enable_ext_zd = 1;
+    d->profile[0].Feedback_Mode.b.enable_ext_zd = DPLL0_EXT_ZD;
     d->profile[0].Loop_BW = (uint32_t)DPLL0_BW_HZ * 1000000; // microHertz
     d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
     AD9545_Output_Dividers_Setup_TypeDef outputDivSetup;
@@ -139,13 +139,13 @@ static void init_DPLL1_Setup(AD9545_DPLL_Setup_TypeDef *d)
 {
     d->Freerun_Tuning_Word = get_dpll_default_ftw(DPLL1);
     d->FTW_Offset_Clamp = 0xFFFFFF; // 200000;
-    d->APLL_M_Divider = 10;
+    d->APLL_M_Divider = APLL1_M_Divider;
     // Translation Profile 1.0
     d->profile[0].Priority_and_Enable = PROFILE_PRIORITY_NORMAL;
     d->profile[0].Profile_Ref_Source = PROFILE_REF_SOURCE_A;
-    d->profile[0].ZD_Feedback_Path = PROFILE_INT_ZD_FEEDBACK_OUT1A;
+    d->profile[0].ZD_Feedback_Path = DPLL1_ZD_FB_Path;
     d->profile[0].Feedback_Mode.b.enable_hitless = 1;
-    d->profile[0].Feedback_Mode.b.enable_ext_zd = 0;
+    d->profile[0].Feedback_Mode.b.enable_ext_zd = DPLL1_EXT_ZD;
     d->profile[0].Loop_BW = DPLL1_BW_HZ * 1000000UL; // microHertz
     d->profile[0].Hitless_FB_Divider = PLL_REFA_DIV;
     AD9545_Output_Dividers_Setup_TypeDef outputDivSetup;
@@ -215,9 +215,9 @@ void init_Pll_OutputDividers_Setup(AD9545_Output_Dividers_Setup_TypeDef *d)
     d->Secondary_Clock_Path_1 = 0x0; // 0x06;
     d->Automute_Control_0 = 0; // 0xFC;
     d->Automute_Control_1 = 0;
-    d->Distribution_Divider_0_A = PLL_DIST_DIV_0;
-    d->Distribution_Divider_0_B = PLL_DIST_DIV_0;
-    d->Distribution_Divider_0_C = PLL_DIST_DIV_0;
-    d->Distribution_Divider_1_A = PLL_DIST_DIV_1;
-    d->Distribution_Divider_1_B = PLL_DIST_DIV_1;
+    d->Distribution_Divider_0_A = PLL_DIST_DIV_0_A;
+    d->Distribution_Divider_0_B = PLL_DIST_DIV_0_B;
+    d->Distribution_Divider_0_C = PLL_DIST_DIV_0_C;
+    d->Distribution_Divider_1_A = PLL_DIST_DIV_1_A;
+    d->Distribution_Divider_1_B = PLL_DIST_DIV_1_B;
 }
