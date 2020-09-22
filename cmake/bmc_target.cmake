@@ -48,7 +48,16 @@ FUNCTION(BMC_TARGET_POST TARGET cpu)
     STM32_ADD_HEX_BIN_TARGETS(${TARGET})
     STM32_ADD_DUMP_TARGET(${TARGET})
     STM32_PRINT_SIZE_OF_TARGETS(${TARGET})
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET}> ${CMAKE_BINARY_DIR}/${BOARD}_rtos-${GIT_DESCR}.elf
+    set(DIST_NAME ${BOARD}_rtos-${GIT_DESCR})
+    add_custom_command(OUTPUT ${DIST_NAME}.elf
+        DEPENDS ${TARGET}
+        COMMAND ${CMAKE_COMMAND} -E copy ${TARGET} ${CMAKE_BINARY_DIR}/${DIST_NAME}.elf
+    )
+    add_custom_command(OUTPUT ${DIST_NAME}.bin
+        DEPENDS ${TARGET}.bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${TARGET}.bin ${CMAKE_BINARY_DIR}/${DIST_NAME}.bin
+    )
+    add_custom_target(${BOARD}-all-generated ALL
+        DEPENDS ${TARGET} ${DIST_NAME}.elf ${DIST_NAME}.bin
     )
 ENDFUNCTION()

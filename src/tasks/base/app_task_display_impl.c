@@ -26,7 +26,9 @@
 #include "ad9548/dev_ad9548_print.h"
 #include "ansi_escape_codes.h"
 #include "app_shared_data.h"
+#include "bsp.h"
 #include "cmsis_os.h"
+#include "digipot/dev_digipot_print.h"
 #include "display.h"
 #include "display_boards.h"
 #include "display_brief.h"
@@ -162,7 +164,7 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_log_page(DISPLAY_PAGE_Y, screen_height-DISPLAY_PAGE_Y-2, repaint);
         break;
     case DISPLAY_DIGIPOT:
-#ifdef ENABLE_DIGIPOTS
+#ifdef ENABLE_DIGIPOT
         display_digipots_page(DISPLAY_PAGE_Y, repaint);
 #endif
         break;
