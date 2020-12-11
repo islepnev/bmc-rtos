@@ -28,14 +28,7 @@ extern "C" {
 
 struct Dev_fpga;
 bool fpgaDetect(struct Dev_fpga *d);
-bool fpga_read_info(struct Dev_fpga *dev);
-bool fpga_check_live_magic(DeviceBase *dev);
-bool fpga_test(DeviceBase *dev);
-bool fpgaWriteBmcVersion(DeviceBase *dev);
-bool fpgaWriteBmcTemperature(DeviceBase *dev);
-bool fpgaWritePllStatus(DeviceBase *dev);
-bool fpgaWriteSystemStatus(DeviceBase *dev);
-bool fpgaWriteSensors(DeviceBase *dev);
+bool fpga_periodic_task(struct Dev_fpga *d);
 
 #ifdef __cplusplus
 }
