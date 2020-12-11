@@ -48,6 +48,7 @@ typedef struct Dev_fpga_priv {
     uint16_t id_read;
     uint16_t fw_ver;
     uint16_t fw_rev;
+    uint64_t serial;
 } Dev_fpga_priv;
 
 typedef struct Dev_fpga {

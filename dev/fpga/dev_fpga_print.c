@@ -49,7 +49,7 @@ void dev_fpga_print_box(void)
     if (priv->initb && !priv->done)
         printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
     if (priv->done && priv->id_read)
-        printf("%04X", priv->id);
+        printf("%04X %08llX", priv->id, priv->serial);
     printf(ANSI_CLEAR_EOL ANSI_COL30 "%9s ", fpga_state_str(priv->state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");

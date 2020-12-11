@@ -116,6 +116,20 @@ typedef union {
 
 #pragma pack(pop)
 
+uint32_t wswap_32(uint32_t data)
+{
+    return ((data & 0xFFFF) << 16) | ((data >> 16) & 0xFFFF);
+}
+
+uint64_t wswap_64(uint64_t data)
+{
+    return
+            ((data >> 48) & 0xFFFF) |
+            (((data >> 32) & 0xFFFF) << 16) |
+            (((data >> 16) & 0xFFFF) << 32) |
+            ((data & 0xFFFF) << 48);
+}
+
 /**
  * @brief Read FPGA register
  * @param addr 15-bit address
@@ -129,14 +143,14 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         fpga_spi_v3_txn_t txBuf = {0};
         txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_RD;
         txBuf.b.op.b.length = 5;
-        txBuf.b.addr = (addr << 16);
-        txBuf.b.data = 0xfedcba0987654321;
+        txBuf.b.addr = wswap_32(addr);
+        txBuf.b.data = wswap_64(0xfedcba0987654321);
         txBuf.b.crc = 0x5555;
         fpga_spi_v3_txn_t rxBuf;
 
-        log_printf(LOG_DEBUG, "[0] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X, %16llX\n",
+        log_printf(LOG_DEBUG, "[0] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n",
                    txBuf.raw[0], txBuf.raw[1], txBuf.raw[2], txBuf.raw[3],
-                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7], txBuf.b.data);
+                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7]);
         fpga_spi_hal_spi_nss_b(NSS_ASSERT);
         bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, (uint8_t *)rxBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
         fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
@@ -145,9 +159,9 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
             return false;
         }
 
-        log_printf(LOG_DEBUG, "[0] FPGA SPI RXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n",
-                   rxBuf.raw[0], rxBuf.raw[1], rxBuf.raw[2], rxBuf.raw[3],
-                   rxBuf.raw[4], rxBuf.raw[5], rxBuf.raw[6], rxBuf.raw[7]);
+//        log_printf(LOG_DEBUG, "[0] FPGA SPI RXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n",
+//                   rxBuf.raw[0], rxBuf.raw[1], rxBuf.raw[2], rxBuf.raw[3],
+//                   rxBuf.raw[4], rxBuf.raw[5], rxBuf.raw[6], rxBuf.raw[7]);
     }
     fpga_spi_v3_txn_t txBuf = {0};
     txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_NULL;
@@ -156,9 +170,9 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
     const int max_retry = 2;
     bool complete = false;
     for (int i=0; i<max_retry; i++) {
-        log_printf(LOG_DEBUG, "[%d] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n", i+1,
-                   txBuf.raw[0], txBuf.raw[1], txBuf.raw[2], txBuf.raw[3],
-                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7]);
+//        log_printf(LOG_DEBUG, "[%d] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n", i+1,
+//                   txBuf.raw[0], txBuf.raw[1], txBuf.raw[2], txBuf.raw[3],
+//                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7]);
         fpga_spi_hal_spi_nss_b(NSS_ASSERT);
         bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, (uint8_t *)rxBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
         fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
@@ -169,8 +183,10 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         log_printf(LOG_DEBUG, "[%d] FPGA SPI RXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n", i+1,
                    rxBuf.raw[0], rxBuf.raw[1], rxBuf.raw[2], rxBuf.raw[3],
                    rxBuf.raw[4], rxBuf.raw[5], rxBuf.raw[6], rxBuf.raw[7]);
+        rxBuf.b.addr = wswap_32(rxBuf.b.addr);
+        rxBuf.b.data = wswap_64(rxBuf.b.data);
         if (rxBuf.b.op.b.opcode == FPGA_SPI_V3_OP_RD) {
-            log_printf(LOG_DEBUG, "fpga_spi_v3_hal_read_reg: read complete: len %d, addr %08X, data %08X, crc %04X\n",
+            log_printf(LOG_DEBUG, "fpga_spi_v3_hal_read_reg: read complete: len %d, addr %08X, data %016llX, crc %04X\n",
                        rxBuf.b.op.b.length, rxBuf.b.addr, rxBuf.b.data, rxBuf.b.crc);
             complete = true;
             break;
@@ -178,6 +194,16 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
     }
     if (! complete) {
         log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: retry limit exceeded\n");
+        return false;
+    }
+    if (rxBuf.b.op.b.length != 1) {
+        log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: unexpected length %d, should be 1\n",
+                   addr, rxBuf.b.op.b.length);
+        return false;
+    }
+    if (rxBuf.b.addr != addr) {
+        log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: address mismatch: request %08X != reply %08X\n",
+                   addr, rxBuf.b.addr);
         return false;
     }
 
@@ -198,8 +224,8 @@ bool fpga_spi_v3_hal_write_reg(BusInterface *bus, uint32_t addr, uint64_t data)
     fpga_spi_v3_txn_t txBuf = {0};
     txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_WR;
     txBuf.b.op.b.length = 5;
-    txBuf.b.addr = addr;
-    txBuf.b.data = data;
+    txBuf.b.addr = wswap_32(addr);
+    txBuf.b.data = wswap_64(data);
     txBuf.b.crc = 0x5555;
     fpga_spi_hal_spi_nss_b(NSS_ASSERT);
     bool ret = spi_driver_tx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
