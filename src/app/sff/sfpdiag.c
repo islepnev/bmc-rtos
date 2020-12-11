@@ -245,7 +245,7 @@ void sff8472_parse_eeprom(const __u8 *id, struct sff_diags *sd)
 
 void sff8472_show_all(const __u8 *id)
 {
-    struct sff_diags sd;
+    struct sff_diags sd = {};
     char *rx_power_string = NULL;
     int i;
 
