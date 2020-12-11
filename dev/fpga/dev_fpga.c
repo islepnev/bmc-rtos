@@ -135,6 +135,24 @@ bool fpgaDetect(Dev_fpga *d)
     return DEVICE_NORMAL == d->dev.device_status;
 }
 
+bool fpga_read_info(struct Dev_fpga *dev)
+{
+    BusInterface *bus = &dev->dev.bus;
+    uint64_t data = 0;
+    for (int addr=0x40; addr<0x60; addr+=2) {
+        if (! fpga_spi_v3_hal_read_reg(bus, addr, &data)) {
+            log_printf(LOG_ERR, "%s failed", __FUNCTION__);
+            return false;
+        }
+    }
+//    if (! fpga_spi_v3_hal_read_reg(bus, 0x50, &data)) {
+//        log_printf(LOG_ERR, "%s failed", __FUNCTION__);
+//        return false;
+//    }
+//    dev->priv.serial = data;
+    return true;
+}
+
 bool fpgaWriteBmcVersion(DeviceBase *dev)
 {
     BusInterface *bus = &dev->bus;
