@@ -39,6 +39,7 @@ typedef enum {
 
 typedef struct Dev_fpga_priv {
     uint16_t regs[FPGA_REG_COUNT];
+    uint8_t proto_version;
     fpga_state_t state;
     uint32_t fpga_load_start_tick;
     uint32_t stateStartTick;
@@ -48,6 +49,8 @@ typedef struct Dev_fpga_priv {
     uint16_t id_read;
     uint16_t fw_ver;
     uint16_t fw_rev;
+    uint16_t temp;
+    uint64_t ow_id;
 } Dev_fpga_priv;
 
 typedef struct Dev_fpga {
