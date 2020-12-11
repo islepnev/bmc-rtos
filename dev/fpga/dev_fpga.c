@@ -109,14 +109,22 @@ bool fpgaDetect(Dev_fpga *d)
 {
     BusInterface *bus = &d->dev.bus;
     int err = 0;
+/*
     for (int i=0; i<FPGA_REG_COUNT; i++) {
         if (! fpga_spi_hal_read_reg(bus, i, &d->priv.regs[i])) {
             err++;
             break;
         }
     }
+*/
+    uint64_t data = 0;
+    log_printf(LOG_ERR, "fpgaDetect try...");
+    if (! fpga_spi_v3_hal_read_reg(bus, 0x42, &data)) {
+        log_printf(LOG_ERR, "fpgaDetect failed");
+        err++;
+    }
     d->priv.id_read = 1;
-    uint16_t id = d->priv.regs[0];
+    uint16_t id = data;
     if (id == 0x0000 || id == 0xFFFF)
         err++;
     if (err == 0)

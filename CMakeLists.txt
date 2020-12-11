@@ -66,13 +66,13 @@ add_custom_target(data ALL SOURCES
 )
 
 subdirs(cpu/stm32f769ni)
-subdirs(app/tdc64)
+#subdirs(app/tdc64)
 subdirs(app/tdc72)
-subdirs(app/ttvxs)
-subdirs(app/cru16)
+#subdirs(app/ttvxs)
+#subdirs(app/cru16)
 
-subdirs(cpu/stm32f746ig)
-subdirs(app/tdc72vhlv3)
+#subdirs(cpu/stm32f746ig)
+#subdirs(app/tdc72vhlv3)
 
-subdirs(cpu/stm32f303cc)
-subdirs(app/tdc72vhlv2)
+#subdirs(cpu/stm32f303cc)
+#subdirs(app/tdc72vhlv2)
