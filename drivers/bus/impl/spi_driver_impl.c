@@ -30,6 +30,8 @@
 #include "stm32_hal.h"
 #include "stm32_ll.h"
 
+#define SPI_DRIVER_INTERRUPT_MODE 1
+
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error
 #define HAL_SPI_ERROR_MODF              (0x00000001U)   //! MODF error
@@ -120,6 +122,7 @@ static bool spi_driver_after_hal_call(const char *title, struct __SPI_HandleType
            spi_driver_wait_complete(title, hspi, millisec);
 }
 
+#if SPI_DRIVER_INTERRUPT_MODE
 
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
@@ -144,8 +147,7 @@ bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, ui
     HAL_StatusTypeDef ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
     return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
 }
-
-#if 0
+#else
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     if (!hspi)
@@ -155,14 +157,14 @@ bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf,
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
                    (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
-        return ret;
+        return false;
     }
     int32_t status = spi_driver_wait_it_sem(hspi, millisec);
     if (status != osOK) {
         log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
-        return HAL_TIMEOUT;
+        return false;
     }
-    return ret;
+    return true;
 }
 
 bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec)
@@ -174,13 +176,13 @@ bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, ui
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
                    (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
-        return ret;
+        return false;
     }
     int32_t status = spi_driver_wait_it_sem(hspi, millisec);
     if (status != osOK) {
         log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
-        return HAL_TIMEOUT;
+        return false;
     }
-    return ret;
+    return true;
 }
 #endif
