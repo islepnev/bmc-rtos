@@ -30,7 +30,7 @@
 #include "stm32_hal.h"
 #include "stm32_ll.h"
 
-#define SPI_DRIVER_INTERRUPT_MODE 1
+#define SPI_DRIVER_INTERRUPT_MODE 0
 
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error
@@ -64,6 +64,8 @@ void spi_driver_reset_internal(struct __SPI_HandleTypeDef *handle)
     handle->State = HAL_SPI_STATE_READY;
     __HAL_SPI_ENABLE(handle);
 }
+
+#if SPI_DRIVER_INTERRUPT_MODE
 
 static bool spi_driver_wait_complete(const char *title, struct __SPI_HandleTypeDef *hspi, uint32_t millisec)
 {
@@ -122,7 +124,6 @@ static bool spi_driver_after_hal_call(const char *title, struct __SPI_HandleType
            spi_driver_wait_complete(title, hspi, millisec);
 }
 
-#if SPI_DRIVER_INTERRUPT_MODE
 
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
@@ -147,21 +148,18 @@ bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, ui
     HAL_StatusTypeDef ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
     return spi_driver_after_hal_call(__func__, hspi, ret, millisec);
 }
+
 #else
+
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec)
 {
     if (!hspi)
         Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
-    ret = HAL_SPI_TransmitReceive_IT(hspi, txBuf, rxBuf, Size);
+    ret = HAL_SPI_TransmitReceive(hspi, txBuf, rxBuf, Size, millisec);
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
                    (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
-        return false;
-    }
-    int32_t status = spi_driver_wait_it_sem(hspi, millisec);
-    if (status != osOK) {
-        log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
         return false;
     }
     return true;
@@ -172,17 +170,13 @@ bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, ui
     if (!hspi)
         Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
-    ret = HAL_SPI_Transmit_IT(hspi, txBuf, Size);
+    ret = HAL_SPI_Transmit(hspi, txBuf, Size, millisec);
     if (ret != HAL_OK) {
         log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
                    (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return false;
     }
-    int32_t status = spi_driver_wait_it_sem(hspi, millisec);
-    if (status != osOK) {
-        log_printf(LOG_WARNING, "%s: SPI%d timeout\n", __func__, hspi_index(hspi));
-        return false;
-    }
     return true;
 }
+
 #endif
