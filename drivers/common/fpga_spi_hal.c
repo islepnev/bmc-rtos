@@ -17,6 +17,7 @@
 
 #include "fpga_spi_hal.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "bsp_pin_defs.h"
@@ -25,6 +26,7 @@
 #include "bus/spi_driver.h"
 #include "gpio.h"
 #include "log/log.h"
+#include "crc16.h"
 
 static const int SPI_TIMEOUT_MS = 100; // osWaitForever;
 
@@ -81,7 +83,7 @@ bool fpga_spi_hal_write_reg(BusInterface *bus, uint16_t addr, uint16_t data)
     bool ret = spi_driver_tx(hspi_handle(bus->bus_number), (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
     fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
     if (! ret) {
-        log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error\n");
+        log_printf(LOG_ERR, "fpga_spi_hal_write_reg: SPI error");
         return ret;
     }
     return ret;
@@ -91,7 +93,7 @@ enum {
     FPGA_SPI_V3_OP_NULL = 0,
     FPGA_SPI_V3_OP_WR   = 1,
     FPGA_SPI_V3_OP_RD   = 2,
-    FPGA_SPI_V3_OP_RSVD = 3,
+    FPGA_SPI_V3_OP_ST   = 3,
 };
 
 #pragma pack(push, 1)
@@ -130,6 +132,103 @@ uint64_t wswap_64(uint64_t data)
             ((data & 0xFFFF) << 48);
 }
 
+static int op_count = 0;
+enum {SPI_FRAME_LEN = sizeof(fpga_spi_v3_txn_t) / sizeof(uint16_t)};
+
+static const char *opcode_str(int op)
+{
+    switch (op) {
+    case FPGA_SPI_V3_OP_NULL: return "NULL";
+    case FPGA_SPI_V3_OP_RD: return "  RD";
+    case FPGA_SPI_V3_OP_WR: return "  WR";
+    case FPGA_SPI_V3_OP_ST: return "  ST";
+    }
+    return "?";
+}
+
+bool fpga_spi_v3_tx_rx(BusInterface *bus, uint16_t *txBuf, uint16_t *rxBuf, uint16_t wordcount)
+{
+    assert(wordcount == SPI_FRAME_LEN);
+    if (wordcount != SPI_FRAME_LEN)
+        return false;
+
+    txBuf[wordcount-1] = crc16_be16(txBuf, wordcount-1);
+
+    fpga_spi_hal_spi_nss_b(NSS_ASSERT);
+    bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf, (uint8_t *)rxBuf, wordcount, SPI_TIMEOUT_MS);
+    fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
+    op_count++;
+    if (0) {
+        const fpga_spi_v3_txn_t *tx_struct = (const fpga_spi_v3_txn_t *)txBuf;
+        int prio = ret ? LOG_DEBUG : LOG_WARNING;
+        log_printf(prio,
+                   "[%d] FPGA SPI << %04X  %04X %04X  %04X %04X %04X %04X  %04X, %s addr %X, data %llX",
+                   op_count,
+                   txBuf[0], txBuf[1], txBuf[2], txBuf[3],
+                txBuf[4], txBuf[5], txBuf[6], txBuf[7],
+                opcode_str(tx_struct->b.op.b.opcode),
+                wswap_32(tx_struct->b.addr),
+                wswap_64(tx_struct->b.data));
+    }
+    if (! ret) {
+        log_printf(LOG_ERR, "%s: spi_driver_tx_rx error", __func__);
+        return false;
+    }
+    if (0) {
+        const fpga_spi_v3_txn_t *rx_struct = (const fpga_spi_v3_txn_t *)rxBuf;
+        uint16_t calc_crc = crc16_be16(rxBuf, wordcount-1);
+        bool crc_ok = (calc_crc == rxBuf[wordcount-1]);
+        int prio = (crc_ok) ? LOG_DEBUG : LOG_WARNING;
+        log_printf(prio,
+                   "[%d] FPGA SPI >> %04X  %04X %04X  %04X %04X %04X %04X  %04X, %s addr %X, data %llX (crc %s)",
+                   op_count,
+                   rxBuf[0], rxBuf[1], rxBuf[2], rxBuf[3],
+                rxBuf[4], rxBuf[5], rxBuf[6], rxBuf[7],
+                opcode_str(rx_struct->b.op.b.opcode),
+                wswap_32(rx_struct->b.addr),
+                wswap_64(rx_struct->b.data),
+                crc_ok ? "ok" : "error");
+    }
+    return true;
+}
+
+bool fpga_spi_v3_txn(BusInterface *bus, fpga_spi_v3_txn_t *txBuf, fpga_spi_v3_txn_t *rxBuf)
+{
+    txBuf->b.op.b.opcode = txBuf->b.op.b.opcode;
+    txBuf->b.op.b.length = SPI_FRAME_LEN-3;
+    txBuf->b.addr = wswap_32(txBuf->b.addr);
+    txBuf->b.data = wswap_64(txBuf->b.data);
+
+    if (!fpga_spi_v3_tx_rx(bus, txBuf->raw, rxBuf->raw, SPI_FRAME_LEN))
+        return false;
+
+    rxBuf->b.addr = wswap_32(rxBuf->b.addr);
+    rxBuf->b.data = wswap_64(rxBuf->b.data);
+
+    return true;
+}
+
+bool fpga_spi_v3_hal_read_status(BusInterface *bus)
+{
+    // STATUS opcode
+    fpga_spi_v3_txn_t txBuf = {0};
+    txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_ST;
+    fpga_spi_v3_txn_t rxBuf = {0};
+    if (!fpga_spi_v3_txn(bus, &txBuf, &rxBuf))
+        return false;
+    if (rxBuf.b.op.b.opcode != FPGA_SPI_V3_OP_ST) {
+        log_printf(LOG_ERR, "%s: unexpected opcode %d, should be %d",
+                   __func__, rxBuf.b.op.b.opcode, FPGA_SPI_V3_OP_ST);
+        return false;
+    }
+    uint16_t regio_timeouts = (rxBuf.b.data >> 32) & 0xFFFF;
+    uint16_t spi_crc_errors = (rxBuf.b.data >> 16) & 0xFFFF;
+    uint16_t regio_errors   = (rxBuf.b.data) & 0xFFFF;
+    log_printf(LOG_DEBUG, "%s: RegIO timeouts: %d, RegIO errors: %d, SPI CRC errors: %d",
+               __func__, regio_timeouts, regio_errors, spi_crc_errors);
+    return true;
+}
+
 /**
  * @brief Read FPGA register
  * @param addr 15-bit address
@@ -138,79 +237,44 @@ uint64_t wswap_64(uint64_t data)
  */
 bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
 {
-    log_printf(LOG_DEBUG, "fpga_spi_v3_hal_read_reg: %08X\n", addr);
+    // READ opcode
     {
         fpga_spi_v3_txn_t txBuf = {0};
         txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_RD;
-        txBuf.b.op.b.length = 5;
-        txBuf.b.addr = wswap_32(addr);
-        txBuf.b.data = wswap_64(0xfedcba0987654321);
-        txBuf.b.crc = 0x5555;
-        fpga_spi_v3_txn_t rxBuf;
-
-        log_printf(LOG_DEBUG, "[0] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n",
-                   txBuf.raw[0], txBuf.raw[1], txBuf.raw[2], txBuf.raw[3],
-                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7]);
-        fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-        bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, (uint8_t *)rxBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
-        fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-        if (! ret) {
-            log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: SPI error\n");
+        txBuf.b.addr = addr;
+        fpga_spi_v3_txn_t rxBuf = {0};
+        if (!fpga_spi_v3_txn(bus, &txBuf, &rxBuf))
             return false;
-        }
-
-//        log_printf(LOG_DEBUG, "[0] FPGA SPI RXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n",
-//                   rxBuf.raw[0], rxBuf.raw[1], rxBuf.raw[2], rxBuf.raw[3],
-//                   rxBuf.raw[4], rxBuf.raw[5], rxBuf.raw[6], rxBuf.raw[7]);
     }
-    fpga_spi_v3_txn_t txBuf = {0};
-    txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_NULL;
 
-    fpga_spi_v3_txn_t rxBuf;
+    // NULL opcode
     const int max_retry = 2;
-    bool complete = false;
     for (int i=0; i<max_retry; i++) {
-//        log_printf(LOG_DEBUG, "[%d] FPGA SPI TXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n", i+1,
-//                   txBuf.raw[0], txBuf.raw[1], txBuf.raw[2], txBuf.raw[3],
-//                   txBuf.raw[4], txBuf.raw[5], txBuf.raw[6], txBuf.raw[7]);
-        fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-        bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, (uint8_t *)rxBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
-        fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-        if (! ret) {
-            log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: SPI error\n");
+        fpga_spi_v3_txn_t txBuf = {0};
+        txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_NULL;
+        fpga_spi_v3_txn_t rxBuf = {0};
+        if (!fpga_spi_v3_txn(bus, &txBuf, &rxBuf))
             return false;
-        }
-        log_printf(LOG_DEBUG, "[%d] FPGA SPI RXBUF: %04X   %04X %04X   %04X %04X %04X %04X   %04X\n", i+1,
-                   rxBuf.raw[0], rxBuf.raw[1], rxBuf.raw[2], rxBuf.raw[3],
-                   rxBuf.raw[4], rxBuf.raw[5], rxBuf.raw[6], rxBuf.raw[7]);
-        rxBuf.b.addr = wswap_32(rxBuf.b.addr);
-        rxBuf.b.data = wswap_64(rxBuf.b.data);
         if (rxBuf.b.op.b.opcode == FPGA_SPI_V3_OP_RD) {
-            log_printf(LOG_DEBUG, "fpga_spi_v3_hal_read_reg: read complete: len %d, addr %08X, data %016llX, crc %04X\n",
-                       rxBuf.b.op.b.length, rxBuf.b.addr, rxBuf.b.data, rxBuf.b.crc);
-            complete = true;
-            break;
+            if (rxBuf.b.op.b.length != 1) {
+                log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
+                           __func__, addr, rxBuf.b.op.b.length);
+                return false;
+            }
+            if (rxBuf.b.addr != addr) {
+                log_printf(LOG_ERR, "%s: address mismatch: request %08X != reply %08X",
+                           __func__, addr, rxBuf.b.addr);
+                return false;
+            }
+            if (data) {
+                *data = rxBuf.b.data;
+            }
+            return true;
         }
+        osDelay(1);
     }
-    if (! complete) {
-        log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: retry limit exceeded\n");
-        return false;
-    }
-    if (rxBuf.b.op.b.length != 1) {
-        log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: unexpected length %d, should be 1\n",
-                   addr, rxBuf.b.op.b.length);
-        return false;
-    }
-    if (rxBuf.b.addr != addr) {
-        log_printf(LOG_ERR, "fpga_spi_v3_hal_read_reg: address mismatch: request %08X != reply %08X\n",
-                   addr, rxBuf.b.addr);
-        return false;
-    }
-
-    if (data) {
-        *data = rxBuf.b.data;
-    }
-    return true;
+    log_printf(LOG_ERR, "%s: retry limit exceeded", __func__);
+    return false;
 }
 
 /**
@@ -223,17 +287,15 @@ bool fpga_spi_v3_hal_write_reg(BusInterface *bus, uint32_t addr, uint64_t data)
 {
     fpga_spi_v3_txn_t txBuf = {0};
     txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_WR;
-    txBuf.b.op.b.length = 5;
+    txBuf.b.op.b.length = SPI_FRAME_LEN-3;
     txBuf.b.addr = wswap_32(addr);
     txBuf.b.data = wswap_64(data);
-    txBuf.b.crc = 0x5555;
-    fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    bool ret = spi_driver_tx(hspi_handle(bus->bus_number), (uint8_t *)txBuf.raw, sizeof(txBuf) / sizeof(uint16_t), SPI_TIMEOUT_MS);
-    fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-    if (! ret) {
-        log_printf(LOG_ERR, "fpga_spi_v3_hal_write_reg: SPI error\n");
+    txBuf.b.crc = crc16_be16((uint16_t *)(&txBuf), SPI_FRAME_LEN-1);
+
+    fpga_spi_v3_txn_t rxBuf = {0};
+    if (!fpga_spi_v3_tx_rx(bus, txBuf.raw, rxBuf.raw, SPI_FRAME_LEN))
         return false;
-    }
+
     return true;
 }
 
