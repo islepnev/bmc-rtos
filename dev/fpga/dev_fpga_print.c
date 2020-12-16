@@ -48,8 +48,10 @@ void dev_fpga_print_box(void)
            priv->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
     if (priv->initb && !priv->done)
         printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
-    if (priv->done && priv->id_read)
-        printf("%04X %08llX", priv->id, priv->serial);
+    if (priv->done && priv->id_read) {
+        uint64_t serial = (priv->ow_id >> 8) & 0xFFFFFFFFFFFF;
+        printf("%02X %08llX %.1f", priv->id, serial, (int16_t)priv->temp / 16.0);
+    }
     printf(ANSI_CLEAR_EOL ANSI_COL30 "%9s ", fpga_state_str(priv->state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");
