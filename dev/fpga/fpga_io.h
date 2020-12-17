@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2020 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,46 +15,40 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef FPGA_SPI_HAL_H
-#define FPGA_SPI_HAL_H
+#ifndef FPGA_IO_H
+#define FPGA_IO_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bus/bus_types.h"
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct fpga_spi_stats_t {
-    uint32_t frames;
-    uint32_t regio_timeouts;
-    uint32_t regio_errors;
-    uint32_t tx_crc_errors;
-    uint32_t rx_crc_errors;
-} fpga_spi_stats_t;
+struct Dev_fpga;
 
-
-bool fpga_spi_hal_read_reg(BusInterface *bus, uint16_t addr, uint16_t *data)
+bool fpga_r16(struct Dev_fpga *d, uint32_t addr, uint16_t *data)
     __attribute__((warn_unused_result));
 
-bool fpga_spi_hal_write_reg(BusInterface *bus, uint16_t addr, uint16_t data)
+bool fpga_w16(struct Dev_fpga *d, uint32_t addr, uint16_t data)
     __attribute__((warn_unused_result));
 
-bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
+bool fpga_r32(struct Dev_fpga *d, uint32_t addr, uint32_t *data)
     __attribute__((warn_unused_result));
 
-bool fpga_spi_v3_hal_write_reg(BusInterface *bus, uint32_t addr, uint64_t data)
+bool fpga_w32(struct Dev_fpga *d, uint32_t addr, uint32_t data)
     __attribute__((warn_unused_result));
 
-bool fpga_spi_v3_hal_read_status(BusInterface *bus);
+bool fpga_r64(struct Dev_fpga *d, uint32_t addr, uint64_t *data)
+    __attribute__((warn_unused_result));
 
-void fpga_enable_interface(BusInterface *bus);
-void fpga_disable_interface(BusInterface *bus);
+bool fpga_w64(struct Dev_fpga *d, uint32_t addr, uint64_t data)
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FPGA_SPI_HAL_H */
+#endif // FPGA_IO_H
