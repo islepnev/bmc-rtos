@@ -426,17 +426,22 @@ bool fpga_periodic_task_v2(struct Dev_fpga *dev)
             fpgaWriteSensors(dev);
 }
 
-bool fpga_periodic_task_v3(struct Dev_fpga *d)
+bool fpga_periodic_task_v3(struct Dev_fpga *dev)
 {
 // destructive test
 //    int nloops = 3;
 //    for (int i=0; i<nloops; i++) {
-//        if (!fpga_test_v3(d))
+//        if (!fpga_test_v3(dev))
 //            return false;
 //    }
-    if (!fpga_read_info(d))
-        return false;
-    return true;
+    bool ok =
+            fpga_read_info(dev) &&
+            fpgaWriteBmcVersion(dev) &&
+            fpgaWriteBmcTemperature(dev) &&
+            fpgaWritePllStatus(dev) &&
+            fpgaWriteSystemStatus(dev) &&
+            fpgaWriteSensors(dev);
+    return ok;
 }
 
 bool fpga_periodic_task(struct Dev_fpga *dev)
