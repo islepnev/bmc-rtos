@@ -256,11 +256,11 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         if (!fpga_spi_v3_txn(bus, &txBuf, &rxBuf))
             return false;
         if (rxBuf.b.op.b.opcode == FPGA_SPI_V3_OP_RD) {
-            if (rxBuf.b.op.b.length != 1) {
-                log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
-                           __func__, addr, rxBuf.b.op.b.length);
-                return false;
-            }
+//            if (rxBuf.b.op.b.length != 1) {
+//                log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
+//                           __func__, addr, rxBuf.b.op.b.length);
+//                return false;
+//            }
             if (rxBuf.b.addr != addr) {
                 log_printf(LOG_ERR, "%s: address mismatch: request %08X != reply %08X",
                            __func__, addr, rxBuf.b.addr);
