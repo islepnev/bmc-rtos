@@ -26,6 +26,17 @@ extern "C" {
 
 extern sensor_list_t fpga_sensor_map;
 
+enum {
+    FPGA_REG_BASE_CSR = 0x0040,
+    FPGA_REG_BASE_TRIG_CTRL = 0x0100,
+    FPGA_REG_BASE_TDC_CORE = 0x0200,
+    FPGA_REG_BASE_WR_EMU = 0x0400,
+    FPGA_REG_BASE_RUNSTAT = 0x0700,
+    FPGA_REG_BASE_STATS = 0x0900,
+    FPGA_REG_BASE_ERRCNT = 0x1000,
+    FPGA_REG_BASE_MCU = 0x4000,
+};
+
 #ifdef __cplusplus
 }
 #endif

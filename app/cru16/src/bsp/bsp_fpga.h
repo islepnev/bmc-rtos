@@ -26,6 +26,12 @@ extern "C" {
 
 extern sensor_list_t fpga_sensor_map;
 
+enum {
+    FPGA_REG_BASE_CSR = 0x0040,
+    FPGA_REG_BASE_MCU = 0x4000,
+    FPGA_REG_BASE_FLASH_PROG = 0x7000,
+};
+
 #ifdef __cplusplus
 }
 #endif

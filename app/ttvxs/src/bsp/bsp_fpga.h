@@ -25,6 +25,26 @@ extern "C" {
 #endif
 
 extern sensor_list_t fpga_sensor_map;
+/*
+0x0040 - 0x001F CSR
+0x0200 - 0x02FF TTVXS Run Control Core Registers
+0x0800 - 0x08FF WhiteRabbit Status
+0x0900 - 0x09FF Statistics Readout CSR
+0x1000 - 0x10FF HWIP Error Counters
+0x1200 - 0x13FF Run Control Counters
+0x4000 - 0x40FF MCU SPI Slave
+0x7000 - 0x70FF Flash Programmer
+*/
+enum {
+    FPGA_REG_BASE_CSR = 0x0040,
+    FPGA_REG_BASE_TTVXS_RC_CORE = 0x0200,
+    FPGA_REG_BASE_WR_STATUS = 0x0800,
+    FPGA_REG_BASE_TTVXS_STATS = 0x0900,
+    FPGA_REG_BASE_HWIP_ERRCNT = 0x1000,
+    FPGA_REG_BASE_RC_COUNTERS = 0x1200,
+    FPGA_REG_BASE_MCU = 0x4000,
+    FPGA_REG_BASE_FLASH_PROG = 0x7000,
+};
 
 #ifdef __cplusplus
 }

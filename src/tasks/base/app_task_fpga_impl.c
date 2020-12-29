@@ -151,6 +151,10 @@ void fpga_task_run(Dev_fpga *d)
                 if (fpga_loaded)
                     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
             }
+        } else {
+            log_put(LOG_ERR, "FPGA detect error");
+            d->priv.state = FPGA_STATE_ERROR;
+            break;
         }
         {
             uint32_t detect_timeout = DETECT_DELAY_TICKS;
@@ -171,15 +175,7 @@ void fpga_task_run(Dev_fpga *d)
         }
         if (!fpga_done)
             d->priv.state = FPGA_STATE_STANDBY;
-        if (
-            (fpga_test(&d->dev)) &&
-            fpga_check_live_magic(&d->dev) &&
-            fpgaWriteBmcVersion(&d->dev) &&
-            fpgaWriteBmcTemperature(&d->dev) &&
-            fpgaWritePllStatus(&d->dev) &&
-            fpgaWriteSystemStatus(&d->dev) &&
-            fpgaWriteSensors(&d->dev)
-            ) {
+        if (fpga_periodic_task(d)) {
             d->priv.state = FPGA_STATE_PAUSE;
             break;
         } else {

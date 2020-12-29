@@ -23,6 +23,7 @@
 #include "dev_fpga_types.h"
 #include "devicelist.h"
 #include "fpga_mcu_regs_v2_0.h"
+#include "fpga_io.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"
@@ -32,39 +33,60 @@
 #include "version.h"
 
 static uint16_t live_magic = 0x55AA;
+static const bool ENABLE_V2_PROTOCOL = true;
+
+static const int REG_CSR_DEVICE_ID = 0x42;
+static const int REG_CSR_LIVEMAGIC = 0x48;
+
+enum {
+    FPGA_SPI_ADDR_0 = FPGA_REG_BASE_MCU + 0,
+    FPGA_SPI_ADDR_1 = FPGA_REG_BASE_MCU + 1,
+    FPGA_SPI_ADDR_2 = FPGA_REG_BASE_MCU + 2,
+    FPGA_SPI_ADDR_3 = FPGA_REG_BASE_MCU + 3,
+    FPGA_SPI_ADDR_4 = FPGA_REG_BASE_MCU + 4,
+    FPGA_SPI_ADDR_5 = FPGA_REG_BASE_MCU + 5,
+    FPGA_SPI_ADDR_6 = FPGA_REG_BASE_MCU + 6,
+    FPGA_SPI_ADDR_7 = FPGA_REG_BASE_MCU + 7,
+    FPGA_SPI_ADDR_8 = FPGA_REG_BASE_MCU + 8,
+    FPGA_SPI_ADDR_9 = FPGA_REG_BASE_MCU + 9,
+    FPGA_SPI_ADDR_A = FPGA_REG_BASE_MCU + 0xA,
+    FPGA_SPI_ADDR_B = FPGA_REG_BASE_MCU + 0xB,
+    FPGA_SPI_ADDR_C = FPGA_REG_BASE_MCU + 0xC,
+    FPGA_SPI_ADDR_D = FPGA_REG_BASE_MCU + 0xD,
+    FPGA_SPI_ADDR_E = FPGA_REG_BASE_MCU + 0xE,
+    FPGA_SPI_ADDR_F = FPGA_REG_BASE_MCU + 0xF
+};
 
 #if 0
 static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16_t *rdata)
 {
     BusInterface *bus = &dev->bus;
-    return fpga_spi_hal_write_reg(bus, addr, wdata) &&
-           fpga_spi_hal_read_reg(bus, addr, rdata) &&
+    return fpga_w16(bus, addr, wdata) &&
+           fpga_r16(bus, addr, rdata) &&
            rdata &&
            (wdata == *rdata);
 }
 #endif
 
-static bool fpga_write_live_magic(DeviceBase *dev)
+static bool fpga_write_live_magic(struct Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     live_magic++;
     uint16_t wdata1 = live_magic;
     uint16_t wdata2 = ~live_magic;
-    return fpga_spi_hal_write_reg(bus, addr1, wdata1) &&
-           fpga_spi_hal_write_reg(bus, addr2, wdata2);
+    return fpga_w16(dev, addr1, wdata1) &&
+           fpga_w16(dev, addr2, wdata2);
 }
 
-bool fpga_check_live_magic(DeviceBase *dev)
+bool fpga_check_live_magic(struct Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t rdata1 = 0, rdata2 = 0;
-    if (!fpga_spi_hal_read_reg(bus, addr1, &rdata1))
+    if (!fpga_r16(dev, addr1, &rdata1))
         return false;
-    if (!fpga_spi_hal_read_reg(bus, addr2, &rdata2))
+    if (!fpga_r16(dev, addr2, &rdata2))
         return false;
     uint16_t test1 = live_magic;
     uint16_t test2 = ~live_magic;
@@ -75,21 +97,20 @@ bool fpga_check_live_magic(DeviceBase *dev)
     return fpga_write_live_magic(dev);
 }
 
-bool fpga_test(DeviceBase *dev)
+bool fpga_test(struct Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
     uint16_t wdata1 = 0x3210;
     uint16_t wdata2 = 0xDCBA;
     uint16_t rdata1 = 0, rdata2 = 0;
-    if (! fpga_spi_hal_write_reg(bus, addr1, wdata1))
+    if (! fpga_w16(dev, addr1, wdata1))
         goto err;
-    if (! fpga_spi_hal_write_reg(bus, addr2, wdata2))
+    if (! fpga_w16(dev, addr2, wdata2))
         goto err;
-    if (! fpga_spi_hal_read_reg(bus, addr1, &rdata1))
+    if (! fpga_r16(dev, addr1, &rdata1))
         goto err;
-    if (! fpga_spi_hal_read_reg(bus, addr2, &rdata2))
+    if (! fpga_r16(dev, addr2, &rdata2))
         goto err;
     if (rdata1 == wdata1 && rdata2 == wdata2) {
         // log_printf(LOG_DEBUG, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
@@ -105,54 +126,190 @@ err:
     return false;
 }
 
-bool fpgaDetect(Dev_fpga *d)
+bool fpga_read_base_csr(struct Dev_fpga *dev)
 {
-    BusInterface *bus = &d->dev.bus;
-    int err = 0;
-    for (int i=0; i<FPGA_REG_COUNT; i++) {
-        if (! fpga_spi_hal_read_reg(bus, i, &d->priv.regs[i])) {
-            err++;
-            break;
+    // read Firmware Version
+    {
+        uint16_t data[2] = {0};
+        if (
+                fpga_r16(dev, 0x4C, &data[0]) &&
+                fpga_r16(dev, 0x4D, &data[1])
+                ) {
+            dev->priv.fw_ver = data[0] & 0xFFFF;
+            dev->priv.fw_rev = data[1] & 0xFFFF;
+        } else {
+            return false;
         }
     }
-    d->priv.id_read = 1;
-    uint16_t id = d->priv.regs[0];
-    if (id == 0x0000 || id == 0xFFFF)
-        err++;
-    if (err == 0)
-        d->dev.device_status = DEVICE_NORMAL;
-    else
-        d->dev.device_status = DEVICE_FAIL;
-
-    d->priv.id = id;
-
-//    if (0 && (DEVICE_NORMAL == d->present)) {
-
-        //        fpga_test_reg(addr, wdata, &rdata);
-//        if (rdata != wdata)
-//            log_printf(LOG_ERR, "FPGA register test failed: addr %04X, wdata %04X, rdata %04X", addr, wdata, rdata);
-//    }
-    return DEVICE_NORMAL == d->dev.device_status;
+    // read 1Wire ID
+    {
+        uint64_t data;
+        if (!fpga_r64(dev, 0x50, &data))
+            return false;
+        dev->priv.ow_id = data;
+    }
+    return true;
 }
 
-bool fpgaWriteBmcVersion(DeviceBase *dev)
+bool fpga_read_info(struct Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
+    // read Temp
+    {
+        uint16_t data = {0};
+        if (fpga_r16(dev, 0x4B, &data)) {
+            dev->priv.temp = data & 0xFFFF;
+        } else {
+            return false;
+        }
+    }
+//    uint64_t data = 0;
+//    for (int addr=0x40; addr<0x60; addr++) {
+//        if (! fpga_spi_v3_hal_read_reg(bus, addr, &data)) {
+//            log_printf(LOG_ERR, "%s failed", __func__);
+//            return false;
+//        }
+//        log_printf(LOG_INFO, "FPGA Reg %X = %8llX", addr, data);
+//    }
+
+//    if (! fpga_spi_v3_hal_read_reg(bus, 0x50, &data)) {
+//        log_printf(LOG_ERR, "%s failed", __func__);
+//        return false;
+//    }
+//    dev->priv.serial = data;
+    return true;
+}
+
+bool fpga_detect_v2(Dev_fpga *dev)
+{
+    // read v1/v2 DeviceID
+    uint16_t data = 0;
+    if (! fpga_r16(dev, 0, &data)) {
+        return false;
+    }
+    uint8_t data_hi = (data >> 8) & 0xFF;
+    uint8_t data_lo = data & 0xFF;
+    if (data_hi == (~data_lo & 0xFF) && data_lo != 0 && data_lo != 0xFF) {
+        log_printf(LOG_INFO, "FPGA SPI v2 detected, device_id %02X", data_lo);
+        dev->priv.proto_version = 2;
+        dev->priv.id = data & 0xFF;
+        dev->priv.id_read = 1;
+        return true;
+    }
+    return false;
+}
+
+bool fpga_detect_v3(Dev_fpga *dev)
+{
+//    // FIXME
+//    while (true) {
+//        uint64_t data = 0;
+//        for (int i=0; i<1000; i++) {
+//            if (!fpga_spi_v3_hal_read_reg(bus, 0x0042, &data))
+//                break;
+//        }
+//        fpga_spi_v3_hal_read_status(bus);
+//        osDelay(100);
+//    }
+    uint64_t data = 0;
+    if (!fpga_spi_v3_hal_read_reg(&dev->dev.bus, REG_CSR_DEVICE_ID, &data)) {
+        return false;
+    }
+    // read Device ID
+    {
+        uint8_t id = (data >> 8) & 0xFF;
+        if (id == 0 || id == 0xFF) {
+            return false;
+        }
+        log_printf(LOG_INFO, "FPGA SPI v3 detected, device_id %02X", id);
+        dev->priv.proto_version = 3;
+        dev->priv.id = id;
+        dev->priv.id_read = 1;
+    }
+    if (!fpga_read_base_csr(dev))
+        return false;
+    log_printf(LOG_INFO, "FPGA firmware %d.%d.%d",
+               (dev->priv.fw_ver >> 8) & 0xFF,
+               (dev->priv.fw_ver) & 0xFF,
+               dev->priv.fw_rev);
+    log_printf(LOG_INFO, "Board serial %04X-%04X-%04X",
+               (uint16_t)((dev->priv.ow_id >> 40) & 0xFFFF),
+               (uint16_t)((dev->priv.ow_id >> 24) & 0xFFFF),
+               (uint16_t)((dev->priv.ow_id >> 8) & 0xFFFF));
+    if (!fpga_read_info(dev))
+        return false;
+    return true;
+}
+
+bool fpgaDetect(Dev_fpga *dev)
+{
+    int err = 0;
+
+    dev->priv.proto_version = 0;
+
+    if (ENABLE_V2_PROTOCOL && fpga_detect_v2(dev)) {
+        for (int i=0; i<FPGA_REG_COUNT; i++) {
+            if (! fpga_r16(dev, i, &dev->priv.regs[i])) {
+                err++;
+                return false;
+            }
+        }
+        dev->dev.device_status = DEVICE_NORMAL;
+        return true;
+    }
+    if (fpga_detect_v3(dev)) {
+        dev->dev.device_status = DEVICE_NORMAL;
+        return true;
+    }
+
+    dev->dev.device_status = DEVICE_FAIL;
+    return false;
+}
+
+bool fpga_test_v3(Dev_fpga *dev)
+{
+    uint32_t addr1 = 0x0048;
+    uint32_t addr2 = 0x0100;
+    uint16_t wdata1 = 0x3210;
+    uint16_t wdata2 = 0xDCBA;
+    uint16_t rdata1 = 0, rdata2 = 0;
+    if (! fpga_w16(dev, addr1, wdata1))
+        goto err;
+    if (! fpga_w16(dev, addr2, wdata2))
+        goto err;
+    if (! fpga_r16(dev, addr1, &rdata1))
+        goto err;
+    if (! fpga_r16(dev, addr2, &rdata2))
+        goto err;
+    if (rdata1 == wdata1 && rdata2 == wdata2) {
+        // log_printf(LOG_DEBUG, "FPGA register test Ok: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
+        // log_printf(LOG_DEBUG, "FPGA register test Ok: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
+//        fpga_write_live_magic(d);
+        return true;
+    }
+    log_printf(LOG_ERR, "FPGA register test failed: addr1 %04X, wdata1 %04X, rdata1 %04X", addr1, wdata1, rdata1);
+    log_printf(LOG_ERR, "FPGA register test failed: addr2 %04X, wdata2 %04X, rdata2 %04X", addr2, wdata2, rdata2);
+    return false;
+err:
+    log_printf(LOG_ERR, "FPGA register test failed: SPI error");
+    return false;
+}
+
+bool fpgaWriteBmcVersion(Dev_fpga *dev)
+{
     bmc_version_t bmc_version;
     bmc_version.b.major = VERSION_MAJOR_NUM;
     bmc_version.b.minor = VERSION_MINOR_NUM;
     uint16_t bmc_revision = VERSION_PATCH_NUM;
 
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_8, bmc_version.raw))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_8, bmc_version.raw))
         return false;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_9, bmc_revision))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_9, bmc_revision))
         return false;
     return true;
 }
 
-bool fpgaWriteBmcTemperature(DeviceBase *dev)
+bool fpgaWriteBmcTemperature(Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p)
         return false;
@@ -161,15 +318,14 @@ bool fpgaWriteBmcTemperature(DeviceBase *dev)
         int16_t v = (i < p->count && p->sensors[i].hdr.b.state == DEVICE_NORMAL)
                         ? (p->sensors[i].value * 32)
                         : 0x8000;
-        if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_3 + i, v))
+        if (! fpga_w16(dev, FPGA_SPI_ADDR_3 + i, v))
             return false;
     }
     return true;
 }
 
-bool fpgaWritePllStatus(DeviceBase *dev)
+bool fpgaWritePllStatus(Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     fpga_mcu_reg_pll_t pll = {0};
     uint16_t unlock_count = 0;
 #if ENABLE_AD9545
@@ -199,56 +355,54 @@ bool fpgaWritePllStatus(DeviceBase *dev)
     pll.b.ref_c_valid = priv->status.refStatus[4].b.valid;
     pll.b.ref_d_valid = priv->status.refStatus[6].b.valid;
 #endif
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_1, pll.raw))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_1, pll.raw))
         return false;
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_2, unlock_count))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_2, unlock_count))
         return false;
     return true;
 }
 
-bool fpgaWriteSystemStatus(DeviceBase *dev)
+bool fpgaWriteSystemStatus(Dev_fpga *dev)
 {
-    BusInterface *bus = &dev->bus;
     uint16_t data = 0;
     data = getSystemStatus();
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_A, data))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_A, data))
         return false;
 #ifdef ENABLE_POWERMON
     data = getPowermonStatus();
 #else
     data = 0;
 #endif
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_B, data))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_B, data))
         return false;
     data = getPllStatus();
-    if (! fpga_spi_hal_write_reg(bus, FPGA_SPI_ADDR_C, data))
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_C, data))
         return false;
     return true;
 }
 
 #ifdef ENABLE_SENSORS
-static bool fpgaWriteSensorsByIndex(DeviceBase *dev, int *indices, int count)
+static bool fpgaWriteSensorsByIndex(Dev_fpga *dev, int *indices, int count)
 {
     const Dev_powermon_priv *p = get_powermon_priv_const();
     if (!p)
         return false;
     const pm_sensors_arr *sensors = &p->sensors;
-    BusInterface *bus = &dev->bus;
     uint16_t address = FPGA_SPI_ADDR_0 + 0x10;
 
     for (int i=0; i<count; i++) {
         int index = indices[i];
         const pm_sensor_priv *p = &sensors->arr[index].priv;
-        if (!fpga_spi_hal_write_reg(bus, address++,
+        if (!fpga_w16(dev, address++,
                                     (int16_t)(p->busVoltage * 1000)) ||
-            !fpga_spi_hal_write_reg(bus, address++,
+            !fpga_w16(dev, address++,
                                    (int16_t)(p->current * 1000)))
             return false;
     }
     return true;
 }
 
-bool fpgaWriteSensors(DeviceBase *dev)
+bool fpgaWriteSensors(Dev_fpga *dev)
 {
     return fpgaWriteSensorsByIndex(
         dev, fpga_sensor_map.indices, fpga_sensor_map.count);
@@ -260,3 +414,43 @@ bool fpgaWriteSensors(DeviceBase *dev)
 }
 #endif
 
+bool fpga_periodic_task_v2(struct Dev_fpga *dev)
+{
+    return
+            fpga_test(dev) &&
+            fpga_check_live_magic(dev) &&
+            fpgaWriteBmcVersion(dev) &&
+            fpgaWriteBmcTemperature(dev) &&
+            fpgaWritePllStatus(dev) &&
+            fpgaWriteSystemStatus(dev) &&
+            fpgaWriteSensors(dev);
+}
+
+bool fpga_periodic_task_v3(struct Dev_fpga *dev)
+{
+// destructive test
+//    int nloops = 3;
+//    for (int i=0; i<nloops; i++) {
+//        if (!fpga_test_v3(dev))
+//            return false;
+//    }
+    bool ok =
+            fpga_read_info(dev) &&
+            fpgaWriteBmcVersion(dev) &&
+            fpgaWriteBmcTemperature(dev) &&
+            fpgaWritePllStatus(dev) &&
+            fpgaWriteSystemStatus(dev) &&
+            fpgaWriteSensors(dev);
+    return ok;
+}
+
+bool fpga_periodic_task(struct Dev_fpga *dev)
+{
+    if (dev->priv.proto_version == 2) {
+        return fpga_periodic_task_v2(dev);
+    }
+    if (dev->priv.proto_version == 3) {
+        return fpga_periodic_task_v3(dev);
+    }
+    return false;
+}
