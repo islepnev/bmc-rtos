@@ -27,6 +27,14 @@
 extern "C" {
 #endif
 
+typedef struct fpga_spi_stats_t {
+    uint32_t frames;
+    uint32_t regio_timeouts;
+    uint32_t regio_errors;
+    uint32_t tx_crc_errors;
+    uint32_t rx_crc_errors;
+} fpga_spi_stats_t;
+
 enum {
     FPGA_SPI_ADDR_0 = 0,
     FPGA_SPI_ADDR_1 = 1,
@@ -51,6 +59,14 @@ bool fpga_spi_hal_read_reg(BusInterface *bus, uint16_t addr, uint16_t *data)
 
 bool fpga_spi_hal_write_reg(BusInterface *bus, uint16_t addr, uint16_t data)
     __attribute__((warn_unused_result));
+
+bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
+    __attribute__((warn_unused_result));
+
+bool fpga_spi_v3_hal_write_reg(BusInterface *bus, uint32_t addr, uint64_t data)
+    __attribute__((warn_unused_result));
+
+bool fpga_spi_v3_hal_read_status(BusInterface *bus);
 
 void fpga_enable_interface(BusInterface *bus);
 void fpga_disable_interface(BusInterface *bus);
