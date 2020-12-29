@@ -30,7 +30,7 @@
 #include "stm32_hal.h"
 #include "stm32_ll.h"
 
-#define SPI_DRIVER_INTERRUPT_MODE 1
+#define SPI_DRIVER_INTERRUPT_MODE 0
 
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error
