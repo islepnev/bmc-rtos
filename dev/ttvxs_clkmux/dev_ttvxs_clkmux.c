@@ -75,8 +75,8 @@ static bool dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
     data.bit.pll_source_sel = d->priv.pll_source & 0x3;
     ok &= mcp23017_write(MCP23017_GPIOB, data.all);
     int crsw1_output_map[4] = {
-        CRSW1_IN_PLL0A, // CRSW1_IN_AD9516_DIV3
-        CRSW1_IN_PLL0A,
+        CRSW1_IN_PLL0B, // CRSW1_IN_AD9516_DIV3
+        CRSW1_IN_PLL0B,
         CRSW1_IN_PLL0A,
         CRSW1_IN_PLL0A
     };
