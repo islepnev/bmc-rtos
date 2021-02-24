@@ -26,7 +26,6 @@
 #include "lwip/apps/snmp_scalar.h"
 #include "devicelist.h"
 #include "dev_common_types.h"
-#include "devices_types.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
 
 enum { ITEM_COUNT = VXSIIC_SLOTS };

@@ -16,7 +16,6 @@
 */
 
 #include "bsp_tty.h"
-#include "devices_types.h"
 #include "mcb.h"
 #include "stm32f7xx_ll_usart.h"
 
