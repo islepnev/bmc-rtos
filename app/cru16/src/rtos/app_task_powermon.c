@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "app_shared_data.h"
-#include "app_task_powermon_impl.h"
+#include "base/app_task_powermon_impl.h"
 #include "app_tasks.h"
 #include "bsp.h"
 #include "bus/bus_types.h"

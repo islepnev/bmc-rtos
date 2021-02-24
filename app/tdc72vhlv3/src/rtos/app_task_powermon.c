@@ -23,7 +23,7 @@
 #include "adt7301/dev_adt7301.h"
 #include "adt7301/dev_adt7301_fsm.h"
 #include "app_shared_data.h"
-#include "app_task_powermon_impl.h"
+#include "base/app_task_powermon_impl.h"
 #include "app_tasks.h"
 #include "bsp.h"
 #include "bus/bus_types.h"
