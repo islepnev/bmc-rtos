@@ -88,5 +88,22 @@ if(${BOARD} STREQUAL "tdc72vhlv2")
     )
 endif()
 
+if(${BOARD} STREQUAL "tqdc")
+    set(ENABLE_LWIP 1)
+    set(BOARD_COMPONENTS
+        ad9516
+        ad9545
+        digipot
+        fpga
+        max31725
+        powermon
+        sfpiic
+        sensors
+        tmp421
+        tqdc_clkmux
+        vxsiics
+    )
+endif()
+
 list(APPEND BOARD_COMPONENTS ${COMMON_COMPONENTS})
 message("${BOARD} components: ${BOARD_COMPONENTS}")
