@@ -133,6 +133,8 @@ unknown:
 
 DeviceStatus dev_tqdc_clkmux_set(struct Dev_tqdc_clkmux *d)
 {
-    bool ok = dev_clkmux_set_internal(d);
-    return ok ? DEVICE_NORMAL : DEVICE_FAIL;
+    if (!dev_clkmux_set_internal(d)) {
+        d->dev.device_status = DEVICE_FAIL;
+    }
+    return d->dev.device_status;
 }
