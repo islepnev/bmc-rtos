@@ -142,7 +142,7 @@ void dev_thset_run(Dev_thset *p)
                 log_put(LOG_CRIT, "Temperature critical, shutdown");
                 for (int i=0; i < d->count; i++) {
                     double temp = d->sensors[i].value;
-                    log_printf(LOG_CRIT, "Temperature sensor [%d]: %f", i, temp);
+                    log_printf(LOG_CRIT, "Temperature sensor [%d %s]: %.1f", i, d->sensors[i].name, temp);
                 }
                 d->state = THSET_STATE_2;
             }
