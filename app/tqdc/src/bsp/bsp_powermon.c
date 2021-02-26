@@ -195,10 +195,6 @@ double pm_get_fpga_power_w(const Dev_powermon_priv *p)
 void switch_power(Dev_powermon_priv *p, bool state)
 {
     // int pcb_ver = get_mcb_pcb_ver();
-    if (state)
-        log_put(LOG_NOTICE, "Switching ON");
-    else
-        log_put(LOG_NOTICE, "Switching OFF");
     for (int i=0; i<POWER_SWITCH_COUNT; i++)
         p->sw[i] = state;
     write_power_switches(p->sw);

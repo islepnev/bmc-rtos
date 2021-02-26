@@ -268,6 +268,7 @@ void task_powermon_run (Dev_powermon *pm)
         change_state(priv, PM_STATE_STANDBY);
         break;
     }
+    read_power_switches_state(priv->sw_state);
 
     for (int i=0; i<sensors->count; i++)
         sensors->arr[i].priv.rampState = (priv->pmState == PM_STATE_RAMP) ? RAMP_UP : RAMP_NONE;
