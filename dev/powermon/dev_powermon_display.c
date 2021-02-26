@@ -55,7 +55,7 @@ const char *pmStateStr(PmState state)
 
 void pm_sensor_print_header(void)
 {
-    printf("%10s %6s %6s %6s %5s\n", "       ", "  V  ", "  A  ", " A max ", "  W  ");
+    printf("%10s %7s %6s %6s %5s\n", "       ", "  V  ", "  A  ", " A max ", "  W  ");
 }
 
 void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
@@ -70,7 +70,7 @@ void pm_sensor_print_values(const struct pm_sensor *d, bool isOn)
     case SENSOR_WARNING:  color = ANSI_YELLOW; break;
     case SENSOR_CRITICAL: color = sensor->isOptional ? ANSI_YELLOW : ANSI_RED;    break;
     }
-    printf("%s % 6.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", sensor->busVoltage, ANSI_CLEAR);
+    printf("%s % 7.3f%s", isOn ? color : offvoltage ? ANSI_YELLOW : "", sensor->busVoltage, ANSI_CLEAR);
     if (sensor->hasShunt) {
         int backfeed = (sensor->current < -0.010);
         printf("%s % 6.3f %s% 6.3f % 5.1f", backfeed ? ANSI_YELLOW : "", sensor->current, backfeed ? ANSI_CLEAR : "",

@@ -17,6 +17,8 @@
 
 #include "dev_ina226.h"
 
+#include <math.h>
+
 #include "cmsis_os.h"
 #include "dev_pm_sensors.h"
 #include "dev_pm_sensors_types.h"
@@ -109,7 +111,7 @@ DeviceStatus dev_ina226_read(pm_sensor *d)
 #else
     const double shuntVoltage = (int16_t)rawdata.rawShuntVoltage * 2.5e-6;
     double readCurrent = 0;
-    if (d->priv.hasShunt && d->priv.shuntVal > 1e-6)
+    if (d->priv.hasShunt && fabs(d->priv.shuntVal) > 1e-6)
         readCurrent = shuntVoltage / d->priv.shuntVal;
     pm_sensor_set_readCurrent(&d->priv, readCurrent);
     pm_sensor_set_readPower(&d->priv, readCurrent * readVoltage);
