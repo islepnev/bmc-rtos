@@ -29,6 +29,8 @@ extern "C" {
 
 bool max31725_detect(BusInterface *bus);
 bool max31725_read(BusInterface *bus, uint16_t reg, uint16_t *data);
+bool max31725_read_config(BusInterface *bus, uint16_t reg, uint8_t *data);
+bool max31725_write_config(BusInterface *bus, uint16_t reg, uint8_t data);
 
 #ifdef __cplusplus
 }
