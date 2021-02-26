@@ -40,9 +40,11 @@ typedef enum {
     MCP23017_OLATB = 0x15
 } mcp23017_regs_bank_0;
 
-bool mcp23017_detect(void);
-bool mcp23017_read(uint8_t reg, uint8_t *data);
-bool mcp23017_write(uint8_t reg, uint8_t data);
+struct DeviceBase;
+
+bool mcp23017_detect(struct DeviceBase *dev);
+bool mcp23017_read(struct DeviceBase *dev, uint8_t reg, uint8_t *data);
+bool mcp23017_write(struct DeviceBase *dev, uint8_t reg, uint8_t data);
 
 #ifdef __cplusplus
 }

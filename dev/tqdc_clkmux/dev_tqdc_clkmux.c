@@ -64,11 +64,11 @@ static bool dev_clkmux_set_internal(Dev_tqdc_clkmux *d)
     gpioa.all = 0;
     gpioa.bit.clk_adc_sel = (d->priv.clk_source == TQDC_CLK_SOURCE_LOCAL_DIRECT);
     gpioa.bit.clk_tdc_sel = !gpioa.bit.clk_adc_sel;
-    ok &= mcp23017_write(MCP23017_GPIOB, gpioa.all);
+    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpioa.all);
 
     clkmux_gpiob gpiob;
     gpiob.all = 0;
-    ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
     crsw_enum_t crsw_in_main;
     switch (d->priv.clk_source) {
     case TQDC_CLK_SOURCE_VXS: crsw_in_main = CRSW1_IN_VXS; break;
@@ -84,41 +84,41 @@ static bool dev_clkmux_set_internal(Dev_tqdc_clkmux *d)
     for (int i=0; i<4; i++) {
         gpiob.bit.crsw_sin = crsw1_output_map[i];
         gpiob.bit.crsw_sout = i;
-        ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
         gpiob.bit.crsw_load = 1;
-        ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
         gpiob.bit.crsw_load = 0;
-        ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
         gpiob.bit.crsw_conf = 1;
-        ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
         gpiob.bit.crsw_conf = 0;
-        ok &= mcp23017_write(MCP23017_GPIOB, gpiob.all);
+        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
     }
     return ok;
 }
 
 DeviceStatus dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
 {
-    if (! mcp23017_detect()) {
+    if (! mcp23017_detect(&d->dev)) {
         goto unknown;
     }
 //    uint8_t data = 0x55;
-//    if (! mcp23017_read(MCP23017_IODIRB, &data))
+//    if (! mcp23017_read(&d->dev, MCP23017_IODIRB, &data))
 //        goto err;
 //    if (data != 0xFF) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 1");
 //        goto err;
 //    }
-//    if (! mcp23017_read(MCP23017_IPOLA, &data))
+//    if (! mcp23017_read(&d->dev, MCP23017_IPOLA, &data))
 //        return DEVICE_FAIL;
 //    if (data != 0x00) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 2");
 //        goto err;
 //    }
     // set GPB1,GPB0
-    if (! mcp23017_write(MCP23017_IODIRA, 0x00)) // 0 = output
+    if (! mcp23017_write(&d->dev, MCP23017_IODIRA, 0x00)) // 0 = output
         goto err;
-    if (! mcp23017_write(MCP23017_IODIRB, 0x00)) // 0 = output
+    if (! mcp23017_write(&d->dev, MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
     d->dev.device_status = DEVICE_NORMAL;
