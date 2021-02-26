@@ -21,7 +21,7 @@
 #include "dev_common_types.h"
 #include "devicebase.h"
 
-enum { DEVICE_LIST_SIZE = 32 };
+enum { DEVICE_LIST_SIZE = 40 };
 typedef struct DeviceList {
     int count;
     struct DeviceBase *list[DEVICE_LIST_SIZE];

@@ -24,7 +24,6 @@
 
 #include "dev_common_types.h"
 #include "devicelist.h"
-#include "devices_types.h"
 #include "ipmi_sensor_types.h"
 #include "vxsiicm/dev_vxsiicm_types.h"
 

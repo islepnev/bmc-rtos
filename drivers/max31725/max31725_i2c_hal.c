@@ -38,3 +38,32 @@ bool max31725_read(BusInterface *bus, uint16_t reg, uint16_t *data)
     }
     return true;
 }
+
+bool max31725_read_config(BusInterface *bus, uint16_t reg, uint8_t *data)
+{
+    int Size = 1;
+    uint8_t pData[Size];
+    if (! i2c_driver_mem_read8(bus, reg, pData, Size, I2C_TIMEOUT_MS))
+        return false;
+    if (data) {
+        *data = pData[0];
+    }
+    return true;
+}
+
+bool max31725_write_config(BusInterface *bus, uint16_t reg, uint8_t data)
+{
+    int Size = 1;
+    uint8_t pData[Size];
+    pData[0] = data;
+    return i2c_driver_mem_write8(bus, reg, pData, Size, I2C_TIMEOUT_MS);
+}
+
+//bool max31725_write(BusInterface *bus, uint16_t reg, uint16_t data)
+//{
+//    int Size = 2;
+//    uint8_t pData[Size];
+//    pData[0] = (data >> 8) & 0xFF;
+//    pData[1] = data & 0xFF;
+//    return i2c_driver_mem_write8(bus, reg, pData, Size, I2C_TIMEOUT_MS);
+//}

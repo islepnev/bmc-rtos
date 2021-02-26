@@ -57,8 +57,6 @@
 #include "app_shared_data.h"
 #include "dev_common_types.h"
 #include "bsp_sensors_config.h"
-#include "devices.h"
-#include "devices_types.h"
 #include "fpga/dev_fpga_types.h"
 #include "powermon/dev_pm_sensors_types.h"
 #include "powermon/dev_powermon_types.h"
@@ -155,13 +153,15 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
 static s16_t systemVXSPowerEnable_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->pen_b == 0);
+    // TODO: return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->pen_b == 0);
+    return snmp_encode_truthvalue((s32_t *)value, false);
 }
 
 static s16_t systemSDCardPresent_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->sd.detect_b == 0);
+    // TODO: return snmp_encode_truthvalue((s32_t *)value, getDevicesConst()->sd.detect_b == 0);
+    return snmp_encode_truthvalue((s32_t *)value, false);
 }
 
 static const struct snmp_scalar_node systemStatus = SNMP_SCALAR_CREATE_NODE_READONLY(

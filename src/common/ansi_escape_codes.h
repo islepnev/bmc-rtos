@@ -42,6 +42,7 @@
 
 #define ANSI_CLEAR_EOL CSI "K"
 
+#define ANSI_COL0      CSI "0G"
 #define ANSI_COL20     CSI "20G"
 #define ANSI_COL30     CSI "30G"
 #define ANSI_COL40     CSI "40G"

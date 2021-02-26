@@ -31,7 +31,6 @@
 #include "http_app_log.h"
 
 #include "devicelist.h"
-#include "devices_types.h"
 #include "ipmi_sensor_types.h"
 #include "powermon/dev_powermon_types.h"
 #include "system_status.h"
