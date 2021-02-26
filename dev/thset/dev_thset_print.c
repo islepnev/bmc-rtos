@@ -30,7 +30,9 @@ void print_thset_line(void)
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p)
         return;
-    printf("Temp: ");
+    const SensorStatus status = dev_thset_thermStatus();
+    printf("%s", sensor_status_ansi_str(status));
+    printf(ANSI_COL0 "Temp: ");
     for (int i=0; i<p->count; i++) {
         const GenericSensor *sensor = &p->sensors[i];
         SensorStatus status = dev_thset_sensor_status(sensor); // ->hdr.b.state;
@@ -59,7 +61,5 @@ void print_thset_line(void)
         else
             printf("%s%s%s ---%s", i ? ", " : "", prefix, sensor->name, suffix);
     }
-    const SensorStatus status = dev_thset_thermStatus();
-    printf("%s", sensor_status_ansi_str(status));
     printf("\n");
 }
