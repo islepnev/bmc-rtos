@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "dev_tqdc_clkmux_types.h"
+#include "log/log.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
 
 typedef union {
@@ -109,12 +110,13 @@ DeviceStatus dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
 //        log_put(LOG_ERR, "clkmux: bad default value for register 1");
 //        goto err;
 //    }
-//    if (! mcp23017_read(&d->dev, MCP23017_IPOLA, &data))
-//        return DEVICE_FAIL;
-//    if (data != 0x00) {
-//        log_put(LOG_ERR, "clkmux: bad default value for register 2");
-//        goto err;
-//    }
+    uint8_t data = 0x55;
+    if (! mcp23017_read(&d->dev, MCP23017_IPOLA, &data))
+        return DEVICE_FAIL;
+    if (data != 0x00) {
+        log_printf(LOG_ERR, "clkmux: bad default value for register %d", MCP23017_IPOLA);
+        goto err;
+    }
     // set GPB1,GPB0
     if (! mcp23017_write(&d->dev, MCP23017_IODIRA, 0x00)) // 0 = output
         goto err;
