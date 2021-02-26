@@ -11,6 +11,8 @@
 #define CAN_RXD_Pin GPIO_PIN_12
 #define CAN_TXD_GPIO_Port GPIOB
 #define CAN_TXD_Pin GPIO_PIN_13
+#define PLL_M0_GPIO_Port GPIOK
+#define PLL_M0_Pin GPIO_PIN_5
 #else
 #define SPI2_GPIO_Port GPIOI
 #define SPI2_NSS_Pin GPIO_PIN_0
@@ -22,6 +24,8 @@
 #define AD9516_SCLK_Pin SPI2_SCLK_Pin
 #define AD9516_SDO_Pin SPI2_SDO_Pin
 #define AD9516_SDIO_Pin SPI2_SDIO_Pin
+#define CLK_IO_EXP_RESET_B_GPIO_Port GPIOK
+#define CLK_IO_EXP_RESET_B_Pin GPIO_PIN_5
 #endif
 #define CONFIG_IIC_SCL_GPIO_Port GPIOH
 #define CONFIG_IIC_SCL_Pin GPIO_PIN_7
@@ -197,8 +201,6 @@
 #define PGOOD_FMC_3P3VAUX_Pin GPIO_PIN_15
 #define PGOOD_PWR_GPIO_Port GPIOJ
 #define PGOOD_PWR_Pin GPIO_PIN_5
-#define PLL_M0_GPIO_Port GPIOK
-#define PLL_M0_Pin GPIO_PIN_5
 #define PLL_M3_GPIO_Port GPIOI
 #define PLL_M3_Pin GPIO_PIN_6
 #define PLL_M4_GPIO_Port GPIOB
