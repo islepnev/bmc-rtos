@@ -32,6 +32,8 @@
 #define APP_NAME_STR "TDC72VHL-v2 BMC"
 #elif defined(BOARD_TTVXS)
 #define APP_NAME_STR "TTVXS BMC"
+#elif defined(BOARD_TQDC)
+#define APP_NAME_STR "TQDC BMC"
 #else
 #error Unknown BOARD
 #endif
