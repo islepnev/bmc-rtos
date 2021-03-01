@@ -18,20 +18,30 @@
 #define LLDP_NEIGHBOR_H
 
 #include "lwip/arch.h"
+#include "lwip/apps/snmp_opts.h"
 
-#define NET_LLDP_CHASSIS_ID_VALUE_LEN (6)
+#define LLDP_MAX_ID_LENGTH (SNMP_MAX_OCTET_STRING_LEN-1)
+#define LLDP_MAX_STR_LENGTH (SNMP_MAX_OCTET_STRING_LEN-1)
 
-struct lldp_chassis_tlv {
-    u8_t subtype;	/* ID subtype. */
-    u8_t value[NET_LLDP_CHASSIS_ID_VALUE_LEN];
-} __packed;
+struct lldp_id_t {
+    u8_t subtype;
+    char value[LLDP_MAX_ID_LENGTH]; // NOT null-terminated
+    u8_t size;
+};
+typedef struct lldp_id_t lldp_id_t;
 
-typedef struct lldp_chassis_tlv lldp_chassis_tlv;
+typedef char lldp_string_t[LLDP_MAX_STR_LENGTH+1]; // null-terminated
 
 typedef struct lldp_neighbor_t {
-   lldp_chassis_tlv chassis;
+    u16_t ttl; // 0 = delete lldp info
+    lldp_id_t chassis;
+    lldp_id_t port;
+    lldp_string_t portdescr;
+    lldp_string_t sysname;
+    lldp_string_t sysdescr;
 } lldp_neighbor_t;
 
+extern u32_t lldp_neighbor_timestamp;
 extern lldp_neighbor_t lldp_neighbor;
 
 #endif // LLDP_NEIGHBOR_H

@@ -38,6 +38,7 @@
 //#include "examples/snmp/snmp_v3/snmpv3_dummy.h"
 #include "snmp_private_mib/private_mib.h"
 #include "lldp_mib.h"
+#include "lldpv2_mib.h"
 #include "app_name.h"
 #include "version.h"
 
@@ -45,6 +46,7 @@
 static const struct snmp_mib *mibs[] = {
   &mib2,
   &mib_lldp,
+  &mib_lldpv2,
   &mib_private
 #if LWIP_SNMP_V3
   , &snmpframeworkmib
