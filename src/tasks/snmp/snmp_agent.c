@@ -38,6 +38,7 @@
 //#include "examples/snmp/snmp_v3/snmpv3_dummy.h"
 #include "snmp_private_mib/private_mib.h"
 #include "lldp_mib.h"
+#include "lldpv2_mib.h"
 #include "app_name.h"
 #include "version.h"
 
@@ -45,6 +46,7 @@
 static const struct snmp_mib *mibs[] = {
   &mib2,
   &mib_lldp,
+  &mib_lldpv2,
   &mib_private
 #if LWIP_SNMP_V3
   , &snmpframeworkmib
@@ -52,6 +54,23 @@ static const struct snmp_mib *mibs[] = {
 #endif
 };
 #endif /* LWIP_SNMP */
+
+#if defined(BOARD_CRU16)
+#define BOARD_OID 1
+#elif defined(BOARD_TTVXS)
+#define BOARD_OID 2
+#elif defined(BOARD_TQDC)
+#define BOARD_OID 3
+#else
+#error Unknown BOARD
+#endif
+
+#define MY_DEVICE_ENTERPRISE_OID {1, 3, 6, 1, 4, 1, 53776, 120, 2, 1, BOARD_OID}
+#define MY_DEVICE_ENTERPRISE_OID_LEN 11
+
+static const struct snmp_obj_id  device_enterprise_oid = {
+    MY_DEVICE_ENTERPRISE_OID_LEN, MY_DEVICE_ENTERPRISE_OID
+};
 
 void
 snmp_agent_init(void)
@@ -71,6 +90,8 @@ snmp_agent_init(void)
 #if LWIP_SNMP_V3
   snmpv3_dummy_init();
 #endif
+
+  snmp_set_device_enterprise_oid(&device_enterprise_oid);
 
   snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();

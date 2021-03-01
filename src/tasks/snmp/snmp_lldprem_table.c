@@ -15,7 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "snmp_lldpv2rem_table.h"
+#include "snmp_lldprem_table.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -24,6 +24,10 @@
 #include "lwip/apps/snmp_scalar.h"
 #include "tcpip/lldp_neighbor.h"
 
+enum { SFP_COUNT = 1 };
+
+enum { SFP_MAX = SFP_COUNT };
+
 static snmp_err_t table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
 static s16_t      table_get_value(struct snmp_node_instance* instance, void* value);
@@ -31,26 +35,25 @@ static snmp_err_t table_set_value(struct snmp_node_instance* instance, u16_t len
 
 static const struct snmp_table_col_def table_columns[] = {
 { 2, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 4, SNMP_ASN1_TYPE_UNSIGNED32, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 5, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 6, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 7, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 3, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 4, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 5, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 6, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 7, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 8, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 9, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 10, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 11, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
 };
 
-const struct snmp_table_node lldpV2RemTable = SNMP_TABLE_CREATE(
+const struct snmp_table_node lldpRemTable = SNMP_TABLE_CREATE(
         1, table_columns,
         table_get_cell_instance, table_get_next_cell_instance,
         table_get_value, snmp_set_test_ok, table_set_value);
 
-#define TABLE_COLS 1
-
+/* sfptable .1.3.6.1.4.1.26381.1.1 */
 /* list of allowed value ranges for incoming OID */
 static const struct snmp_oid_range table_oid_ranges[] = {
-{ 1, TABLE_COLS }
+{ 1, SFP_MAX+1 }
 };
 
 static snmp_err_t
@@ -67,7 +70,7 @@ table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_
 
     /* get index from incoming OID */
     u32_t num = row_oid[0];
-    if (num > 0 && num <= TABLE_COLS) {
+    if (num > 0 && num <= SFP_COUNT) {
         cell_instance->reference.u32 = (u32_t)(num-1);
         return SNMP_ERR_NOERROR;
     }
@@ -90,10 +93,10 @@ table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, s
     snmp_next_oid_init(&state, row_oid->id, row_oid->len, result_temp, LWIP_ARRAYSIZE(table_oid_ranges));
 
     /* iterate over all possible OIDs to find the next one */
-    for (i=0; i<TABLE_COLS; i++) {
+    for (i=0; i<SFP_COUNT; i++) {
         u32_t test_oid[LWIP_ARRAYSIZE(table_oid_ranges)];
 
-        test_oid[0] = i+1;
+        test_oid[0] = i+1; // sfps[i].num;
 
         /* check generated OID: is it a candidate for the next one? */
         snmp_next_oid_check(&state, test_oid, LWIP_ARRAYSIZE(table_oid_ranges), (void*)i);
@@ -115,47 +118,47 @@ static s16_t
 table_get_value(struct snmp_node_instance* instance, void* value)
 {
     u32_t i = instance->reference.u32;
-    if (i >= TABLE_COLS)
+    if (i >= SFP_COUNT)
         return 0;
     switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
     {
-    case 2: { // lldpV2RemLocalIfIndex InterfaceIndex
+    case 2: { // lldpRemLocalIfIndex InterfaceIndex
         *(s32_t *)value = 1;
         return sizeof(s32_t);
     }
-    case 4: { // lldpV2RemIndex Unsigned32
+    case 3: { // lldpRemIndex Unsigned32
         *(s32_t *)value = 1;
         return sizeof(s32_t);
     }
-    case 5: { // lldpV2RemChassisIdSubtype
+    case 4: { // lldpRemChassisIdSubtype
         *(s32_t *)value = lldp_neighbor.chassis.subtype;
         return sizeof(s32_t);
     }
-    case 6: { // lldpV2RemChassisId
+    case 5: { // lldpRemChassisId
         size_t len = lldp_neighbor.chassis.size;
         MEMCPY(value, lldp_neighbor.chassis.value, len);
         return (s16_t)len;
     }
-    case 7: { // lldpV2RemPortIdSubtype
+    case 6: { // lldpRemPortIdSubtype
         *(s32_t *)value = lldp_neighbor.port.subtype;
         return sizeof(s32_t);
     }
-    case 8: { // lldpV2RemPortId
+    case 7: { // lldpRemPortId
         size_t len = lldp_neighbor.port.size;
         MEMCPY(value, lldp_neighbor.port.value, len);
         return (s16_t)len;
     }
-    case 9: { // lldpV2RemPortDesc
+    case 8: { // lldpRemPortDesc
         size_t len = strlen(lldp_neighbor.portdescr);
         MEMCPY(value, lldp_neighbor.portdescr, len);
         return (s16_t)len;
     }
-    case 10: { // lldpV2RemSysName
+    case 9: { // lldpRemSysName
         size_t len = strlen(lldp_neighbor.sysname);
         MEMCPY(value, lldp_neighbor.sysname, len);
         return (s16_t)len;
     }
-    case 11: { // lldpV2RemSysDesc
+    case 10: { // lldpRemSysDesc
         size_t len = strlen(lldp_neighbor.sysdescr);
         MEMCPY(value, lldp_neighbor.sysdescr, len);
         return (s16_t)len;

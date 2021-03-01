@@ -79,8 +79,8 @@ file(GLOB Src_SOURCES
     ${MY_SRC_DIR}/system/*.c
     ${MY_SRC_DIR}/tasks/base/*.c
     ${MY_SRC_DIR}/tasks/http/*.c
-#    ${MY_SRC_DIR}/tasks/snmp/*.c
-#    ${MY_SRC_DIR}/tasks/snmp/snmp_private_mib/*.c
+    ${MY_SRC_DIR}/tasks/snmp/*.c
+    ${MY_SRC_DIR}/tasks/snmp/snmp_private_mib/*.c
     ${MY_SRC_DIR}/tasks/sntp/*.c
     ${MY_SRC_DIR}/tasks/tcpip/*.c
 )

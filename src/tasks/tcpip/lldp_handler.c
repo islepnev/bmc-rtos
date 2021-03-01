@@ -16,6 +16,8 @@
 */
 
 #include "lldp_handler.h"
+
+#include <stdbool.h>
 #include <string.h>
 
 #include "lwip/opt.h"
@@ -42,27 +44,64 @@ enum {
     LLDP_TLV_ORG_SPECIFIC = 127
 };
 
+static lldp_neighbor_t lldp_neighbor_cache = {};
+
+void update_lldp_neighbor(void)
+{
+    if (memcmp(&lldp_neighbor, &lldp_neighbor_cache, sizeof(lldp_neighbor))) {
+        log_printf(LOG_INFO, "LLDP remote: name '%s', port '%s'",
+                   lldp_neighbor_cache.sysname,
+                   lldp_neighbor_cache.portdescr
+                   );
+        lldp_neighbor = lldp_neighbor_cache;
+    }
+}
+
+static void copy_lldp_id(lldp_id_t *dest, const u8_t *buf, u16_t lldp_len)
+{
+    int id_len = lldp_len - 1;
+    if (id_len < 0)
+        id_len = 0;
+    if (id_len > LLDP_MAX_ID_LENGTH)
+        id_len = LLDP_MAX_ID_LENGTH;
+
+    dest->subtype = buf[0];
+    dest->size = id_len;
+    memcpy(&dest->value, &buf[1], id_len);
+}
+
+static void copy_lldp_string(lldp_string_t dest, const u8_t *buf, u16_t lldp_len)
+{
+    if (lldp_len > LLDP_MAX_STR_LENGTH)
+        lldp_len = LLDP_MAX_STR_LENGTH;
+    memcpy(dest, buf, lldp_len);
+    dest[lldp_len] = '\0';
+}
+
 static void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
 {
+    // log_printf(LOG_DEBUG, "LLDP TLV decode: type %d, len %d", lldp_type, lldp_len);
+
     switch (lldp_type) {
     case LLDP_TLV_END_LLDPDU:
         break;
     case LLDP_TLV_CHASSIS_ID:
-        if (lldp_len != sizeof(lldp_chassis_tlv)) {
-            log_printf(LOG_DEBUG, "LLDP TLV size mismatch, type %d, len %d", lldp_type, lldp_len);
-            break;
-        }
-        memcpy(&lldp_neighbor.chassis, buf, sizeof(lldp_chassis_tlv));
+        copy_lldp_id(&lldp_neighbor_cache.chassis, buf, lldp_len);
         break;
     case LLDP_TLV_PORT_ID:
+        copy_lldp_id(&lldp_neighbor_cache.port, buf, lldp_len);
         break;
     case LLDP_TLV_TTL:
+        lldp_neighbor_cache.ttl = ((u16_t)(buf[0]) << 8) | buf[1];
         break;
     case LLDP_TLV_PORT_DESC:
+        copy_lldp_string(lldp_neighbor_cache.portdescr, buf, lldp_len);
         break;
     case LLDP_TLV_SYSTEM_NAME:
+        copy_lldp_string(lldp_neighbor_cache.sysname, buf, lldp_len);
         break;
     case LLDP_TLV_SYSTEM_DESC:
+        copy_lldp_string(lldp_neighbor_cache.sysdescr, buf, lldp_len);
         break;
     case LLDP_TLV_SYSTEM_CAPABILITIES:
         break;
@@ -71,7 +110,7 @@ static void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
     case LLDP_TLV_ORG_SPECIFIC:
         break;
     default:
-        log_printf(LOG_DEBUG, "LLDP unknown TLV, type %d, len %d", lldp_type, lldp_len);
+        // log_printf(LOG_DEBUG, "LLDP unknown TLV, type %d, len %d", lldp_type, lldp_len);
         break;
     }
 }
@@ -95,6 +134,7 @@ static void lldp_input(struct pbuf *p, struct netif *netif)
         i += lldp_len;
     }
     pbuf_free(p);
+    update_lldp_neighbor();
 }
 
 int lwip_hook_unknown_eth_protocol(struct pbuf *p, struct netif *netif)
