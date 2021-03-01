@@ -72,6 +72,7 @@ subdirs(app/tdc64)
 subdirs(app/tdc72)
 subdirs(app/ttvxs)
 subdirs(app/cru16)
+subdirs(app/tqdc)
 
 subdirs(cpu/stm32f746ig)
 subdirs(app/tdc72vhlv3)
