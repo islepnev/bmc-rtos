@@ -115,9 +115,21 @@ bool update_power_switches(Dev_powermon_priv *p, bool state)
     else
         log_put(LOG_NOTICE, "Switching OFF");
     switch_power(p, state);
-    read_power_switches_state(p->sw_state);
-    bool ok = pm_switches_isEqual(p->sw_state, p->sw);
+    bool ok = false;
+    for (int i=0; i<100; i++) {
+        read_power_switches_state(p->sw_state);
+        ok = pm_switches_isEqual(p->sw_state, p->sw);
+        if (ok)
+            break;
+        osDelay(1);
+    }
     check_power_switches(p);
+    if (ok) {
+        if (state)
+            log_put(LOG_NOTICE, "Switched ON");
+        else
+            log_put(LOG_NOTICE, "Switched OFF");
+    }
     return ok;
 }
 

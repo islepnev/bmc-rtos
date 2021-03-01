@@ -15,27 +15,4 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_NAME_H
-#define APP_NAME_H
-
-#include "bsp.h"
-
-#if defined(BOARD_CRU16)
-#define APP_NAME_STR "CRU16 BMC"
-#elif defined(BOARD_TDC64)
-#define APP_NAME_STR "TDC64VHLE BMC"
-#elif defined(BOARD_TDC72)
-#define APP_NAME_STR "TDC72VXS4 BMC"
-#elif defined(BOARD_TDC72VHLV3)
-#define APP_NAME_STR "TDC72VHL-v3 BMC"
-#elif defined(BOARD_TDC72VHLV2)
-#define APP_NAME_STR "TDC72VHL-v2 BMC"
-#elif defined(BOARD_TTVXS)
-#define APP_NAME_STR "TTVXS BMC"
-#elif defined(BOARD_TQDC)
-#define APP_NAME_STR "TQDC BMC"
-#else
-#error Unknown BOARD
-#endif
-
-#endif // APP_NAME_H
+#include "bsp_sfpiic.h"

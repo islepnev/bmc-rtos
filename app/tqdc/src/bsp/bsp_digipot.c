@@ -1,5 +1,7 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Digital Potentiometers
+**
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,27 +17,38 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_NAME_H
-#define APP_NAME_H
+#include "bsp_digipot.h"
 
-#include "bsp.h"
+#include <stdio.h>
 
-#if defined(BOARD_CRU16)
-#define APP_NAME_STR "CRU16 BMC"
-#elif defined(BOARD_TDC64)
-#define APP_NAME_STR "TDC64VHLE BMC"
-#elif defined(BOARD_TDC72)
-#define APP_NAME_STR "TDC72VXS4 BMC"
-#elif defined(BOARD_TDC72VHLV3)
-#define APP_NAME_STR "TDC72VHL-v3 BMC"
-#elif defined(BOARD_TDC72VHLV2)
-#define APP_NAME_STR "TDC72VHL-v2 BMC"
-#elif defined(BOARD_TTVXS)
-#define APP_NAME_STR "TTVXS BMC"
-#elif defined(BOARD_TQDC)
-#define APP_NAME_STR "TQDC BMC"
-#else
-#error Unknown BOARD
-#endif
+#include "bsp_sensors_config.h"
 
-#endif // APP_NAME_H
+const char *potLabel(PotIndex index)
+{
+    switch (index) {
+    case POT_TDC_A: return "TDC";
+    }
+    return "";
+}
+
+int potBusNumber(PotIndex index)
+{
+    (void)index;
+    return 2;
+}
+
+int potBusAddress(PotIndex index)
+{
+    switch (index) {
+    case POT_TDC_A: return 0x20;
+    }
+    return 0;
+}
+
+int potSensorIndex(PotIndex index)
+{
+    switch (index) {
+    case POT_TDC_A: return SENSOR_TDC_2V5;
+    }
+    return 0;
+}

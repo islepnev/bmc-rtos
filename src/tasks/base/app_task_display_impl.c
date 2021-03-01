@@ -62,7 +62,7 @@ static const bool has_auxpll = true;
 static const bool has_auxpll = false;
 #endif
 
-#if defined(BOARD_CRU16) || defined(BOARD_TTVXS)
+#if defined(BOARD_CRU16) || defined(BOARD_TTVXS) || defined(BOARD_TQDC)
 static const bool has_clkmux = true;
 #else
 static const bool has_clkmux = false;

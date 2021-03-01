@@ -18,6 +18,7 @@
 #include "dev_pm_sensors.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include "ansi_escape_codes.h"
 #include "cmsis_os.h"
@@ -57,7 +58,7 @@ void struct_pm_sensor_clear(pm_sensor *d)
     sensor->lastStatusUpdatedTick = 0;
     const double current_max = 16; // amperers
     sensor->current_lsb = current_max / 32768.0;
-    sensor->cal = 0.00512 / (sensor->current_lsb * sensor->shuntVal);
+    sensor->cal = 0.00512 / (sensor->current_lsb * fabs(sensor->shuntVal));
     struct_pm_sensor_clear_measurements(&d->priv);
     struct_pm_sensor_clear_minmax(&d->priv);
 }

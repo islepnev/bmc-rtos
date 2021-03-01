@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,39 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MCP23017_I2C_HAL_H
-#define MCP23017_I2C_HAL_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef APP_TASK_POWERMON_H
+#define APP_TASK_POWERMON_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    MCP23017_IODIRA = 0,
-    MCP23017_IODIRB = 1,
-    MCP23017_IPOLA = 2,
-    MCP23017_IPOLB = 3,
-    MCP23017_GPINTENA = 4,
-    MCP23017_GPINTENB = 5,
-    MCP23017_GPPUA = 0xC,
-    MCP23017_GPPUB = 0xD,
-    MCP23017_GPIOA = 0x12,
-    MCP23017_GPIOB = 0x13,
-    MCP23017_OLATA = 0x14,
-    MCP23017_OLATB = 0x15
-} mcp23017_regs_bank_0;
-
 struct DeviceBase;
-
-bool mcp23017_detect(struct DeviceBase *dev);
-bool mcp23017_read(struct DeviceBase *dev, uint8_t reg, uint8_t *data);
-bool mcp23017_write(struct DeviceBase *dev, uint8_t reg, uint8_t data);
+void create_task_powermon(struct DeviceBase *parent);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MCP23017_I2C_HAL_H
+#endif // APP_TASK_POWERMON_H

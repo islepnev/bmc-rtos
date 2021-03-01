@@ -182,8 +182,8 @@
 #define ON_1V8_FPGA_Pin GPIO_PIN_15
 #define PGOOD_PWR_GPIO_Port GPIOJ
 #define PGOOD_PWR_Pin GPIO_PIN_5
-#define PLL_M0_GPIO_Port GPIOK
-#define PLL_M0_Pin GPIO_PIN_5
+#define CLK_IO_EXP_RESET_B_GPIO_Port GPIOK
+#define CLK_IO_EXP_RESET_B_Pin GPIO_PIN_5
 #define PLL_M3_GPIO_Port GPIOI
 #define PLL_M3_Pin GPIO_PIN_6
 #define PLL_M4_GPIO_Port GPIOB

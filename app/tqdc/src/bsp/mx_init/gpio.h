@@ -1,4 +1,5 @@
 /*
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,39 +16,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MCP23017_I2C_HAL_H
-#define MCP23017_I2C_HAL_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef GPIO_H
+#define GPIO_H
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
-typedef enum {
-    MCP23017_IODIRA = 0,
-    MCP23017_IODIRB = 1,
-    MCP23017_IPOLA = 2,
-    MCP23017_IPOLB = 3,
-    MCP23017_GPINTENA = 4,
-    MCP23017_GPINTENB = 5,
-    MCP23017_GPPUA = 0xC,
-    MCP23017_GPPUB = 0xD,
-    MCP23017_GPIOA = 0x12,
-    MCP23017_GPIOB = 0x13,
-    MCP23017_OLATA = 0x14,
-    MCP23017_OLATB = 0x15
-} mcp23017_regs_bank_0;
+#include <stdbool.h>
+#include "stm32f7xx_hal_gpio.h"
 
-struct DeviceBase;
+void MX_GPIO_Init(void);
 
-bool mcp23017_detect(struct DeviceBase *dev);
-bool mcp23017_read(struct DeviceBase *dev, uint8_t reg, uint8_t *data);
-bool mcp23017_write(struct DeviceBase *dev, uint8_t reg, uint8_t data);
+void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state);
+bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MCP23017_I2C_HAL_H
+#endif /* GPIO_H */

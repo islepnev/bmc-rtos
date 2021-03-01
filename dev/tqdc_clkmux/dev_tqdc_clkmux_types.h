@@ -15,39 +15,47 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MCP23017_I2C_HAL_H
-#define MCP23017_I2C_HAL_H
+#ifndef DEV_TQDC_CLKMUX_TYPES_H
+#define DEV_TQDC_CLKMUX_TYPES_H
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef enum {
-    MCP23017_IODIRA = 0,
-    MCP23017_IODIRB = 1,
-    MCP23017_IPOLA = 2,
-    MCP23017_IPOLB = 3,
-    MCP23017_GPINTENA = 4,
-    MCP23017_GPINTENB = 5,
-    MCP23017_GPPUA = 0xC,
-    MCP23017_GPPUB = 0xD,
-    MCP23017_GPIOA = 0x12,
-    MCP23017_GPIOB = 0x13,
-    MCP23017_OLATA = 0x14,
-    MCP23017_OLATB = 0x15
-} mcp23017_regs_bank_0;
+    TQDC_CLKMUX_STATE_RESET,
+    TQDC_CLKMUX_STATE_RUN,
+    TQDC_CLKMUX_STATE_PAUSE,
+    TQDC_CLKMUX_STATE_ERROR
+} tqdc_clkmux_fsm_state_t;
 
-struct DeviceBase;
+typedef enum {
+    TQDC_CLK_SOURCE_LOCAL_DIRECT = 0,
+    TQDC_CLK_SOURCE_LOCAL_PLL = 1,
+    TQDC_CLK_SOURCE_VXS = 2,
+    TQDC_CLK_SOURCE_REFIN = 3,
+} tqdc_clk_source_t;
 
-bool mcp23017_detect(struct DeviceBase *dev);
-bool mcp23017_read(struct DeviceBase *dev, uint8_t reg, uint8_t *data);
-bool mcp23017_write(struct DeviceBase *dev, uint8_t reg, uint8_t data);
+typedef struct Dev_tqdc_clkmux_priv {
+    uint32_t stateStartTick;
+    tqdc_clkmux_fsm_state_t fsm_state;
+    tqdc_clk_source_t clk_source;
+} Dev_tqdc_clkmux_priv;
+
+typedef struct Dev_tqdc_clkmux {
+    DeviceBase dev;
+    Dev_tqdc_clkmux_priv priv;
+} Dev_tqdc_clkmux;
+
+bool tqdc_clkmux_running(Dev_tqdc_clkmux *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MCP23017_I2C_HAL_H
+#endif // DEV_TQDC_CLKMUX_TYPES_H
