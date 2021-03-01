@@ -10,7 +10,7 @@ IMPORTS
         FROM SNMPv2-TC;
 
 jinr MODULE-IDENTITY
-    LAST-UPDATED "201904100000Z"
+    LAST-UPDATED "202103010000Z"
     ORGANIZATION "JINR"
     CONTACT-INFO
          "email:    islepnev@jinr.ru"
@@ -87,6 +87,17 @@ IpmiSensorStatusTC ::= TEXTUAL-CONVENTION
     }
 
 afi                 OBJECT IDENTIFIER ::= { jinr 120 }
+
+-- AFI Entity Vendortype OIDs
+
+aevMIBObjects   OBJECT IDENTIFIER ::= { afi 2 }
+
+aevBoard        OBJECT IDENTIFIER ::= { aevMIBObjects 1 }
+
+aevTtvxs        OBJECT IDENTIFIER ::= { aevBoard 1 }
+aevCru16        OBJECT IDENTIFIER ::= { aevBoard 2 }
+aevTqdc16vs     OBJECT IDENTIFIER ::= { aevBoard 3 }
+
 
 -- BMC
 
