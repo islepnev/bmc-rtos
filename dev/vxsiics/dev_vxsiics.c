@@ -78,6 +78,9 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
         case VXSIIC_REG_MODULE_SERIAL:
             *data = get_fpga_serial();
             break;
+        case VXSIIC_REG_FPGA_FW_VER:
+            *data = make_fw_version(get_fpga_fw_ver(), get_fpga_fw_rev()).raw;
+            break;
         default:
             *data = 0;
             break;

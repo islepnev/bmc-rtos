@@ -20,7 +20,6 @@
 
 #include "ipmi_sensor_types.h"
 
-enum { IIC_SENSORS_MAP_START = 0x1000 };
 //enum { IIC_SENSORS_MAP_INCR  = 0x40 };
 enum { IIC_SENSORS_MAP_SIZE_BYTES = sizeof(GenericSensor) * MAX_SENSOR_COUNT };
 

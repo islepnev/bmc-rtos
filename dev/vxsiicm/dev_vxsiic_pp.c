@@ -108,7 +108,7 @@ static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
     if (status->mcu_info.magic != BMC_MAGIC)
         goto err;
     status->present = 1;
-    enum { MCU_READ_SIZE = 8 };
+    enum { MCU_READ_SIZE = VXSIIC_REG_FPGA_FW_VER-VXSIIC_REG_MAGIC+1 };
     static uint32_t map[MCU_READ_SIZE];
     //    map[0] = status->magic;
     for (int i=1; i<MCU_READ_SIZE; i++) {
@@ -124,6 +124,7 @@ static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
     status->mcu_info.iic_stats.errors = map[VXSIIC_REG_IIC_ERRORS];
     status->mcu_info.uptime = map[VXSIIC_REG_UPTIME];
     status->mcu_info.module_serial = map[VXSIIC_REG_MODULE_SERIAL];
+    status->mcu_info.fpga_fw_ver.raw = map[VXSIIC_REG_FPGA_FW_VER];
     status->pp_state.mcu_info_ok = true;
     return true;
 err:

@@ -60,6 +60,7 @@ typedef struct vxsiic_pp_mcu_info {
     uint32_t magic;
     uint32_t uptime;
     uint32_t module_serial;
+    fw_version_t fpga_fw_ver;
     bmc_ver_t bmc_ver;
     uint32_t module_id;
     iic_stats_t iic_stats;

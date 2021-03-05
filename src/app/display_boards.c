@@ -50,11 +50,16 @@ int snprintf_bmc_ver(char *str, size_t size, bmc_ver_t v)
     return snprintf(str, size, "%u.%u-%u", v.b.major, v.b.minor, v.b.patch);
 }
 
+int snprintf_fw_version(char *str, size_t size, fw_version_t v)
+{
+    return snprintf(str, size, "%u.%u-%u", v.b.major, v.b.minor, v.b.patch);
+}
+
 void display_boards_page(int y, bool repaint)
 {
     print_goto(y, 1);
     printf("Boards\n");
-    printf(" # exp  merr serr  BMC    FPGA   serial      up   all power therm  misc  fpga   pll\n");
+    printf(" # exp  merr serr   BMC   FPGA  serial   firmware   uptime  all power therm  misc  fpga   pll\n");
     int cur_y = y + 2;
     const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
     if (d && d->priv) {
@@ -67,10 +72,13 @@ void display_boards_page(int y, bool repaint)
             enum {bmc_ver_size = 16};
             char bmc_ver_buf[bmc_ver_size] = {0};
             snprintf_bmc_ver(bmc_ver_buf, bmc_ver_size, status->mcu_info.bmc_ver);
+            enum {fw_ver_size = 16};
+            char fw_ver_buf[fw_ver_size] = {0};
+            snprintf_fw_version(fw_ver_buf, fw_ver_size, status->mcu_info.fpga_fw_ver);
             if (0 == status->present)
                 printf("%2s\n", label);
             else
-                printf("%2s  %s%s %4lu %4lu %8s  %02lX  %04X-%04X %7lu  %s  %s  %s  %s  %s  %s\n",
+                printf("%2s  %s%s %4lu %4lu %8s  %02lX  %04X-%04X %8s %7lu  %s  %s  %s  %s  %s  %s\n",
                        label,
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
@@ -80,6 +88,7 @@ void display_boards_page(int y, bool repaint)
                        status->mcu_info.module_id & 0xFF,
                        status->mcu_info.module_serial >> 16,
                        status->mcu_info.module_serial & 0xFFFF,
+                       fw_ver_buf,
                        status->mcu_info.uptime,
                        sensor_status_str(status->mcu_info.enc_status.b.system),
                        sensor_status_str(status->mcu_info.enc_status.b.pm),

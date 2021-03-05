@@ -31,7 +31,7 @@ extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
 extern const uint32_t BMC_MAGIC;
 
 typedef enum {
-    // read-only
+    // read-only legacy info
     VXSIIC_REG_MAGIC = 0,
     VXSIIC_REG_BMC_VER = 1,
     VXSIIC_REG_MODULE_ID = 2,
@@ -40,13 +40,17 @@ typedef enum {
     VXSIIC_REG_IIC_ERRORS = 5,
     VXSIIC_REG_UPTIME = 6,
     VXSIIC_REG_MODULE_SERIAL = 7,
-    // writable
-    VXSIIC_REG_TTVXS_BMC_VER = 8,
-    VXSIIC_REG_TTVXS_MODULE_ID = 9,
-    VXSIIC_REG_TTVXS_MODULE_SERIAL = 10,
-    VXSIIC_REG_TTVXS_FPGA_FW_VER = 11,
-    VXSIIC_REG_TTVXS_UPTIME = 12,
-    // 3 unused registers 13..15
+    VXSIIC_REG_FPGA_FW_VER = 8,
+
+    // writable, since 2.8
+    VXSIIC_REG_TTVXS_BMC_VER = 0x100,
+    VXSIIC_REG_TTVXS_MODULE_ID = 0x101,
+    VXSIIC_REG_TTVXS_MODULE_SERIAL = 0x102,
+    VXSIIC_REG_TTVXS_FPGA_FW_VER = 0x103,
+    VXSIIC_REG_TTVXS_UPTIME = 0x104,
+
+    IIC_SENSORS_MAP_START = 0x1000, // legacy
+
 } vxsiic_data_reg;
 
 enum {VXSIIC_SCRATCH_MEM_START_ADDR = VXSIIC_REG_TTVXS_BMC_VER};
