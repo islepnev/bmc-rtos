@@ -19,26 +19,25 @@
 
 #include "dev_vxsiics.h"
 
+#include <stdlib.h>
 #include <string.h>
 
-#include "cmsis_os.h"
 #include "bus/dev_vxsiics_stats.h"
+#include "cmsis_os.h"
+#include "dev_vxsiics_types.h"
 #include "fpga/dev_fpga_types.h"
 #include "ipmi_sensor_util.h"
 #include "ipmi_sensors.h"
+#include "log/log.h"
 #include "system_status.h"
 #include "version.h"
 #include "vxsiic_types.h"
 
-enum {MEM_START_ADDR = 8};
-enum {MEM_SIZE = 4};
-static uint32_t mem[MEM_SIZE] = {0};
-
 void iic_write_callback(uint16_t addr, uint32_t data)
 {
     // writable scratch pad
-    if (addr >= MEM_START_ADDR && addr < MEM_START_ADDR + MEM_SIZE) {
-        mem[addr - MEM_START_ADDR] = data;
+    if (addr >= VXSIIC_SCRATCH_MEM_START_ADDR && addr < VXSIIC_SCRATCH_MEM_START_ADDR + VXSIIC_SCRATCH_MEM_SIZE) {
+        vxsiics_scratch_mem[addr - VXSIIC_SCRATCH_MEM_START_ADDR] = data;
     }
 }
 
@@ -50,17 +49,15 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
         uint32_t offset = addr - IIC_SENSORS_MAP_START;
         uint32_t *ptr = (uint32_t *)&ipmi_sensors + offset;
         memcpy(data, ptr, sizeof(uint32_t));
-    } else if (addr >= MEM_START_ADDR && addr < MEM_START_ADDR + MEM_SIZE) {
-        *data = mem[addr - MEM_START_ADDR];
+    } else if (addr >= VXSIIC_SCRATCH_MEM_START_ADDR && addr < VXSIIC_SCRATCH_MEM_START_ADDR + VXSIIC_SCRATCH_MEM_SIZE) {
+        *data = vxsiics_scratch_mem[addr - VXSIIC_SCRATCH_MEM_START_ADDR];
     } else {
         switch (addr) {
         case VXSIIC_REG_MAGIC:
             *data = BMC_MAGIC;
             break;
         case VXSIIC_REG_BMC_VER:
-            *data = ((uint32_t)(VERSION_PATCH_NUM) << 16) |
-                    (uint16_t)(VERSION_MAJOR_NUM << 8) |
-                    (uint16_t)(VERSION_MINOR_NUM);
+            *data = make_bmc_ver(VERSION_MAJOR_NUM, VERSION_MINOR_NUM, VERSION_PATCH_NUM).raw;
             break;
         case VXSIIC_REG_MODULE_ID:
             *data = get_fpga_id();
@@ -86,4 +83,63 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
             break;
         }
     }
+}
+static uint32_t current_timestamp(void)
+{
+    return osKernelSysTick() / osKernelSysTickFrequency;
+}
+
+void dev_vxsiics_poll_status(Dev_vxsiics *d)
+{
+    static vxsiic_ttvxs_info save_ttvxs_info = {0};
+    static uint32_t save_ttvxs_uptime = {0};
+    d->priv.ttvxs_info.bmc_ver.raw = vxsiics_scratch_mem[VXSIIC_REG_TTVXS_BMC_VER - VXSIIC_SCRATCH_MEM_START_ADDR];
+    d->priv.ttvxs_info.module_id = vxsiics_scratch_mem[VXSIIC_REG_TTVXS_MODULE_ID - VXSIIC_SCRATCH_MEM_START_ADDR];
+    d->priv.ttvxs_info.module_serial = vxsiics_scratch_mem[VXSIIC_REG_TTVXS_MODULE_SERIAL - VXSIIC_SCRATCH_MEM_START_ADDR];
+    d->priv.ttvxs_info.fpga_fw_version.raw = vxsiics_scratch_mem[VXSIIC_REG_TTVXS_FPGA_FW_VER - VXSIIC_SCRATCH_MEM_START_ADDR];
+    d->priv.ttvxs_uptime = vxsiics_scratch_mem[VXSIIC_REG_TTVXS_UPTIME - VXSIIC_SCRATCH_MEM_START_ADDR];
+    bool modified = memcmp(&save_ttvxs_info, &d->priv.ttvxs_info, sizeof(save_ttvxs_info));
+    bool uptime_modified = (save_ttvxs_uptime != d->priv.ttvxs_uptime);
+    const uint32_t now = current_timestamp();
+    if (uptime_modified) {
+        d->priv.ttvxs_uptime_timestamp = now;
+        //log_printf(LOG_INFO, "TTVXS: uptime %08X", d->priv.ttvxs_uptime);
+        save_ttvxs_uptime = d->priv.ttvxs_uptime;
+    }
+    if (modified) {
+        d->priv.ttvxs_info_timestamp = now;
+        log_printf(LOG_INFO, "TTVXS: BMC %d.%d.%d, FPGA %02X %04X-%04X v%d.%d.%d",
+                   d->priv.ttvxs_info.bmc_ver.b.major,
+                   d->priv.ttvxs_info.bmc_ver.b.minor,
+                   d->priv.ttvxs_info.bmc_ver.b.patch,
+                   d->priv.ttvxs_info.module_id,
+                   d->priv.ttvxs_info.module_serial >> 16,
+                   d->priv.ttvxs_info.module_serial & 0xFFFF,
+                   d->priv.ttvxs_info.fpga_fw_version.b.major,
+                   d->priv.ttvxs_info.fpga_fw_version.b.minor,
+                   d->priv.ttvxs_info.fpga_fw_version.b.patch
+                   );
+        save_ttvxs_info = d->priv.ttvxs_info;
+    }
+    static bool ttvxs_update_state = 0;
+    if (now - d->priv.ttvxs_uptime_timestamp > 2) {
+        if (ttvxs_update_state)
+            log_printf(LOG_INFO, "TTVXS: update stopped at uptime %d", d->priv.ttvxs_uptime);
+        ttvxs_update_state = 0;
+    } else {
+        if (!ttvxs_update_state)
+            log_printf(LOG_INFO, "TTVXS: update resumed, uptime %d", d->priv.ttvxs_uptime);
+        ttvxs_update_state = 1;
+    }
+//    static int32_t save_delta_uptime = 0;
+//    uint32_t local_uptime = current_timestamp();
+//    int32_t delta_uptime = d->priv.ttvxs_uptime - local_uptime;
+//    if (delta_uptime - save_delta_uptime <= 2) {
+//        log_printf(LOG_INFO, "TTVXS: time drifted by %d", d->priv.ttvxs_uptime);
+//        save_delta_uptime = delta_uptime;
+//    }
+//    if (delta_uptime - save_delta_uptime >= 2) {
+//        log_printf(LOG_INFO, "TTVXS: time drifted by %d", d->priv.ttvxs_uptime);
+//        save_delta_uptime = delta_uptime;
+//    }
 }

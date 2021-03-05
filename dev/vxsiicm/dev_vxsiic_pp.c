@@ -28,6 +28,8 @@
 #include "ipmi_sensor_util.h"
 #include "log/log.h"
 #include "vxsiic_hal.h"
+#include "fpga/dev_fpga_types.h"
+#include "version.h"
 
 bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp)
 {
@@ -75,6 +77,23 @@ static bool dev_vxsiic_read_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint3
 static bool dev_vxsiic_write_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t data)
 {
     return vxsiic_write_pp_mcu_4(&d->dev.bus, pp, reg, data);
+}
+
+static bool dev_vxsiic_write_pp_mcu(Dev_vxsiicm *d, int pp)
+{
+    vxsiic_ttvxs_info ttvxs_info;
+    ttvxs_info.bmc_ver = make_bmc_ver(VERSION_MAJOR_NUM, VERSION_MINOR_NUM, VERSION_PATCH_NUM);
+    ttvxs_info.fpga_fw_version = make_fw_version(get_fpga_fw_ver(), get_fpga_fw_rev());
+    ttvxs_info.module_id = get_fpga_id();
+    ttvxs_info.module_serial = get_fpga_ow_id();
+    uint32_t uptime = osKernelSysTick() / osKernelSysTickFrequency;
+    return true
+            && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_BMC_VER, ttvxs_info.bmc_ver.raw)
+            && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_MODULE_ID, ttvxs_info.module_id)
+            && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_MODULE_SERIAL, ttvxs_info.module_serial)
+            && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_FPGA_FW_VER, ttvxs_info.fpga_fw_version.raw)
+            && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_UPTIME, uptime)
+            ;
 }
 
 static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
@@ -155,8 +174,9 @@ bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp)
     bool ioexp =  dev_vxsiic_read_pp_ioexp(d, pp);
     bool found = (eeprom || ioexp);
     vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
-    bool mcu = found && dev_vxsiic_read_pp_mcu(d, pp);
-    bool ok = eeprom && ioexp && mcu;
+    bool read_mcu = found && dev_vxsiic_read_pp_mcu(d, pp);
+    bool write_mcu = read_mcu && dev_vxsiic_write_pp_mcu(d, pp);
+    bool ok = eeprom && ioexp && read_mcu && write_mcu;
     if (found) {
         if (ok)
             status->iic_master_stats.ops++;

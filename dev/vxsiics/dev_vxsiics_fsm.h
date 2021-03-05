@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_VXSIICS_H
-#define APP_TASK_VXSIICS_H
+#ifndef DEV_VXSIICS_FSM_H
+#define DEV_VXSIICS_FSM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct DeviceBase;
-void create_task_vxsiics(struct DeviceBase *parent);
+typedef enum {
+    VXSIICS_STATE_RESET,
+    VXSIICS_STATE_RUN,
+    VXSIICS_STATE_PAUSE,
+    VXSIICS_STATE_ERROR,
+} vxsiics_state_t;
+
+struct Dev_vxsiics;
+void dev_vxsiics_run(struct Dev_vxsiics *d);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_VXSIICS_H
+#endif // DEV_VXSIICS_FSM_H

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,36 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_VXSIICS_H
-#define APP_TASK_VXSIICS_H
+#ifndef DEV_VXSIICS_TYPES_H
+#define DEV_VXSIICS_TYPES_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "devicebase.h"
+#include "ipmi_sensor_types.h"
+#include "vxsiic_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct DeviceBase;
-void create_task_vxsiics(struct DeviceBase *parent);
+typedef struct Dev_vxsiics_priv {
+    DeviceBase dev;
+    uint32_t stateStartTick;
+    vxsiic_ttvxs_info ttvxs_info;
+    uint32_t ttvxs_info_timestamp;
+    uint32_t ttvxs_uptime;
+    uint32_t ttvxs_uptime_timestamp;
+} Dev_vxsiics_priv;
+
+typedef struct Dev_vxsiics {
+    DeviceBase dev;
+    Dev_vxsiics_priv priv;
+} Dev_vxsiics;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_VXSIICS_H
+#endif // DEV_VXSIICS_TYPES_H

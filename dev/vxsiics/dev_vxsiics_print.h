@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_VXSIICS_H
-#define APP_TASK_VXSIICS_H
+#ifndef DEV_VXSIICS_PRINT_H
+#define DEV_VXSIICS_PRINT_H
+
+#include "dev_common_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct DeviceBase;
-void create_task_vxsiics(struct DeviceBase *parent);
+struct Dev_vxsiics;
+DeviceStatus dev_vxsiics_print(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_VXSIICS_H
+#endif // DEV_VXSIICS_PRINT_H

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_VXSIICS_H
-#define APP_TASK_VXSIICS_H
+#include "dev_vxsiics.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdint.h>
+#include <stdio.h>
 
-struct DeviceBase;
-void create_task_vxsiics(struct DeviceBase *parent);
+#include "dev_vxsiics.h"
+#include "dev_vxsiics_types.h"
+#include "devicelist.h"
+#include "display.h"
 
-#ifdef __cplusplus
+void dev_vxsiics_print(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICS);
+    if (!d || !d->priv)
+        return;
+    const Dev_vxsiics_priv *vxsiics = (const Dev_vxsiics_priv *)device_priv_const(d);
+
+    printf("VXS I2C:        %d boards %s\n", get_vxsiic_board_count(vxsiics),
+           sensor_status_ansi_str(dev_vxsiics_sensor_status()));
 }
-#endif
-
-#endif // APP_TASK_VXSIICS_H

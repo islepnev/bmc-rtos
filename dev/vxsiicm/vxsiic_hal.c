@@ -131,5 +131,10 @@ bool vxsiic_write_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t
     BusInterface bus2 = *bus;
     bus2.address = PAYLOAD_BOARD_MCU_I2C_ADDRESS;
     enum {Size = 4};
-    return vxsiic_mem_write16(&bus2, reg, (uint8_t *)data, Size);
+    uint8_t pData[Size];
+    pData[3] = (data >> 24) & 0xFF;
+    pData[2] = (data >> 16) & 0xFF;
+    pData[1] = (data >> 8) & 0xFF;
+    pData[0] = data & 0xFF;
+    return vxsiic_mem_write16(&bus2, reg, pData, Size);
 }
