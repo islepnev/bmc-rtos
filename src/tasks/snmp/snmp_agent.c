@@ -84,7 +84,7 @@ snmp_agent_init(void)
 #endif /* SNMP_USE_NETCONN */
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
-  snmp_mib2_set_sysdescr((const u8_t*)(APP_NAME_STR " v" VERSION_STR), NULL);
+  snmp_mib2_set_sysdescr((const u8_t*)(APP_NAME_STR_BMC " v" VERSION_STR), NULL);
 #endif /* SNMP_LWIP_MIB2 */
 
 #if LWIP_SNMP_V3
