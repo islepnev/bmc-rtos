@@ -54,7 +54,7 @@ void display_boards_page(int y, bool repaint)
 {
     print_goto(y, 1);
     printf("Boards\n");
-    printf(" # exp  merr serr  BMC    FPGA     up   all power therm  misc  fpga   pll\n");
+    printf(" # exp  merr serr  BMC    FPGA   serial      up   all power therm  misc  fpga   pll\n");
     int cur_y = y + 2;
     const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
     if (d && d->priv) {
@@ -70,7 +70,7 @@ void display_boards_page(int y, bool repaint)
             if (0 == status->present)
                 printf("%2s\n", label);
             else
-                printf("%2s  %s%s %4lu %4lu %8s  %02lX %7lu  %s  %s  %s  %s  %s  %s\n",
+                printf("%2s  %s%s %4lu %4lu %8s  %02lX  %04X-%04X %7lu  %s  %s  %s  %s  %s  %s\n",
                        label,
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
@@ -78,6 +78,8 @@ void display_boards_page(int y, bool repaint)
                        status->mcu_info.iic_stats.errors,
                        bmc_ver_buf,
                        status->mcu_info.module_id & 0xFF,
+                       status->mcu_info.module_serial >> 16,
+                       status->mcu_info.module_serial & 0xFFFF,
                        status->mcu_info.uptime,
                        sensor_status_str(status->mcu_info.enc_status.b.system),
                        sensor_status_str(status->mcu_info.enc_status.b.pm),

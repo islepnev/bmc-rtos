@@ -78,6 +78,9 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
         case 6:
             *data = osKernelSysTick() / osKernelSysTickFrequency;
             break;
+        case 7:
+            *data = get_fpga_serial();
+            break;
         default:
             *data = 0;
             break;

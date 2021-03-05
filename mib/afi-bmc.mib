@@ -476,7 +476,8 @@ IpmiBoardEntry ::=
         ipmiBoardPresent    TruthValue,
         ipmiBoardStatus     SystemStatusTC,
         ipmiBoardId         DeviceId,
-        ipmiBoardName       DisplayString
+        ipmiBoardName       DisplayString,
+        ipmiBoardSerial     Integer32Hex
     }
 
 ipmiBoardIndex OBJECT-TYPE
@@ -526,6 +527,14 @@ ipmiBoardName OBJECT-TYPE
     DESCRIPTION
             "The name of the board"
     ::= { ipmiBoardEntry 6 }
+
+ipmiBoardSerial OBJECT-TYPE
+    SYNTAX  Integer32Hex
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The serial number of the board"
+    ::= { ipmiBoardEntry 7 }
 
 -- IPMI Sensor Table
 

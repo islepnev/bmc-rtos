@@ -60,6 +60,8 @@ typedef struct Dev_fpga {
 
 SensorStatus get_fpga_sensor_status(void);
 uint32_t get_fpga_id(void);
+uint64_t get_fpga_ow_id(void);
+uint32_t get_fpga_serial(void);
 uint32_t get_fpga_fw_ver(void);
 uint32_t get_fpga_fw_rev(void);
 

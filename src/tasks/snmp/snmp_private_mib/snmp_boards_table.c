@@ -42,7 +42,8 @@ static const struct snmp_table_col_def boards_table_columns[] = {
 { 3, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 4, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  },
 { 5, SNMP_ASN1_TYPE_UNSIGNED32, SNMP_NODE_INSTANCE_READ_ONLY  },
-{ 6, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  }
+{ 6, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  },
+{ 7, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_ONLY  }
 };
 
 const struct snmp_table_node boards_table = SNMP_TABLE_CREATE(
@@ -131,31 +132,35 @@ boards_table_get_value(struct snmp_node_instance* instance, void* value)
     u32_t *uint_ptr = (u32_t*)value;
     switch (col)
     {
-    case 1: // boardIndex
+    case 1: // ipmiBoardIndex
         *uint_ptr = (u32_t)(i+1);
         return sizeof(*uint_ptr);
         break;
-    case 2: // boardSlot
+    case 2: // ipmiBoardSlot
         *uint_ptr = (u32_t)vxsiic_map_slot_to_number[i];
         return sizeof(*uint_ptr);
         break;
-    case 3: {/* boardPresent */
+    case 3: {// ipmiBoardPresent
         return snmp_encode_truthvalue((s32_t *)value, (u32_t)vxsiicm->status.slot[i].present);
     }
-    case 4: {/* boardStatus */
+    case 4: {// ipmiBoardStatus
         *uint_ptr = (u32_t)vxsiicm->status.slot[i].system_status;
         return sizeof(*uint_ptr);
         break;
     }
-    case 5: // boardId
+    case 5: // ipmiBoardId
         *uint_ptr = (u32_t)vxsiicm->status.slot[i].mcu_info.module_id;
         return sizeof(*uint_ptr);
         break;
-    case 6: {/* boardName */
+    case 6: {// ipmiBoardName
         const char *name = vxsiicm->status.slot[i].module_id_str;
         size_t len = strlen(name);
         MEMCPY(value, name, len);
         return (s16_t)len;
+    case 7: // ipmiBoardSerial
+        *uint_ptr = (u32_t)vxsiicm->status.slot[i].mcu_info.module_serial;
+        return sizeof(*uint_ptr);
+        break;
     }
     default:
         return SNMP_ERR_NOSUCHINSTANCE;
