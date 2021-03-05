@@ -28,8 +28,8 @@
 #include "ipmi_sensors.h"
 #include "system_status.h"
 #include "version.h"
+#include "vxsiic_types.h"
 
-static const uint32_t BMC_MAGIC = 0x424D4320;
 enum {MEM_START_ADDR = 8};
 enum {MEM_SIZE = 4};
 static uint32_t mem[MEM_SIZE] = {0};
@@ -54,31 +54,31 @@ void iic_read_callback(uint16_t addr, uint32_t *data)
         *data = mem[addr - MEM_START_ADDR];
     } else {
         switch (addr) {
-        case 0:
+        case VXSIIC_REG_MAGIC:
             *data = BMC_MAGIC;
             break;
-        case 1:
+        case VXSIIC_REG_BMC_VER:
             *data = ((uint32_t)(VERSION_PATCH_NUM) << 16) |
                     (uint16_t)(VERSION_MAJOR_NUM << 8) |
                     (uint16_t)(VERSION_MINOR_NUM);
             break;
-        case 2:
+        case VXSIIC_REG_MODULE_ID:
             *data = get_fpga_id();
             break;
-        case 3: {
+        case VXSIIC_REG_ENC_STATUS: {
             *data = encode_system_status().w;
             break;
         }
-        case 4:
+        case VXSIIC_REG_IIC_OPS:
             *data = vxsiic_i2c_stats.ops;
             break;
-        case 5:
+        case VXSIIC_REG_IIC_ERRORS:
             *data = vxsiic_i2c_stats.errors;
             break;
-        case 6:
+        case VXSIIC_REG_UPTIME:
             *data = osKernelSysTick() / osKernelSysTickFrequency;
             break;
-        case 7:
+        case VXSIIC_REG_MODULE_SERIAL:
             *data = get_fpga_serial();
             break;
         default:

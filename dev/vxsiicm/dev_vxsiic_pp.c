@@ -80,7 +80,7 @@ static bool dev_vxsiic_write_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint
 static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
 {
     vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
-    uint32_t addr = 0;
+    uint32_t addr = VXSIIC_REG_MAGIC;
     uint32_t data = 0;
     bool ret = dev_vxsiic_read_pp_mcu_4(d, pp, addr, &status->mcu_info.magic);
     status->pp_state.mcu_found = ret;
@@ -98,13 +98,13 @@ static bool dev_vxsiic_read_pp_mcu_info(Dev_vxsiicm *d, int pp)
             goto err;
         map[i] = data;
     }
-    status->mcu_info.bmc_ver.raw = map[1];
-    status->mcu_info.module_id = map[2];
-    status->mcu_info.enc_status.w = map[3];
-    status->mcu_info.iic_stats.ops = map[4];
-    status->mcu_info.iic_stats.errors = map[5];
-    status->mcu_info.uptime = map[6];
-    status->mcu_info.module_serial = map[7];
+    status->mcu_info.bmc_ver.raw = map[VXSIIC_REG_BMC_VER];
+    status->mcu_info.module_id = map[VXSIIC_REG_MODULE_ID];
+    status->mcu_info.enc_status.w = map[VXSIIC_REG_ENC_STATUS];
+    status->mcu_info.iic_stats.ops = map[VXSIIC_REG_IIC_OPS];
+    status->mcu_info.iic_stats.errors = map[VXSIIC_REG_IIC_ERRORS];
+    status->mcu_info.uptime = map[VXSIIC_REG_UPTIME];
+    status->mcu_info.module_serial = map[VXSIIC_REG_MODULE_SERIAL];
     status->pp_state.mcu_info_ok = true;
     return true;
 err:

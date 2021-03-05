@@ -32,8 +32,6 @@ extern "C" {
 //enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
 
-extern const uint32_t BMC_MAGIC;
-
 typedef struct iic_stats_t {
     uint32_t ops;
     uint32_t errors;

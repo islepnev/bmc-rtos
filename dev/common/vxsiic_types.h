@@ -24,6 +24,17 @@ enum {VXSIIC_SLOTS = 18};
 
 extern uint8_t vxsiic_map_slot_to_number[VXSIIC_SLOTS];
 extern const char *vxsiic_map_slot_to_label[VXSIIC_SLOTS];
+extern const uint32_t BMC_MAGIC;
 
+typedef enum {
+    VXSIIC_REG_MAGIC = 0,
+    VXSIIC_REG_BMC_VER = 1,
+    VXSIIC_REG_MODULE_ID = 2,
+    VXSIIC_REG_ENC_STATUS = 3,
+    VXSIIC_REG_IIC_OPS = 4,
+    VXSIIC_REG_IIC_ERRORS = 5,
+    VXSIIC_REG_UPTIME = 6,
+    VXSIIC_REG_MODULE_SERIAL = 7,
+} vxsiic_data_reg;
 
 #endif // VXSIIC_TYPES_H
