@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+#include "vxsiic_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,6 +35,8 @@ typedef struct vxsiic_i2c_stats_t {
 
 extern vxsiic_i2c_stats_t vxsiic_i2c_stats;
 //const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void);
+
+extern uint32_t vxsiics_scratch_mem[VXSIIC_SCRATCH_MEM_SIZE];
 
 #ifdef __cplusplus
 }

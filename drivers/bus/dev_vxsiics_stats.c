@@ -21,6 +21,9 @@
 
 vxsiic_i2c_stats_t vxsiic_i2c_stats = {0};
 
+
+uint32_t vxsiics_scratch_mem[VXSIIC_SCRATCH_MEM_SIZE] = {0};
+
 //const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void)
 //{
 //    return &vxsiic_i2c_stats;

@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define VXSIIC_BUS_ADDRESS 0x33
+
 void iic_write_callback(uint16_t addr, uint32_t data);
 void iic_read_callback(uint16_t addr, uint32_t *data);
 
