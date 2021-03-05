@@ -85,7 +85,7 @@ static bool dev_vxsiic_write_pp_mcu(Dev_vxsiicm *d, int pp)
     ttvxs_info.bmc_ver = make_bmc_ver(VERSION_MAJOR_NUM, VERSION_MINOR_NUM, VERSION_PATCH_NUM);
     ttvxs_info.fpga_fw_version = make_fw_version(get_fpga_fw_ver(), get_fpga_fw_rev());
     ttvxs_info.module_id = get_fpga_id();
-    ttvxs_info.module_serial = get_fpga_ow_id();
+    ttvxs_info.module_serial = get_fpga_serial();
     uint32_t uptime = osKernelSysTick() / osKernelSysTickFrequency;
     return true
             && dev_vxsiic_write_pp_mcu_4(d, pp, VXSIIC_REG_TTVXS_BMC_VER, ttvxs_info.bmc_ver.raw)

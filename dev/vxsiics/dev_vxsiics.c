@@ -104,11 +104,33 @@ void dev_vxsiics_poll_status(Dev_vxsiics *d)
     bool modified = memcmp(&save_ttvxs_info, &d->priv.ttvxs_info, sizeof(save_ttvxs_info));
     bool uptime_modified = (save_ttvxs_uptime != d->priv.ttvxs_uptime);
     const uint32_t now = current_timestamp();
+    bool ttvxs_bmc_restart_flag = 0;
+    int32_t delta_uptime = d->priv.ttvxs_uptime - save_ttvxs_uptime;
     if (uptime_modified) {
         d->priv.ttvxs_uptime_timestamp = now;
+        if (d->priv.ttvxs_uptime < 2 && abs(delta_uptime) > 2) {
+            ttvxs_bmc_restart_flag = 1;
+        }
         //log_printf(LOG_INFO, "TTVXS: uptime %08X", d->priv.ttvxs_uptime);
         save_ttvxs_uptime = d->priv.ttvxs_uptime;
     }
+    static bool ttvxs_update_state = 0;
+    if (now - d->priv.ttvxs_uptime_timestamp > 2) {
+        if (ttvxs_update_state)
+            log_printf(LOG_INFO, "TTVXS: update stopped at uptime %d", d->priv.ttvxs_uptime);
+        ttvxs_update_state = 0;
+    } else {
+        if (!ttvxs_update_state) {
+            if (d->priv.ttvxs_uptime < 2)
+                ttvxs_bmc_restart_flag = 1;
+            else
+                log_printf(LOG_INFO, "TTVXS: update resumed, uptime %d", d->priv.ttvxs_uptime);
+        }
+        ttvxs_update_state = 1;
+    }
+    if (ttvxs_bmc_restart_flag)
+        log_printf(LOG_INFO, "TTVXS: BMC restart");
+
     if (modified) {
         d->priv.ttvxs_info_timestamp = now;
         log_printf(LOG_INFO, "TTVXS: BMC %d.%d.%d, FPGA %02X %04X-%04X v%d.%d.%d",
@@ -124,16 +146,7 @@ void dev_vxsiics_poll_status(Dev_vxsiics *d)
                    );
         save_ttvxs_info = d->priv.ttvxs_info;
     }
-    static bool ttvxs_update_state = 0;
-    if (now - d->priv.ttvxs_uptime_timestamp > 2) {
-        if (ttvxs_update_state)
-            log_printf(LOG_INFO, "TTVXS: update stopped at uptime %d", d->priv.ttvxs_uptime);
-        ttvxs_update_state = 0;
-    } else {
-        if (!ttvxs_update_state)
-            log_printf(LOG_INFO, "TTVXS: update resumed, uptime %d", d->priv.ttvxs_uptime);
-        ttvxs_update_state = 1;
-    }
+
 //    static int32_t save_delta_uptime = 0;
 //    uint32_t local_uptime = current_timestamp();
 //    int32_t delta_uptime = d->priv.ttvxs_uptime - local_uptime;
