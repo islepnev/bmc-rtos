@@ -27,10 +27,18 @@
 extern "C" {
 #endif
 
+typedef enum {
+    MAX31725_REG_THERM = 0,
+    MAX31725_REG_CONFIG = 1,
+    MAX31725_REG_THYST = 2,
+    MAX31725_REG_TOS = 3
+} max31725_reg_t;
+
 bool max31725_detect(BusInterface *bus);
-bool max31725_read(BusInterface *bus, uint16_t reg, uint16_t *data);
-bool max31725_read_config(BusInterface *bus, uint16_t reg, uint8_t *data);
-bool max31725_write_config(BusInterface *bus, uint16_t reg, uint8_t data);
+bool max31725_read(BusInterface *bus, max31725_reg_t reg, uint16_t *data);
+bool max31725_write(BusInterface *bus, max31725_reg_t reg, uint16_t data);
+bool max31725_read_config(BusInterface *bus, max31725_reg_t reg, uint8_t *data);
+bool max31725_write_config(BusInterface *bus, max31725_reg_t reg, uint8_t data);
 
 #ifdef __cplusplus
 }
