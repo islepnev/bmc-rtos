@@ -41,6 +41,7 @@
 #include "lldpv2_mib.h"
 #include "app_name.h"
 #include "version.h"
+#include "tcpip/app_task_tcpip_impl.h" // gnetif
 
 #if LWIP_SNMP
 static const struct snmp_mib *mibs[] = {
@@ -83,7 +84,8 @@ snmp_agent_init(void)
   snmp_threadsync_init(&snmp_mib2_lwip_locks, snmp_mib2_lwip_synchronizer);
 #endif /* SNMP_USE_NETCONN */
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
-  snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
+  snmp_mib2_set_syslocation_readonly((const u8_t*)"unknown", NULL);
+  snmp_mib2_set_sysname_readonly((const u8_t*)gnetif.hostname, NULL);
   snmp_mib2_set_sysdescr((const u8_t*)(APP_NAME_STR_BMC " v" VERSION_STR), NULL);
 #endif /* SNMP_LWIP_MIB2 */
 
@@ -92,7 +94,6 @@ snmp_agent_init(void)
 #endif
 
   snmp_set_device_enterprise_oid(&device_enterprise_oid);
-
   snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();
 

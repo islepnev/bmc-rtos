@@ -22,6 +22,8 @@
 extern "C" {
 #endif
 
+extern struct netif gnetif; /* network interface structure */
+
 void task_tcpip_init(void);
 
 #ifdef __cplusplus
