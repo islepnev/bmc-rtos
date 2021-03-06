@@ -78,8 +78,9 @@ void display_boards_page(int y, bool repaint)
             if (0 == status->present)
                 printf("%2s\n", label);
             else
-                printf("%2s  %s%s %4lu %4lu %8s  %02lX  %04X-%04X %8s %7lu  %s  %s  %s  %s  %s  %s\n",
+                printf("%2s %s%s%s %4lu %4lu %8s  %02lX  %04X-%04X %8s %7lu  %s  %s  %s  %s  %s  %s\n",
                        label,
+                       (status->ioexp & VXSIIC_PP_IOEXP_BIT_INITB) ? "." : "I",
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_PGOOD) ? "P" : ".",
                        (status->ioexp & VXSIIC_PP_IOEXP_BIT_DONE) ? "D" : ".",
                        status->iic_master_stats.errors,
