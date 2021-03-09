@@ -194,6 +194,6 @@ static void CPU_CACHE_Enable(void)
 void ethernetif_notify_conn_changed(struct netif *netif)
 {
     eth_link_up = netif_is_link_up(netif);
-    log_printf(LOG_INFO, "%s: link %s", ETH_PORT_NAME,
+    log_printf(LOG_INFO, "%s: link %s", eth_port_descr,
                netif_is_link_up(netif) ? "up" : "down");
 }

@@ -18,8 +18,6 @@
 #ifndef IPADDRESS_H
 #define IPADDRESS_H
 
-#define ETH_PORT_NAME "mgmt0"
-
 /*Static IP ADDRESS*/
 #define IP_ADDR0   10
 #define IP_ADDR1   0

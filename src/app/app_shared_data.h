@@ -44,6 +44,7 @@ extern display_mode_t display_mode;
 extern int enable_power;
 extern bool eth_link_up;
 extern int app_ipv4;
+extern const char *eth_port_descr;
 extern int screen_width;
 extern int screen_height;
 extern bool screen_size_set;
