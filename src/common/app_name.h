@@ -40,4 +40,8 @@
 
 #define APP_NAME_STR_BMC APP_NAME_STR "-BMC"
 
+#define APP_DESCR_STR APP_NAME_STR_BMC " v" VERSION_STR
+
+#define VENDOR_STR "JINR AFI"
+
 #endif // APP_NAME_H
