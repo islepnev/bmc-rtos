@@ -26,8 +26,10 @@
 extern "C" {
 #endif
 
+struct Dev_vxsiics;
 void iic_write_callback(uint16_t addr, uint32_t data);
 void iic_read_callback(uint16_t addr, uint32_t *data);
+void dev_vxsiics_poll_status(struct Dev_vxsiics *d);
 
 #ifdef __cplusplus
 }

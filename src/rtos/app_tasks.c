@@ -63,7 +63,7 @@ void create_tasks(void)
     create_task_vxsiicm(&topdevice);
 #else
 #ifdef ENABLE_VXSIICS
-    create_task_vxsiics();
+    create_task_vxsiics(&topdevice);
 #endif
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC)

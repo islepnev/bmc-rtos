@@ -1,7 +1,5 @@
 /*
-**    VXS IIC Slave
-**
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -17,14 +15,6 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_vxsiics_stats.h"
+#include <stdint.h>
 
-vxsiic_i2c_stats_t vxsiic_i2c_stats = {0};
-
-
-uint32_t vxsiics_scratch_mem[VXSIIC_SCRATCH_MEM_SIZE] = {0};
-
-//const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void)
-//{
-//    return &vxsiic_i2c_stats;
-//}
+#include "dev_vxsiics_types.h"

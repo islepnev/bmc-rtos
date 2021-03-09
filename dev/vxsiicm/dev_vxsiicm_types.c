@@ -19,8 +19,6 @@
 
 #include "dev_vxsiicm_types.h"
 
-const uint32_t BMC_MAGIC = 0x424D4320;
-
 uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d)
 {
     uint8_t count = 0;

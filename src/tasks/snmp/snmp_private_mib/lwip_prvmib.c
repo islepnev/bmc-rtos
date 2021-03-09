@@ -87,7 +87,7 @@ static s16_t sensor_count_get_value(struct snmp_node_instance* instance, void* v
 static s16_t systemFirmwareName_get_value(struct snmp_node_instance* instance, void* value)
 {
     LWIP_UNUSED_ARG(instance);
-    const char *name = APP_NAME_STR;
+    const char *name = APP_NAME_STR_BMC;
     size_t len = strlen(name);
     MEMCPY(value, name, len);
     return (s16_t)len;

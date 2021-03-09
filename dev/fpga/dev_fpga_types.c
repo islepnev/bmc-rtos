@@ -45,6 +45,20 @@ uint32_t get_fpga_id(void)
     return priv->id;
 }
 
+uint64_t get_fpga_ow_id(void)
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return 0;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    return priv->ow_id;
+}
+
+uint32_t get_fpga_serial(void)
+{
+    return get_fpga_ow_id() >> 8;
+}
+
 uint32_t get_fpga_fw_ver(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);

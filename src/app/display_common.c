@@ -133,7 +133,7 @@ void print_header_line(bool repaint)
 {
     print_goto(1, 1);
         // Title
-    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
+    printf("%s%s v%s%s", ANSI_BOLD ANSI_BGR_BLUE ANSI_GRAY, APP_NAME_STR_BMC, VERSION_STR, ANSI_CLEAR ANSI_GRAY ANSI_BGR_BLUE);
 #ifdef HAL_ETH_MODULE_ENABLED
     if (tcpipThreadId) {
         uint8_t macaddress[6];

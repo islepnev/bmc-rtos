@@ -27,8 +27,6 @@
 #include "log/log.h"
 #include "stm32_ll.h"
 
-#define SLAVE_OWN_ADDRESS 0x33
-
 enum { MAX_MSG_SIZE = 40 };
 static uint8_t rx_buf[MAX_MSG_SIZE];
 static uint8_t rx_buf_len = 0;
@@ -81,7 +79,7 @@ void i2c_event_interrupt_handler(void)
     volatile uint32_t ISR = I2C1->ISR;
     if (ISR & I2C_ISR_ADDR)
     {
-        if (SLAVE_OWN_ADDRESS == (LL_I2C_GetAddressMatchCode(I2C1) >> 1))
+        if (VXSIIC_BUS_ADDRESS == (LL_I2C_GetAddressMatchCode(I2C1) >> 1))
         {
             if (LL_I2C_DIRECTION_READ == LL_I2C_GetTransferDirection(I2C1))
             {

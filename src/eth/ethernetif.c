@@ -506,7 +506,7 @@ err_t ethernetif_init(struct netif *netif)
     get_mac_address(mac);
     enum {HOSTNAME_LEN = 32};
     static char buf[HOSTNAME_LEN+1];
-    snprintf(buf, HOSTNAME_LEN, "%s-%02X%02X%02X-%02X%02X%02X", APP_NAME_STR,
+    snprintf(buf, HOSTNAME_LEN, "%s-%02X%02X%02X-%02X%02X%02X", APP_NAME_STR_BMC,
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     for (size_t i=0; i<strlen(buf); i++) {
         char c = buf[i];

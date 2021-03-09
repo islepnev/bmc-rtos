@@ -20,17 +20,26 @@
 #include "log/log.h"
 #include "max31725/max31725_i2c_hal.h"
 
-enum {
-    MAX31725_REG_THERM = 0,
-    MAX31725_REG_CONFIG = 1,
-    MAX31725_REG_THYST = 2,
-    MAX31725_REG_TOS = 3
-};
 
 // static const uint16_t MAX31725_REG_THERM_POR  = 0x0000;
 static const uint8_t MAX31725_REG_CONFIG_DATA = 0x20;
 static const uint16_t MAX31725_REG_THYST_POR  = 0x4b00;
-// static const uint16_t MAX31725_REG_TOS_POR    = 0x5000;
+static const uint16_t MAX31725_REG_TOS_POR    = 0x5000;
+
+bool dev_max31725_write_check(Dev_max31725 *d, max31725_reg_t reg, uint16_t wrdata)
+{
+    uint16_t rddata = 0;
+    if (! max31725_write(&d->dev.bus, reg, wrdata))
+        return false;
+    if (! max31725_read(&d->dev.bus, reg, &rddata))
+        return false;
+    if (wrdata != rddata) {
+        log_printf(LOG_WARNING, "MAX31725 sensor %s register %d data error: wrote %04X, read %04X",
+                   d->dev.name, reg, wrdata, rddata);
+        return false;
+    }
+    return true;
+}
 
 bool dev_max31725_detect(Dev_max31725 *d)
 {
@@ -38,10 +47,41 @@ bool dev_max31725_detect(Dev_max31725 *d)
         return false;
 
     // check Power-On Reset register values
-    {    uint16_t data;
+    {
+        uint16_t data;
         if (! max31725_read(&d->dev.bus, MAX31725_REG_THYST, &data))
             return false;
         if (data != MAX31725_REG_THYST_POR) {
+            log_printf(LOG_WARNING, "MAX31725 sensor %s unexpected THYST register value: %04X",
+                       d->dev.name, data);
+            if (!dev_max31725_write_check(d, MAX31725_REG_THYST, MAX31725_REG_THYST_POR))
+                return false;
+        }
+    }
+    {
+        uint16_t data;
+        if (! max31725_read(&d->dev.bus, MAX31725_REG_TOS, &data))
+            return false;
+        if (data != MAX31725_REG_TOS_POR) {
+            log_printf(LOG_WARNING, "MAX31725 sensor %s unexpected TOS register value: %04X",
+                       d->dev.name, data);
+            if (!dev_max31725_write_check(d, MAX31725_REG_TOS, MAX31725_REG_TOS_POR))
+                return false;
+        }
+    }
+    // check
+    if (1) {
+        uint16_t wrdata = 0x5aa5;
+        uint16_t rddata = 0;
+        if (! max31725_write(&d->dev.bus, MAX31725_REG_TOS, wrdata))
+            return false;
+        if (! max31725_read(&d->dev.bus, MAX31725_REG_TOS, &rddata))
+            return false;
+        if (! max31725_write(&d->dev.bus, MAX31725_REG_TOS, MAX31725_REG_TOS_POR))
+            return false;
+        if (wrdata != rddata) {
+            log_printf(LOG_WARNING, "MAX31725 sensor %s TOS register data error: wrote %04X, read %04X",
+                       d->dev.name, wrdata, rddata);
             return false;
         }
     }
@@ -52,6 +92,8 @@ bool dev_max31725_detect(Dev_max31725 *d)
             return false;
         if (pordata != MAX31725_REG_CONFIG_DATA) {
             uint8_t wrdata = MAX31725_REG_CONFIG_DATA;
+            log_printf(LOG_WARNING, "MAX31725 sensor %s unexpected CONFIG register value: %02X",
+                       d->dev.name, pordata);
             if (! max31725_write_config(&d->dev.bus, MAX31725_REG_CONFIG, wrdata))
                 return false;
             uint8_t data;
@@ -74,11 +116,13 @@ bool dev_max31725_detect(Dev_max31725 *d)
 bool dev_max31725_read(Dev_max31725 *d)
 {
     uint16_t data;
-    if (! max31725_read(&d->dev.bus, 0, &data))
+    if (! max31725_read(&d->dev.bus, MAX31725_REG_THERM, &data))
         return false;
 
     d->priv.temp = (int16_t)data/256.0;
+//    log_printf(LOG_INFO, "MAX31725 %s raw read %04X  %d",
+//               d->dev.name, data, (int16_t)(data));
     if (MAX31725_REG_CONFIG_DATA & 0x20)
-        d->priv.temp += 64.0; // extended temperature fomrat
+        d->priv.temp += 64.0; // extended temperature format
     return true;
 }

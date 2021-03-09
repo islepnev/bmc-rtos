@@ -17,9 +17,48 @@
 
 #include "app_task_vxsiics.h"
 
-#include "bus/i2c_slave_driver.h"
+#include <assert.h>
 
-void create_task_vxsiics(void)
-{
+#include "app_tasks.h"
+#include "bus/i2c_slave_driver.h"
+#include "cmsis_os.h"
+#include "devicelist.h"
+#include "vxsiics/dev_vxsiics_fsm.h"
+#include "vxsiics/dev_vxsiics_types.h"
+
+osThreadId vxsiicsThreadId = NULL;
+enum { vxsiicThreadStackSize = threadStackSize + 180 };
+
+static const uint32_t vxsiicTaskLoopDelay = 10;
+
+static Dev_vxsiics vxsiics = {0};
+static BusInterface vxsiics_bus_info = {
+    .type = BUS_IIC,
+    .bus_number = 1,
+    .address = VXSIIC_BUS_ADDRESS
+};
+
+static void local_init(DeviceBase *parent) {
     i2c_slave_driver_init();
+    create_device(parent, &vxsiics.dev, &vxsiics.priv, DEV_CLASS_VXSIICS, vxsiics_bus_info, "VXS IIC Slave");
+}
+
+static void start_thread_vxsiics( void const *arg)
+{
+    (void) arg;
+
+    while (1)
+    {
+        dev_vxsiics_run(&vxsiics);
+        osDelay(vxsiicTaskLoopDelay);
+    }
+}
+
+osThreadDef(vxsiics, start_thread_vxsiics,    osPriorityLow, 1, vxsiicThreadStackSize);
+
+void create_task_vxsiics(DeviceBase *parent)
+{
+    local_init(parent);
+    vxsiicsThreadId = osThreadCreate(osThread (vxsiics), NULL);
+    assert(vxsiicsThreadId);
 }

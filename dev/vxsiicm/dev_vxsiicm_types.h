@@ -32,8 +32,6 @@ extern "C" {
 //enum {MCU_MAP_SIZE = 16};
 enum {MCU_ID_SIZE = 16};
 
-extern const uint32_t BMC_MAGIC;
-
 typedef struct iic_stats_t {
     uint32_t ops;
     uint32_t errors;
@@ -58,18 +56,11 @@ typedef struct vxsiic_pp_state_t {
     bool mcu_sensors_ok;
 } vxsiic_pp_state_t;
 
-typedef union {
-    struct {
-        uint16_t minor : 8;
-        uint16_t major : 8;
-        uint16_t patch : 16;
-    } b;
-    uint32_t raw;
-} bmc_ver_t;
-
 typedef struct vxsiic_pp_mcu_info {
     uint32_t magic;
     uint32_t uptime;
+    uint32_t module_serial;
+    fw_version_t fpga_fw_ver;
     bmc_ver_t bmc_ver;
     uint32_t module_id;
     iic_stats_t iic_stats;

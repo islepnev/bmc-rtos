@@ -1,7 +1,5 @@
 /*
-**    VXS IIC Slave
-**
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -17,14 +15,36 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_vxsiics_stats.h"
+#ifndef DEV_VXSIICS_TYPES_H
+#define DEV_VXSIICS_TYPES_H
 
-vxsiic_i2c_stats_t vxsiic_i2c_stats = {0};
+#include <stdbool.h>
+#include <stdint.h>
 
+#include "devicebase.h"
+#include "ipmi_sensor_types.h"
+#include "vxsiic_types.h"
 
-uint32_t vxsiics_scratch_mem[VXSIIC_SCRATCH_MEM_SIZE] = {0};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-//const struct vxsiic_i2c_stats_t *get_vxsiic_i2c_stats_ptr(void)
-//{
-//    return &vxsiic_i2c_stats;
-//}
+typedef struct Dev_vxsiics_priv {
+    DeviceBase dev;
+    uint32_t stateStartTick;
+    vxsiic_ttvxs_info ttvxs_info;
+    uint32_t ttvxs_info_timestamp;
+    uint32_t ttvxs_uptime;
+    uint32_t ttvxs_uptime_timestamp;
+} Dev_vxsiics_priv;
+
+typedef struct Dev_vxsiics {
+    DeviceBase dev;
+    Dev_vxsiics_priv priv;
+} Dev_vxsiics;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_VXSIICS_TYPES_H

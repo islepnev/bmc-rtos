@@ -53,9 +53,15 @@ void dev_fpga_print_box(void)
         int16_t rawTemp = priv->temp & 0xFFF;
         if (rawTemp & 0x800) rawTemp = -(rawTemp&0x7FF);
         double temp = rawTemp / 16.0;
-        printf("%02X %08llX %.1f", priv->id, serial, temp);
+        printf("%02X %04llX-%04llX v%d.%d.%d %.1f\u00b0C", priv->id,
+               serial >> 16,
+               serial & 0xFFFF,
+               (priv->fw_ver >> 8) & 0xFF,
+               priv->fw_ver & 0xFF,
+               priv->fw_rev,
+               temp);
     }
-    printf(ANSI_CLEAR_EOL ANSI_COL30 "%9s ", fpga_state_str(priv->state));
+    printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");
 }
