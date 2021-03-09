@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,19 +15,34 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_TCPIP_IMPL_H
-#define APP_TASK_TCPIP_IMPL_H
+#ifndef LLDP_MESSAGE_H
+#define LLDP_MESSAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdint.h>
 
-extern struct netif gnetif; /* network interface structure */
+typedef struct lldp_buf_t {
+    uint8_t *buf;
+    uint16_t size;
+    uint16_t len;
+} lldp_buf_t;
 
-void task_tcpip_init(void);
+typedef struct lldp_info_t {
+    uint8_t mac[6];
+    const char *portdescr;
+    const char *sysname;
+    const char *sysdescr;
+    uint16_t ttl;
+    uint32_t ipv4;
+    uint16_t syscaps;
+    // org specific
+    const char *fw_rev;
+    const char *hw_rev;
+    const char *sw_rev;
+    const char *serial;
+    const char *manuf;
+    const char *model;
+} lldp_info_t;
 
-#ifdef __cplusplus
-}
-#endif
+uint16_t lldp_create_pdu(void *payload, uint16_t size, const lldp_info_t *info);
 
-#endif // APP_TASK_TCPIP_IMPL_H
+#endif // LLDP_MESSAGE_H

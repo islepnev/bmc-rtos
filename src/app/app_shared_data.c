@@ -23,6 +23,7 @@ display_mode_t display_mode = DISPLAY_SUMMARY;
 int enable_power = 1;
 bool eth_link_up = false;
 int app_ipv4 = 0;
+const char *eth_port_descr = "mgmt0";
 
 bool main_clock_ready = false;
 bool aux_clock_ready = false;

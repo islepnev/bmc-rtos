@@ -63,14 +63,14 @@ void app_notify_ip_address_change(const struct netif *netif)
     if (my_ipv4 != app_ipv4) {
         if (my_ipv4)
             log_printf(LOG_INFO, "%s: dhcp assigned IP address %d.%d.%d.%d by server %d.%d.%d.%d",
-                       ETH_PORT_NAME,
+                       eth_port_descr,
                        my_ipv4 & 0xFF, (my_ipv4 >> 8) & 0xFF,
                        (my_ipv4 >> 16) & 0xFF, (my_ipv4 >> 24) & 0xFF,
                        serv_ipv4 & 0xFF, (serv_ipv4 >> 8) & 0xFF,
                        (serv_ipv4 >> 16) & 0xFF, (serv_ipv4 >> 24) & 0xFF);
         else
             log_printf(LOG_INFO, "%s: dhcp released IP address %d.%d.%d.%d",
-                       ETH_PORT_NAME,
+                       eth_port_descr,
                        app_ipv4 & 0xFF, (app_ipv4 >> 8) & 0xFF,
                        (app_ipv4 >> 16) & 0xFF, (app_ipv4 >> 24) & 0xFF);
 
@@ -146,9 +146,9 @@ void DHCP_thread(void const * argument)
                 netif_set_addr(netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
                 if (app_ipv4 != (int)ipaddr.addr) {
                     app_ipv4 = ipaddr.addr;
-                    log_printf(LOG_NOTICE, "%s: dhcp timeout", ETH_PORT_NAME);
+                    log_printf(LOG_NOTICE, "%s: dhcp timeout", eth_port_descr);
                     log_printf(LOG_INFO, "%s: using static IP address: %d.%d.%d.%d",
-                               ETH_PORT_NAME,
+                               eth_port_descr,
                                app_ipv4 & 0xFF, (app_ipv4 >> 8) & 0xFF,
                                (app_ipv4 >> 16) & 0xFF, (app_ipv4 >> 24) & 0xFF);
                 }

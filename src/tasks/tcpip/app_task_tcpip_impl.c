@@ -29,6 +29,7 @@
 #include "ipaddress.h"
 #include "sntp/sntp_client.h"
 #include "snmp/snmp_agent.h"
+#include "lldp_send.h"
 
 enum { eth_phy_pollThreadStackSize = configMINIMAL_STACK_SIZE + 130 };
 enum { dhcpThreadStackSize = configMINIMAL_STACK_SIZE + 120 };
@@ -194,6 +195,8 @@ static void CPU_CACHE_Enable(void)
 void ethernetif_notify_conn_changed(struct netif *netif)
 {
     eth_link_up = netif_is_link_up(netif);
-    log_printf(LOG_INFO, "%s: link %s", ETH_PORT_NAME,
+    log_printf(LOG_INFO, "%s: link %s", eth_port_descr,
                netif_is_link_up(netif) ? "up" : "down");
+    if (eth_link_up)
+        lldp_send(netif);
 }

@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,19 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_TASK_TCPIP_IMPL_H
-#define APP_TASK_TCPIP_IMPL_H
+#ifndef LLDP_SEND_H
+#define LLDP_SEND_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern struct netif gnetif; /* network interface structure */
+struct pbuf;
+struct netif;
 
-void task_tcpip_init(void);
+extern void lldp_send();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // APP_TASK_TCPIP_IMPL_H
+#endif // LLDP_SEND_H
