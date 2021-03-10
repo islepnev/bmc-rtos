@@ -17,13 +17,22 @@
 #ifndef RTC_UTIL_H
 #define RTC_UTIL_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct tm;
+struct timeval;
 
-void get_rtc_tm(struct tm *tm);
+bool get_rtc_tm(struct tm *tm);
+bool get_rtc_tm_us(struct tm *tm, uint32_t *microsec);
+bool set_rtc_tm(const struct tm *tm, uint32_t microsec);
+
+bool get_rtc_tv(struct timeval *tv);
+bool set_rtc_tv(const struct timeval *tv);
 
 #ifdef __cplusplus
 }
