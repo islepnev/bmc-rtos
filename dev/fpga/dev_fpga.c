@@ -20,13 +20,16 @@
 #include "../ad9545/dev_ad9545.h"
 #include "../ad9548/dev_ad9548.h"
 #include "bsp_fpga.h"
+#include "bswap.h"
 #include "dev_fpga_types.h"
 #include "devicelist.h"
+#include "display.h"
 #include "fpga_mcu_regs_v2_0.h"
 #include "fpga_io.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
 #include "powermon/dev_powermon_types.h"
+#include "sdb_util.h"
 #include "system_status.h"
 #include "system_status_common.h"
 #include "thset/dev_thset_types.h"
@@ -54,7 +57,8 @@ enum {
     FPGA_SPI_ADDR_C = FPGA_REG_BASE_MCU + 0xC,
     FPGA_SPI_ADDR_D = FPGA_REG_BASE_MCU + 0xD,
     FPGA_SPI_ADDR_E = FPGA_REG_BASE_MCU + 0xE,
-    FPGA_SPI_ADDR_F = FPGA_REG_BASE_MCU + 0xF
+    FPGA_SPI_ADDR_F = FPGA_REG_BASE_MCU + 0xF,
+    FPGA_SPI_ADDR_SDB_BASE = 0x7C00,
 };
 
 #if 0
@@ -179,6 +183,82 @@ bool fpga_read_info(struct Dev_fpga *dev)
     return true;
 }
 
+void fpga_print_sdb(struct Dev_fpga *dev)
+{
+    const struct sdb_interconnect *ic = &dev->priv.sdb_ic;
+    log_printf(LOG_INFO, "SDB: %d records", ic->sdb_records);
+    for (int i=0; i<ic->sdb_records - 1; i++) {
+        if (i >= SDB_MAX_RECORDS) {
+            log_printf(LOG_WARNING, "  <too many devices>");
+            break;
+        }
+        struct sdb_device *d = &dev->priv.sdb_devices[i];
+        if (!sdb_dev_validate(d)) {
+            log_printf(LOG_WARNING, "  <invalid record>");
+        }
+        char name[20];
+        sdb_copy_printable(name, d->sdb_component.product.name, sizeof(d->sdb_component.product.name), ' ');
+        name[19] = 0;
+        log_printf(LOG_INFO, "  %04x-%04x: %08X v%d.%d %s",
+                   (uint16_t)d->sdb_component.addr_first / REGIO_WORD_SIZE,
+                   (uint16_t)d->sdb_component.addr_last / REGIO_WORD_SIZE,
+                   (uint32_t)d->sdb_component.product.device_id,
+                   d->abi_ver_major,
+                   d->abi_ver_minor,
+                   name);
+    }
+}
+
+static bool SDB_DUMP = false;
+
+bool fpga_read_sdb(struct Dev_fpga *dev)
+{
+    uint32_t sdb_magic;
+    if (! fpga_r32(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb_magic))
+        return false;
+    sdb_magic = ntohl(sdb_magic);
+    if (sdb_magic != SDB_MAGIC) {
+        log_printf(LOG_INFO, "SDB not found at %04X: read magic %08X, expected %08X",
+                   FPGA_SPI_ADDR_SDB_BASE, sdb_magic, SDB_MAGIC);
+        return true;
+    }
+    /*
+    uint32_t csr[0x10];
+    if (! fpga_read(dev, 0x40, &csr, sizeof (csr)))
+        return false;
+    log_printf(LOG_DEBUG, "CSR dump:");
+    hexdump(&csr, sizeof(csr));
+    */
+    struct sdb_interconnect *ic = &dev->priv.sdb_ic;
+    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, ic, sizeof (*ic)))
+        return false;
+    if (SDB_DUMP) {
+        log_printf(LOG_DEBUG, "SDB interconnect dump:");
+        hexdump(ic, sizeof(*ic));
+    }
+    sdb_interconnect_fix_endian(ic);
+    if (!sdb_ic_validate(ic)) {
+        log_printf(LOG_WARNING, "SDB interconnect structure invalid");
+        return false;
+    }
+    bool ok = true;
+    for (int i=0; i<ic->sdb_records - 1; i++) {
+        struct sdb_device *d = &dev->priv.sdb_devices[i];
+        size_t offset = sizeof(struct sdb_interconnect) + i*sizeof(struct sdb_device);
+        if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE + offset / REGIO_WORD_SIZE, d, sizeof (*d)))
+            return false;
+        if (SDB_DUMP) {
+            log_printf(LOG_DEBUG, "SDB device(%d) dump:", i);
+            hexdump(d, sizeof(*d));
+        }
+        sdb_device_fix_endian(d);
+        if (!sdb_dev_validate(d))
+            ok = false;
+    }
+    fpga_print_sdb(dev);
+    return ok;
+}
+
 bool fpga_detect_v2(Dev_fpga *dev)
 {
     // read v1/v2 DeviceID
@@ -237,6 +317,8 @@ bool fpga_detect_v3(Dev_fpga *dev)
                (uint16_t)((dev->priv.ow_id >> 8) & 0xFFFF));
     if (!fpga_read_info(dev))
         return false;
+    if (!fpga_read_sdb(dev))
+        return true; // not a problem
     return true;
 }
 
