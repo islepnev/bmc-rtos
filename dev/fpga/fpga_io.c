@@ -91,3 +91,30 @@ bool fpga_w64(struct Dev_fpga *dev, uint32_t addr, uint64_t data)
             fpga_w16(dev, addr + 2, (data >> 32) & 0xFFFF) &&
             fpga_w16(dev, addr + 3, (data >> 48) & 0xFFFF);
 }
+
+bool fpga_read(struct Dev_fpga *dev, uint32_t addr, void *buf, size_t size)
+{
+    if (size % 1)
+        return false;
+    for (size_t i=0; i<size / REGIO_WORD_SIZE; i++) {
+        uint16_t rdata;
+        if (!fpga_r16(dev, addr + i, &rdata))
+            return false;
+        uint16_t *data = (uint16_t *)buf;
+        data[i] = (rdata);
+    }
+    return true;
+}
+
+bool fpga_write(struct Dev_fpga *dev, uint32_t addr, const void *buf, size_t size)
+{
+    if (size % 1)
+        return false;
+    for (size_t i=0; i<size / REGIO_WORD_SIZE; i++) {
+        uint16_t *data = (uint16_t *)buf;
+        uint16_t wdata = (data[i]);
+        if (!fpga_w16(dev, addr + i, wdata))
+            return false;
+    }
+    return true;
+}
