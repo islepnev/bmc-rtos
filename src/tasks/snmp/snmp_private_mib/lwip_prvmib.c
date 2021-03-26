@@ -68,6 +68,7 @@
 #include "snmp_ipmi_sensors_table.h"
 #include "snmp_powermon_table.h"
 #include "snmp_sfp_table.h"
+#include "snmp/snmp_priv_oids.h"
 #include "system_status.h"
 #include "system_status_common.h"
 #include "thset/dev_thset_types.h"
@@ -366,7 +367,8 @@ static const struct snmp_node* const bmc_nodes[] = {
 static const struct snmp_tree_node bmc_node = SNMP_CREATE_TREE_NODE(1, bmc_nodes);
 
 
-static const u32_t prvmib_base_oid[] = { 1,3,6,1,4,1,53776,120,1 };
+static const u32_t prvmib_base_oid[] = { 1,3,6,1,4,1,
+                                         SNMP_OID_JINR, SNMP_OID_AFI, SNMP_OID_bmc };
 const struct snmp_mib mib_private = SNMP_MIB_CREATE(prvmib_base_oid, &bmc_node.node);
 
 #if 0
