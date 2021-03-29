@@ -20,8 +20,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include "devicebase.h"
+
+enum { REGIO_WORD_SIZE = 2 };
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +48,12 @@ bool fpga_r64(struct Dev_fpga *d, uint32_t addr, uint64_t *data)
     __attribute__((warn_unused_result));
 
 bool fpga_w64(struct Dev_fpga *d, uint32_t addr, uint64_t data)
+    __attribute__((warn_unused_result));
+
+bool fpga_read(struct Dev_fpga *d, uint32_t addr, void *buf, size_t size)
+    __attribute__((warn_unused_result));
+
+bool fpga_write(struct Dev_fpga *d, uint32_t addr, const void *buf, size_t size)
     __attribute__((warn_unused_result));
 
 #ifdef __cplusplus

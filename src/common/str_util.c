@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2020 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,28 +14,34 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef RTC_UTIL_H
-#define RTC_UTIL_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "str_util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <string.h>
 
-struct tm;
-struct timeval;
-
-bool get_rtc_tm(struct tm *tm);
-bool get_rtc_tm_us(struct tm *tm, uint32_t *microsec);
-bool set_rtc_tm(const struct tm *tm, uint32_t microsec);
-
-bool get_rtc_tv(struct timeval *tv);
-bool set_rtc_tv(const struct timeval *tv);
-
-#ifdef __cplusplus
+void trim_quotes(char *str)
+{
+    const size_t len = strlen(str);
+    if (len < 2)
+        return;
+    const char *firstchar = &str[0];
+    const char *lastchar = &str[len-1];
+    if (*firstchar != *lastchar)
+        return;
+    if (*firstchar == '\"' || *firstchar == '\'') {
+        for (size_t i=1; i<len; i++)
+            str[i-1] = str[i];
+        str[len-2] = '\0';
+    }
 }
-#endif
 
-#endif // RTC_UTIL_H
+void trim_eol(char *str)
+{
+    while (strlen(str) > 0) {
+        char *lastchar = &str[strlen(str)-1];
+        if (*lastchar == '\r' || *lastchar == '\n')
+            *lastchar = '\0';
+        else
+            break;
+    }
+}

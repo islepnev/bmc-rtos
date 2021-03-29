@@ -18,6 +18,9 @@
 #include "display.h"
 
 #include <stdio.h>
+#include <string.h>
+
+#include "log/log.h"
 
 void print_goto(int line, int col)
 {
@@ -39,4 +42,58 @@ void print_get_screen_size(void)
     // repeat
     printf(CSI "r" CSI "999;999H"); // move to 999:999
     printf(CSI "6n");
+}
+
+static char printable(char c, char fill)
+{
+    if ((c < 0x20) || (c > 0x7e))
+        return fill;
+    return c;
+}
+
+enum {XD_LINE_BYTES = 16};
+enum {XD_GROUPBY = 4};
+
+static void hexdump_line(int address, const void *ptr, int len)
+{
+    if (!ptr || len <= 0 || len > XD_LINE_BYTES)
+        return;
+    enum { buflen = XD_LINE_BYTES * 2 + (XD_LINE_BYTES / XD_GROUPBY - 1) };
+    char buf[buflen+1];
+    buf[0] = 0;
+    char asciibuf[XD_LINE_BYTES+1];
+    asciibuf[0] = 0;
+    for (int i=0; i<len; i++) {
+        const char c = ((const char *)ptr)[i];
+        asciibuf[i] = printable(c, '.');
+        asciibuf[i+1] = 0;
+        char str[4];
+        snprintf(str, sizeof(str), "%02X", ((const char *)ptr)[i]);
+        strncat(buf, str, buflen);
+        if (i % XD_GROUPBY == XD_GROUPBY - 1) {
+            strncat(buf, " ", buflen);
+        }
+    }
+    for (int i=strlen(buf); i<buflen; i++)
+        buf[i] = ' ';
+    buf[buflen] = 0;
+
+    log_printf(LOG_DEBUG, "  %04X: %s  %s", address, buf, asciibuf);
+}
+
+void hexdump(const void *ptr, int len)
+{
+    if (len <= 0) {
+        log_printf(LOG_INFO, "hexdump: empty");
+        return;
+    }
+    int i = 0;
+    while (i <= len) {
+        int start = i / XD_LINE_BYTES * XD_LINE_BYTES;
+        int count = len - start;
+        if (count > XD_LINE_BYTES)
+            count = XD_LINE_BYTES;
+        hexdump_line(start, ptr + i, count);
+        i += XD_LINE_BYTES;
+    }
 }

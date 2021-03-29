@@ -40,6 +40,7 @@
 #include "lldp_mib.h"
 #include "lldpv2_mib.h"
 #include "app_name.h"
+#include "snmp_priv_oids.h"
 #include "version.h"
 #include "tcpip/app_task_tcpip_impl.h" // gnetif
 
@@ -56,17 +57,18 @@ static const struct snmp_mib *mibs[] = {
 };
 #endif /* LWIP_SNMP */
 
-#if defined(BOARD_CRU16)
-#define BOARD_OID 1
-#elif defined(BOARD_TTVXS)
-#define BOARD_OID 2
+#if defined(BOARD_TTVXS)
+#define BOARD_OID SNMP_OID_aevTtvxs
+#elif defined(BOARD_CRU16)
+#define BOARD_OID SNMP_OID_aevCru16
 #elif defined(BOARD_TQDC)
-#define BOARD_OID 3
+#define BOARD_OID SNMP_OID_aevTqdc16vs
 #else
 #error Unknown BOARD
 #endif
 
-#define MY_DEVICE_ENTERPRISE_OID {1, 3, 6, 1, 4, 1, 53776, 120, 2, 1, BOARD_OID}
+#define MY_DEVICE_ENTERPRISE_OID {1, 3, 6, 1, 4, 1, \
+    SNMP_OID_JINR, SNMP_OID_AFI, SNMP_OID_aevMIBObjects, SNMP_OID_aevBoard, BOARD_OID}
 #define MY_DEVICE_ENTERPRISE_OID_LEN 11
 
 static const struct snmp_obj_id  device_enterprise_oid = {

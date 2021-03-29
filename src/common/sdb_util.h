@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,28 +14,32 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef RTC_UTIL_H
-#define RTC_UTIL_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef SDB_UTIL_H
+#define SDB_UTIL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct tm;
-struct timeval;
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
-bool get_rtc_tm(struct tm *tm);
-bool get_rtc_tm_us(struct tm *tm, uint32_t *microsec);
-bool set_rtc_tm(const struct tm *tm, uint32_t microsec);
+struct sdb_component;
+struct sdb_interconnect;
+struct sdb_device;
 
-bool get_rtc_tv(struct timeval *tv);
-bool set_rtc_tv(const struct timeval *tv);
+void sdb_component_fix_endian(struct sdb_component *p);
+void sdb_interconnect_fix_endian(struct sdb_interconnect *p);
+void sdb_device_fix_endian(struct sdb_device *p);
+bool sdb_ic_validate(struct sdb_interconnect *p);
+bool sdb_dev_validate(struct sdb_device *p);
+void sdb_copy_printable(char *dest, uint8_t *buf, size_t size, char fill);
+void fill_sdb_string(uint8_t *buf, uint8_t size, const char *str);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // RTC_UTIL_H
+#endif // SDB_UTIL_H

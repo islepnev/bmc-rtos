@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,28 +14,25 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef RTC_UTIL_H
-#define RTC_UTIL_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef SNMP_PRIV_OIDS_H
+#define SNMP_PRIV_OIDS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// http://www.iana.org/assignments/enterprise-numbers
 
-struct tm;
-struct timeval;
+// .iso.org.dod.internet.private.enterprises.jinr.afi
 
-bool get_rtc_tm(struct tm *tm);
-bool get_rtc_tm_us(struct tm *tm, uint32_t *microsec);
-bool set_rtc_tm(const struct tm *tm, uint32_t microsec);
+#define SNMP_OID_JINR 53776
+#define SNMP_OID_AFI 120
 
-bool get_rtc_tv(struct timeval *tv);
-bool set_rtc_tv(const struct timeval *tv);
+#define SNMP_OID_bmc 1
+#define SNMP_OID_aevMIBObjects 2
 
-#ifdef __cplusplus
-}
-#endif
+// AFI Entity Vendortype OIDs
+#define SNMP_OID_aevBoard 1
 
-#endif // RTC_UTIL_H
+#define SNMP_OID_aevTtvxs 1
+#define SNMP_OID_aevCru16 2
+#define SNMP_OID_aevTqdc16vs 3
+
+#endif // SNMP_PRIV_OIDS_H

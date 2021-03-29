@@ -71,7 +71,7 @@ static bool dev_sfpiic_ch_enable_tx(Dev_sfpiic *d, int ch)
     return true;
 }
 
-void copy_printable(char *dst, const unsigned char *src, int n)
+static void copy_printable(char *dst, const unsigned char *src, int n)
 {
     for (int i=0; i<n; i++) {
         bool is_printable = (src[i] >= 32) && (src[i] <= 126);
