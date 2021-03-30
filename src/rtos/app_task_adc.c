@@ -26,7 +26,7 @@
 #include "log/log.h"
 #include "stm32_hal.h"
 
-ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc1;
 
 static const uint32_t adcTaskLoopDelay = 1000;
 osThreadId adcThreadId = NULL;

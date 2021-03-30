@@ -19,13 +19,12 @@
 
 #include <assert.h>
 
+//#include "adc.h"
 #include "cmsis_os.h"
 #include "debug_helpers.h"
 #include "error_handler.h"
 #include "log/log.h"
 #include "stm32_hal.h"
-
-ADC_HandleTypeDef hadc1;
 
 void adc_driver_init(void)
 {
