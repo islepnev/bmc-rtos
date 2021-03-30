@@ -22,7 +22,7 @@
 
 bool fpga_r16(struct Dev_fpga *d, uint32_t addr, uint16_t *data)
 {
-    if (d->priv.proto_version == 3) {
+    if (d->priv.fpga.proto_version == 3) {
         uint64_t tmp = 0;
         bool ok = fpga_spi_v3_hal_read_reg(&d->dev.bus, addr, &tmp);
         if (ok && data)
@@ -34,7 +34,7 @@ bool fpga_r16(struct Dev_fpga *d, uint32_t addr, uint16_t *data)
 
 bool fpga_w16(struct Dev_fpga *d, uint32_t addr, uint16_t data)
 {
-    if (d->priv.proto_version == 3) {
+    if (d->priv.fpga.proto_version == 3) {
         return fpga_spi_v3_hal_write_reg(&d->dev.bus, addr, data);
     }
     return fpga_spi_hal_write_reg(&d->dev.bus, addr, data);

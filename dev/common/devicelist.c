@@ -18,6 +18,7 @@
 #include "devicelist.h"
 
 #include <assert.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "dev_common_types.h"
@@ -63,7 +64,7 @@ DeviceBase *find_device(DeviceClass device_class)
             return deviceList.list[i];
         }
     }
-    return 0;
+    return NULL;
 }
 
 const DeviceBase *find_device_const(DeviceClass class)

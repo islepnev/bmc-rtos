@@ -43,25 +43,26 @@ void dev_fpga_print_box(void)
     if (!d || !d->priv)
         return;
     const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-
+    const Dev_fpga_gpio *gpio = &priv->gpio;
+    const Dev_fpga_runtime *fpga = &priv->fpga;
     printf("FPGA %s",
-           priv->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
-    if (priv->initb && !priv->done)
+           gpio->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
+    if (gpio->initb && !gpio->done)
         printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
-    if (priv->done && priv->id_read) {
-        uint64_t serial = (priv->ow_id >> 8) & 0xFFFFFFFFFFFF;
-        int16_t rawTemp = priv->temp & 0xFFF;
+    if (gpio->done && fpga->id_read) {
+        uint64_t serial = (fpga->ow_id >> 8) & 0xFFFFFFFFFFFF;
+        int16_t rawTemp = fpga->temp & 0xFFF;
         if (rawTemp & 0x800) rawTemp = -(rawTemp&0x7FF);
         double temp = rawTemp / 16.0;
-        printf("%02X %04llX-%04llX v%d.%d.%d %.1f\u00b0C", priv->id,
+        printf("%02X %04llX-%04llX v%d.%d.%d %.1f\u00b0C", fpga->id,
                serial >> 16,
                serial & 0xFFFF,
-               (priv->fw_ver >> 8) & 0xFF,
-               priv->fw_ver & 0xFF,
-               priv->fw_rev,
+               (fpga->fw_ver >> 8) & 0xFF,
+               fpga->fw_ver & 0xFF,
+               fpga->fw_rev,
                temp);
     }
-    printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->state));
+    printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->fsm.state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");
 }
