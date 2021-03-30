@@ -25,7 +25,6 @@ extern "C" {
 #endif
 
 struct Dev_vxsiics;
-DeviceStatus dev_vxsiics_print(void);
 
 #ifdef __cplusplus
 }

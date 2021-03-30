@@ -39,7 +39,6 @@ static uint16_t live_magic = 0x55AA;
 static const bool ENABLE_V2_PROTOCOL = true;
 
 static const int REG_CSR_DEVICE_ID = 0x42;
-static const int REG_CSR_LIVEMAGIC = 0x48;
 
 enum {
     FPGA_SPI_ADDR_0 = FPGA_REG_BASE_MCU + 0,
@@ -485,13 +484,13 @@ static bool fpgaWriteSensorsByIndex(Dev_fpga *dev, int *indices, int count)
     return true;
 }
 
-bool fpgaWriteSensors(Dev_fpga *dev)
+bool fpgaWriteSensors(struct Dev_fpga *dev)
 {
     return fpgaWriteSensorsByIndex(
         dev, fpga_sensor_map.indices, fpga_sensor_map.count);
 }
 #else
-bool fpgaWriteSensors(DeviceBase *dev)
+bool fpgaWriteSensors(struct Dev_fpga *dev)
 {
     return true;
 }

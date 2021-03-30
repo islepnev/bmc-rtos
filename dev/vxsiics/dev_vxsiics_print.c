@@ -25,13 +25,3 @@
 #include "devicelist.h"
 #include "display.h"
 
-void dev_vxsiics_print(void)
-{
-    const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICS);
-    if (!d || !d->priv)
-        return;
-    const Dev_vxsiics_priv *vxsiics = (const Dev_vxsiics_priv *)device_priv_const(d);
-
-    printf("VXS I2C:        %d boards %s\n", get_vxsiic_board_count(vxsiics),
-           sensor_status_ansi_str(dev_vxsiics_sensor_status()));
-}

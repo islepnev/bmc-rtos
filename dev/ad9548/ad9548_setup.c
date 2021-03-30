@@ -23,6 +23,7 @@
 #include "ad9548_print.h"
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
+#include "ad9548_status.h"
 #include "board_config_ad9548.h"
 #include "cmsis_os.h"
 #include "log/log.h"
@@ -120,7 +121,8 @@ bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
     if (!ad9548_ioupdate(bus))
         return false;
 
-    if (!ad9548_poll_irq_state(bus, reg))
+    AD9548_Status status;
+    if (!ad9548_poll_irq_state(bus, &status))
         return false; // clear pending IRQs
 
     return true;

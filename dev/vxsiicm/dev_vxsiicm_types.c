@@ -19,7 +19,7 @@
 
 #include "dev_vxsiicm_types.h"
 
-uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d)
+uint8_t get_vxsiicm_board_count(const Dev_vxsiicm_priv *d)
 {
     uint8_t count = 0;
     for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
