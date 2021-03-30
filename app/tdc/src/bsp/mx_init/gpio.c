@@ -20,6 +20,7 @@
 #include "gpio.h"
 
 #include "bsp_pin_defs.h"
+#include "gpio_util.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 
@@ -30,22 +31,6 @@
 #ifdef STM32F746xx
 #error "STM32F746xx should NOT be defined"
 #endif
-
-typedef struct {
-    GPIO_TypeDef* GPIOx;
-    uint16_t pin;
-} pin_def_t;
-
-void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state)
-{
-    const GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(gpio, pin, write);
-}
-
-bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin)
-{
-    return HAL_GPIO_ReadPin(gpio, pin) == GPIO_PIN_SET;
-}
 
 void MX_GPIO_Init(void)
 {
@@ -70,7 +55,7 @@ void MX_GPIO_Init(void)
   // PCB R37.5 should NOT be mounted
 
   // ON_* (open drain, default = 1)
-  static const pin_def_t on_pins[8] = {
+  static const pin_def_t on_pins[] = {
       {ON_5V_GPIO_Port, ON_5V_Pin},
       {ON_1_5V_GPIO_Port, ON_1_5V_Pin},
       {ON_3_3V_GPIO_Port, ON_3_3V_Pin},
@@ -81,7 +66,7 @@ void MX_GPIO_Init(void)
       {ON_TDC_D_GPIO_Port, ON_TDC_D_Pin} // not connected on TDC72
   };
 
-  for (int i=0; i<8; i++) {
+  for (size_t i=0; i<COUNT_OF(on_pins); i++) {
       HAL_GPIO_WritePin(on_pins[i].GPIOx, on_pins[i].pin, GPIO_PIN_SET);
       GPIO_InitStruct.Pin = on_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // PCB 4.1 has no pullups?
@@ -99,14 +84,14 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(MON_SMB_SW_RST_B_GPIO_Port, &GPIO_InitStruct);
 
   // LEDs
-  static const pin_def_t led_pins[5] = {
+  static const pin_def_t led_pins[] = {
       {LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin},
       {LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin},
       {LED_RED_B_GPIO_Port,       LED_RED_B_Pin},
       {LED_ERROR_B_GPIO_Port,     LED_ERROR_B_Pin},
       {LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin}
   };
-  for (int i=0; i<5; i++) {
+  for (size_t i=0; i<COUNT_OF(led_pins); i++) {
       // LEDs, turn on by default
       HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = led_pins[i].pin;

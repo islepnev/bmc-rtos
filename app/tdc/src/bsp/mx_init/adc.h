@@ -29,6 +29,8 @@ extern "C" {
 
 bool MX_ADC1_Init(void);
 
+extern ADC_HandleTypeDef hadc1;
+
 #ifdef __cplusplus
 }
 #endif

@@ -85,6 +85,7 @@ const AD9548_Profile_TypeDef *PLL_Prof_derive_ref_period(AD9548_Profile_TypeDef 
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_500Hz(AD9548_Profile_TypeDef *p);
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_5000Hz(AD9548_Profile_TypeDef *p);
 const AD9548_Profile_TypeDef *PLL_Prof_filter_S15_50Hz(AD9548_Profile_TypeDef *p);
+const AD9548_Profile_TypeDef *PLL_Prof_filter_S1500_500Hz(AD9548_Profile_TypeDef *p);
 
 #ifdef __cplusplus
 }

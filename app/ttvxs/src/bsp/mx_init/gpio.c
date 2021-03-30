@@ -20,24 +20,9 @@
 #include "gpio.h"
 
 #include "bsp_pin_defs.h"
+#include "gpio_util.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
-
-typedef struct {
-    GPIO_TypeDef* GPIOx;
-    uint16_t pin;
-} pin_def_t;
-
-void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state)
-{
-    const GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(gpio, pin, write);
-}
-
-bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin)
-{
-    return HAL_GPIO_ReadPin(gpio, pin) == GPIO_PIN_SET;
-}
 
 void MX_GPIO_Init(void)
 {
@@ -68,7 +53,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(PCB_VER_A1_GPIO_Port, &GPIO_InitStruct);
 
   // ON_* (open drain, default = 1)
-  static const pin_def_t on_pins[7] = {
+  static const pin_def_t on_pins[] = {
       {ON_1V0_CORE_GPIO_Port, ON_1V0_CORE_Pin},
       {ON_1V0_MGT_GPIO_Port, ON_1V0_MGT_Pin},
       {ON_1V2_MGT_GPIO_Port, ON_1V2_MGT_Pin},
@@ -77,7 +62,7 @@ void MX_GPIO_Init(void)
       {ON_FMC_5V_GPIO_Port, ON_FMC_5V_Pin},
       {ON_5V_VXS_GPIO_Port, ON_5V_VXS_Pin}
   };
-  for (int i=0; i<7; i++) {
+  for (size_t i=0; i<COUNT_OF(on_pins); i++) {
       HAL_GPIO_WritePin(on_pins[i].GPIOx, on_pins[i].pin, GPIO_PIN_SET);
       GPIO_InitStruct.Pin = on_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -87,7 +72,7 @@ void MX_GPIO_Init(void)
   }
 
   // RFU*
-  static const pin_def_t rfu_pins[15] = {
+  static const pin_def_t rfu_pins[] = {
       {RFU0_GPIO_Port, RFU0_Pin},
       {RFU1_GPIO_Port, RFU1_Pin},
       {RFU2_GPIO_Port, RFU2_Pin},
@@ -105,7 +90,7 @@ void MX_GPIO_Init(void)
       {RFU14_GPIO_Port, RFU14_Pin},
       {RFU15_GPIO_Port, RFU15_Pin}
   };
-  for (int i=0; i<15; i++) {
+  for (size_t i=0; i<COUNT_OF(rfu_pins); i++) {
       HAL_GPIO_WritePin(rfu_pins[i].GPIOx, rfu_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = rfu_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -122,14 +107,14 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(FPGA_NSS_GPIO_Port, FPGA_NSS_Pin, GPIO_PIN_RESET);
 
   // LEDs
-  static const pin_def_t led_pins[5] = {
+  static const pin_def_t led_pins[] = {
       {LED_RED_B_GPIO_Port,       LED_RED_B_Pin},
       {LED_YELLOW_B_GPIO_Port,    LED_YELLOW_B_Pin},
       {LED_GREEN_B_GPIO_Port,     LED_GREEN_B_Pin},
       {LED_ERROR_B_GPIO_Port,     LED_ERROR_B_Pin},
       {LED_HEARTBEAT_B_GPIO_Port, LED_HEARTBEAT_B_Pin}
   };
-  for (int i=0; i<5; i++) {
+  for (size_t i=0; i<COUNT_OF(led_pins); i++) {
       // LEDs, turn on by default
       HAL_GPIO_WritePin(led_pins[i].GPIOx, led_pins[i].pin, GPIO_PIN_RESET);
       GPIO_InitStruct.Pin = led_pins[i].pin;
@@ -149,7 +134,7 @@ void MX_GPIO_Init(void)
       {PGOOD_FMC_3P3VAUX_GPIO_Port, PGOOD_FMC_3P3VAUX_Pin},
       {PEN_B_GPIO_Port, PEN_B_Pin}
   };
-  for (int i=0; i<7; i++) {
+  for (size_t i=0; i<COUNT_OF(pgood_pins); i++) {
       GPIO_InitStruct.Pin = pgood_pins[i].pin;
       GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
       GPIO_InitStruct.Pull = GPIO_PULLUP;

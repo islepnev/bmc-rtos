@@ -32,6 +32,6 @@ void dev_vxsiicm_print(void)
         return;
     const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
 
-    printf("VXS I2C:        %d boards %s\n", get_vxsiic_board_count(vxsiicm),
+    printf("VXS I2C:        %d boards %s\n", get_vxsiicm_board_count(vxsiicm),
            sensor_status_ansi_str(dev_vxsiicm_sensor_status()));
 }

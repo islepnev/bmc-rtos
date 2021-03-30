@@ -20,6 +20,7 @@
 #include "gpio.h"
 
 #include "bsp_pin_defs.h"
+#include "gpio_util.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32f7xx_hal_rcc.h"
 
@@ -30,22 +31,6 @@
 #ifdef STM32F769xx
 #error "STM32F769xx should NOT be defined"
 #endif
-
-typedef struct {
-    GPIO_TypeDef* GPIOx;
-    uint16_t pin;
-} pin_def_t;
-
-void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state)
-{
-    const GPIO_PinState write = state ? GPIO_PIN_SET : GPIO_PIN_RESET;
-    HAL_GPIO_WritePin(gpio, pin, write);
-}
-
-bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin)
-{
-    return HAL_GPIO_ReadPin(gpio, pin) == GPIO_PIN_SET;
-}
 
 void MX_GPIO_Init(void)
 {

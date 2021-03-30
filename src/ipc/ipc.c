@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2021 Ilja Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,13 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_vxsiics.h"
+#include "ipc.h"
 
-#include <stdint.h>
-#include <stdio.h>
+osMailQId mq_cmd_digipots_id;
 
-#include "dev_vxsiics.h"
-#include "dev_vxsiics_types.h"
-#include "devicelist.h"
-#include "display.h"
-
+osMailQId mq_cmd_menu_id;

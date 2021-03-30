@@ -40,22 +40,38 @@ typedef enum {
     FPGA_STATE_ERROR
 } fpga_state_t;
 
-typedef struct Dev_fpga_priv {
-    struct sdb_interconnect sdb_ic;
-    struct sdb_device sdb_devices[SDB_MAX_DEVICES];
-    uint16_t regs[FPGA_REG_COUNT];
-    uint8_t proto_version;
-    fpga_state_t state;
-    uint32_t fpga_load_start_tick;
-    uint32_t stateStartTick;
+typedef struct Dev_fpga_sdb {
+    struct sdb_interconnect ic;
+    struct sdb_device devices[SDB_MAX_DEVICES];
+} Dev_fpga_sdb;
+
+typedef struct Dev_fpga_gpio {
     uint8_t initb;
     uint8_t done;
-    uint16_t id;
+} Dev_fpga_gpio;
+
+typedef struct Dev_fpga_runtime {
+    struct Dev_fpga_sdb sdb;
+    uint16_t regs[FPGA_REG_COUNT];
+    uint8_t proto_version;
     uint16_t id_read;
+    uint16_t id;
     uint16_t fw_ver;
     uint16_t fw_rev;
     uint16_t temp;
     uint64_t ow_id;
+} Dev_fpga_runtime;
+
+typedef struct Dev_fpga_fsm {
+    fpga_state_t state;
+    uint32_t stateStartTick;
+    uint32_t fpga_load_start_tick;
+} Dev_fpga_fsm;
+
+typedef struct Dev_fpga_priv {
+    Dev_fpga_fsm fsm;
+    Dev_fpga_gpio gpio;
+    Dev_fpga_runtime fpga;
 } Dev_fpga_priv;
 
 typedef struct Dev_fpga {
@@ -63,6 +79,7 @@ typedef struct Dev_fpga {
     Dev_fpga_priv priv;
 } Dev_fpga;
 
+void clear_fpga_runtime_info(void);
 SensorStatus get_fpga_sensor_status(void);
 uint32_t get_fpga_id(void);
 uint64_t get_fpga_ow_id(void);

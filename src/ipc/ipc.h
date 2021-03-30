@@ -36,7 +36,7 @@ typedef struct CommandDigipots {
     uint8_t arg;
 } CommandDigipots;
 
-osMailQId mq_cmd_digipots_id;
+extern osMailQId mq_cmd_digipots_id;
 
 
 typedef enum {
@@ -62,7 +62,7 @@ typedef struct CommandMenu {
     uint8_t arg;
 } CommandMenu;
 
-osMailQId mq_cmd_menu_id;
+extern osMailQId mq_cmd_menu_id;
 
 #ifdef __cplusplus
 }

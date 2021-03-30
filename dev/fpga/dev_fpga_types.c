@@ -17,6 +17,27 @@
 
 #include "dev_fpga_types.h"
 #include "devicelist.h"
+#include <stddef.h>
+#include <string.h>
+
+void clear_fpga_runtime_info(void)
+{
+    DeviceBase *d = find_device(DEV_CLASS_FPGA);
+    if (!d)
+        return;
+    Dev_fpga_priv *priv = (Dev_fpga_priv *)device_priv(d);
+    Dev_fpga_runtime *fpga = &priv->fpga;
+    memset(fpga, 0, sizeof(Dev_fpga_runtime));
+}
+
+const Dev_fpga_runtime *get_fpga_runtime_const()
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return NULL;
+    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    return &priv->fpga;
+}
 
 SensorStatus get_fpga_sensor_status(void)
 {
@@ -24,34 +45,36 @@ SensorStatus get_fpga_sensor_status(void)
     if (!d)
         return SENSOR_UNKNOWN;
     const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
+    if (!priv)
+        return SENSOR_UNKNOWN;
+    const Dev_fpga_runtime *fpga = &priv->fpga;
+    const Dev_fpga_gpio *gpio = &priv->gpio;
 
-   if (d->device_status != DEVICE_NORMAL)
+    if (d->device_status != DEVICE_NORMAL)
       return SENSOR_WARNING;
-   if (!priv->initb)
+   if (!gpio->initb)
       return SENSOR_CRITICAL;
-   if (!priv->done)
+   if (!gpio->done)
       return SENSOR_CRITICAL;
-   if (priv->id == 0 || priv->id == 0xFFFFu)
+   if (fpga->id == 0 || fpga->id == 0xFFFFu)
       return SENSOR_WARNING;
    return SENSOR_NORMAL;
 }
 
 uint32_t get_fpga_id(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d)
+    const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
+    if (!fpga)
         return 0;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-    return priv->id;
+    return fpga->id;
 }
 
 uint64_t get_fpga_ow_id(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d)
+    const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
+    if (!fpga)
         return 0;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-    return priv->ow_id;
+    return fpga->ow_id;
 }
 
 uint32_t get_fpga_serial(void)
@@ -61,18 +84,16 @@ uint32_t get_fpga_serial(void)
 
 uint32_t get_fpga_fw_ver(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d)
+    const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
+    if (!fpga)
         return 0;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-    return priv->fw_ver;
+    return fpga->fw_ver;
 }
 
 uint32_t get_fpga_fw_rev(void)
 {
-    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
-    if (!d)
+    const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
+    if (!fpga)
         return 0;
-    const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
-    return priv->fw_rev;
+    return fpga->fw_rev;
 }

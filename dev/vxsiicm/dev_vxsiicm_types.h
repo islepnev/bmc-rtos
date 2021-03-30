@@ -111,7 +111,7 @@ void struct_vxs_i2c_init(Dev_vxsiicm *d);
 //    vxsiic_i2c_board_stats_t pp[VXSIIC_SLOTS];
 //} vxsiic_i2c_stats_t;
 
-uint8_t get_vxsiic_board_count(const Dev_vxsiicm_priv *d);
+uint8_t get_vxsiicm_board_count(const Dev_vxsiicm_priv *d);
 
 #ifdef __cplusplus
 }

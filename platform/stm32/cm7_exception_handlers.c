@@ -62,6 +62,7 @@ void NMI_Handler(void)
 {
 }
 
+__attribute__ (( aligned(8) ))
 void HardFault_Handler(void)
 {
     //    static char msg[80];
