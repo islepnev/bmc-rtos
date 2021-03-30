@@ -63,9 +63,9 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         }
         break;
     case AD9548_STATE_RESET:
-        if (!ad9548_write_reset_pin(bus, true) ||
-            !ad9548_write_reset_pin(bus, false) ||
-            !ad9548_software_reset(bus)) {
+        ad9548_write_reset_pin(bus, true);
+        ad9548_write_reset_pin(bus, false);
+        if (!ad9548_software_reset(bus)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
             break;
         }
