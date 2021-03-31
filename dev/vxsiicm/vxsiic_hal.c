@@ -118,6 +118,16 @@ bool vxsiic_read_pp_ioexp(BusInterface *bus, uint8_t pp, uint8_t reg, uint8_t *d
     return vxsiic_mem_read8(&bus2, reg, data, 1);
 }
 
+bool vxsiic_write_pp_ioexp(BusInterface *bus, uint8_t pp, uint8_t reg, uint8_t data)
+{
+    BusInterface bus2 = *bus;
+    bus2.address = PAYLOAD_BOARD_IOEXP_I2C_ADDRESS;
+    enum {Size = 1};
+    uint8_t pData[Size];
+    pData[0] = data & 0xFF;
+    return vxsiic_mem_write8(&bus2, reg, pData, Size);
+}
+
 bool vxsiic_read_pp_mcu_4(BusInterface *bus, uint8_t pp, uint16_t reg, uint32_t *data)
 {
     BusInterface bus2 = *bus;
