@@ -23,5 +23,6 @@
 
 bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp);
 bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp);
+bool dev_vxsiic_test_boot_pp(Dev_vxsiicm *d, int pp);
 
 #endif // DEV_VXSIIC_PP_H
