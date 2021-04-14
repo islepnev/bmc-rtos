@@ -31,6 +31,13 @@
 #include "fpga/dev_fpga_types.h"
 #include "version.h"
 
+enum {
+    PCA9536_REG_INPUT = 0,
+    PCA9536_REG_OUTPUT = 1,
+    PCA9536_REG_POLARITY = 2,
+    PCA9536_REG_CONFIG = 3
+};
+
 bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp)
 {
     bool eeprom_ok = vxsiic_detect_pp_eeprom(&d->dev.bus, pp);
@@ -57,7 +64,7 @@ static bool dev_vxsiic_read_pp_eeprom(Dev_vxsiicm *d, int pp)
 
 static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
 {
-    uint8_t addr = 0;
+    uint8_t addr = PCA9536_REG_INPUT;
     uint8_t data = 0;
     vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
     bool ret = vxsiic_read_pp_ioexp(&d->dev.bus, pp, addr, &data);
@@ -67,6 +74,23 @@ static bool dev_vxsiic_read_pp_ioexp(Dev_vxsiicm *d, int pp)
 //    }
     status->ioexp = data;
     return ret;
+}
+
+static bool dev_vxsiic_write_pp_ioexp_reset(Dev_vxsiicm *d, int pp)
+{
+    bool ok = true;
+    ok &= vxsiic_write_pp_ioexp(&d->dev.bus, pp, PCA9536_REG_OUTPUT, 0xFE); // pin 1: low
+    ok &= vxsiic_write_pp_ioexp(&d->dev.bus, pp, PCA9536_REG_CONFIG, 0xFE); // pin 1: output
+    uint8_t data = 0;
+    ok &= vxsiic_read_pp_ioexp(&d->dev.bus, pp, PCA9536_REG_INPUT, &data);
+    if ((data & 0x01) != 0) {
+        log_printf(LOG_ERR, "IOEXP at slot %2s input = %02X",
+                   vxsiic_map_slot_to_label[pp], data);
+    }
+    osDelay(1);
+    ok &= vxsiic_write_pp_ioexp(&d->dev.bus, pp, PCA9536_REG_OUTPUT, 0xFF); // pin 1: high
+    ok &= vxsiic_write_pp_ioexp(&d->dev.bus, pp, PCA9536_REG_CONFIG, 0xFF); // pin 1: input
+    return ok;
 }
 
 static bool dev_vxsiic_read_pp_mcu_4(Dev_vxsiicm *d, int pp, uint16_t reg, uint32_t *data)
@@ -185,4 +209,11 @@ bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp)
             status->iic_master_stats.errors++;
     }
     return found;
+}
+
+bool dev_vxsiic_test_boot_pp(Dev_vxsiicm *d, int pp)
+{
+    dev_vxsiic_write_pp_ioexp_reset(d, pp);
+
+    return true;
 }

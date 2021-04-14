@@ -48,6 +48,10 @@ enum {VXSIIC_PP_IOEXP_BIT_PGOOD = 0x8};
 //    VXSIIC_PP_STATE_ERROR
 //} vxsiic_pp_state_t;
 
+typedef struct vxsiic_pp_control_t {
+    bool reset;
+} vxsiic_pp_control_t;
+
 typedef struct vxsiic_pp_state_t {
     bool eeprom_found;
     bool gpio_found;

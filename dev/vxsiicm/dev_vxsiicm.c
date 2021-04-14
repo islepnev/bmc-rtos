@@ -135,6 +135,23 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
     return d->dev.device_status;
 }
 
+DeviceStatus dev_vxsiicm_test_boot(Dev_vxsiicm *d)
+{
+    for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
+        if (! vxsiic_select_pp(d, pp)) {
+            d->dev.device_status = DEVICE_FAIL;
+            return d->dev.device_status;
+        }
+        const vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
+        if (!status->present)
+            continue;
+        log_printf(LOG_NOTICE, "VXS slot %s: board test_boot", vxsiic_map_slot_to_label[pp]);
+        dev_vxsiic_test_boot_pp(d, pp);
+    }
+    vxsiic_unselect_pp(d);
+    return d->dev.device_status;
+}
+
 SensorStatus dev_vxsiicm_sensor_status(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_VXSIICM);
