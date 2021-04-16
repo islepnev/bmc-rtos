@@ -31,11 +31,7 @@
 void init_periph(void)
 {
     //  MX_FMC_Init();
-
-    MX_USART1_UART_Init(); // front-panel usb
-    MX_USART2_UART_Init(); // mezzanine usb
-    //  MX_USART6_UART_Init();
-    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL"\n\nUART init Ok\n");
+    // MX_USART6_UART_Init();
 
     debug_print("I2C init...");
     i2c_driver_init();
@@ -66,5 +62,4 @@ void init_periph(void)
     } else {
         debug_print(" Ok\n");
     }
-
 }

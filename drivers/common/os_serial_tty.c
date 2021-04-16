@@ -101,12 +101,10 @@ int __io_putchar(int ch)
     return 0;
 }
 
-void initialize_serial_console_hardware(void)
+void initialize_tty_driver(void)
 {
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
     message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
     if (!message_q_ttyrx_id || !message_q_ttytx_id)
         Error_Handler();
-    LL_USART_EnableIT_RXNE(TTY_USART);
-    bsp_tty_setup_uart();
 }

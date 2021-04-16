@@ -22,20 +22,26 @@
 
 #include "ansi_escape_codes.h"
 #include "bsp.h"
+#include "bsp_tty.h"
+#include "clock.h"
 #include "cmsis_os.h"
 #include "commands.h"
 #include "debug_helpers.h"
+#include "init_periph.h"
 #include "log/log.h"
 #include "os_serial_tty.h"
-#include "clock.h"
 
 void app_task_init(void)
 {
+    initialize_tty_driver();
+    bsp_tty_setup_uart();
+
     debug_print(ANSI_CLEAR "\n");
     debug_print("Initializing\n");
     configureTimerForRunTimeStats();
     test_timers();
-    initialize_serial_console_hardware();
     init_logging();
     commands_init();
+
+    init_periph();
 }

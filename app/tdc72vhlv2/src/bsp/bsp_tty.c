@@ -17,6 +17,11 @@
 
 #include "bsp_tty.h"
 
+#include "stm32f3xx_ll_usart.h"
+#include "usart.h"
+
 void bsp_tty_setup_uart(void)
 {
+    MX_USART2_UART_Init();
+    LL_USART_EnableIT_RXNE(TTY_USART);
 }

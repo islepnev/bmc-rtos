@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-void initialize_serial_console_hardware(void);
+void initialize_tty_driver(void);
 void serial_console_interrupt_handler(USART_TypeDef *usart);
 int __io_getchar (void);
 int __io_putchar(int ch);
