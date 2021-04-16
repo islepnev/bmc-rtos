@@ -20,6 +20,7 @@
 #include "adc.h"
 #include "i2c.h"
 #include "rtc.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "usart.h"
 
@@ -27,11 +28,41 @@
 #include "bus/i2c_driver.h"
 #include "bus/spi_driver.h"
 #include "debug_helpers.h"
+#include "stm32746g_discovery_qspi.h"
+#include "stm32f769i_discovery_sdram.h"
+#include "error_handler.h"
+
+extern void QSPI_demo(void);
+extern bool SDRAM_quick_test (void);
 
 void init_periph(void)
 {
-    //  MX_FMC_Init();
+    bool ok = true;
+    // debug_print("FPGA UART init...");
     // MX_USART6_UART_Init();
+    // debug_print(" Ok\n");
+
+    debug_print("QSPI Flash init...");
+    //  MX_QUADSPI_Init();
+    if (BSP_QSPI_Init() == QSPI_OK)
+        debug_print(" Ok\n");
+    else {
+        debug_print(" FAILED\n");
+        ok = false;
+    }
+
+    if (1) {
+        debug_print("SDRAM init...");
+        //  MX_FMC_Init();
+        if (BSP_SDRAM_Init() == SDRAM_OK) {
+            debug_print(" Ok\n");
+            ok &= SDRAM_quick_test();
+            BSP_SDRAM_DeInit();
+        } else {
+            debug_print(" FAILED\n");
+            ok = false;
+        }
+    }
 
     debug_print("I2C init...");
     i2c_driver_init();
@@ -41,8 +72,9 @@ void init_periph(void)
     MX_I2C4_Init();
     debug_print(" Ok\n");
 
-    //  MX_QUADSPI_Init();
-    //  MX_SDMMC1_SD_Init();
+    // debug_print("SD card init...");
+    // MX_SDMMC1_SD_Init();
+    // debug_print(" Ok\n");
 
     debug_print("SPI init...");
     spi_driver_init();
@@ -59,7 +91,12 @@ void init_periph(void)
     debug_print("RTC init...");
     if (!MX_RTC_Init()) {
         debug_printf("FAILED\n");
+        ok = false;
     } else {
         debug_print(" Ok\n");
+    }
+    if (!ok) {
+        debug_print("Initialization FAILED, system halted.");
+        Error_Handler();
     }
 }
