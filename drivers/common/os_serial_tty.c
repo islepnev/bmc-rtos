@@ -26,22 +26,71 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 
-uint32_t tty_uart_errors = 0;
+typedef struct uart_errors_t {
+    uint32_t overrun;
+    uint32_t framing;
+    uint32_t parity;
+    uint32_t noise;
+} uart_errors_t;
+
+#define UART_COUNT 6
+uart_errors_t uart_errors[UART_COUNT] = {};
 
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
-osMessageQDef(message_q_ttytx, 1, uint32_t);
-osMessageQId (message_q_ttyrx_id);
-osMessageQId (message_q_ttytx_id);
+osMessageQDef(message_q_ttytx_1, 1, uint32_t); // tty
+osMessageQDef(message_q_ttytx_2, 1, uint32_t); // debug
+osMessageQId message_q_ttyrx_id = 0;
+osMessageQId message_q_ttytx_1_id = 0;
+osMessageQId message_q_ttytx_2_id = 0;
+
+QueueHandle_t get_queue_by_usart(const USART_TypeDef *usart)
+{
+#ifdef TTY_USART
+    if (usart == TTY_USART)
+        return message_q_ttytx_1_id;
+#endif
+#ifdef DEBUG_USART
+    if (usart == DEBUG_USART)
+        return message_q_ttytx_2_id;
+#endif
+    return 0;
+}
+
+int uart_index(const USART_TypeDef *usart)
+{
+    if (usart == USART1)
+        return 0;
+    if (usart == USART2)
+        return 1;
+    if (usart == USART3)
+        return 2;
+#ifdef USART4
+    if (usart == USART4)
+        return 3;
+#endif
+#ifdef USART5
+    if (usart == USART5)
+        return 4;
+#endif
+#ifdef USART6
+    if (usart == USART6)
+        return 5;
+#endif
+    return 0;
+}
 
 static void USART_TXE_Callback_FromISR(USART_TypeDef *usart)
 {
-    osEvent event = osMessageGet(message_q_ttytx_id, 0);
-    if (osOK != event.status && osEventMessage != event.status) {
-        // should not happen, ignore
+    QueueHandle_t q = get_queue_by_usart(usart);
+    if (q) {
+        osEvent event = osMessageGet(q, 0);
+        if (osOK != event.status && osEventMessage != event.status) {
+            // should not happen, ignore
+        }
+        if (osOK != event.status)
+            return;
     }
-    if (osOK == event.status) {
-        LL_USART_DisableIT_TXE(usart);
-    }
+    LL_USART_DisableIT_TXE(usart);
 }
 
 static void USART_RXNE_Callback_FromISR(USART_TypeDef *usart)
@@ -49,32 +98,34 @@ static void USART_RXNE_Callback_FromISR(USART_TypeDef *usart)
     char ch;
     ch = LL_USART_ReceiveData8(usart);
     int data = ch;
-    if (osOK == osMessagePut(message_q_ttyrx_id, data, 0)) {}
+    if (message_q_ttyrx_id)
+        osMessagePut(message_q_ttyrx_id, data, 0);
 }
 
 void serial_console_interrupt_handler(USART_TypeDef *usart)
 {
+    int index = uart_index(usart);
     if (LL_USART_IsActiveFlag_TXE(usart) && LL_USART_IsEnabledIT_TXE(usart)) {
         USART_TXE_Callback_FromISR(usart);
-    }
+    } else
     if (LL_USART_IsActiveFlag_RXNE(usart) && LL_USART_IsEnabledIT_RXNE(usart)) {
         USART_RXNE_Callback_FromISR(usart);
-    }
+    } else
     if (LL_USART_IsActiveFlag_ORE(usart)) {
         LL_USART_ClearFlag_ORE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].overrun++;
+    } else
     if (LL_USART_IsActiveFlag_FE(usart)) {
         LL_USART_ClearFlag_FE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].framing++;
+    } else
     if (LL_USART_IsActiveFlag_PE(usart)) {
         LL_USART_ClearFlag_PE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].parity++;
+    } else
     if (LL_USART_IsActiveFlag_NE(usart)) {
         LL_USART_ClearFlag_NE(usart);
-        tty_uart_errors++;
+        uart_errors[index].noise++;
     }
 }
 
@@ -90,23 +141,36 @@ int __io_getchar (void)
     return (int)event.value.v;
 }
 
-int __io_putchar(int ch)
+int enqueue_char(USART_TypeDef *usart, int ch)
 {
-    if (!message_q_ttytx_id)
+    QueueHandle_t q = get_queue_by_usart(usart);
+
+    if (!q)
         return EIO;
-    if (osOK == osMessagePut(message_q_ttytx_id, ch, osWaitForever)) {
-        LL_USART_EnableIT_TXE(TTY_USART);
-        LL_USART_TransmitData8(TTY_USART, ch);
+    if (osOK == osMessagePut(q, ch, osWaitForever)) {
+        LL_USART_EnableIT_TXE(usart);
+        LL_USART_TransmitData8(usart, ch);
     }
     return 0;
 }
 
-void initialize_serial_console_hardware(void)
+int __io_putchar(int ch)
+{
+    int ret = 0;
+#ifdef DEBUG_USART
+    enqueue_char(DEBUG_USART, ch);
+#endif
+#ifdef TTY_USART
+    ret = enqueue_char(TTY_USART, ch);
+#endif
+    return ret;
+}
+
+void initialize_tty_driver(void)
 {
     message_q_ttyrx_id = osMessageCreate(osMessageQ(message_q_ttyrx), NULL);
-    message_q_ttytx_id = osMessageCreate(osMessageQ(message_q_ttytx), NULL);
-    if (!message_q_ttyrx_id || !message_q_ttytx_id)
+    message_q_ttytx_1_id = osMessageCreate(osMessageQ(message_q_ttytx_1), NULL);
+    message_q_ttytx_2_id = osMessageCreate(osMessageQ(message_q_ttytx_2), NULL);
+    if (!message_q_ttyrx_id || !message_q_ttytx_1_id || !message_q_ttytx_2_id)
         Error_Handler();
-    LL_USART_EnableIT_RXNE(TTY_USART);
-    bsp_tty_setup_uart();
 }

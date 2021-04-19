@@ -23,7 +23,6 @@
 #include "gpio.h"
 #include "hal_systick.h"
 #include "stm32_init_periph.h"
-#include "init_periph.h"
 #include "init_sysclk.h"
 #include "led_gpio_hal.h"
 #include "log/log.h"
@@ -43,9 +42,9 @@ int main(void)
     gpio_enable_clock();
     MX_GPIO_Init();
     led_all_set_state(true);
-    init_periph();
 
     app_task_init();
+
     create_tasks();
     if (sysclk_source == SYSCLK_HSI)
         log_printf(LOG_WARNING, "System clock: internal oscillator");

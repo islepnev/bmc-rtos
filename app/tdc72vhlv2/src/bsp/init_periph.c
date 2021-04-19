@@ -29,10 +29,6 @@
 
 void init_periph(void)
 {
-    MX_USART2_UART_Init();
-
-    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL"\n\nUART init Ok\n");
-
     debug_print("ADC init...");
     MX_ADC1_Init();
     debug_print(" Ok\n");

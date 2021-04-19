@@ -31,9 +31,9 @@
 
 void init_periph(void)
 {
+    debug_print("FPGA UART init...");
     MX_USART2_UART_Init();
-    MX_USART3_UART_Init();
-    debug_print(ANSI_CLEAR ANSI_CLEAR_EOL"\n\nUART init Ok\n");
+    debug_print(" Ok\n");
 
     debug_print("I2C init...");
     i2c_driver_init();
