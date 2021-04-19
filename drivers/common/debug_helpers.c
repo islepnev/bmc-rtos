@@ -28,8 +28,18 @@
 static inline void debug_send_char(const char c)
 {
     // wait for UART ready
+#ifdef DEBUG_USART
+    while(! LL_USART_IsActiveFlag_TXE(DEBUG_USART)) {;}
+#endif
+#ifdef TTY_USART
     while(! LL_USART_IsActiveFlag_TXE(TTY_USART)) {;}
+#endif
+#ifdef DEBUG_USART
+    LL_USART_TransmitData8(DEBUG_USART, (uint8_t)c);
+#endif
+#ifdef TTY_USART
     LL_USART_TransmitData8(TTY_USART, (uint8_t)c);
+#endif
 }
 
 static inline void debug_print_impl(const char *ptr)

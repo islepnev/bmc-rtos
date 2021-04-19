@@ -19,6 +19,7 @@
 #define BSP_TTY_H
 
 #define TTY_USART USART3
+#undef DEBUG_USART
 
 void bsp_tty_setup_uart(void);
 
