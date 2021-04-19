@@ -39,9 +39,9 @@ uart_errors_t uart_errors[UART_COUNT] = {};
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
 osMessageQDef(message_q_ttytx_1, 1, uint32_t); // tty
 osMessageQDef(message_q_ttytx_2, 1, uint32_t); // debug
-osMessageQId (message_q_ttyrx_id);
-osMessageQId (message_q_ttytx_1_id);
-osMessageQId (message_q_ttytx_2_id);
+osMessageQId message_q_ttyrx_id = 0;
+osMessageQId message_q_ttytx_1_id = 0;
+osMessageQId message_q_ttytx_2_id = 0;
 
 QueueHandle_t get_queue_by_usart(const USART_TypeDef *usart)
 {
@@ -98,7 +98,8 @@ static void USART_RXNE_Callback_FromISR(USART_TypeDef *usart)
     char ch;
     ch = LL_USART_ReceiveData8(usart);
     int data = ch;
-    if (osOK == osMessagePut(message_q_ttyrx_id, data, 0)) {}
+    if (message_q_ttyrx_id)
+        osMessagePut(message_q_ttyrx_id, data, 0);
 }
 
 void serial_console_interrupt_handler(USART_TypeDef *usart)
