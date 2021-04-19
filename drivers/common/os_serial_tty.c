@@ -26,7 +26,15 @@
 #include "cmsis_os.h"
 #include "error_handler.h"
 
-uint32_t tty_uart_errors = 0;
+typedef struct uart_errors_t {
+    uint32_t overrun;
+    uint32_t framing;
+    uint32_t parity;
+    uint32_t noise;
+} uart_errors_t;
+
+#define UART_COUNT 6
+uart_errors_t uart_errors[UART_COUNT] = {};
 
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
 osMessageQDef(message_q_ttytx_1, 1, uint32_t); // tty
@@ -37,11 +45,36 @@ osMessageQId (message_q_ttytx_2_id);
 
 QueueHandle_t get_queue_by_usart(const USART_TypeDef *usart)
 {
+#ifdef TTY_USART
     if (usart == TTY_USART)
         return message_q_ttytx_1_id;
+#endif
 #ifdef DEBUG_USART
-    else if (usart == DEBUG_USART)
+    if (usart == DEBUG_USART)
         return message_q_ttytx_2_id;
+#endif
+    return 0;
+}
+
+int uart_index(const USART_TypeDef *usart)
+{
+    if (usart == USART1)
+        return 0;
+    if (usart == USART2)
+        return 1;
+    if (usart == USART3)
+        return 2;
+#ifdef USART4
+    if (usart == USART4)
+        return 3;
+#endif
+#ifdef USART5
+    if (usart == USART5)
+        return 4;
+#endif
+#ifdef USART6
+    if (usart == USART6)
+        return 5;
 #endif
     return 0;
 }
@@ -70,27 +103,28 @@ static void USART_RXNE_Callback_FromISR(USART_TypeDef *usart)
 
 void serial_console_interrupt_handler(USART_TypeDef *usart)
 {
+    int index = uart_index(usart);
     if (LL_USART_IsActiveFlag_TXE(usart) && LL_USART_IsEnabledIT_TXE(usart)) {
         USART_TXE_Callback_FromISR(usart);
-    }
+    } else
     if (LL_USART_IsActiveFlag_RXNE(usart) && LL_USART_IsEnabledIT_RXNE(usart)) {
         USART_RXNE_Callback_FromISR(usart);
-    }
+    } else
     if (LL_USART_IsActiveFlag_ORE(usart)) {
         LL_USART_ClearFlag_ORE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].overrun++;
+    } else
     if (LL_USART_IsActiveFlag_FE(usart)) {
         LL_USART_ClearFlag_FE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].framing++;
+    } else
     if (LL_USART_IsActiveFlag_PE(usart)) {
         LL_USART_ClearFlag_PE(usart);
-        tty_uart_errors++;
-    }
+        uart_errors[index].parity++;
+    } else
     if (LL_USART_IsActiveFlag_NE(usart)) {
         LL_USART_ClearFlag_NE(usart);
-        tty_uart_errors++;
+        uart_errors[index].noise++;
     }
 }
 
@@ -125,8 +159,9 @@ int __io_putchar(int ch)
 #ifdef DEBUG_USART
     enqueue_char(DEBUG_USART, ch);
 #endif
+#ifdef TTY_USART
     ret = enqueue_char(TTY_USART, ch);
-
+#endif
     return ret;
 }
 
