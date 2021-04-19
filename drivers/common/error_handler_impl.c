@@ -71,4 +71,5 @@ void led_blink_error(void)
     };
     enum { bufsize = sizeof(buf)/sizeof(buf[0])};
     led_blink_morse(LED_YELLOW, buf, bufsize);
+    led_blink_morse(LED_INT_GREEN, buf, bufsize);
 }
