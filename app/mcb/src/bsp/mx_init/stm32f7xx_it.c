@@ -33,7 +33,6 @@ extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi3;
 extern SPI_HandleTypeDef hspi4;
 extern SPI_HandleTypeDef hspi5;
-extern ETH_HandleTypeDef EthHandle;
 
 extern void serial_console_interrupt_handler(USART_TypeDef *usart);
 
@@ -116,11 +115,6 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
     serial_console_interrupt_handler(USART3);
-}
-
-void ETH_IRQHandler(void)
-{
-    HAL_ETH_IRQHandler(&EthHandle);
 }
 
 void SPI1_IRQHandler(void)
