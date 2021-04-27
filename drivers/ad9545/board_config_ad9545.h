@@ -44,6 +44,28 @@
 #define PLL_DIST_DIV_1_A     13
 #define PLL_DIST_DIV_1_B     13
 
+#elif defined (BOARD_ADC64VE)
+
+#define DPLL0_BW_HZ          2000
+#define DPLL1_BW_HZ          2000
+#define PLL_REFA_PERIOD_NS   8
+#define PLL_REFB_PERIOD_NS   8
+#define PLL_REFA_DIV         625
+#define PLL_REFB_DIV         625
+#define DPLL0_EXT_ZD         1
+#define DPLL0_ZD_FB_Path     PROFILE_EXT_ZD_FEEDBACK_REFB
+#define APLL0_Frequency      2.5e9
+#define APLL0_M_Divider      8
+#define PLL_DIST_DIV_0_A     10
+#define PLL_DIST_DIV_0_B     20
+#define PLL_DIST_DIV_0_C     20
+#define DPLL1_EXT_ZD         0
+#define DPLL1_ZD_FB_Path     PROFILE_INT_ZD_FEEDBACK_OUT1A
+#define APLL1_Frequency      3.25e9
+#define APLL1_M_Divider      10
+#define PLL_DIST_DIV_1_A     13
+#define PLL_DIST_DIV_1_B     13
+
 #elif defined (BOARD_CRU16)
 
 #define DPLL0_BW_HZ          2000
