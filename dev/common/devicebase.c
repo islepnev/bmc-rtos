@@ -19,6 +19,8 @@
 
 #include <assert.h>
 
+#include "device_status_log.h"
+
 const char *device_class_str(DeviceClass c)
 {
     switch (c) {
@@ -57,4 +59,12 @@ const char *bus_type_str(BusType t)
     case BUS_SPI: return "SPI";
     default: assert(0); return "?";
     }
+}
+
+void set_device_status(DeviceBase *d, const DeviceStatus status)
+{
+    if (status == d->device_status)
+        return;
+    d->device_status = status;
+    // dev_log_status_change(d);
 }

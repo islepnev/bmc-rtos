@@ -18,6 +18,8 @@
 #ifndef DEVICEBASE_H
 #define DEVICEBASE_H
 
+#include <stdbool.h>
+
 #include "dev_common_types.h"
 enum { DEVICE_NAME_LEN = 16 };
 
@@ -35,5 +37,6 @@ typedef struct DeviceBase {
 
 const char *device_class_str(DeviceClass c);
 const char *bus_type_str(BusType t);
+void set_device_status(DeviceBase *d, const DeviceStatus status);
 
 #endif // DEVICEBASE_H
