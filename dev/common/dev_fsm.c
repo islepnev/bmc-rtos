@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,31 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICEBASE_H
-#define DEVICEBASE_H
-
-#include <stdbool.h>
-
-#include "dev_common_types.h"
 #include "dev_fsm.h"
 
-enum { DEVICE_NAME_LEN = 16 };
+#include "cmsis_os.h"
+#include "devicebase.h"
 
-typedef struct DeviceBase {
-    DeviceClass device_class;
-    DeviceStatus device_status;
-    SensorStatus sensor;
-    BusInterface bus;
-    char name[DEVICE_NAME_LEN+1];
-    dev_fsm_t fsm;
-    void *priv;
-    struct DeviceBase *parent;
-    struct DeviceBase *children;
-    struct DeviceBase *next;
-} DeviceBase;
+void dev_fsm_change(dev_fsm_t *fsm, const fsm_state_t state)
+{
+    if (state == fsm->state)
+        return;
+    fsm->stateStartTick = osKernelSysTick();
+    fsm->state = state;
+}
 
-const char *device_class_str(DeviceClass c);
-const char *bus_type_str(BusType t);
-void set_device_status(DeviceBase *d, const DeviceStatus status);
-
-#endif // DEVICEBASE_H
+uint32_t dev_fsm_stateTicks(const dev_fsm_t *fsm)
+{
+    return osKernelSysTick() - fsm->stateStartTick;
+}

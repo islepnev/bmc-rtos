@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,31 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEVICEBASE_H
-#define DEVICEBASE_H
+#ifndef DEV_FSM_H
+#define DEV_FSM_H
 
-#include <stdbool.h>
+#include <stdint.h>
 
-#include "dev_common_types.h"
-#include "dev_fsm.h"
+typedef enum {
+    DEV_FSM_SHUTDOWN,
+    DEV_FSM_RESET,
+    DEV_FSM_RUN,
+    DEV_FSM_PAUSE,
+    DEV_FSM_ERROR
+} fsm_state_t;
 
-enum { DEVICE_NAME_LEN = 16 };
+typedef struct dev_fsm_t {
+    fsm_state_t state;
+    uint32_t stateStartTick;
+} dev_fsm_t;
 
-typedef struct DeviceBase {
-    DeviceClass device_class;
-    DeviceStatus device_status;
-    SensorStatus sensor;
-    BusInterface bus;
-    char name[DEVICE_NAME_LEN+1];
-    dev_fsm_t fsm;
-    void *priv;
-    struct DeviceBase *parent;
-    struct DeviceBase *children;
-    struct DeviceBase *next;
-} DeviceBase;
+void dev_fsm_change(dev_fsm_t *fsm, const fsm_state_t state);
+uint32_t dev_fsm_stateTicks(const dev_fsm_t *fsm);
 
-const char *device_class_str(DeviceClass c);
-const char *bus_type_str(BusType t);
-void set_device_status(DeviceBase *d, const DeviceStatus status);
-
-#endif // DEVICEBASE_H
+#endif // DEV_FSM_H
