@@ -67,38 +67,45 @@ enum {
     CRSW2_IN_AD9516 = 3,
 };
 
+const int crsw1_output_map[4] = {
+    CRSW1_IN_PLL0B, // CRSW1_IN_AD9516_DIV3
+    CRSW1_IN_PLL0B,
+    CRSW1_IN_PLL0A,
+    CRSW1_IN_PLL0A
+};
+
 static bool dev_clkmux_set_crsw1(Dev_ttvxs_clkmux *d)
 {
-    bool ok = true;
     clkmux_gpiob data;
     data.all = 0;
     data.bit.pll_source_sel = d->priv.pll_source & 0x3;
-    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
-    int crsw1_output_map[4] = {
-        CRSW1_IN_PLL0B, // CRSW1_IN_AD9516_DIV3
-        CRSW1_IN_PLL0B,
-        CRSW1_IN_PLL0A,
-        CRSW1_IN_PLL0A
-    };
+    if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+        goto err;
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw1_output_map[i];
         data.bit.crsw_sout = i;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_load = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_load = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_conf = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_conf = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
     }
-    return ok;
+    return true;
+err:
+    return false;
 }
 
 static bool dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
 {
-    bool ok = true;
     clkmux_gpioa data;
     data.all = 0;
     int crsw2_output_map[4] = {
@@ -110,17 +117,24 @@ static bool dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw2_output_map[i];
         data.bit.crsw_sout = i;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOA, data.all))
+            goto err;
         data.bit.crsw_load = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOA, data.all))
+            goto err;
         data.bit.crsw_load = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOA, data.all))
+            goto err;
         data.bit.crsw_conf = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOA, data.all))
+            goto err;
         data.bit.crsw_conf = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOA, data.all))
+            goto err;
     }
-    return ok;
+    return true;
+err:
+    return false;
 }
 
 DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
@@ -159,9 +173,13 @@ unknown:
 
 DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
 {
-    bool ok = true;
-    ok &= dev_clkmux_set_pll_source(d);
-    ok &= dev_clkmux_set_crsw1(d);
-    ok &= dev_clkmux_set_crsw2(d);
-    return ok ? DEVICE_NORMAL : DEVICE_FAIL;
+    if (!dev_clkmux_set_pll_source(d))
+        goto err;
+    if (!dev_clkmux_set_crsw1(d))
+        goto err;
+    if (!dev_clkmux_set_crsw2(d))
+        goto err;
+    return DEVICE_NORMAL;
+err:
+    return DEVICE_FAIL;
 }
