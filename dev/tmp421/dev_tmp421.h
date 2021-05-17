@@ -21,24 +21,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dev_common_types.h"
 #include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    TMP421_STATE_SHUTDOWN,
-    TMP421_STATE_RESET,
-    TMP421_STATE_RUN,
-    TMP421_STATE_PAUSE,
-    TMP421_STATE_ERROR
-} dev_tmp421_state_t;
-
 typedef struct Dev_tmp421_priv {
-    dev_tmp421_state_t state;
-    uint32_t state_start_tick;
     double temp_internal;
     double temp;
 } Dev_tmp421_priv;

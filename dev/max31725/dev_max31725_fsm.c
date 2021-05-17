@@ -22,76 +22,61 @@
 #include "device_status_log.h"
 #include "log/log.h"
 
+static const uint32_t DETECT_TIMEOUT_TICKS = 2000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t stateTicks(const Dev_max31725_priv *p)
+void dev_max31725_run(Dev_max31725 *d, bool power_on)
 {
-    return osKernelSysTick() - p->state_start_tick;
-}
+    const DeviceStatus old_device_status = d->dev.device_status;
+    dev_fsm_t *fsm = &d->dev.fsm;
 
-void dev_max31725_run(Dev_max31725 *p, bool power_on)
-{
-    Dev_max31725_priv *d = (Dev_max31725_priv *)&p->priv;
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16)
     // issues #657, 684
     if (!power_on) {
-        if (d->state != MAX31725_STATE_SHUTDOWN) {
-            d->state = MAX31725_STATE_SHUTDOWN;
-            p->dev.device_status = DEVICE_UNKNOWN;
-            log_put(LOG_INFO, "MAX31725 shutdown");
-        }
-        return;
+        dev_fsm_change(fsm, DEV_FSM_SHUTDOWN);
     }
 #endif
-    dev_max31725_state_t old_state = d->state;
-    switch (d->state) {
-    case MAX31725_STATE_SHUTDOWN: {
-        d->state = MAX31725_STATE_RESET;
+    switch (fsm->state) {
+    case DEV_FSM_SHUTDOWN: {
+        if (power_on)
+            dev_fsm_change(fsm, DEV_FSM_RESET);
+        set_device_status(&d->dev, DEVICE_UNKNOWN);
         break;
     }
-    case MAX31725_STATE_RESET: {
-        if (dev_max31725_detect(p)) {
-            d->state = MAX31725_STATE_RUN;
-            p->dev.device_status = DEVICE_NORMAL;
-            dev_log_status_change(&p->dev);
+    case DEV_FSM_RESET: {
+        if (dev_max31725_detect(d)) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
             break;
-        } else {
-            d->state = MAX31725_STATE_ERROR;
         }
-        if (stateTicks(d) > 2000) {
-            p->dev.device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&p->dev);
-            d->state = MAX31725_STATE_ERROR;
+        if (dev_fsm_stateTicks(fsm) > DETECT_TIMEOUT_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
             break;
         }
         break;
     }
-    case MAX31725_STATE_RUN:
-        if (! dev_max31725_read(p)) {
-            p->dev.device_status = DEVICE_FAIL;
-            dev_log_status_change(&p->dev);
-            d->state = MAX31725_STATE_ERROR;
+    case DEV_FSM_RUN:
+        if (! dev_max31725_read(d)) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
             break;
         }
-        // log_printf(LOG_INFO, "MAX31725 temperature %.2f", d->temp);
-        d->state = MAX31725_STATE_PAUSE;
+        set_device_status(&d->dev, DEVICE_NORMAL);
+        dev_fsm_change(fsm, DEV_FSM_PAUSE);
         break;
-    case MAX31725_STATE_PAUSE:
-        if (stateTicks(d) > POLL_DELAY_TICKS) {
-            d->state = MAX31725_STATE_RUN;
+    case DEV_FSM_PAUSE:
+        if (dev_fsm_stateTicks(fsm) > POLL_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
         }
         break;
-    case MAX31725_STATE_ERROR:
-        if (stateTicks(d) > ERROR_DELAY_TICKS) {
-            d->state = MAX31725_STATE_RESET;
+    case DEV_FSM_ERROR:
+        set_device_status(&d->dev, DEVICE_FAIL);
+        if (dev_fsm_stateTicks(fsm) > ERROR_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RESET);
         }
         break;
     default:
-        d->state = MAX31725_STATE_RESET;
+        dev_fsm_change(fsm, DEV_FSM_RESET);
     }
-
-    if (old_state != d->state) {
-        d->state_start_tick = osKernelSysTick();
-    }
+    if (old_device_status != d->dev.device_status)
+        dev_log_status_change(&d->dev);
 }

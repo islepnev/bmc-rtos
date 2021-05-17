@@ -23,6 +23,6 @@ bool tqdc_clkmux_running(Dev_tqdc_clkmux *d)
 {
     if (!d)
         return false;
-    return d->priv.fsm_state == TQDC_CLKMUX_STATE_RUN ||
-           d->priv.fsm_state == TQDC_CLKMUX_STATE_PAUSE;
+    return d->dev.fsm.state == DEV_FSM_RUN ||
+           d->dev.fsm.state == DEV_FSM_PAUSE;
 }

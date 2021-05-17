@@ -54,22 +54,23 @@ typedef enum {
 
 void dev_tqdc_clkmux_init(Dev_tqdc_clkmux *d)
 {
-    d->dev.device_status = DEVICE_UNKNOWN;
+    set_device_status(&d->dev, DEVICE_UNKNOWN);
     d->priv.clk_source = TQDC_CLK_SOURCE_LOCAL_DIRECT;
 }
 
-static bool dev_clkmux_set_internal(Dev_tqdc_clkmux *d)
+bool dev_tqdc_clkmux_set(Dev_tqdc_clkmux *d)
 {
-    bool ok = true;
     clkmux_gpioa gpioa;
     gpioa.all = 0;
     gpioa.bit.clk_adc_sel = (d->priv.clk_source == TQDC_CLK_SOURCE_LOCAL_DIRECT);
     gpioa.bit.clk_tdc_sel = !gpioa.bit.clk_adc_sel;
-    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpioa.all);
+    if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpioa.all))
+        goto err;
 
     clkmux_gpiob gpiob;
     gpiob.all = 0;
-    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+    if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+        goto err;
     crsw_enum_t crsw_in_main;
     switch (d->priv.clk_source) {
     case TQDC_CLK_SOURCE_VXS: crsw_in_main = CRSW1_IN_VXS; break;
@@ -85,23 +86,30 @@ static bool dev_clkmux_set_internal(Dev_tqdc_clkmux *d)
     for (int i=0; i<4; i++) {
         gpiob.bit.crsw_sin = crsw1_output_map[i];
         gpiob.bit.crsw_sout = i;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+            goto err;
         gpiob.bit.crsw_load = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+            goto err;
         gpiob.bit.crsw_load = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+            goto err;
         gpiob.bit.crsw_conf = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+            goto err;
         gpiob.bit.crsw_conf = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpiob.all))
+            goto err;
     }
-    return ok;
+    return true;
+err:
+    return false;
 }
 
-DeviceStatus dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
+bool dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
 {
     if (! mcp23017_detect(&d->dev)) {
-        goto unknown;
+        goto err;
     }
 //    uint8_t data = 0x55;
 //    if (! mcp23017_read(&d->dev, MCP23017_IODIRB, &data))
@@ -112,7 +120,7 @@ DeviceStatus dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
 //    }
     uint8_t data = 0x55;
     if (! mcp23017_read(&d->dev, MCP23017_IPOLA, &data))
-        return DEVICE_FAIL;
+        goto err;
     if (data != 0x00) {
         log_printf(LOG_ERR, "clkmux: bad default value for register %d", MCP23017_IPOLA);
         goto err;
@@ -123,20 +131,7 @@ DeviceStatus dev_tqdc_clkmux_detect(Dev_tqdc_clkmux *d)
     if (! mcp23017_write(&d->dev, MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
-    d->dev.device_status = DEVICE_NORMAL;
-    return DEVICE_NORMAL;
+    return true;
 err:
-    d->dev.device_status = DEVICE_FAIL;
-    return DEVICE_FAIL;
-unknown:
-    d->dev.device_status = DEVICE_UNKNOWN;
-    return DEVICE_UNKNOWN;
-}
-
-DeviceStatus dev_tqdc_clkmux_set(struct Dev_tqdc_clkmux *d)
-{
-    if (!dev_clkmux_set_internal(d)) {
-        d->dev.device_status = DEVICE_FAIL;
-    }
-    return d->dev.device_status;
+    return false;
 }

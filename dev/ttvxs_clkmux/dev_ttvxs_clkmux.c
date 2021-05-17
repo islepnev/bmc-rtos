@@ -137,10 +137,10 @@ err:
     return false;
 }
 
-DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
+bool dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
 {
     if (! mcp23017_detect(&d->dev)) {
-        goto unknown;
+        goto err;
     }
 //    uint8_t data = 0x55;
 //    if (! mcp23017_read(MCP23017_IODIRB, &data))
@@ -161,17 +161,12 @@ DeviceStatus dev_ttvxs_clkmux_detect(Dev_ttvxs_clkmux *d)
     if (! mcp23017_write(&d->dev, MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
-    d->dev.device_status = DEVICE_NORMAL;
-    return DEVICE_NORMAL;
+    return true;
 err:
-    d->dev.device_status = DEVICE_FAIL;
-    return DEVICE_FAIL;
-unknown:
-    d->dev.device_status = DEVICE_UNKNOWN;
-    return DEVICE_UNKNOWN;
+    return false;
 }
 
-DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
+bool dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
 {
     if (!dev_clkmux_set_pll_source(d))
         goto err;
@@ -179,7 +174,7 @@ DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d)
         goto err;
     if (!dev_clkmux_set_crsw2(d))
         goto err;
-    return DEVICE_NORMAL;
+    return true;
 err:
-    return DEVICE_FAIL;
+    return false;
 }

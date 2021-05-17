@@ -28,21 +28,11 @@ extern "C" {
 #endif
 
 typedef enum {
-    CRU16_CLKMUX_STATE_RESET,
-    CRU16_CLKMUX_STATE_RUN,
-    CRU16_CLKMUX_STATE_PAUSE,
-    CRU16_CLKMUX_STATE_ERROR
-} cru16_clkmux_state_t;
-
-typedef enum {
-    CRU16_PLL_SOURCE_DIV3 = 0,
-    CRU16_PLL_SOURCE_FMC = 1,
-    CRU16_PLL_SOURCE_EXT = 2,
+    CRU16_PLL_SOURCE_LOCAL = 0,
+    CRU16_PLL_SOURCE_VXS = 1,
 } cru16_pll_source_t;
 
 typedef struct Dev_cru16_clkmux_priv {
-    uint32_t stateStartTick;
-    cru16_clkmux_state_t fsm_state;
     cru16_pll_source_t pll_source;
 } Dev_cru16_clkmux_priv;
 

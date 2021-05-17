@@ -22,65 +22,58 @@
 #include "device_status_log.h"
 #include "log/log.h"
 
+static const uint32_t DETECT_TIMEOUT_TICKS = 2000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t stateTicks(const Dev_tmp421_priv *p)
+void dev_tmp421_run(Dev_tmp421 *d)
 {
-    return osKernelSysTick() - p->state_start_tick;
-}
-
-void dev_tmp421_run(Dev_tmp421 *p)
-{
-    Dev_tmp421_priv *d = (Dev_tmp421_priv *)&p->priv;
-    dev_tmp421_state_t old_state = d->state;
-    switch (d->state) {
-    case TMP421_STATE_SHUTDOWN: {
-        d->state = TMP421_STATE_RESET;
+    const DeviceStatus old_device_status = d->dev.device_status;
+    dev_fsm_t *fsm = &d->dev.fsm;
+    const bool power_on = true;
+    if (!power_on) {
+        dev_fsm_change(fsm, DEV_FSM_SHUTDOWN);
+    }
+    switch (fsm->state) {
+    case DEV_FSM_SHUTDOWN: {
+        if (power_on)
+            dev_fsm_change(fsm, DEV_FSM_RESET);
+        set_device_status(&d->dev, DEVICE_UNKNOWN);
         break;
     }
-    case TMP421_STATE_RESET: {
-        if (dev_tmp421_detect(p)) {
-            d->state = TMP421_STATE_RUN;
-            p->dev.device_status = DEVICE_NORMAL;
-            dev_log_status_change(&p->dev);
+    case DEV_FSM_RESET: {
+        if (dev_tmp421_detect(d)) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
             break;
-        } else {
-            d->state = TMP421_STATE_ERROR;
         }
-        if (stateTicks(d) > 2000) {
-            p->dev.device_status = DEVICE_UNKNOWN;
-            dev_log_status_change(&p->dev);
-            d->state = TMP421_STATE_ERROR;
+        if (dev_fsm_stateTicks(fsm) > DETECT_TIMEOUT_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
             break;
         }
         break;
     }
-    case TMP421_STATE_RUN:
-        if (! dev_tmp421_read(p)) {
-            p->dev.device_status = DEVICE_FAIL;
-            dev_log_status_change(&p->dev);
-            d->state = TMP421_STATE_ERROR;
+    case DEV_FSM_RUN:
+        if (! dev_tmp421_read(d)) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
             break;
         }
-        // log_printf(LOG_INFO, "TMP421 temperature %.2f", d->temp);
-        d->state = TMP421_STATE_PAUSE;
+        set_device_status(&d->dev, DEVICE_NORMAL);
+        dev_fsm_change(fsm, DEV_FSM_PAUSE);
         break;
-    case TMP421_STATE_PAUSE:
-        if (stateTicks(d) > POLL_DELAY_TICKS) {
-            d->state = TMP421_STATE_RUN;
+    case DEV_FSM_PAUSE:
+        if (dev_fsm_stateTicks(fsm) > POLL_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
         }
         break;
-    case TMP421_STATE_ERROR:
-        if (stateTicks(d) > ERROR_DELAY_TICKS) {
-            d->state = TMP421_STATE_RESET;
+    case DEV_FSM_ERROR:
+        set_device_status(&d->dev, DEVICE_FAIL);
+        if (dev_fsm_stateTicks(fsm) > ERROR_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RESET);
         }
         break;
     default:
-        d->state = TMP421_STATE_RESET;
+        dev_fsm_change(fsm, DEV_FSM_RESET);
     }
-
-    if (old_state != d->state) {
-        d->state_start_tick = osKernelSysTick();
-    }
+    if (old_device_status != d->dev.device_status)
+        dev_log_status_change(&d->dev);
 }

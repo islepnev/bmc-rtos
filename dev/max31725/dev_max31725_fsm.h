@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 struct Dev_max31725;
-void dev_max31725_run(struct Dev_max31725 *p, bool power_on);
+void dev_max31725_run(struct Dev_max31725 *d, bool power_on);
 
 #ifdef __cplusplus
 }

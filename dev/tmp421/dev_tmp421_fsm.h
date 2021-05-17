@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 struct Dev_tmp421;
-void dev_tmp421_run(struct Dev_tmp421 *p);
+void dev_tmp421_run(struct Dev_tmp421 *d);
 
 #ifdef __cplusplus
 }

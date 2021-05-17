@@ -21,6 +21,6 @@ bool cru16_clkmux_running(const Dev_cru16_clkmux *d)
 {
     if (!d)
         return false;
-    return d->priv.fsm_state == CRU16_CLKMUX_STATE_RUN ||
-           d->priv.fsm_state == CRU16_CLKMUX_STATE_PAUSE;
+    return d->dev.fsm.state == DEV_FSM_RUN ||
+           d->dev.fsm.state == DEV_FSM_PAUSE;
 }

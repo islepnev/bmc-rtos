@@ -28,22 +28,12 @@ extern "C" {
 #endif
 
 typedef enum {
-    TTVXS_CLKMUX_STATE_SHUTDOWN,
-    TTVXS_CLKMUX_STATE_RESET,
-    TTVXS_CLKMUX_STATE_RUN,
-    TTVXS_CLKMUX_STATE_PAUSE,
-    TTVXS_CLKMUX_STATE_ERROR
-} ttvxs_clkmux_state_t;
-
-typedef enum {
     TTVXS_PLL_SOURCE_DIV3 = 0,
     TTVXS_PLL_SOURCE_FMC = 1,
     TTVXS_PLL_SOURCE_EXT = 2,
 } ttvxs_pll_source_t;
 
 typedef struct Dev_ttvxs_clkmux_priv {
-    uint32_t stateStartTick;
-    ttvxs_clkmux_state_t fsm_state;
     ttvxs_pll_source_t pll_source;
 } Dev_ttvxs_clkmux_priv;
 

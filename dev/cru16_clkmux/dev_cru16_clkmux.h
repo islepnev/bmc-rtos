@@ -18,7 +18,7 @@
 #ifndef DEV_CRU16_CLKMUX_H
 #define DEV_CRU16_CLKMUX_H
 
-#include "dev_common_types.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,8 +26,8 @@ extern "C" {
 
 struct Dev_cru16_clkmux;
 
-DeviceStatus dev_cru16_clkmux_detect(struct Dev_cru16_clkmux *d);
-DeviceStatus dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d);
+bool dev_cru16_clkmux_detect(struct Dev_cru16_clkmux *d);
+bool dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d);
 
 #ifdef __cplusplus
 }

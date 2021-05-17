@@ -25,17 +25,6 @@
 
 typedef union {
     struct {
-        uint8_t reserved: 2;
-        uint8_t crsw_sin: 2;
-        uint8_t crsw_sout: 2;
-        uint8_t crsw_load: 1;
-        uint8_t crsw_conf: 1;
-    } bit;
-    uint8_t all;
-} clkmux_gpioa;
-
-typedef union {
-    struct {
         uint8_t pll_bypass: 1;
         uint8_t unused1: 1;
         uint8_t crsw_sin: 2;
@@ -60,74 +49,48 @@ enum {
     CRSW1_IN_AD9516 = 2,
     CRSW1_IN_PLL0B_CRSWQ2 = 3,
 };
-/*
-enum {
-    CRSW2_IN_PLL0C = 0,
-    CRSW2_IN_PLL1B = 1,
-    CRSW2_IN_FMC_GBT = 2,
-    CRSW2_IN_AD9516 = 3,
-};
-*/
+
 static bool dev_clkmux_set_crsw1(Dev_cru16_clkmux *d)
 {
-    bool ok = true;
     clkmux_gpiob data;
     data.all = 0;
     data.bit.pll_bypass = 0;
-    ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+    if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+        goto err;
+    int clock_source = (d->priv.pll_source == CRU16_PLL_SOURCE_VXS) ? CRSW1_IN_VXS : CRSW1_IN_AD9516;
     int crsw1_output_map[4] = {
-        CRSW1_IN_AD9516,
+        clock_source,
         CRSW1_IN_PLL0B_CRSWQ2,
-        CRSW1_IN_AD9516,
-        CRSW1_IN_AD9516 // Q3 unused
+        clock_source,
+        clock_source // Q3 unused
     };
     for (int i=0; i<4; i++) {
         data.bit.crsw_sin = crsw1_output_map[i];
         data.bit.crsw_sout = i;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_load = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_load = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_conf = 1;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
         data.bit.crsw_conf = 0;
-        ok &= mcp23017_write(&d->dev, MCP23017_GPIOB, data.all);
+        if (!mcp23017_write(&d->dev, MCP23017_GPIOB, data.all))
+            goto err;
     }
-    return ok;
+    return true;
+err:
+    return false;
 }
 
-/*
-static void dev_clkmux_set_crsw2(Dev_cru16_clkmux *d)
-{
-    clkmux_gpioa data;
-    data.all = 0;
-    int crsw2_output_map[4] = {
-        CRSW2_IN_AD9516,
-        CRSW2_IN_AD9516,
-        CRSW2_IN_AD9516,
-        CRSW2_IN_AD9516
-    };
-    for (int i=0; i<4; i++) {
-        data.bit.crsw_sin = crsw2_output_map[i];
-        data.bit.crsw_sout = i;
-        mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
-        data.bit.crsw_load = 1;
-        mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
-        data.bit.crsw_load = 0;
-        mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
-        data.bit.crsw_conf = 1;
-        mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
-        data.bit.crsw_conf = 0;
-        mcp23017_write(&d->dev, MCP23017_GPIOA, data.all);
-    }
-}
-*/
-
-DeviceStatus dev_cru16_clkmux_detect(Dev_cru16_clkmux *d)
+bool dev_cru16_clkmux_detect(Dev_cru16_clkmux *d)
 {
     if (!mcp23017_detect(&d->dev)) {
-        goto unknown;
+        goto err;
     }
 //    uint8_t data = 0x55;
 //    if (! mcp23017_read(MCP23017_IODIRB, &data))
@@ -137,7 +100,7 @@ DeviceStatus dev_cru16_clkmux_detect(Dev_cru16_clkmux *d)
 //        goto err;
 //    }
 //    if (! mcp23017_read(MCP23017_IPOLA, &data))
-//        return DEVICE_FAIL;
+//        goto err;
 //    if (data != 0x00) {
 //        log_put(LOG_ERR, "clkmux: bad default value for register 2");
 //        goto err;
@@ -148,21 +111,19 @@ DeviceStatus dev_cru16_clkmux_detect(Dev_cru16_clkmux *d)
     if (! mcp23017_write(&d->dev, MCP23017_IODIRB, 0x00)) // 0 = output
         goto err;
 
-    d->dev.device_status = DEVICE_NORMAL;
-    return DEVICE_NORMAL;
+    return true;
 err:
-    d->dev.device_status = DEVICE_FAIL;
-    return DEVICE_FAIL;
-unknown:
-    d->dev.device_status = DEVICE_UNKNOWN;
-    return DEVICE_UNKNOWN;
+    return false;
 }
 
-DeviceStatus dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d)
+bool dev_cru16_clkmux_set(struct Dev_cru16_clkmux *d)
 {
-    bool ok = true;
-    ok &= dev_clkmux_set_pll_source(d);
-    ok &= dev_clkmux_set_crsw1(d);
-//    dev_clkmux_set_crsw2(d);
-    return ok ? DEVICE_NORMAL : DEVICE_FAIL;
+    if (!dev_clkmux_set_pll_source(d))
+        goto err;
+    if (!dev_clkmux_set_crsw1(d))
+        goto err;
+
+    return true;
+err:
+    return false;
 }
