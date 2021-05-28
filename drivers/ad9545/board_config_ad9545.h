@@ -60,11 +60,11 @@
 #define PLL_DIST_DIV_0_B     20
 #define PLL_DIST_DIV_0_C     20
 #define DPLL1_EXT_ZD         0
-#define DPLL1_ZD_FB_Path     PROFILE_INT_ZD_FEEDBACK_OUT1A
-#define APLL1_Frequency      3.25e9
-#define APLL1_M_Divider      10
-#define PLL_DIST_DIV_1_A     13
-#define PLL_DIST_DIV_1_B     13
+#define DPLL1_ZD_FB_Path     PROFILE_INT_ZD_FEEDBACK_OUT1B
+#define APLL1_Frequency      3.75e9
+#define APLL1_M_Divider      11
+#define PLL_DIST_DIV_1_A     12
+#define PLL_DIST_DIV_1_B     15
 
 #elif defined (BOARD_CRU16)
 
