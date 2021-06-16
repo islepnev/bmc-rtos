@@ -1,4 +1,5 @@
 /*
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,35 +16,23 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef APP_NAME_H
-#define APP_NAME_H
+#ifndef GPIO_H
+#define GPIO_H
 
-#include "bsp.h"
-
-#if defined(BOARD_ADC64VE)
-#define APP_NAME_STR "ADC64VE"
-#elif defined(BOARD_CRU16)
-#define APP_NAME_STR "CRU16"
-#elif defined(BOARD_TDC64)
-#define APP_NAME_STR "TDC64VHLE"
-#elif defined(BOARD_TDC72)
-#define APP_NAME_STR "TDC72VXS4"
-#elif defined(BOARD_TDC72VHLV3)
-#define APP_NAME_STR "TDC72VHL-v3"
-#elif defined(BOARD_TDC72VHLV2)
-#define APP_NAME_STR "TDC72VHL-v2"
-#elif defined(BOARD_TTVXS)
-#define APP_NAME_STR "TTVXS"
-#elif defined(BOARD_TQDC)
-#define APP_NAME_STR "TQDC"
-#else
-#error Unknown BOARD
+#ifdef __cplusplus
+ extern "C" {
 #endif
 
-#define APP_NAME_STR_BMC APP_NAME_STR "-BMC"
+#include <stdbool.h>
+#include "stm32f7xx_hal_gpio.h"
 
-#define APP_DESCR_STR APP_NAME_STR_BMC " v" VERSION_STR
+void MX_GPIO_Init(void);
 
-#define VENDOR_STR "JINR AFI"
+void write_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin, bool state);
+bool read_gpio_pin(GPIO_TypeDef *gpio, uint16_t pin);
 
-#endif // APP_NAME_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GPIO_H */
