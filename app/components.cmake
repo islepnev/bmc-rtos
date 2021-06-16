@@ -8,14 +8,27 @@ set(COMMON_COMPONENTS
     thset
 )
 
-set(ENABLE_LWIP 0)
+if(${BOARD} STREQUAL "adc64ve")
+    set(BOARD_COMPONENTS
+        ad9516
+        ad9545
+        adc64ve_clkmux
+        fpga
+        max31725
+        powermon
+        sfpiic
+        sensors
+        tmp421
+        vxsiics
+    )
+endif()
 
 if(${BOARD} STREQUAL "cru16")
-    set(ENABLE_LWIP 1)
     set(BOARD_COMPONENTS
         ad9516
         ad9545
         cru16_clkmux
+        ethernet
         fpga
         max31725
         powermon
@@ -27,10 +40,10 @@ if(${BOARD} STREQUAL "cru16")
 endif()
 
 if(${BOARD} STREQUAL "ttvxs")
-    set(ENABLE_LWIP 1)
     set(BOARD_COMPONENTS
         ad9516
         ad9545
+        ethernet
         fpga
         max31725
         powermon
@@ -89,11 +102,11 @@ if(${BOARD} STREQUAL "tdc72vhlv2")
 endif()
 
 if(${BOARD} STREQUAL "tqdc")
-    set(ENABLE_LWIP 1)
     set(BOARD_COMPONENTS
         ad9516
         ad9545
         digipot
+        ethernet
         fpga
         max31725
         powermon

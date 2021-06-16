@@ -722,6 +722,12 @@ __weak void ethernetif_notify_conn_changed(struct netif *netif)
 
 /* USER CODE BEGIN 9 */
 
+// .weak in CMSIS/Device/ST/STM32F7xx/Source/Templates/gcc/startup_stm32f769xx.s
+void ETH_IRQHandler(void)
+{
+    HAL_ETH_IRQHandler(&EthHandle);
+}
+
 /* USER CODE END 9 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
