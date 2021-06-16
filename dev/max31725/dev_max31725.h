@@ -22,24 +22,13 @@
 #include <stdint.h>
 
 #include "bus/bus_types.h"
-#include "dev_common_types.h"
 #include "devicebase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    MAX31725_STATE_SHUTDOWN,
-    MAX31725_STATE_RESET,
-    MAX31725_STATE_RUN,
-    MAX31725_STATE_PAUSE,
-    MAX31725_STATE_ERROR
-} dev_max31725_state_t;
-
 typedef struct Dev_max31725_priv {
-    dev_max31725_state_t state;
-    uint32_t state_start_tick;
     double temp;
 } Dev_max31725_priv;
 

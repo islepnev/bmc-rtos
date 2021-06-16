@@ -21,6 +21,6 @@ bool ttvxs_clkmux_running(Dev_ttvxs_clkmux *d)
 {
     if (!d)
         return false;
-    return d->priv.fsm_state == TTVXS_CLKMUX_STATE_RUN ||
-           d->priv.fsm_state == TTVXS_CLKMUX_STATE_PAUSE;
+    return d->dev.fsm.state == DEV_FSM_RUN ||
+           d->dev.fsm.state == DEV_FSM_PAUSE;
 }

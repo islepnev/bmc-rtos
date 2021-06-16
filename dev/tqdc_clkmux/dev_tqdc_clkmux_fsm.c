@@ -19,64 +19,66 @@
 
 #include "app_shared_data.h"
 #include "cmsis_os.h"
+#include "dev_tqdc_clkmux.h"
+#include "dev_tqdc_clkmux_types.h"
+#include "device_status_log.h"
 #include "log/log.h"
-#include "tqdc_clkmux/dev_tqdc_clkmux.h"
-#include "tqdc_clkmux/dev_tqdc_clkmux_types.h"
 
 static const uint32_t MAX_ERROR_COUNT = 3;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;
 
-static uint32_t stateTicks(const Dev_tqdc_clkmux_priv *p)
-{
-    return osKernelSysTick() - p->stateStartTick;
-}
-
 static uint32_t error_count = 0;
 
 void dev_tqdc_clkmux_run(Dev_tqdc_clkmux *d)
 {
-    Dev_tqdc_clkmux_priv *p = &d->priv;
-    tqdc_clkmux_fsm_state_t old_state = p->fsm_state;
-    if (!enable_power || !system_power_present) {
-        p->fsm_state = TQDC_CLKMUX_STATE_RESET;
-        d->dev.device_status = DEVICE_UNKNOWN;
-        return;
+    const DeviceStatus old_device_status = d->dev.device_status;
+    dev_fsm_t *fsm = &d->dev.fsm;
+
+    bool power_on = enable_power && system_power_present;
+    if (!power_on) {
+        dev_fsm_change(fsm, DEV_FSM_SHUTDOWN);
     }
-    switch (p->fsm_state) {
-    case TQDC_CLKMUX_STATE_RESET: {
+    switch (fsm->state) {
+    case DEV_FSM_SHUTDOWN: {
+        if (power_on)
+            dev_fsm_change(fsm, DEV_FSM_RESET);
+        set_device_status(&d->dev, DEVICE_UNKNOWN);
+        break;
+    }
+    case DEV_FSM_RESET: {
         dev_tqdc_clkmux_init(d);
-        DeviceStatus status = dev_tqdc_clkmux_detect(d);
-        if (status == DEVICE_NORMAL)
-            p->fsm_state = TQDC_CLKMUX_STATE_RUN;
+        if (dev_tqdc_clkmux_detect(d)) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
+            break;
+        }
         log_printf(LOG_WARNING, "IIC %d.%2X %s detect failed",
                    d->dev.bus.bus_number, d->dev.bus.address, d->dev.name);
         error_count++;
         if (error_count >= MAX_ERROR_COUNT)
-            p->fsm_state = TQDC_CLKMUX_STATE_ERROR;
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
         break;
     }
-    case TQDC_CLKMUX_STATE_RUN:
-        if (DEVICE_NORMAL == dev_tqdc_clkmux_set(d)) {
-            p->fsm_state = TQDC_CLKMUX_STATE_PAUSE;
-        } else {
-            p->fsm_state = TQDC_CLKMUX_STATE_ERROR;
-            log_printf(LOG_ERR, "CLKMUX IIC error");
+    case DEV_FSM_RUN:
+        if (! dev_tqdc_clkmux_set(d)) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
+        }
+        set_device_status(&d->dev, DEVICE_NORMAL);
+        dev_fsm_change(fsm, DEV_FSM_PAUSE);
+        break;
+    case DEV_FSM_PAUSE:
+        if (dev_fsm_stateTicks(fsm) > POLL_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
         }
         break;
-    case TQDC_CLKMUX_STATE_PAUSE:
-        if (stateTicks(p) > POLL_DELAY_TICKS) {
-            p->fsm_state = TQDC_CLKMUX_STATE_RUN;
-        }
-        break;
-    case TQDC_CLKMUX_STATE_ERROR:
-        if (stateTicks(p) > ERROR_DELAY_TICKS) {
+    case DEV_FSM_ERROR:
+        set_device_status(&d->dev, DEVICE_FAIL);
+        if (dev_fsm_stateTicks(fsm) > ERROR_DELAY_TICKS) {
             error_count = 0;
-            p->fsm_state = TQDC_CLKMUX_STATE_RESET;
+            dev_fsm_change(fsm, DEV_FSM_RESET);
         }
         break;
     }
-    if (old_state != p->fsm_state) {
-        p->stateStartTick = osKernelSysTick();
-    }
+    if (old_device_status != d->dev.device_status)
+        dev_log_status_change(&d->dev);
 }

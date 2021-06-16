@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,20 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_TMP421_FSM_H
-#define DEV_TMP421_FSM_H
+#include "dev_fsm.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "cmsis_os.h"
+#include "devicebase.h"
 
-struct Dev_tmp421;
-void dev_tmp421_run(struct Dev_tmp421 *d);
-
-#ifdef __cplusplus
+void dev_fsm_change(dev_fsm_t *fsm, const fsm_state_t state)
+{
+    if (state == fsm->state)
+        return;
+    fsm->stateStartTick = osKernelSysTick();
+    fsm->state = state;
 }
-#endif
 
-#endif // DEV_TMP421_FSM_H
+uint32_t dev_fsm_stateTicks(const dev_fsm_t *fsm)
+{
+    return osKernelSysTick() - fsm->stateStartTick;
+}

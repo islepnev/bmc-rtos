@@ -28,13 +28,6 @@ extern "C" {
 #endif
 
 typedef enum {
-    TQDC_CLKMUX_STATE_RESET,
-    TQDC_CLKMUX_STATE_RUN,
-    TQDC_CLKMUX_STATE_PAUSE,
-    TQDC_CLKMUX_STATE_ERROR
-} tqdc_clkmux_fsm_state_t;
-
-typedef enum {
     TQDC_CLK_SOURCE_LOCAL_DIRECT = 0,
     TQDC_CLK_SOURCE_LOCAL_PLL = 1,
     TQDC_CLK_SOURCE_VXS = 2,
@@ -42,8 +35,6 @@ typedef enum {
 } tqdc_clk_source_t;
 
 typedef struct Dev_tqdc_clkmux_priv {
-    uint32_t stateStartTick;
-    tqdc_clkmux_fsm_state_t fsm_state;
     tqdc_clk_source_t clk_source;
 } Dev_tqdc_clkmux_priv;
 

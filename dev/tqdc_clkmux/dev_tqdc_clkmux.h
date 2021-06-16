@@ -18,6 +18,7 @@
 #ifndef DEV_TQDC_CLKMUX_H
 #define DEV_TQDC_CLKMUX_H
 
+#include <stdbool.h>
 #include "dev_common_types.h"
 
 #ifdef __cplusplus
@@ -27,8 +28,8 @@ extern "C" {
 struct Dev_tqdc_clkmux;
 
 void dev_tqdc_clkmux_init(struct Dev_tqdc_clkmux *d);
-DeviceStatus dev_tqdc_clkmux_detect(struct Dev_tqdc_clkmux *d);
-DeviceStatus dev_tqdc_clkmux_set(struct Dev_tqdc_clkmux *d);
+bool dev_tqdc_clkmux_detect(struct Dev_tqdc_clkmux *d);
+bool dev_tqdc_clkmux_set(struct Dev_tqdc_clkmux *d);
 
 #ifdef __cplusplus
 }

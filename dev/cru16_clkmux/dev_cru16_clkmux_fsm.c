@@ -21,60 +21,67 @@
 #include "cmsis_os.h"
 #include "dev_cru16_clkmux.h"
 #include "dev_cru16_clkmux_types.h"
+#include "device_status_log.h"
 #include "log/log.h"
 
+static const uint32_t DETECT_TIMEOUT_TICKS = 2000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
 static const uint32_t POLL_DELAY_TICKS  = 100;
 
-static uint32_t stateTicks(const Dev_cru16_clkmux_priv *p)
+static void dev_cru16_clkmux_init(Dev_cru16_clkmux *d)
 {
-    return osKernelSysTick() - p->stateStartTick;
-}
-
-static void struct_vxs_i2c_init(Dev_cru16_clkmux *d)
-{
-    d->dev.device_status = DEVICE_UNKNOWN;
-    d->priv.pll_source = CRU16_PLL_SOURCE_DIV3;
+    set_device_status(&d->dev, DEVICE_UNKNOWN);
+    d->priv.pll_source = CRU16_PLL_SOURCE_LOCAL;
 }
 
 void dev_cru16_clkmux_run(Dev_cru16_clkmux *d)
 {
-    Dev_cru16_clkmux_priv *p = &d->priv;
-    cru16_clkmux_state_t old_state = p->fsm_state;
+    const DeviceStatus old_device_status = d->dev.device_status;
+    dev_fsm_t *fsm = &d->dev.fsm;
 
-    if (!enable_power || !system_power_present) {
-        p->fsm_state = CRU16_CLKMUX_STATE_RESET;
-        d->dev.device_status = DEVICE_UNKNOWN;
-        return;
+    bool power_on = enable_power && system_power_present;
+    if (!power_on) {
+        dev_fsm_change(fsm, DEV_FSM_SHUTDOWN);
     }
-    switch (p->fsm_state) {
-    case CRU16_CLKMUX_STATE_RESET: {
-        struct_vxs_i2c_init(d);
-        DeviceStatus status = dev_cru16_clkmux_detect(d);
-        if (status == DEVICE_NORMAL)
-            p->fsm_state = CRU16_CLKMUX_STATE_RUN;
+    switch (fsm->state) {
+    case DEV_FSM_SHUTDOWN: {
+        if (power_on)
+            dev_fsm_change(fsm, DEV_FSM_RESET);
+        set_device_status(&d->dev, DEVICE_UNKNOWN);
         break;
     }
-    case CRU16_CLKMUX_STATE_RUN:
-        if (DEVICE_NORMAL == dev_cru16_clkmux_set(d)) {
-            p->fsm_state = CRU16_CLKMUX_STATE_PAUSE;
-        } else {
-            p->fsm_state = CRU16_CLKMUX_STATE_ERROR;
-            log_printf(LOG_ERR, "CLKMUX IIC error");
+    case DEV_FSM_RESET: {
+        dev_cru16_clkmux_init(d);
+        if (dev_cru16_clkmux_detect(d)) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
+            break;
         }
-        break;
-    case CRU16_CLKMUX_STATE_PAUSE:
-        if (stateTicks(p) > POLL_DELAY_TICKS) {
-            p->fsm_state = CRU16_CLKMUX_STATE_RUN;
-        }
-        break;
-    case CRU16_CLKMUX_STATE_ERROR:
-        if (stateTicks(p) > ERROR_DELAY_TICKS) {
-            p->fsm_state = CRU16_CLKMUX_STATE_RESET;
+        if (dev_fsm_stateTicks(fsm) > DETECT_TIMEOUT_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
+            break;
         }
         break;
     }
-    if (old_state != p->fsm_state) {
-        p->stateStartTick = osKernelSysTick();
+    case DEV_FSM_RUN:
+        if (!dev_cru16_clkmux_set(d)) {
+            dev_fsm_change(fsm, DEV_FSM_ERROR);
+            break;
+        }
+        set_device_status(&d->dev, DEVICE_NORMAL);
+        dev_fsm_change(fsm, DEV_FSM_PAUSE);
+        break;
+    case DEV_FSM_PAUSE:
+        if (dev_fsm_stateTicks(fsm) > POLL_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RUN);
+        }
+        break;
+    case DEV_FSM_ERROR:
+        set_device_status(&d->dev, DEVICE_FAIL);
+        if (dev_fsm_stateTicks(fsm) > ERROR_DELAY_TICKS) {
+            dev_fsm_change(fsm, DEV_FSM_RESET);
+        }
+        break;
     }
+    if (old_device_status != d->dev.device_status)
+        dev_log_status_change(&d->dev);
 }

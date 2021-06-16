@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,25 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_TMP421_FSM_H
-#define DEV_TMP421_FSM_H
+#ifndef DEV_FSM_H
+#define DEV_FSM_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdint.h>
 
-struct Dev_tmp421;
-void dev_tmp421_run(struct Dev_tmp421 *d);
+typedef enum {
+    DEV_FSM_SHUTDOWN,
+    DEV_FSM_RESET,
+    DEV_FSM_RUN,
+    DEV_FSM_PAUSE,
+    DEV_FSM_ERROR
+} fsm_state_t;
 
-#ifdef __cplusplus
-}
-#endif
+typedef struct dev_fsm_t {
+    fsm_state_t state;
+    uint32_t stateStartTick;
+} dev_fsm_t;
 
-#endif // DEV_TMP421_FSM_H
+void dev_fsm_change(dev_fsm_t *fsm, const fsm_state_t state);
+uint32_t dev_fsm_stateTicks(const dev_fsm_t *fsm);
+
+#endif // DEV_FSM_H

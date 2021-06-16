@@ -18,7 +18,7 @@
 #ifndef DEV_TTVXS_CLKMUX_H
 #define DEV_TTVXS_CLKMUX_H
 
-#include "dev_common_types.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,8 +26,8 @@ extern "C" {
 
 struct Dev_ttvxs_clkmux;
 
-DeviceStatus dev_ttvxs_clkmux_detect(struct Dev_ttvxs_clkmux *d);
-DeviceStatus dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d);
+bool dev_ttvxs_clkmux_detect(struct Dev_ttvxs_clkmux *d);
+bool dev_ttvxs_clkmux_set(struct Dev_ttvxs_clkmux *d);
 
 #ifdef __cplusplus
 }
