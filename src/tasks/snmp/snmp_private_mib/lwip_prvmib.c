@@ -149,7 +149,7 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p || !p->count)
         return 0;
-    s32_t t = (s32_t)p->sensors[0].value * 100;
+    s32_t t = (s32_t)(p->sensors[0].value * 100);
     *uint_ptr = (s32_t)(t);
     return sizeof(*uint_ptr);
 }
