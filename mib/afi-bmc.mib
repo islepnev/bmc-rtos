@@ -10,7 +10,7 @@ IMPORTS
         FROM SNMPv2-TC;
 
 jinr MODULE-IDENTITY
-    LAST-UPDATED "202103010000Z"
+    LAST-UPDATED "202107200000Z"
     ORGANIZATION "JINR"
     CONTACT-INFO
          "email:    islepnev@jinr.ru"
@@ -387,6 +387,14 @@ fpgaRevision OBJECT-TYPE
         "System FPGA revision number"
     ::= { fpga 5 }
 
+fpgaTemperature OBJECT-TYPE
+    SYNTAX  Hundredths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current FPGA temperature in degrees Celsius"
+    ::= { fpga 6 }
+
 -- TTVXS subsystem
 
 ttvxs               OBJECT IDENTIFIER ::= { bmc 5 }
@@ -405,6 +413,14 @@ pllStatus OBJECT-TYPE
     DESCRIPTION
             "The current status of system PLL"
     ::= { pll 1 }
+
+pllTemperature OBJECT-TYPE
+    SYNTAX  Hundredths
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current PLL temperature in degrees Celsius"
+    ::= { pll 2 }
 
 sfp                 OBJECT IDENTIFIER ::= { ttvxs 2 }
 

@@ -27,6 +27,7 @@
 #include "lwip/netif.h"
 #include "lwip/prot/ethernet.h"
 
+#include "display.h"
 #include "log/log.h"
 #include "lldp_neighbor.h"
 #include "lldp_tlv.h"
@@ -102,6 +103,9 @@ static void decode_lldp_tlv(u8_t lldp_type, u16_t lldp_len, const u8_t *buf)
     }
 }
 
+static int lldp_errors = 0;
+static const int LLDP_ERROR_LIMIT = 3;
+
 static void lldp_input(struct pbuf *p, struct netif *netif)
 {
     LWIP_ERROR("netif != NULL", (netif != NULL), return;);
@@ -111,10 +115,19 @@ static void lldp_input(struct pbuf *p, struct netif *netif)
         u8_t lldp_type = buf[0] >> 1;
         u16_t lldp_len = ((buf[0] & 1)  << 8) + (buf[1]);
         i += 2;
+        if (lldp_type == 0) // End of LLDPDU
+            break;
         if (lldp_len == 0)
             continue;
         if (i + lldp_len > p->len) {
-            log_printf(LOG_DEBUG, "LLDP PDU error at byte %d", i);
+            if (lldp_errors < LLDP_ERROR_LIMIT) {
+                log_printf(LOG_DEBUG, "LLDP PDU error at byte %d (0x%04X): lldp_len=%d, p->len=%d", i, i, lldp_len, p->len);
+                hexdump(p->payload, p->len);
+            } else {
+               if (lldp_errors == LLDP_ERROR_LIMIT)
+                   log_printf(LOG_DEBUG, "LLDP PDU errors suppressed...");
+            }
+            lldp_errors++;
             break;
         }
         decode_lldp_tlv(lldp_type, lldp_len, &buf[2]);

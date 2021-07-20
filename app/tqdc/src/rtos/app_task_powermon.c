@@ -50,7 +50,7 @@ osThreadId powermonThreadId = NULL;
 enum { powermonThreadStackSize = threadStackSize + 140 };
 static const uint32_t powermonTaskLoopDelay = 10;
 
-#define TQDC_MAX31725_COUNT 4
+enum { TQDC_MAX31725_COUNT = 4 };
 
 static BusInterface tqdc_max31725_bus_info[TQDC_MAX31725_COUNT] = {
 {    .type = BUS_IIC,
@@ -110,11 +110,15 @@ static void local_init(DeviceBase *parent)
     create_device(&pm.dev, &thset.dev, &thset.priv, DEV_CLASS_THSET, tqdc_smbus_bus_info, "Thermometers");
 
     const char *therm_name[TQDC_MAX31725_COUNT] = {"VCXO", "TDC-A", "TDC-B", "Analog"};
+
+    // Board and FPGA temp
+    create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, tqdc_tmp421_bus_info, "FPGA, board temperatures");
+
+    // VCXO and others
     for (int i=0; i<TQDC_MAX31725_COUNT; i++) {
         create_device(&thset.dev, &therm1[i].dev, &therm1[i].priv, DEV_CLASS_MAX31725, tqdc_max31725_bus_info[i], therm_name[i]);
     }
 
-    create_device(&thset.dev, &therm2.dev, &therm2.priv, DEV_CLASS_TMP421, tqdc_tmp421_bus_info, "FPGA, board temperatures");
     create_device(&pm.dev, &digipots.dev, &digipots.priv, DEV_CLASS_DIGIPOTS, tqdc_smbus_bus_info, "DigiPots");
     create_digipots_subdevices(&digipots);
     create_sensor_subdevices(&pm);
@@ -136,11 +140,11 @@ static void local_init(DeviceBase *parent)
 static void start_task_powermon( void const *arg)
 {
     (void) arg;
+    dev_thset_add(&thset, "Board"); // therm2.dev.name
+    dev_thset_add(&thset, "FPGA");
     for (int i=0; i<TQDC_MAX31725_COUNT; i++) {
         dev_thset_add(&thset, therm1[i].dev.name);
     }
-    dev_thset_add(&thset, "FPGA");
-    dev_thset_add(&thset, "Board");
     while (1)
     {
         const uint32_t start = osKernelSysTick();
@@ -151,18 +155,21 @@ static void start_task_powermon( void const *arg)
         sfpiic_switch_enable(power_on);
         task_sfpiic_run(&sfpiic, power_on);
         sfpiic_switch_enable(false);
+
+        dev_tmp421_run(&therm2);
+        thset.priv.sensors[0].value = therm2.priv.temp_internal;
+        thset.priv.sensors[0].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+        thset.priv.sensors[1].value = therm2.priv.temp;
+        thset.priv.sensors[1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+
         for (int i=0; i<TQDC_MAX31725_COUNT; i++) {
             dev_max31725_run(&therm1[i], power_on);
-            thset.priv.sensors[i].value = therm1[i].priv.temp;
-            thset.priv.sensors[i].hdr.b.state = (therm1[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
+            thset.priv.sensors[2+i].value = therm1[i].priv.temp;
+            thset.priv.sensors[2+i].hdr.b.state = (therm1[i].dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         }
-        dev_tmp421_run(&therm2);
-        thset.priv.sensors[TQDC_MAX31725_COUNT+0].value = therm2.priv.temp;
-        thset.priv.sensors[TQDC_MAX31725_COUNT+0].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
-        thset.priv.sensors[TQDC_MAX31725_COUNT+1].value = therm2.priv.temp_internal;
-        thset.priv.sensors[TQDC_MAX31725_COUNT+1].hdr.b.state = (therm2.dev.device_status == DEVICE_NORMAL) ? SENSOR_NORMAL : SENSOR_UNKNOWN;
         thset.priv.count = TQDC_MAX31725_COUNT + 2;
         dev_thset_run(&thset);
+
         dev_digipot_run(&digipots);
         task_powermon_run(&pm);
         sync_ipmi_sensors();

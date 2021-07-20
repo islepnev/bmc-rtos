@@ -19,6 +19,8 @@
 
 #include "../ad9545/dev_ad9545.h"
 #include "../ad9548/dev_ad9548.h"
+#include "app_tasks.h"
+#include "app_shared_data.h"
 #include "bsp_fpga.h"
 #include "bswap.h"
 #include "dev_fpga_types.h"
@@ -28,6 +30,7 @@
 #include "fpga_io.h"
 #include "fpga_spi_hal.h"
 #include "log/log.h"
+#include "mac_address.h"
 #include "powermon/dev_powermon_types.h"
 #include "sdb_util.h"
 #include "system_status.h"
@@ -406,6 +409,31 @@ bool fpgaWriteBmcTemperature(Dev_fpga *dev)
     return true;
 }
 
+bool fpgaWriteBmcNetworkInfo(Dev_fpga *dev)
+{
+#if defined(ENABLE_ETHERNET)
+    if (tcpipThreadId) {
+        uint8_t macaddress[6];
+        get_mac_address(macaddress);
+        uint16_t mac_low = ((uint16_t)(macaddress[4]) << 8) | macaddress[5];
+        uint16_t mac_mid = ((uint16_t)(macaddress[2]) << 8) | macaddress[3];
+        uint32_t ipv4_le = ntohl(app_ipv4);
+        uint16_t ip_lo = (ipv4_le & 0xFFFF);
+        uint16_t ip_hi = ((ipv4_le >> 16) & 0xFFFF);
+        // TODO: check eth_link_up
+        if (! fpga_w16(dev, FPGA_REG_BASE_MCU + 0x1C, mac_low))
+            return false;
+        if (! fpga_w16(dev, FPGA_REG_BASE_MCU + 0x1D, mac_mid))
+            return false;
+        if (! fpga_w16(dev, FPGA_REG_BASE_MCU + 0x1E, ip_lo))
+            return false;
+        if (! fpga_w16(dev, FPGA_REG_BASE_MCU + 0x1F, ip_hi))
+            return false;
+    }
+#endif
+    return true;
+}
+
 bool fpgaWritePllStatus(Dev_fpga *dev)
 {
     fpga_mcu_reg_pll_t pll = {0};
@@ -520,6 +548,7 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
             fpga_read_info(dev) &&
             fpgaWriteBmcVersion(dev) &&
             fpgaWriteBmcTemperature(dev) &&
+            fpgaWriteBmcNetworkInfo(dev) &&
             fpgaWritePllStatus(dev) &&
             fpgaWriteSystemStatus(dev) &&
             fpgaWriteSensors(dev);
