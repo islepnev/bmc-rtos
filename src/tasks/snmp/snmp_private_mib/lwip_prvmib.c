@@ -74,6 +74,13 @@
 #include "thset/dev_thset_types.h"
 #include "version.h"
 
+// mandatory sensor order in
+enum {
+    TEMP_SENSOR_INDEX_BOARD = 0,
+    TEMP_SENSOR_INDEX_FPGA = 1,
+    TEMP_SENSOR_INDEX_PLL = 2
+};
+
 static s16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value)
 {
     //  size_t count = 0;
@@ -147,9 +154,9 @@ static s16_t systemTemperature_get_value(struct snmp_node_instance* instance, vo
     LWIP_UNUSED_ARG(instance);
     u32_t *uint_ptr = (u32_t*)value;
     const Dev_thset_priv *p = get_thset_priv_const();
-    if (!p || !p->count)
+    if (!p || p->count <= TEMP_SENSOR_INDEX_BOARD)
         return 0;
-    s32_t t = (s32_t)(p->sensors[0].value * 100);
+    s32_t t = (s32_t)(p->sensors[TEMP_SENSOR_INDEX_BOARD].value * 100);
     *uint_ptr = (s32_t)(t);
     return sizeof(*uint_ptr);
 }
@@ -270,6 +277,18 @@ static s16_t fpgaRevision_get_value(struct snmp_node_instance* instance, void* v
     return sizeof(*uint_ptr);
 }
 
+static s16_t fpgaTemperature_get_value(struct snmp_node_instance* instance, void* value)
+{
+    LWIP_UNUSED_ARG(instance);
+    u32_t *uint_ptr = (u32_t*)value;
+    const Dev_thset_priv *p = get_thset_priv_const();
+    if (!p || p->count <= TEMP_SENSOR_INDEX_FPGA)
+        return 0;
+    s32_t t = (s32_t)(p->sensors[TEMP_SENSOR_INDEX_FPGA].value * 100);
+    *uint_ptr = (s32_t)(t);
+    return sizeof(*uint_ptr);
+}
+
 static const struct snmp_scalar_node fpgaDeviceId = SNMP_SCALAR_CREATE_NODE_READONLY(
         2, SNMP_ASN1_TYPE_UNSIGNED32, fpgaDeviceId_get_value);
 static const struct snmp_scalar_node fpgaDeviceIdStr = SNMP_SCALAR_CREATE_NODE_READONLY(
@@ -278,6 +297,8 @@ static const struct snmp_scalar_node fpgaVersion = SNMP_SCALAR_CREATE_NODE_READO
         4, SNMP_ASN1_TYPE_UNSIGNED32, fpgaVersion_get_value);
 static const struct snmp_scalar_node fpgaRevision = SNMP_SCALAR_CREATE_NODE_READONLY(
         5, SNMP_ASN1_TYPE_UNSIGNED32, fpgaRevision_get_value);
+static const struct snmp_scalar_node fpgaTemperature = SNMP_SCALAR_CREATE_NODE_READONLY(
+        6, SNMP_ASN1_TYPE_INTEGER, fpgaTemperature_get_value);
 
 // --- PLL
 
@@ -289,8 +310,22 @@ static s16_t pllStatus_get_value(struct snmp_node_instance* instance, void* valu
     return sizeof(*uint_ptr);
 }
 
+static s16_t pllTemperature_get_value(struct snmp_node_instance* instance, void* value)
+{
+    LWIP_UNUSED_ARG(instance);
+    u32_t *uint_ptr = (u32_t*)value;
+    const Dev_thset_priv *p = get_thset_priv_const();
+    if (!p || p->count <= TEMP_SENSOR_INDEX_PLL)
+        return 0;
+    s32_t t = (s32_t)(p->sensors[TEMP_SENSOR_INDEX_PLL].value * 100);
+    *uint_ptr = (s32_t)(t);
+    return sizeof(*uint_ptr);
+}
+
 static const struct snmp_scalar_node pllStatus = SNMP_SCALAR_CREATE_NODE_READONLY(
         1, SNMP_ASN1_TYPE_INTEGER, pllStatus_get_value);
+static const struct snmp_scalar_node pllTemperature = SNMP_SCALAR_CREATE_NODE_READONLY(
+        2, SNMP_ASN1_TYPE_INTEGER, pllTemperature_get_value);
 
 // --- BMC
 
@@ -317,11 +352,13 @@ static const struct snmp_node* const fpga_nodes[] = {
     &fpgaDeviceIdStr.node.node,
     &fpgaVersion.node.node,
     &fpgaRevision.node.node,
+    &fpgaTemperature.node.node,
 };
 
 // --- TTVXS
 static const struct snmp_node* const pll_nodes[] = {
-    &pllStatus.node.node
+    &pllStatus.node.node,
+    &pllTemperature.node.node,
 };
 
 static const struct snmp_tree_node pll_node = SNMP_CREATE_TREE_NODE(1, pll_nodes);
