@@ -60,10 +60,8 @@ static void local_init(DeviceBase *parent) {
 
 static void run(void)
 {
-    if (system_power_present) // issue #688, #734
-        dev_eeprom_config_run(&eeprom);
-    else
-        eeprom.dev.device_status = DEVICE_UNKNOWN;
+    bool eeprom_power_on = system_power_present; // issue #688, #734
+    dev_eeprom_config_run(&eeprom, eeprom_power_on);
     const bool power_on = enable_power && system_power_present;
     dev_ad9545_run(&pll, power_on);
     main_clock_ready = ad9545_running(&pll);

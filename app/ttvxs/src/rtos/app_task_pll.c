@@ -72,7 +72,7 @@ static void local_init(DeviceBase *parent)
 
 static void run(void)
 {
-    dev_eeprom_config_run(&eeprom);
+    dev_eeprom_config_run(&eeprom, system_power_present);
     dev_ttvxs_clkmux_run(&clkmux);
     const bool power_on = enable_power && system_power_present;
     dev_ad9545_run(&pll, power_on);

@@ -17,12 +17,14 @@
 #ifndef APP_TASK_EEPROM_CONFIG_FSM_H
 #define APP_TASK_EEPROM_CONFIG_FSM_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct Dev_eeprom_config;
-void dev_eeprom_config_run(struct Dev_eeprom_config *d);
+void dev_eeprom_config_run(struct Dev_eeprom_config *d, bool power_on);
 
 #ifdef __cplusplus
 }

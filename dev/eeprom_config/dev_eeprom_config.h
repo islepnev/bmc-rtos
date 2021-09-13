@@ -27,15 +27,7 @@
 extern "C" {
 #endif
 
-typedef enum {
-    EEPROM_CONFIG_STATE_RESET,
-    EEPROM_CONFIG_STATE_RUN,
-    EEPROM_CONFIG_STATE_PAUSE,
-    EEPROM_CONFIG_STATE_ERROR
-} eeprom_config_state_t;
-
 typedef struct Dev_eeprom_config_priv {
-    eeprom_config_state_t fsm_state;
     uint32_t state_start_tick;
 } Dev_eeprom_config_priv;
 

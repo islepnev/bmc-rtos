@@ -135,7 +135,7 @@ static void start_task_powermon( void const *arg)
 
         const bool power_on = enable_power && system_power_present;
         sfpiic_switch_enable(false);
-        dev_eeprom_config_run(&eeprom);
+        dev_eeprom_config_run(&eeprom, system_power_present);
         sfpiic_switch_enable(power_on);
         task_sfpiic_run(&sfpiic, power_on);
         sfpiic_switch_enable(false);
