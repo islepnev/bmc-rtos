@@ -18,6 +18,7 @@
 #include "app_task_vxsiicm.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "app_tasks.h"
 #include "bus/bus_types.h"
@@ -42,6 +43,17 @@ static BusInterface vxsiicm_bus_info = {
 static void local_init(DeviceBase *parent) {
     //    init_auxpll_setup(&d.priv.setup);
     create_device(parent, &vxsiicm.dev, &vxsiicm.priv, DEV_CLASS_VXSIICM, vxsiicm_bus_info, "VXS IIC Master");
+    for (int i=0; i<VXSIIC_SLOTS; i++) {
+        Dev_vxspp *vxspp = &vxsiicm.priv.vxspp[i];
+        const BusInterface vxspp_bus_info = {
+            .type = vxsiicm_bus_info.type,
+            .bus_number = vxsiicm_bus_info.bus_number,
+            .address = i
+        };
+        char name[DEVICE_NAME_LEN+1];
+        snprintf(name, sizeof(name), "[%s]", vxsiic_map_slot_to_label[i]);
+        create_device(&vxsiicm.dev, &vxspp->dev, &vxspp->priv, DEV_CLASS_VXSPP, vxspp_bus_info, name);
+    }
 }
 
 static void start_thread_vxsiicm( void const *arg)

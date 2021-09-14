@@ -210,7 +210,7 @@ int http_serve_sensors(struct http_server_t *server)
     const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
 
     for (uint32_t pp=0; vxsiicm && pp<VXSIIC_SLOTS; pp++) {
-        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[pp];
+        const Dev_vxspp_priv *status = &vxsiicm->vxspp[pp].priv;
         if (!status->present)
             continue;
         uint16_t sensor_count = status->mcu_sensors.count;
@@ -276,7 +276,7 @@ int http_serve_boards(struct http_server_t *server)
     const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
 
     for (uint32_t pp=0; vxsiicm && pp<VXSIIC_SLOTS; pp++) {
-        const vxsiic_slot_status_t *status = &vxsiicm->status.slot[pp];
+        const Dev_vxspp_priv *status = &vxsiicm->vxspp[pp].priv;
         if (!status->present)
             continue;
         uint16_t sensor_count = status->mcu_sensors.count;

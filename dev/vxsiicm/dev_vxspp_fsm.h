@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -14,15 +14,19 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef DEV_VXSIIC_PP_H
-#define DEV_VXSIIC_PP_H
 
-#include <stdint.h>
+#ifndef DEV_VXSPP_FSM_H
+#define DEV_VXSPP_FSM_H
 
-#include "dev_vxsiicm_types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-bool dev_vxsiic_detect_pp(Dev_vxsiicm *d, int pp);
-bool dev_vxsiic_read_pp(Dev_vxsiicm *d, int pp);
-bool dev_vxsiic_test_boot_pp(Dev_vxsiicm *d, int pp);
+struct Dev_vxspp;
+void dev_vxspp_fsm_run(struct Dev_vxspp *d);
 
-#endif // DEV_VXSIIC_PP_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // DEV_VXSPP_FSM_H

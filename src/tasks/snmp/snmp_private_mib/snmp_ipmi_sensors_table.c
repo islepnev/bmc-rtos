@@ -65,7 +65,7 @@ ipmiSensorTable_get_cell_value_core(u32_t board_index, u32_t sensor_index, const
     const Dev_vxsiicm_priv *vxsiicm = (const Dev_vxsiicm_priv *)device_priv_const(d);
     if (!vxsiicm)
         return 0;
-    const struct GenericSensor *sensor_ptr = &vxsiicm->status.slot[board_index-1].mcu_sensors.sensors[sensor_index-1];
+    const struct GenericSensor *sensor_ptr = &vxsiicm->vxspp[board_index-1].priv.mcu_sensors.sensors[sensor_index-1];
 
     /* value */
     switch (*column) {
@@ -138,11 +138,11 @@ ipmiSensorTable_get_next_cell_instance_and_value(const u32_t *column, struct snm
       return 0;
   for (size_t i = 0; i < VXSIIC_SLOTS; i++) {
       //      u32_t boardIndex = (u32_t)vxsiic_map_slot_to_number[i];
-      if (!vxsiicm->status.slot[i].present)
+      if (!vxsiicm->vxspp[i].priv.present)
           continue;
       for (size_t j = 0; j < MAX_SENSOR_COUNT; j++)
       {
-          const GenericSensor *sensor_ptr = &vxsiicm->status.slot[i].mcu_sensors.sensors[j];
+          const GenericSensor *sensor_ptr = &vxsiicm->vxspp[i].priv.mcu_sensors.sensors[j];
           if (sensor_ptr->hdr.b.state == SENSOR_UNKNOWN) continue;
           u32_t test_oid[LWIP_ARRAYSIZE(ipmiSensorTable_oid_ranges)];
           const u8_t board_index = i+1;

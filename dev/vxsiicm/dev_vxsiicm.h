@@ -26,7 +26,7 @@ extern "C" {
 
 struct Dev_vxsiicm;
 DeviceStatus dev_vxsiicm_detect(struct Dev_vxsiicm *d);
-DeviceStatus dev_vxsiicm_read(struct Dev_vxsiicm *d);
+DeviceStatus dev_vxsiicm_walk_pp(struct Dev_vxsiicm *d);
 DeviceStatus dev_vxsiicm_test_boot(struct Dev_vxsiicm *d);
 SensorStatus dev_vxsiicm_sensor_status(void);
 

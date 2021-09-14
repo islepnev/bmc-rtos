@@ -1,4 +1,6 @@
 /*
+**    VXS Payload Port (IIC Slave)
+**
 **    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -15,26 +17,28 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
+#include "dev_vxspp.h"
+#include "dev_vxspp_impl.h"
+#include "vxsiic_types.h"
+#include "log/log.h"
+#include "vxsiic_iic_driver.h"
 
-#include "dev_vxsiicm_types.h"
+static int old_present = 0;
 
-uint8_t get_vxsiicm_board_count(const Dev_vxsiicm_priv *d)
+DeviceStatus dev_vxspp_run(struct Dev_vxspp *d)
 {
-    uint8_t count = 0;
-    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const Dev_vxspp_priv *p = &d->vxspp[i].priv;
-        if (p->present)
-            count++;
+    Dev_vxspp_priv *p = &d->priv;
+    bool detect_ok = dev_vxspp_detect(d);
+    p->bus_ready = vxsiic_bus_ready(&d->dev.bus);
+    if (detect_ok && dev_vxspp_read(d)) {
+        p->present = 1;
+        if (!old_present)
+            log_printf(LOG_NOTICE, "%s: board inserted", d->dev.name);
+    } else {
+        if (old_present)
+            log_printf(LOG_NOTICE, "%s: board removed", d->dev.name);
+        p->present = 0;
     }
-    return count;
-}
-
-void struct_vxs_i2c_init(Dev_vxsiicm *d)
-{
-    d->dev.device_status = DEVICE_UNKNOWN;
-    for (int i=0; i<VXSIIC_SLOTS; i++) {
-        Dev_vxspp *vxspp = &d->priv.vxspp[i];
-        vxspp->dev.device_status = DEVICE_UNKNOWN;
-    }
+    old_present = p->present;
+    return d->dev.device_status;
 }
