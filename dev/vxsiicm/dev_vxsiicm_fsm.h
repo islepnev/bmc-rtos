@@ -22,13 +22,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    VXSIIC_STATE_RESET,
-    VXSIIC_STATE_RUN,
-    VXSIIC_STATE_PAUSE,
-    VXSIIC_STATE_ERROR,
-} vxsiic_state_t;
-
 struct Dev_vxsiicm;
 void dev_vxsiicm_run(struct Dev_vxsiicm *d);
 

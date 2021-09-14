@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019 Ilja Slepnev
+**    Copyright 2021 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,23 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "dev_vxsiicm_fsm.h"
-
+#include "dev_vxspp_fsm.h"
 #include "cmsis_os.h"
-#include "dev_vxsiicm.h"
-#include "dev_vxsiicm_types.h"
+#include "dev_vxspp.h"
+#include "dev_vxspp_impl.h"
 #include "device_status_log.h"
 #include "log/log.h"
 
 static const uint32_t DETECT_TIMEOUT_TICKS = 2000;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
-static const uint32_t POLL_DELAY_TICKS  = 100;
+static const uint32_t POLL_DELAY_TICKS  = 1000;
 
-static uint32_t loopCount = 0;
-
-void dev_vxsiicm_run(Dev_vxsiicm *d)
+void dev_vxspp_fsm_run(Dev_vxspp *d)
 {
-    loopCount++;
     const DeviceStatus old_device_status = d->dev.device_status;
     dev_fsm_t *fsm = &d->dev.fsm;
     const bool power_on = true;
@@ -42,33 +38,29 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
     case DEV_FSM_SHUTDOWN: {
         if (power_on)
             dev_fsm_change(fsm, DEV_FSM_RESET);
-        struct_vxs_i2c_init(d);
         set_device_status(&d->dev, DEVICE_UNKNOWN);
         break;
     }
     case DEV_FSM_RESET: {
-        DeviceStatus status = dev_vxsiicm_detect(d);
-        set_device_status(&d->dev, status);
-        if (status == DEVICE_NORMAL) {
+        if (dev_vxspp_detect(d)) {
             dev_fsm_change(fsm, DEV_FSM_RUN);
             break;
         }
-        if (dev_fsm_stateTicks(fsm) > DETECT_TIMEOUT_TICKS) {
-            dev_fsm_change(fsm, DEV_FSM_ERROR);
-            break;
-        }
+//        if (dev_fsm_stateTicks(fsm) > DETECT_TIMEOUT_TICKS) {
+//            dev_fsm_change(fsm, DEV_FSM_ERROR);
+//            break;
+//        }
         break;
     }
     case DEV_FSM_RUN:
-        if (DEVICE_NORMAL == dev_vxsiicm_walk_pp(d))
-            dev_fsm_change(fsm, DEV_FSM_PAUSE);
-        else
+        if (! dev_vxspp_run(d)) {
             dev_fsm_change(fsm, DEV_FSM_ERROR);
+            break;
+        }
+        set_device_status(&d->dev, DEVICE_NORMAL);
+        dev_fsm_change(fsm, DEV_FSM_PAUSE);
         break;
     case DEV_FSM_PAUSE:
-        if (false && (loopCount == 10)) {
-            dev_vxsiicm_test_boot(d);
-        }
         if (dev_fsm_stateTicks(fsm) > POLL_DELAY_TICKS) {
             dev_fsm_change(fsm, DEV_FSM_RUN);
         }
@@ -82,7 +74,6 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
     default:
         dev_fsm_change(fsm, DEV_FSM_RESET);
     }
-    d->dev.sensor = dev_vxsiicm_sensor_status();
     if (old_device_status != d->dev.device_status)
         dev_log_status_change(&d->dev);
 }

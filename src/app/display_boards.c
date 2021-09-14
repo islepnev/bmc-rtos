@@ -67,7 +67,8 @@ void display_boards_page(int y, bool repaint)
 
         int line = 0;
         for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-            const vxsiic_slot_status_t *status = &vxsiicm->status.slot[i];
+            const Dev_vxspp *vxspp = &vxsiicm->vxspp[i];
+            const Dev_vxspp_priv *status = &vxspp->priv;
             const char *label = vxsiic_map_slot_to_label[i];
             enum {bmc_ver_size = 16};
             char bmc_ver_buf[bmc_ver_size] = {0};

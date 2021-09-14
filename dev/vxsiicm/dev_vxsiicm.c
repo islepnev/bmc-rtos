@@ -21,8 +21,10 @@
 #include <stdint.h>
 
 #include "cmsis_os.h"
-#include "dev_vxsiic_pp.h"
+#include "dev_vxspp.h"
 #include "dev_vxsiicm_types.h"
+#include "dev_vxspp_fsm.h"
+#include "dev_vxspp_impl.h"
 #include "devicelist.h"
 #include "ipmi_sensor_types.h"
 #include "log/log.h"
@@ -104,9 +106,7 @@ HAL_StatusTypeDef dev_vxsiic_test_pp_mcu_regs(Dev_vxsiicm *d, int pp)
 }
 #endif
 
-static int old_present[VXSIIC_SLOTS] = {0};
-
-DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
+DeviceStatus dev_vxsiicm_walk_pp(Dev_vxsiicm *d)
 {
 //    uint32_t tick_begin = osKernelSysTick();
     for (int pp=0; pp<VXSIIC_SLOTS; pp++) {
@@ -114,19 +114,8 @@ DeviceStatus dev_vxsiicm_read(Dev_vxsiicm *d)
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
         }
-        vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
-        bool detect_ok = dev_vxsiic_detect_pp(d, pp);
-        status->bus_ready = vxsiic_bus_ready(&d->dev.bus);
-        if (detect_ok && dev_vxsiic_read_pp(d, pp)) {
-            status->present = 1;
-            if (!old_present[pp])
-                log_printf(LOG_NOTICE, "VXS slot %s: board inserted", vxsiic_map_slot_to_label[pp]);
-        } else {
-            if (old_present[pp])
-                log_printf(LOG_NOTICE, "VXS slot %s: board removed", vxsiic_map_slot_to_label[pp]);
-            status->present = 0;
-        }
-        old_present[pp] = status->present;
+        Dev_vxspp *vxspp = &d->priv.vxspp[pp];
+        dev_vxspp_fsm_run(vxspp);
     }
     vxsiic_unselect_pp(d);
 //    uint32_t tick_end = osKernelSysTick();
@@ -142,11 +131,11 @@ DeviceStatus dev_vxsiicm_test_boot(Dev_vxsiicm *d)
             d->dev.device_status = DEVICE_FAIL;
             return d->dev.device_status;
         }
-        const vxsiic_slot_status_t *status = &d->priv.status.slot[pp];
-        if (!status->present)
+        Dev_vxspp *vxspp = &d->priv.vxspp[pp];
+        if (!vxspp->priv.present)
             continue;
-        log_printf(LOG_NOTICE, "VXS slot %s: board test_boot", vxsiic_map_slot_to_label[pp]);
-        dev_vxsiic_test_boot_pp(d, pp);
+        log_printf(LOG_NOTICE, "%s: board test_boot", vxspp->dev.name);
+        dev_vxspp_test_boot(vxspp);
     }
     vxsiic_unselect_pp(d);
     return d->dev.device_status;

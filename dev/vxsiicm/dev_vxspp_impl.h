@@ -14,27 +14,24 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#ifndef DEV_VXSPP_IMPL_H
+#define DEV_VXSPP_IMPL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "dev_vxsiicm_types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-uint8_t get_vxsiicm_board_count(const Dev_vxsiicm_priv *d)
-{
-    uint8_t count = 0;
-    for (uint32_t i=0; i<VXSIIC_SLOTS; i++) {
-        const Dev_vxspp_priv *p = &d->vxspp[i].priv;
-        if (p->present)
-            count++;
-    }
-    return count;
-}
+#include "dev_vxspp.h"
 
-void struct_vxs_i2c_init(Dev_vxsiicm *d)
-{
-    d->dev.device_status = DEVICE_UNKNOWN;
-    for (int i=0; i<VXSIIC_SLOTS; i++) {
-        Dev_vxspp *vxspp = &d->priv.vxspp[i];
-        vxspp->dev.device_status = DEVICE_UNKNOWN;
-    }
+bool dev_vxspp_detect(Dev_vxspp *d);
+bool dev_vxspp_read(Dev_vxspp *d);
+bool dev_vxspp_test_boot(Dev_vxspp *d);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // DEV_VXSPP_IMPL_H
