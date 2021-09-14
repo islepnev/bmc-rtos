@@ -34,9 +34,11 @@ static uint32_t stateTicks(const Dev_vxsiicm_priv *p)
     return osKernelSysTick() - p->stateStartTick;
 }
 
+static uint32_t loopCount = 0;
 
 void dev_vxsiicm_run(Dev_vxsiicm *d)
 {
+    loopCount++;
     switch (state) {
     case VXSIIC_STATE_RESET: {
         struct_vxs_i2c_init(d);
@@ -53,6 +55,9 @@ void dev_vxsiicm_run(Dev_vxsiicm *d)
             state = VXSIIC_STATE_ERROR;
         break;
     case VXSIIC_STATE_PAUSE:
+        if (false && (loopCount == 10)) {
+            dev_vxsiicm_test_boot(d);
+        }
         if (stateTicks(&d->priv) > POLL_DELAY_TICKS) {
             state = VXSIIC_STATE_RUN;
         }
