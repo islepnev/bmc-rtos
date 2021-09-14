@@ -45,6 +45,7 @@ const char *device_class_str(DeviceClass c)
     case DEV_CLASS_TMP421: return "TMP421";
     case DEV_CLASS_VXSIICM: return "VXSIICM";
     case DEV_CLASS_VXSIICS: return "VXSIICS";
+    case DEV_CLASS_VXSPP: return "VXSPP";
     default:
         assert(0);
         return "?";

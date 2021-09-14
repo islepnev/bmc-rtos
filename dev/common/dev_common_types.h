@@ -84,6 +84,7 @@ typedef enum {
     DEV_CLASS_TMP421,
     DEV_CLASS_VXSIICM,
     DEV_CLASS_VXSIICS,
+    DEV_CLASS_VXSPP,
 } DeviceClass;
 
 const char *sensor_status_ansi_str(SensorStatus state);
