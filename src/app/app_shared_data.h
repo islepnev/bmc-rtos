@@ -52,6 +52,10 @@ extern bool screen_size_set;
 extern bool main_clock_ready;
 extern bool aux_clock_ready;
 
+extern int pll_clock_shift_req;
+extern int pll_clock_shift_ack;
+extern uint64_t pll_clock_shift_ps;
+
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);
 void schedule_display_reset(void);

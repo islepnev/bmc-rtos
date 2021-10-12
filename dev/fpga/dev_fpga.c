@@ -524,6 +524,52 @@ bool fpgaWriteSensors(struct Dev_fpga *dev)
 }
 #endif
 
+// ---8<---
+typedef union fpga_reg_clock_phase_detect_t {
+    struct {
+        uint16_t denom: 4;
+        uint16_t numer: 4;
+        uint16_t unused: 7;
+        uint16_t time_valid: 1;
+    } b;
+    uint16_t raw;
+} fpga_reg_clock_phase_detect_t;
+
+enum {
+    FPGA_REG_CLOCK_PHASE_CONTROL = 0x6000,
+    FPGA_REG_CLOCK_PHASE_DETECT = 0x6001
+};
+
+bool fpgaBoardSpecificPoll(struct Dev_fpga *dev)
+{
+    fpga_reg_clock_phase_detect_t data = {0};
+    if (! fpga_r16(dev, FPGA_REG_CLOCK_PHASE_DETECT, &data.raw))
+        return false;
+    if (data.b.denom == 0)
+        return true;
+    if (data.b.numer == 0)
+        return true;
+    log_printf(LOG_INFO, "%s: %d/%d %s",
+               dev->dev.name,
+               data.b.numer,
+               data.b.denom,
+               data.b.time_valid?"time valid":"time invalid");
+    if (pll_clock_shift_ack != pll_clock_shift_req) {
+        log_printf(LOG_WARNING, "%s: clock shift FIFO busy", dev->dev.name);
+        return true;
+    }
+    // adjust clock phase by part of 16ns clock
+    pll_clock_shift_ps += (uint64_t)16000 * data.b.numer / data.b.denom;
+    pll_clock_shift_ps %= 16000;
+    pll_clock_shift_req++;
+    log_printf(LOG_INFO, "%s: clock shift req #%d to %d ps",
+               dev->dev.name,
+               pll_clock_shift_req,
+               pll_clock_shift_ps);
+    return true;
+}
+// ---8<---
+
 bool fpga_periodic_task_v2(struct Dev_fpga *dev)
 {
     return
@@ -551,7 +597,8 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
             fpgaWriteBmcNetworkInfo(dev) &&
             fpgaWritePllStatus(dev) &&
             fpgaWriteSystemStatus(dev) &&
-            fpgaWriteSensors(dev);
+            fpgaWriteSensors(dev) &&
+            fpgaBoardSpecificPoll(dev);
     return ok;
 }
 

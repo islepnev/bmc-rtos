@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "ad9545/ad9545.h"
+#include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "dev_ad9545.h"
 #include "log/log.h"
@@ -27,6 +28,28 @@
 static uint32_t stateTicks(const Dev_ad9545_priv *p)
 {
     return osKernelSysTick() - p->stateStartTick;
+}
+
+bool poll_ad9545_commands(Dev_ad9545 *d)
+{
+    // get data
+    int req = pll_clock_shift_req;
+    if (req == pll_clock_shift_ack)
+        return true;
+    uint64_t phase_offset = pll_clock_shift_ps;
+
+    // process
+    log_printf(LOG_INFO, "%s: shift request #%d: %lld -> %lld ps", d->dev.name,
+               req,
+               d->priv.setup.dpll0.Phase_Offset,
+               phase_offset);
+
+    d->priv.setup.dpll0.Phase_Offset = phase_offset; // picoseconds
+    if (!ad9545_dpll0_phase_shift(&d->dev.bus, &d->priv.setup)) {
+        return false;
+    }
+    pll_clock_shift_ack = req;
+    return true;
 }
 
 /*
@@ -106,6 +129,10 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
     case AD9545_STATE_RUN:
         if (!d->priv.status.sysclk.b.locked) {
             log_put(LOG_ERR, "PLL AD9545 sysclock unlocked");
+            d->priv.fsm_state = AD9545_STATE_ERROR;
+            break;
+        }
+        if (!poll_ad9545_commands(d)) {
             d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
