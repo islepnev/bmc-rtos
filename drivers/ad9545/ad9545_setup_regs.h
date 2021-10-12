@@ -90,6 +90,7 @@ enum {AD9545_DPLL_PROFILE_COUNT = 6};
 typedef struct {
     uint64_t Freerun_Tuning_Word;
     uint32_t FTW_Offset_Clamp;
+    uint64_t Phase_Offset;
     uint8_t APLL_M_Divider;
     AD9545_DPLL_Profile_TypeDef profile[AD9545_DPLL_PROFILE_COUNT];
 } AD9545_DPLL_Setup_TypeDef;
@@ -136,6 +137,18 @@ typedef enum {
     AutosyncMode_DPLL_Freq_Lock = 3,
 } AD9545_Autosync_Mode_TypeDef;
 
+typedef union {
+    struct {
+        uint8_t max_phase_slew_step: 3;
+        uint8_t phase_slew_mode: 1;
+        uint8_t pulse_width_control: 1;
+        uint8_t half_divide: 1;
+        uint8_t phase_bit_32: 1;
+        uint8_t reserved: 1;
+    } b;
+    uint8_t raw;
+} AD9545_Output_Divider_Control_TypeDef;
+
 typedef struct {
     uint8_t enable_ref_sync_0;
     uint8_t enable_ref_sync_1;
@@ -145,12 +158,21 @@ typedef struct {
     uint8_t Secondary_Clock_Path_1;
     uint8_t Automute_Control_0;
     uint8_t Automute_Control_1;
-    uint8_t Distribution_Divider_0_A;
-    uint8_t Distribution_Divider_0_B;
-    uint8_t Distribution_Divider_0_C;
-    uint8_t Distribution_Divider_1_A;
-    uint8_t Distribution_Divider_1_B;
-
+    uint32_t Distribution_Divider_0_A;
+    uint32_t Distribution_Divider_0_B;
+    uint32_t Distribution_Divider_0_C;
+    uint32_t Distribution_Divider_1_A;
+    uint32_t Distribution_Divider_1_B;
+    uint32_t Distribution_Phase_0_A;
+    uint32_t Distribution_Phase_0_B;
+    uint32_t Distribution_Phase_0_C;
+    uint32_t Distribution_Phase_1_A;
+    uint32_t Distribution_Phase_1_B;
+    AD9545_Output_Divider_Control_TypeDef Distribution_Control_0_A;
+    AD9545_Output_Divider_Control_TypeDef Distribution_Control_0_B;
+    AD9545_Output_Divider_Control_TypeDef Distribution_Control_0_C;
+    AD9545_Output_Divider_Control_TypeDef Distribution_Control_1_A;
+    AD9545_Output_Divider_Control_TypeDef Distribution_Control_1_B;
 } AD9545_Output_Dividers_Setup_TypeDef;
 
 typedef enum {

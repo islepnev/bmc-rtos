@@ -114,9 +114,15 @@ static bool pllSetupDistribution0WithUpdate(BusInterface *bus, const AD9545_Outp
     // channel 0
     if (! (ad9545_write1(bus, AD9545_REG1_10DA, setup->Secondary_Clock_Path_0) &&
           ad9545_write1(bus, AD9545_REG1_10DC, setup->Automute_Control_0) &&
-          ad9545_write1(bus, AD9545_REG1_1100, setup->Distribution_Divider_0_A) &&
-          ad9545_write1(bus, AD9545_REG1_1112, setup->Distribution_Divider_0_B) &&
-          ad9545_write1(bus, AD9545_REG1_1124, setup->Distribution_Divider_0_C) &&
+           ad9545_write4(bus, AD9545_REG1_1100, setup->Distribution_Divider_0_A) &&
+           ad9545_write4(bus, AD9545_REG1_1112, setup->Distribution_Divider_0_B) &&
+           ad9545_write4(bus, AD9545_REG1_1124, setup->Distribution_Divider_0_C) &&
+           ad9545_write4(bus, AD9545_REG1_1100+4, setup->Distribution_Phase_0_A) &&
+           ad9545_write4(bus, AD9545_REG1_1112+4, setup->Distribution_Phase_0_B) &&
+           ad9545_write4(bus, AD9545_REG1_1124+4, setup->Distribution_Phase_0_C) &&
+           ad9545_write4(bus, AD9545_REG1_1100+8, setup->Distribution_Control_0_A.raw) &&
+           ad9545_write4(bus, AD9545_REG1_1112+8, setup->Distribution_Control_0_B.raw) &&
+           ad9545_write4(bus, AD9545_REG1_1124+8, setup->Distribution_Control_0_C.raw) &&
           pllIoUpdate(bus)))
         return false;
     //    uint8_t Sync_Control_0 = 0x5; // 0x05;
@@ -221,11 +227,14 @@ static bool pllSetupDPLLChannel(BusInterface *bus, const AD9545_DPLL_Setup_TypeD
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x400;
 
+    uint64_t ph = 0;
+    ad9545_read5(bus, reg_offset + 0x1015, &ph);
+    log_printf(LOG_INFO, "DPLL%d read phase_offset %llu ps", channel, ph);
     return
         // DPLL CHANNEL REGISTERS
         ad9545_write6(bus, reg_offset + 0x1000, dpll->Freerun_Tuning_Word) &&
         ad9545_write3(bus, reg_offset + 0x1006, dpll->FTW_Offset_Clamp) &&
-
+        ad9545_write5(bus, reg_offset + 0x1015, dpll->Phase_Offset) &&
         // APLL CHANNEL REGISTERS
         ad9545_write1(bus, reg_offset + 0x1081, dpll->APLL_M_Divider) &&
 
@@ -325,6 +334,12 @@ bool ad9545_setup(BusInterface *bus, const ad9545_setup_t *setup)
            pllSetupDistributionWithUpdate(bus, &setup->out_dividers) &&
            pllCalibrateAll(bus) &&
            pllSyncAllDistDividers(bus);
+}
+
+bool ad9545_dpll0_phase_shift(BusInterface *bus, const ad9545_setup_t *setup)
+{
+    return pllSetupDPLLChannel(bus, &setup->dpll0, DPLL0) &&
+           pllIoUpdate(bus);
 }
 
 void ad9545_reset(BusInterface *bus)

@@ -38,6 +38,8 @@ bool ad9545_calibrate_sysclk(BusInterface *bus);
 bool ad9545_read_status(BusInterface *bus, AD9545_Status *status);
 bool ad9545_read_sysclk_status(BusInterface *bus, AD9545_Status *status);
 
+bool ad9545_dpll0_phase_shift(BusInterface *bus, const ad9545_setup_t *setup);
+
 void ad9545_reset(BusInterface *bus);
 bool ad9545_gpio_test(BusInterface *bus);
 void ad9545_gpio_init(BusInterface *bus);
