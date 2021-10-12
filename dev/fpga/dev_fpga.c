@@ -24,6 +24,7 @@
 #include "bsp_fpga.h"
 #include "bswap.h"
 #include "dev_fpga_types.h"
+#include "dev_fpga_board_func.h"
 #include "devicelist.h"
 #include "display.h"
 #include "fpga_mcu_regs_v2_0.h"
@@ -551,7 +552,8 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
             fpgaWriteBmcNetworkInfo(dev) &&
             fpgaWritePllStatus(dev) &&
             fpgaWriteSystemStatus(dev) &&
-            fpgaWriteSensors(dev);
+            fpgaWriteSensors(dev) &&
+            fpgaBoardSpecificPoll(dev);
     return ok;
 }
 
