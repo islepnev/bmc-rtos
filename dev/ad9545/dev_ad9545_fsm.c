@@ -43,7 +43,7 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
         if (d->priv.fsm_state != AD9545_STATE_INIT) {
             d->priv.fsm_state = AD9545_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
-            pll_ad9545_clear_status(d);
+            pll_ad9545_clear_status(&d->priv.status);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
         }
         return;
@@ -149,7 +149,7 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
             d->priv.fsm_state = AD9545_STATE_ERROR;
         }
     } else {
-        pll_ad9545_clear_status(d);
+        pll_ad9545_clear_status(&d->priv.status);
     }
     ad9545_update_pll_sensor_status(d);
 
