@@ -542,6 +542,21 @@ enum {
 
 bool fpgaBoardSpecificPoll(struct Dev_fpga *dev)
 {
+#if ENABLE_AD9545 && defined BOARD_ADC64VE
+    // check PLL lock status
+    const DeviceBase *d = find_device_const(DEV_CLASS_AD9545);
+    if (!d || !d->priv)
+        return false;
+    const Dev_ad9545_priv *priv = (Dev_ad9545_priv *)device_priv_const(d);
+
+    bool pll0_locked = (SENSOR_NORMAL == d->sensor) &&
+                 priv->status.sysclk.b.pll0_locked;
+    bool pll_ref_a_valid = priv->status.ref[0].b.valid;
+    bool pll_ref_b_valid = priv->status.ref[2].b.valid;
+
+    if (!pll0_locked|| !pll_ref_a_valid || !pll_ref_b_valid)
+        return true;
+
     fpga_reg_clock_phase_detect_t data = {0};
     if (! fpga_r16(dev, FPGA_REG_CLOCK_PHASE_DETECT, &data.raw))
         return false;
@@ -558,14 +573,10 @@ bool fpgaBoardSpecificPoll(struct Dev_fpga *dev)
         log_printf(LOG_WARNING, "%s: clock shift FIFO busy", dev->dev.name);
         return true;
     }
-    // adjust clock phase by part of 16ns clock
-    pll_clock_shift_ps += (uint64_t)16000 * data.b.numer / data.b.denom;
-    pll_clock_shift_ps %= 16000;
+    pll_clock_shift_numer = data.b.numer;
+    pll_clock_shift_denom = data.b.denom;
     pll_clock_shift_req++;
-    log_printf(LOG_INFO, "%s: clock shift req #%d to %d ps",
-               dev->dev.name,
-               pll_clock_shift_req,
-               pll_clock_shift_ps);
+#endif
     return true;
 }
 // ---8<---
