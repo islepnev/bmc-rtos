@@ -52,6 +52,15 @@ extern bool screen_size_set;
 extern bool main_clock_ready;
 extern bool aux_clock_ready;
 
+typedef struct pll_clock_shift_command_t {
+    int req;
+    int ack;
+    int numer;
+    int denom;
+} pll_clock_shift_command_t;
+
+extern pll_clock_shift_command_t pll_clock_shift_command;
+
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);
 void schedule_display_reset(void);
