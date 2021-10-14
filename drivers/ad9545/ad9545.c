@@ -227,9 +227,6 @@ static bool pllSetupDPLLChannel(BusInterface *bus, const AD9545_DPLL_Setup_TypeD
 {
     uint16_t reg_offset = (channel == DPLL0) ? 0x0 : 0x400;
 
-    uint64_t ph = 0;
-    ad9545_read5(bus, reg_offset + 0x1015, &ph);
-    log_printf(LOG_INFO, "DPLL%d read phase_offset %llu ps", channel, ph);
     return
         // DPLL CHANNEL REGISTERS
         ad9545_write6(bus, reg_offset + 0x1000, dpll->Freerun_Tuning_Word) &&
