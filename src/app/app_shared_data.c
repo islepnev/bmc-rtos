@@ -30,7 +30,8 @@ bool aux_clock_ready = false;
 
 int pll_clock_shift_req = 0;
 int pll_clock_shift_ack = 0;
-uint64_t pll_clock_shift_ps = 0;
+int pll_clock_shift_numer = 0;
+int pll_clock_shift_denom = 0;
 
 int screen_width = 100;
 int screen_height = 35;

@@ -54,7 +54,8 @@ extern bool aux_clock_ready;
 
 extern int pll_clock_shift_req;
 extern int pll_clock_shift_ack;
-extern uint64_t pll_clock_shift_ps;
+extern int pll_clock_shift_numer;
+extern int pll_clock_shift_denom;
 
 void schedule_display_refresh(void);
 void schedule_display_repaint(void);
