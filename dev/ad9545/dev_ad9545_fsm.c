@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "ad9545/ad9545.h"
+#include "ad9545_commands.h"
 #include "cmsis_os.h"
 #include "dev_ad9545.h"
 #include "log/log.h"
@@ -129,6 +130,10 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
     case AD9545_STATE_RUN:
         if (!d->priv.status.sysclk.b.locked) {
             log_put(LOG_ERR, "PLL AD9545 sysclock unlocked");
+            d->priv.fsm_state = AD9545_STATE_ERROR;
+            break;
+        }
+        if (!poll_ad9545_commands(d)) {
             d->priv.fsm_state = AD9545_STATE_ERROR;
             break;
         }
