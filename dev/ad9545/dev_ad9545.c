@@ -34,11 +34,11 @@ void ad9545_update_pll_sensor_status(Dev_ad9545 *pll)
     pll->dev.sensor = SENSOR_NORMAL;
 }
 
-void pll_ad9545_clear_status(Dev_ad9545 *d)
+void pll_ad9545_clear_status(AD9545_Status *status)
 {
-    memset(&d->priv.status.misc, 0, sizeof(d->priv.status.misc));
-    memset(&d->priv.status.ref, 0, sizeof(d->priv.status.ref));
-    memset(&d->priv.status.dpll, 0, sizeof(d->priv.status.dpll));
+    memset(&status->misc, 0, sizeof(status->misc));
+    memset(&status->ref, 0, sizeof(status->ref));
+    memset(&status->dpll, 0, sizeof(status->dpll));
 }
 
 bool ad9545_running(Dev_ad9545 *d)

@@ -273,7 +273,7 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         }
         osDelay(1);
     }
-    log_printf(LOG_ERR, "%s: retry limit exceeded", __func__);
+    log_printf(LOG_ERR, "%s(%08X): retry limit exceeded", __func__, addr);
     return false;
 }
 

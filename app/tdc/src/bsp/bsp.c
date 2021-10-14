@@ -81,5 +81,7 @@ void sfpiic_switch_enable(bool enable)
 
 void bsp_update_system_powergood_pin(bool power_good)
 {
-    // write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
+#if defined(BOARD_TDC64) || defined(BOARD_TDC72)
+    write_gpio_pin(PGOOD_PWR_GPIO_Port,   PGOOD_PWR_Pin, power_good);
+#endif
 }

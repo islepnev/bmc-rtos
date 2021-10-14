@@ -29,6 +29,28 @@ static uint32_t stateTicks(const Dev_ad9545_priv *p)
     return osKernelSysTick() - p->stateStartTick;
 }
 
+static AD9545_Status old_status = {};
+
+void log_ad9545_status(Dev_ad9545 *d)
+{
+    if (old_status.ref[0].b.valid && ! d->priv.status.ref[0].b.valid)
+        log_printf(LOG_WARNING, "%s: REFA invalid", d->dev.name);
+    if (!old_status.ref[0].b.valid && d->priv.status.ref[0].b.valid)
+        log_printf(LOG_INFO, "%s: REFA valid", d->dev.name);
+
+    if (old_status.ref[2].b.valid && ! d->priv.status.ref[2].b.valid)
+        log_printf(LOG_WARNING, "%s: REFB invalid", d->dev.name);
+    if (!old_status.ref[2].b.valid && d->priv.status.ref[2].b.valid)
+        log_printf(LOG_INFO, "%s: REFB valid", d->dev.name);
+
+    if (old_status.sysclk.b.pll0_locked && ! d->priv.status.sysclk.b.pll0_locked)
+        log_printf(LOG_WARNING, "%s: DPLL0 unlocked", d->dev.name);
+    if (!old_status.sysclk.b.pll0_locked && d->priv.status.sysclk.b.pll0_locked)
+        log_printf(LOG_INFO, "%s: DPLL0 locked", d->dev.name);
+
+    old_status = d->priv.status;
+}
+
 /*
 1. Configure the system clock.
 2. Configure the DPLL (digital PLL)
@@ -43,7 +65,8 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
         if (d->priv.fsm_state != AD9545_STATE_INIT) {
             d->priv.fsm_state = AD9545_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
-            pll_ad9545_clear_status(d);
+            pll_ad9545_clear_status(&d->priv.status);
+            pll_ad9545_clear_status(&old_status);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
         }
         return;
@@ -149,9 +172,11 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
             d->priv.fsm_state = AD9545_STATE_ERROR;
         }
     } else {
-        pll_ad9545_clear_status(d);
+        pll_ad9545_clear_status(&d->priv.status);
+        pll_ad9545_clear_status(&old_status);
     }
     ad9545_update_pll_sensor_status(d);
+    log_ad9545_status(d);
 
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {

@@ -55,7 +55,7 @@ typedef struct Dev_ad9545 {
 } Dev_ad9545;
 
 void ad9545_update_pll_sensor_status(Dev_ad9545 *pll);
-void pll_ad9545_clear_status(Dev_ad9545 *d);
+void pll_ad9545_clear_status(AD9545_Status *status);
 bool ad9545_running(Dev_ad9545 *d);
 
 #ifdef __cplusplus
