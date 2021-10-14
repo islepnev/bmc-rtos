@@ -30,26 +30,26 @@ static uint32_t stateTicks(const Dev_ad9545_priv *p)
     return osKernelSysTick() - p->stateStartTick;
 }
 
-bool poll_ad9545_commands(Dev_ad9545 *d)
+static AD9545_Status old_status = {};
+
+void log_ad9545_status(Dev_ad9545 *d)
 {
-    // get data
-    int req = pll_clock_shift_req;
-    if (req == pll_clock_shift_ack)
-        return true;
-    uint64_t phase_offset = pll_clock_shift_ps;
+    if (old_status.ref[0].b.valid && ! d->priv.status.ref[0].b.valid)
+        log_printf(LOG_WARNING, "%s: REFA invalid", d->dev.name);
+    if (!old_status.ref[0].b.valid && d->priv.status.ref[0].b.valid)
+        log_printf(LOG_INFO, "%s: REFA valid", d->dev.name);
 
-    // process
-    log_printf(LOG_INFO, "%s: shift request #%d: %lld -> %lld ps", d->dev.name,
-               req,
-               d->priv.setup.dpll0.Phase_Offset,
-               phase_offset);
+    if (old_status.ref[2].b.valid && ! d->priv.status.ref[2].b.valid)
+        log_printf(LOG_WARNING, "%s: REFB invalid", d->dev.name);
+    if (!old_status.ref[2].b.valid && d->priv.status.ref[2].b.valid)
+        log_printf(LOG_INFO, "%s: REFB valid", d->dev.name);
 
-    d->priv.setup.dpll0.Phase_Offset = phase_offset; // picoseconds
-    if (!ad9545_dpll0_phase_shift(&d->dev.bus, &d->priv.setup)) {
-        return false;
-    }
-    pll_clock_shift_ack = req;
-    return true;
+    if (old_status.sysclk.b.pll0_locked && ! d->priv.status.sysclk.b.pll0_locked)
+        log_printf(LOG_WARNING, "%s: DPLL0 unlocked", d->dev.name);
+    if (!old_status.sysclk.b.pll0_locked && d->priv.status.sysclk.b.pll0_locked)
+        log_printf(LOG_INFO, "%s: DPLL0 locked", d->dev.name);
+
+    old_status = d->priv.status;
 }
 
 /*
@@ -67,6 +67,7 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
             d->priv.fsm_state = AD9545_STATE_INIT;
             d->dev.device_status = DEVICE_UNKNOWN;
             pll_ad9545_clear_status(&d->priv.status);
+            pll_ad9545_clear_status(&old_status);
             log_put(LOG_INFO, "PLL AD9545 shutdown");
         }
         return;
@@ -177,8 +178,10 @@ void dev_ad9545_run(Dev_ad9545 *d, bool enable)
         }
     } else {
         pll_ad9545_clear_status(&d->priv.status);
+        pll_ad9545_clear_status(&old_status);
     }
     ad9545_update_pll_sensor_status(d);
+    log_ad9545_status(d);
 
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
