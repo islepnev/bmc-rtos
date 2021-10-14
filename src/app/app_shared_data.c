@@ -28,6 +28,8 @@ const char *eth_port_descr = "mgmt0";
 bool main_clock_ready = false;
 bool aux_clock_ready = false;
 
+pll_clock_shift_command_t pll_clock_shift_command = {};
+
 int screen_width = 100;
 int screen_height = 35;
 bool screen_size_set = 0;
