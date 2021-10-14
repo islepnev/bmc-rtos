@@ -29,7 +29,7 @@
 #include "stm32f7xx_ll_gpio.h"
 #include "stm32f7xx_ll_usart.h"
 
-enum {ENABLE_FPGA_UART = 0};
+#define ENABLE_FPGA_UART 0
 
 UART_HandleTypeDef huart2;
 
@@ -139,7 +139,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PA2     ------> USART2_TX
     PA3     ------> USART2_RX
     */
-    if (ENABLE_FPGA_UART) {
+#if (ENABLE_FPGA_UART)
         // FIXME
         GPIO_InitStruct.Pin = FPGA_UART_RTS_Pin|FPGA_UART_CTS_Pin|FPGA_UART_TX_Pin|FPGA_UART_RX_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -147,8 +147,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    }
-
+#endif
   }
 }
 
@@ -166,7 +165,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PA2     ------> USART2_TX
     PA3     ------> USART2_RX
     */
+#if (ENABLE_FPGA_UART)
     HAL_GPIO_DeInit(GPIOA, FPGA_UART_RTS_Pin|FPGA_UART_CTS_Pin|FPGA_UART_TX_Pin|FPGA_UART_RX_Pin);
-
+#endif
   }
 }

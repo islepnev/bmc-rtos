@@ -47,10 +47,10 @@
 #define FPGA_NSS_Pin GPIO_PIN_4
 #define FPGA_SCK_GPIO_Port GPIOA
 #define FPGA_SCK_Pin GPIO_PIN_5
-#define FPGA_UART_CTS_GPIO_Port GPIOA
-#define FPGA_UART_CTS_Pin GPIO_PIN_0
-#define FPGA_UART_RTS_GPIO_Port GPIOA
-#define FPGA_UART_RTS_Pin GPIO_PIN_1
+//#define FPGA_UART_CTS_GPIO_Port GPIOA
+//#define FPGA_UART_CTS_Pin GPIO_PIN_0
+//#define FPGA_UART_RTS_GPIO_Port GPIOA
+//#define FPGA_UART_RTS_Pin GPIO_PIN_1
 #define FPGA_UART_RX_GPIO_Port GPIOA
 #define FPGA_UART_RX_Pin GPIO_PIN_3
 #define FPGA_UART_TX_GPIO_Port GPIOA
@@ -115,6 +115,8 @@
 #define PCB_VER_A0_Pin GPIO_PIN_4
 #define PCB_VER_A1_GPIO_Port GPIOE
 #define PCB_VER_A1_Pin GPIO_PIN_3
+#define PGOOD_PWR_GPIO_Port GPIOA
+#define PGOOD_PWR_Pin GPIO_PIN_0
 #define PLL_M0_GPIO_Port GPIOF
 #define PLL_M0_Pin GPIO_PIN_8
 #define PLL_M3_GPIO_Port GPIOB
