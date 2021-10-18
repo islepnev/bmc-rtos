@@ -55,12 +55,15 @@ bool auxpllSoftwareReset(Dev_auxpll *d)
         ret = false;
     if (!ret)
         return false;
-    uint8_t data = 0;
-    if (! ad9516_read1(bus, AD9516_REG1_CONFIG_0, &data))
-        return false;
-    if (data != serial_config_reg.raw) {
-        log_printf(LOG_WARNING, "AD9516: wrote %02X, read %02X", serial_config_reg.raw, data);
-        return false;
+    // CONFIG register readback is not correct (chip bug)
+    if (0) {
+        uint8_t data = 0;
+        if (! ad9516_read1(bus, AD9516_REG1_CONFIG_0, &data))
+            return false;
+        if (data != serial_config_reg.raw) {
+            log_printf(LOG_WARNING, "AD9516: wrote %02X, read %02X", serial_config_reg.raw, data);
+            return false;
+        }
     }
     return true;
 }
