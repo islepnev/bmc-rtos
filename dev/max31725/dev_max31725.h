@@ -30,6 +30,8 @@ extern "C" {
 
 typedef struct Dev_max31725_priv {
     double temp;
+    bool configured;
+    bool config_00_workaround;
 } Dev_max31725_priv;
 
 typedef struct Dev_max31725 {
