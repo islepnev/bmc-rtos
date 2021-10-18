@@ -23,6 +23,8 @@
 
 // static const uint16_t MAX31725_REG_THERM_POR  = 0x0000;
 static const uint8_t MAX31725_REG_CONFIG_DATA = 0x20;
+static const uint8_t MAX31725_REG_CONFIG_POR  = 0x00;
+static const uint8_t MAX31725_REG_CONFIG_POR_BUG = 0x20;
 static const uint16_t MAX31725_REG_THYST_POR  = 0x4b00;
 static const uint16_t MAX31725_REG_TOS_POR    = 0x5000;
 
@@ -85,17 +87,31 @@ bool dev_max31725_detect(Dev_max31725 *d)
             return false;
         }
     }
+    // check power-on config
+    uint8_t config;
+    {
+        if (! max31725_read_config(&d->dev.bus, MAX31725_REG_CONFIG, &config))
+            return false;
+        if (!d->priv.configured) {
+            if (config == MAX31725_REG_CONFIG_POR_BUG) {
+                log_printf(LOG_WARNING, "MAX31725 sensor %s CONFIG register power-on value: %02X, enabling workaround",
+                           d->dev.name, config);
+                d->priv.config_00_workaround = true;
+            } else {
+                if (config != MAX31725_REG_CONFIG_POR) {
+                    log_printf(LOG_WARNING, "MAX31725 sensor %s CONFIG register power-on value: %02X, expected %02X",
+                               d->dev.name, config, MAX31725_REG_CONFIG_POR);
+                }
+            }
+        }
+    }
     // write config (if required)
     {
-        uint8_t pordata;
-        if (! max31725_read_config(&d->dev.bus, MAX31725_REG_CONFIG, &pordata))
-            return false;
-        if (pordata != MAX31725_REG_CONFIG_DATA) {
+        if (config != MAX31725_REG_CONFIG_DATA) {
             uint8_t wrdata = MAX31725_REG_CONFIG_DATA;
-            log_printf(LOG_WARNING, "MAX31725 sensor %s unexpected CONFIG register value: %02X",
-                       d->dev.name, pordata);
             if (! max31725_write_config(&d->dev.bus, MAX31725_REG_CONFIG, wrdata))
                 return false;
+            d->priv.configured = true;
             uint8_t data;
             if (! max31725_read_config(&d->dev.bus, MAX31725_REG_CONFIG, &data))
                 return false;
@@ -105,11 +121,10 @@ bool dev_max31725_detect(Dev_max31725 *d)
                 return false;
             } else {
                 log_printf(LOG_INFO, "MAX31725 sensor %s config changed %02X to %02X",
-                           d->dev.name, pordata, data);
+                           d->dev.name, config, data);
             }
         }
     }
-
     return true;
 }
 

@@ -41,6 +41,7 @@ void dev_max31725_run(Dev_max31725 *d, bool power_on)
     case DEV_FSM_SHUTDOWN: {
         if (power_on)
             dev_fsm_change(fsm, DEV_FSM_RESET);
+        d->priv.configured = 0;
         set_device_status(&d->dev, DEVICE_UNKNOWN);
         break;
     }
