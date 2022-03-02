@@ -105,10 +105,10 @@
 #define PLL_DIST_DIV_0_C     30
 #define DPLL1_EXT_ZD         0
 #define DPLL1_ZD_FB_Path     PROFILE_INT_ZD_FEEDBACK_OUT1A
-#define APLL1_Frequency      3.25e9
-#define APLL1_M_Divider      10
-#define PLL_DIST_DIV_1_A     39
-#define PLL_DIST_DIV_1_B     13
+#define APLL1_Frequency      3.75e9
+#define APLL1_M_Divider      11
+#define PLL_DIST_DIV_1_A     45
+#define PLL_DIST_DIV_1_B     12
 #else
 
 #define DPLL0_BW_HZ          500
