@@ -31,7 +31,7 @@ static bool monIsOptional(SensorIndex index)
     switch(index) {
     case SENSOR_ADC_1V8:       return 0;
     case SENSOR_ADC_N2V5:      return 1;
-    case SENSOR_ADC_P2V5:      return 0;
+    case SENSOR_ADC_P2V5:      return 1;
     case SENSOR_CLOCK_2V5:     return 0;
     case SENSOR_CLOCK_3V3:     return 0;
     case SENSOR_FPGA_1V8:      return 0;
@@ -76,8 +76,8 @@ static double monVoltageMarginWarn(SensorIndex index)
 {
     switch(index) {
     case SENSOR_ADC_1V8:       return 0.05;
-    case SENSOR_ADC_N2V5:      return 0.05;
-    case SENSOR_ADC_P2V5:      return 0.05;
+    case SENSOR_ADC_N2V5:      return 0.20;
+    case SENSOR_ADC_P2V5:      return 0.20;
     case SENSOR_CLOCK_2V5:     return 0.03;
     case SENSOR_CLOCK_3V3:     return 0.03;
     case SENSOR_FPGA_1V8:      return 0.05;
@@ -99,8 +99,8 @@ static double monVoltageMarginCrit(SensorIndex index)
 {
     switch(index) {
     case SENSOR_ADC_1V8:       return 0.10;
-    case SENSOR_ADC_N2V5:      return 0.10;
-    case SENSOR_ADC_P2V5:      return 0.10;
+    case SENSOR_ADC_N2V5:      return 0.25;
+    case SENSOR_ADC_P2V5:      return 0.25;
     case SENSOR_CLOCK_2V5:     return 0.05;
     case SENSOR_CLOCK_3V3:     return 0.05;
     case SENSOR_FPGA_1V8:      return 0.10;
@@ -122,8 +122,8 @@ static double monVoltageNom(SensorIndex index)
 {
     switch(index) {
     case SENSOR_ADC_1V8:       return 1.8;
-    case SENSOR_ADC_N2V5:      return -2.5;
-    case SENSOR_ADC_P2V5:      return 2.5;
+    case SENSOR_ADC_N2V5:      return -2.9;
+    case SENSOR_ADC_P2V5:      return 2.9;
     case SENSOR_CLOCK_2V5:     return 2.5;
     case SENSOR_CLOCK_3V3:     return 3.3;
     case SENSOR_FPGA_1V8:      return 1.8;
@@ -174,8 +174,8 @@ static const char *monLabel(SensorIndex index)
 {
     switch(index) {
     case SENSOR_ADC_1V8:       return "ADC 1.8";
-    case SENSOR_ADC_N2V5:      return "ADC -2.5";
-    case SENSOR_ADC_P2V5:      return "ADC +2.5";
+    case SENSOR_ADC_N2V5:      return "Analog -";
+    case SENSOR_ADC_P2V5:      return "Analog +";
     case SENSOR_CLOCK_2V5:     return "CLK 2.5";
     case SENSOR_CLOCK_3V3:     return "CLK 3.3";
     case SENSOR_FPGA_1V8:      return "FPGA 1.8";
