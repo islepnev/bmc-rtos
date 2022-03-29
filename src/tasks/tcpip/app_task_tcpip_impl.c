@@ -110,7 +110,7 @@ void task_tcpip_init()
 
   /* Initialize webserver demo */
   http_server_init();
-#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC)
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
   snmp_agent_init();
 #endif
 //  extern void lwiperf_example_init(void);

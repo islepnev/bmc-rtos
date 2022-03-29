@@ -88,7 +88,7 @@
 #define PLL_DIST_DIV_1_A     13
 #define PLL_DIST_DIV_1_B     13
 
-#elif defined (BOARD_TQDC)
+#elif (defined (BOARD_TDC64VLE) || defined (BOARD_TQDC))
 
 #define DPLL0_BW_HZ          500
 #define DPLL1_BW_HZ          500

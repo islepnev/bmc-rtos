@@ -1,5 +1,5 @@
 /*
-**    Copyright 2021 Ilia Slepnev
+**    Copyright 2019-2021 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,25 +15,38 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SNMP_PRIV_OIDS_H
-#define SNMP_PRIV_OIDS_H
+#ifndef BSP_H
+#define BSP_H
 
-// http://www.iana.org/assignments/enterprise-numbers
+#include <stdint.h>
+#include <stdbool.h>
 
-// .iso.org.dod.internet.private.enterprises.jinr.afi
+#include "mcb.h"
 
-#define SNMP_OID_JINR 53776
-#define SNMP_OID_AFI 120
+#define BOARD_TDC64VLE 1
 
-#define SNMP_OID_bmc 1
-#define SNMP_OID_aevMIBObjects 2
+#define ENABLE_SENSORS   1
 
-// AFI Entity Vendortype OIDs
-#define SNMP_OID_aevBoard 1
+#define LED_HEARTBEAT LED_INT_GREEN
 
-#define SNMP_OID_aevTtvxs 1
-#define SNMP_OID_aevCru16 2
-#define SNMP_OID_aevTqdc16vs 3
-#define SNMP_OID_aevTdc64vle 4
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // SNMP_PRIV_OIDS_H
+#define SPI_BUS_INDEX_AD9516 2
+
+#define AUXPLL_AD9516_OUT6_ENABLE 0
+#define AUXPLL_AD9516_OUT7_ENABLE 1
+#define AUXPLL_AD9516_OUT8_ENABLE 1
+#define AUXPLL_AD9516_OUT9_ENABLE 1
+
+void update_board_version(int powermon_count);
+bool fpga_done_pin_present(void);
+void sfpiic_switch_enable(bool enable);
+void bsp_update_system_powergood_pin(bool power_good);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BSP_H

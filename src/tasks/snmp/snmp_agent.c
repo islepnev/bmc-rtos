@@ -61,6 +61,8 @@ static const struct snmp_mib *mibs[] = {
 #define BOARD_OID SNMP_OID_aevTtvxs
 #elif defined(BOARD_CRU16)
 #define BOARD_OID SNMP_OID_aevCru16
+#elif defined(BOARD_TDC64VLE)
+#define BOARD_OID SNMP_OID_aevTdc64vle
 #elif defined(BOARD_TQDC)
 #define BOARD_OID SNMP_OID_aevTqdc16vs
 #else

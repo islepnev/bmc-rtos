@@ -34,7 +34,7 @@
 #else
 #include "vxsiics/app_task_vxsiics.h"
 #endif
-#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC)
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
 #include "app_task_tcpip.h"
 #endif
 #include "app_task_adc.h"
@@ -66,7 +66,7 @@ void create_tasks(void)
     create_task_vxsiics(&topdevice);
 #endif
 #endif
-#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC)
+#if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
     create_task_tcpip();
 #endif
     create_task_adc();

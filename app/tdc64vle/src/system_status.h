@@ -1,5 +1,5 @@
 /*
-**    Copyright 2021 Ilia Slepnev
+**    Copyright 2019 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,25 +15,22 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SNMP_PRIV_OIDS_H
-#define SNMP_PRIV_OIDS_H
+#ifndef SYSTEM_STATUS_H
+#define SYSTEM_STATUS_H
 
-// http://www.iana.org/assignments/enterprise-numbers
+#include "dev_common_types.h"
 
-// .iso.org.dod.internet.private.enterprises.jinr.afi
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define SNMP_OID_JINR 53776
-#define SNMP_OID_AFI 120
+DeviceStatus getDeviceStatus(void);
+SensorStatus getSystemStatus(void);
 
-#define SNMP_OID_bmc 1
-#define SNMP_OID_aevMIBObjects 2
+encoded_system_status_t encode_system_status(void);
 
-// AFI Entity Vendortype OIDs
-#define SNMP_OID_aevBoard 1
+#ifdef __cplusplus
+}
+#endif
 
-#define SNMP_OID_aevTtvxs 1
-#define SNMP_OID_aevCru16 2
-#define SNMP_OID_aevTqdc16vs 3
-#define SNMP_OID_aevTdc64vle 4
-
-#endif // SNMP_PRIV_OIDS_H
+#endif // SYSTEM_STATUS_H

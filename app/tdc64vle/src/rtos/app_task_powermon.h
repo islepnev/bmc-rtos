@@ -1,5 +1,5 @@
 /*
-**    Copyright 2021 Ilia Slepnev
+**    Copyright 2019-2020 Ilja Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,25 +15,18 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SNMP_PRIV_OIDS_H
-#define SNMP_PRIV_OIDS_H
+#ifndef APP_TASK_POWERMON_H
+#define APP_TASK_POWERMON_H
 
-// http://www.iana.org/assignments/enterprise-numbers
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// .iso.org.dod.internet.private.enterprises.jinr.afi
+struct DeviceBase;
+void create_task_powermon(struct DeviceBase *parent);
 
-#define SNMP_OID_JINR 53776
-#define SNMP_OID_AFI 120
+#ifdef __cplusplus
+}
+#endif
 
-#define SNMP_OID_bmc 1
-#define SNMP_OID_aevMIBObjects 2
-
-// AFI Entity Vendortype OIDs
-#define SNMP_OID_aevBoard 1
-
-#define SNMP_OID_aevTtvxs 1
-#define SNMP_OID_aevCru16 2
-#define SNMP_OID_aevTqdc16vs 3
-#define SNMP_OID_aevTdc64vle 4
-
-#endif // SNMP_PRIV_OIDS_H
+#endif // APP_TASK_POWERMON_H
