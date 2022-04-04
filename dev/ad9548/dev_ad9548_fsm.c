@@ -110,7 +110,7 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
     case AD9548_STATE_RUN:
         if (!d->priv.status.sysclk.b.locked) {
             log_put(LOG_ERR, "PLL AD9548 sysclock unlocked");
-            d->priv.fsm_state = AD9548_STATE_ERROR;
+            d->priv.fsm_state = AD9548_STATE_SYSCLK_WAITLOCK;
             break;
         }
         d->priv.recoveryCount = 0;
@@ -138,10 +138,12 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         d->priv.fsm_state = AD9548_STATE_INIT;
     }
 
-    if (d->priv.fsm_state != AD9548_STATE_INIT &&
-            d->priv.fsm_state != AD9548_STATE_RESET &&
-            d->priv.fsm_state != AD9548_STATE_ERROR &&
-            d->priv.fsm_state != AD9548_STATE_FATAL) {
+    bool state_detected =
+        (d->priv.fsm_state != AD9548_STATE_INIT &&
+         d->priv.fsm_state != AD9548_STATE_RESET &&
+         d->priv.fsm_state != AD9548_STATE_ERROR &&
+         d->priv.fsm_state != AD9548_STATE_FATAL);
+    if (state_detected) {
         if (!ad9548_read_sysclk_status(bus, &d->priv.status)) {
             d->priv.fsm_state = AD9548_STATE_ERROR;
         }
