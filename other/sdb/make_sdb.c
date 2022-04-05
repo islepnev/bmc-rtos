@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 #include "sdb.h"
@@ -36,7 +37,7 @@ typedef struct version_t {
 } version_t;
 
 uint8_t device_id = 0;
-const char *board_name = "unknown";
+char *board_name = "unknown";
 version_t version = {{0, 0, 0, 0}};
 
 
@@ -215,18 +216,18 @@ void parse_csv_comment(const char *s, size_t size)
         const char *key = "#BOARD=";
         if (strlen(s) > strlen(key) && 0 == strncasecmp(key, s, strlen(key))) {
             const char *sub = &s[strlen(key)];
-            board_name = strdup(sub);
+            board_name = malloc(strlen(s) + 1);
+            strcpy(board_name, sub);
         }
     }
 }
 
-bool read_csv(const char *filename, struct sdb_t *sdb)
+int read_csv(const char *filename, struct sdb_t *sdb)
 {
     FILE *f = fopen(filename, "r");
     if (!f)
         return false;
 
-    bool ok = true;
     char linebuf[MAX_LINE_LENGTH];
     int linenumber = 0;
     int device_count = 0;
@@ -238,14 +239,12 @@ bool read_csv(const char *filename, struct sdb_t *sdb)
             continue;
         }
         if (!parse_line(filename, linenumber, linebuf, &sdb->device[device_count])) {
-            ok = false;
             break;
         }
         device_count++;
     }
     fclose(f);
-    sdb->ic.sdb_records = device_count + 1;
-    return ok;
+    return device_count;
 }
 
 void sdb_fix_endian(struct sdb_t *p)
@@ -353,8 +352,10 @@ int main(int argc, char *argv[])
     bool ok = true;
     struct sdb_t sdb;
 
+//    fill_sdb_interconnect(&sdb.ic);
+    int device_count = read_csv(filename_csv, &sdb);
     fill_sdb_interconnect(&sdb.ic);
-    ok &= read_csv(filename_csv, &sdb);
+    sdb.ic.sdb_records = 1 + device_count;
     print_meta();
     print_sdb(&sdb);
     ok &= write_sdb_bin(filename_bin, &sdb);
