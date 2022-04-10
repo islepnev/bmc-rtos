@@ -136,6 +136,8 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
             if (!ad9548_write_register(bus, base[b]+i, reg->prof[b].v[i]))
                 return false;
     }
+    if (!ad9548_setLoopMode(bus, reg->loopmode.raw))
+        return false;
 
     if (!ad9548_write_register(bus, 0x0A0D, 0xFF))
         return false; // Start profile selection FSM
@@ -168,6 +170,11 @@ bool ad9548_Phase_Reset(BusInterface *bus)
     return ad9548_write_register(bus, 0x0A0C, 0b00000100);
 }
 
+bool ad9548_setLoopMode(BusInterface *bus, uint8_t mode)
+{
+    return ad9548_write_register(bus, 0x0A01, mode);
+}
+
 void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 {
     memcpy(reg->sysclk.v, AD9548_Sysclk_Default.v, PLL_SYSCLK_SIZE);
@@ -178,7 +185,7 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
     memcpy(reg->refin.v, AD9548_RefIn_Default.v, PLL_REFIN_SIZE);
     for (int i=0; i<AD9548_DPLL_PROFILE_COUNT; i++)
         PLL_Prof_default(&reg->prof[i]);
-
+    reg->loopmode.raw = 0;
     switch (variant)
     {
     case BOARD_PLL_DEFAULT:

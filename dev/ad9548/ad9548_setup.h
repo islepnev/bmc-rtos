@@ -43,6 +43,9 @@ bool ad9548_calibrate_sysclk(BusInterface *bus, ad9548_setup_t *reg)
 bool ad9548_setup(BusInterface *bus, ad9548_setup_t *reg)
     __attribute__((warn_unused_result));
 
+bool ad9548_setLoopMode(BusInterface *bus, uint8_t mode)
+    __attribute__((warn_unused_result));
+
 //bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg);
 //void ad9548_Phase_Shift_Right(BusInterface *bus);
 //void ad9548_Phase_Shift_Left(BusInterface *bus);
