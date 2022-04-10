@@ -77,27 +77,6 @@ bool ad9548_calibrate_sysclk(BusInterface *bus, ad9548_setup_t *reg)
 
 bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
 {
-    //	ad9548_write_register(bus, 0x0000, 0x10); // Enable 4-wire SPI
-    if (!ad9548_setup_sysclk(bus, reg))
-        return false;
-    if (!ad9548_calibrate_sysclk(bus, reg))
-        return false;
-
-    bool sysclk_ok = false;
-    for(int i=0; i<100; i++) {
-        AD9548_Sysclk_Status_REG_Type sysclk;
-        if (!ad9548_read_register(bus, 0x0D01, &sysclk.raw)) {
-            sysclk.raw = 0;
-            return false;
-        }
-        sysclk_ok = sysclk.b.locked && !sysclk.b.cal_busy && sysclk.b.stable;
-        if (sysclk_ok)
-            break;
-        osDelay(1);
-    }
-    if (!sysclk_ok)
-        return false;
-
     for (unsigned int i = 0; i < PLL_MFPINS_SIZE; i++)
     {
         if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]))
@@ -157,6 +136,8 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
             if (!ad9548_write_register(bus, base[b]+i, reg->prof[b].v[i]))
                 return false;
     }
+    if (!ad9548_setLoopMode(bus, reg->loopmode.raw))
+        return false;
 
     if (!ad9548_write_register(bus, 0x0A0D, 0xFF))
         return false; // Start profile selection FSM
@@ -189,6 +170,11 @@ bool ad9548_Phase_Reset(BusInterface *bus)
     return ad9548_write_register(bus, 0x0A0C, 0b00000100);
 }
 
+bool ad9548_setLoopMode(BusInterface *bus, uint8_t mode)
+{
+    return ad9548_write_register(bus, 0x0A01, mode);
+}
+
 void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 {
     memcpy(reg->sysclk.v, AD9548_Sysclk_Default.v, PLL_SYSCLK_SIZE);
@@ -199,7 +185,7 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
     memcpy(reg->refin.v, AD9548_RefIn_Default.v, PLL_REFIN_SIZE);
     for (int i=0; i<AD9548_DPLL_PROFILE_COUNT; i++)
         PLL_Prof_default(&reg->prof[i]);
-
+    reg->loopmode.raw = 0;
     switch (variant)
     {
     case BOARD_PLL_DEFAULT:

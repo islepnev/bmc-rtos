@@ -27,6 +27,17 @@
 #include "ad9548_regs_mfpins.h"
 #include "ad9548_regs_irqmask.h"
 
+typedef union {
+    struct {
+        uint8_t user_ref_select: 3;
+        uint8_t select_mode: 2;
+        uint8_t freerun: 1;
+        uint8_t holdover: 1;
+        uint8_t unused: 1;
+    } b;
+    uint8_t raw;
+} AD9548_LoopMode_TypeDef;
+
 typedef enum {
     AD9548_REFA = 0,
     AD9548_REFAA = 1,
@@ -49,6 +60,7 @@ typedef struct ad9548_setup_t {
     AD9548_Output_TypeDef output;
     AD9548_RefIn_TypeDef refin;
     AD9548_Profile_TypeDef prof[AD9548_DPLL_PROFILE_COUNT];
+    AD9548_LoopMode_TypeDef loopmode;
 } ad9548_setup_t;
 
 #endif // AD9548_SETUP_REGS_H
