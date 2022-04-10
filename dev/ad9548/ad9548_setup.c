@@ -77,27 +77,6 @@ bool ad9548_calibrate_sysclk(BusInterface *bus, ad9548_setup_t *reg)
 
 bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
 {
-    //	ad9548_write_register(bus, 0x0000, 0x10); // Enable 4-wire SPI
-    if (!ad9548_setup_sysclk(bus, reg))
-        return false;
-    if (!ad9548_calibrate_sysclk(bus, reg))
-        return false;
-
-    bool sysclk_ok = false;
-    for(int i=0; i<100; i++) {
-        AD9548_Sysclk_Status_REG_Type sysclk;
-        if (!ad9548_read_register(bus, 0x0D01, &sysclk.raw)) {
-            sysclk.raw = 0;
-            return false;
-        }
-        sysclk_ok = sysclk.b.locked && !sysclk.b.cal_busy && sysclk.b.stable;
-        if (sysclk_ok)
-            break;
-        osDelay(1);
-    }
-    if (!sysclk_ok)
-        return false;
-
     for (unsigned int i = 0; i < PLL_MFPINS_SIZE; i++)
     {
         if (!ad9548_write_register(bus, AD9545_REG_GENERAL_CONFIG_BASE+i, reg->mfpins.v[i]))
