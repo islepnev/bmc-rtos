@@ -344,7 +344,7 @@ void ad9548_print_pll_ref_status(const ad9548_setup_t *setup, const AD9548_Statu
             if (refstatus.b.slow) printf(ANSI_PUR   " SLOW");
             if (refstatus.b.prof_selected) {
                 const AD9548_Profile_TypeDef *prof = &setup->prof[refstatus.b.prof_index];
-                printf(ANSI_CLEAR " %s profile %d (prio %d), %.1f MHz",
+                printf(ANSI_CLEAR " %s profile %d (prio %d), %7.3f MHz",
                        is_ref_profile_manual(setup, i*2) ? "force" : "auto ",
                        refstatus.b.prof_index,
                        prof->b.promoted_priority,
