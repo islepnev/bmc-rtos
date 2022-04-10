@@ -38,6 +38,8 @@
 #define APP_NAME_STR "TTVXS"
 #elif defined(BOARD_TQDC)
 #define APP_NAME_STR "TQDC"
+#elif defined(BOARD_TQDC16VSV1)
+#define APP_NAME_STR "TQDC16VS-v1"
 #else
 #error Unknown BOARD
 #endif

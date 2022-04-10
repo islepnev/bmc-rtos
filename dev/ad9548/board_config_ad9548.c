@@ -41,6 +41,26 @@ const char *ad9548_ref_label(int refIndex)
         return "?";
     }
 }
+#elif defined BOARD_TQDC16VSV1
+const char *ad9548_ref_label(int refIndex)
+{
+    switch (refIndex) {
+    case 0:
+    case 1:
+        return "FPGA";
+    case 2:
+    case 3:
+        return "TTC ";
+    case 4:
+    case 5:
+        return "    ";
+    case 6:
+    case 7:
+        return "VCXO";
+    default:
+        return "?   ";
+    }
+}
 #elif defined BOARD_ADC64VE
 const char *ad9548_ref_label(int refIndex)
 {

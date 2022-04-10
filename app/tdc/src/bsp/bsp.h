@@ -28,7 +28,8 @@ extern "C" {
 #if !defined(BOARD_TDC64) && \
 !defined(BOARD_TDC72) && \
 !defined(BOARD_TDC72VHLV2) && \
-!defined(BOARD_TDC72VHLV3)
+!defined(BOARD_TDC72VHLV3) && \
+!defined(BOARD_TQDC16VSV1)
 #error
 #endif
 
@@ -54,6 +55,12 @@ extern "C" {
 #define SPI_BUS_INDEX_AD9548  5
 #endif
 
+#if defined(BOARD_TQDC16VSV1)
+#define SPI_BUS_INDEX_AD9548  1
+#define SPI_BUS_INDEX_FPGA    2
+#define SPI_BUS_INDEX_ADT7301 3
+#endif
+
 #ifdef BOARD_TDC72VHLV3
 #define USART3_SWAP_RXTX 1
 #define LED_HEARTBEAT LED_GREEN
@@ -69,6 +76,7 @@ extern "C" {
 
 #define TDC64_MAX31725_COUNT 2
 #define TDC72_ADT7301_COUNT 4
+#define TQDC16VSV1_ADT7301_COUNT 2
 
 #ifdef BOARD_TDC72
 typedef enum {

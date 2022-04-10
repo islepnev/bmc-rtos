@@ -101,6 +101,14 @@ if(${BOARD} STREQUAL "tdc72vhlv2")
     )
 endif()
 
+if(${BOARD} STREQUAL "tqdc16vsv1")
+    set(BOARD_COMPONENTS
+        ad9548
+        adt7301
+        fpga
+    )
+endif()
+
 if(${BOARD} STREQUAL "tdc64vle")
     set(BOARD_COMPONENTS
         ad9516
