@@ -210,10 +210,12 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         PLL_Output_TQDC16VS(&reg->output);
         PLL_Prof_7_125(&reg->prof[7]);
         PLL_Prof_6_125div3(&reg->prof[6]);
+        PLL_Prof_5(&reg->prof[5]);
         PLL_Prof_0_125div3(&reg->prof[0]);
-//        PLL_Prof1_TQDC16VS(&reg->prof[1]);
-//        PLL_Prof2_TQDC16VS(&reg->prof[2]);
-//        PLL_Prof3_TQDC16VS(&reg->prof[3]);
+        reg->refin.b.manual_select.b.en_d = 0;
+        reg->refin.b.powerdown.b.c = 1;
+        reg->loopmode.b.user_ref_select = 2;
+        reg->loopmode.b.select_mode = 1;
         break;
     }
 }
