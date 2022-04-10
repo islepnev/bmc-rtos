@@ -25,14 +25,14 @@
 #include "app_task_powermon.h"
 #include "bsp.h"
 
-#if !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV2)
+#if !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
 #include "ad9516/app_task_auxpll.h"
 #endif
 #include "fpga/app_task_fpga.h"
 #if defined(BOARD_TTVXS)
 #include "vxsiicm/app_task_vxsiicm.h"
 #else
-#if ! defined(BOARD_TDC72VHLV2)
+#if ! defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
 #include "vxsiics/app_task_vxsiics.h"
 #endif
 #endif
@@ -71,5 +71,7 @@ void create_tasks(void)
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
     create_task_tcpip();
 #endif
+#if ! defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
     create_task_adc();
+#endif
 }
