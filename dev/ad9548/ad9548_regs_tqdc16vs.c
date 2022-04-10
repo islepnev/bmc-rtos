@@ -132,6 +132,17 @@ void PLL_Prof_6_125div3(AD9548_Profile_TypeDef *p)
     PLL_Prof_filter_S1500_500Hz(p);
 }
 
+// 52.083 MHz - VCXO/3
+void PLL_Prof_5(AD9548_Profile_TypeDef *p)
+{
+    PLL_Prof_default(p);
+    p->b.selection_priority = 5;
+    p->b.promoted_priority = 5;
+    ad9548_profile_find_r_s(p, 156.25/3);
+    PLL_Prof_derive_ref_period(p);
+    PLL_Prof_filter_S1500_500Hz(p);
+}
+
 // 41.7 MHz - TTC
 void PLL_Prof_0_125div3(AD9548_Profile_TypeDef *p)
 {
