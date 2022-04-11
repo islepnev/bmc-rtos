@@ -27,6 +27,7 @@
 #include "gpio.h"
 #include "log/log.h"
 #include "crc16.h"
+#include "stm32_hal.h"
 
 static const int SPI_TIMEOUT_MS = 100; // osWaitForever;
 
@@ -52,19 +53,36 @@ static void fpga_spi_hal_spi_nss_b(NssState state)
  */
 bool fpga_spi_hal_read_reg(BusInterface *bus, uint16_t addr, uint16_t *data)
 {
-    enum {Size = 2}; // number of 16-bit words
-    uint16_t txBuf[2];
-    uint16_t rxBuf[2] = {0};
-    txBuf[0] = (0x8000 | (addr & 0x7FFF));
-    txBuf[1] = 0;
-    fpga_spi_hal_spi_nss_b(NSS_ASSERT);
-    bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
-    fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
-    if (ret && data) {
-        uint16_t result = rxBuf[1];
-        *data = result;
+    uint16_t tx_data = (0x8000 | (addr & 0x7FFF));
+    struct __SPI_HandleTypeDef *hspi = hspi_handle(bus->bus_number);
+    if (hspi->Init.Direction == SPI_DIRECTION_2LINES) {
+        enum {Size = 2}; // number of 16-bit words
+        uint16_t txBuf[2] = {tx_data, 0};
+        uint16_t rxBuf[2] = {0};
+        fpga_spi_hal_spi_nss_b(NSS_ASSERT);
+        bool ret = spi_driver_tx_rx(hspi_handle(bus->bus_number), (uint8_t *)txBuf, (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
+        fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
+        if (ret && data) {
+            uint16_t result = rxBuf[1];
+            *data = result;
+        }
+        return ret;
+    } else {
+        enum {Size = 1}; // number of 16-bit words
+        uint16_t txBuf[1] = {tx_data};
+        uint16_t rxBuf[1] = {0};
+        fpga_spi_hal_spi_nss_b(NSS_ASSERT);
+        bool ret = spi_driver_tx(hspi_handle(bus->bus_number), (uint8_t *)txBuf, Size, SPI_TIMEOUT_MS);
+        fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
+        fpga_spi_hal_spi_nss_b(NSS_ASSERT);
+        ret &= spi_driver_rx(hspi_handle(bus->bus_number), (uint8_t *)rxBuf, Size, SPI_TIMEOUT_MS);
+        fpga_spi_hal_spi_nss_b(NSS_DEASSERT);
+        if (ret && data) {
+            uint16_t result = rxBuf[0];
+            *data = result;
+        }
+        return ret;
     }
-    return ret;
 }
 
 /**
