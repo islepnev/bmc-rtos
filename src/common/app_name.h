@@ -22,6 +22,8 @@
 
 #if defined(BOARD_ADC64VE)
 #define APP_NAME_STR "ADC64VE"
+#elif defined(BOARD_ADC64VEV1)
+#define APP_NAME_STR "ADC64VE-v1"
 #elif defined(BOARD_CRU16)
 #define APP_NAME_STR "CRU16"
 #elif defined(BOARD_TDC64VHLEV1)

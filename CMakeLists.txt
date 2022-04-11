@@ -80,6 +80,7 @@ subdirs(cpu/stm32f746ig)
 subdirs(app/tdc72vhlv3)
 
 subdirs(cpu/stm32f303cc)
+subdirs(app/adc64vev1)
 subdirs(app/tdc64vhlev1)
 subdirs(app/tdc72vhlv2)
 subdirs(app/tqdc16vsv1)

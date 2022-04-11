@@ -8,6 +8,14 @@ set(COMMON_COMPONENTS
     thset
 )
 
+if(${BOARD} STREQUAL "adc64vev1")
+    set(BOARD_COMPONENTS
+        ad9548
+#        adt7301
+        fpga
+    )
+endif()
+
 if(${BOARD} STREQUAL "adc64ve")
     set(BOARD_COMPONENTS
         ad9516
