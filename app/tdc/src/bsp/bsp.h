@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 #if !defined(BOARD_TDC64) && \
+!defined(BOARD_TDC64VHLEV1) && \
 !defined(BOARD_TDC72) && \
 !defined(BOARD_TDC72VHLV2) && \
 !defined(BOARD_TDC72VHLV3) && \
@@ -41,6 +42,13 @@ extern "C" {
 #if defined(BOARD_TDC72)
 #define SPI_BUS_INDEX_FPGA    1
 #define SPI_BUS_INDEX_ADT7301 4
+#endif
+
+#if defined(BOARD_TDC64VHLEV1)
+#define SPI_BUS_INDEX_AD9548  1
+#define SPI_BUS_INDEX_FPGA    2
+#define SPI_BUS_INDEX_ADT7301 3
+#define ADT7301_COUNT 3
 #endif
 
 #if defined(BOARD_TDC72VHLV2)

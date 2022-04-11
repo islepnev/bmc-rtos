@@ -24,8 +24,10 @@
 #define APP_NAME_STR "ADC64VE"
 #elif defined(BOARD_CRU16)
 #define APP_NAME_STR "CRU16"
+#elif defined(BOARD_TDC64VHLEV1)
+#define APP_NAME_STR "TDC64VHLE-v1"
 #elif defined(BOARD_TDC64)
-#define APP_NAME_STR "TDC64VHLE"
+#define APP_NAME_STR "TDC64VHLE-v2"
 #elif defined(BOARD_TDC64VLE)
 #define APP_NAME_STR "TDC64VLE"
 #elif defined(BOARD_TDC72)

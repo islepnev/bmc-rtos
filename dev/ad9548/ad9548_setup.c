@@ -224,7 +224,7 @@ void init_ad9548_setup(ad9548_setup_t *setup)
 {
 #if defined (BOARD_ADC64VE)
     ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
-#elif defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
+#elif defined (BOARD_TDC64VHLEV1) || defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
     ad9548_setProfile(setup, BOARD_PLL_TDC_VHLE);
 #elif defined (BOARD_TQDC16VSV1)
     ad9548_setProfile(setup, BOARD_PLL_TQDC16VS);
