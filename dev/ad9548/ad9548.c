@@ -55,9 +55,9 @@ bool ad9548_gpio_test(BusInterface *bus)
 static void set_nss(bool state)
 {
 #if HARDWARE_NSS
-    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
-#else
     (void) state;
+#else
+    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
 #endif
 }
 
