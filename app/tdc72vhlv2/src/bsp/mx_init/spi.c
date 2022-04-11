@@ -38,10 +38,11 @@ SPI_HandleTypeDef hspi5;
 
 static void init_fpga_spi(int index)
 {
+    // TDC72VHL-v2: 3-wire SPI
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
     hspi->Init.Mode = SPI_MODE_MASTER;
-    hspi->Init.Direction = SPI_DIRECTION_2LINES;
+    hspi->Init.Direction = SPI_DIRECTION_1LINE;
     hspi->Init.DataSize = SPI_DATASIZE_16BIT;
     hspi->Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi->Init.CLKPhase = SPI_PHASE_2EDGE;
@@ -80,8 +81,29 @@ static void init_adt7301_spi(int index)
     }
 }
 
+static void ad9548_spi_synchronize()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    // force NSS high
+    GPIO_InitStruct.Pin = AD9548_SPI_NSS_Pin|AD9548_SPI_SCLK_Pin|AD9548_SPI_MOSI_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_Init(AD9548_SPI_NSS_GPIO_Port, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, GPIO_PIN_RESET); // CS# assert
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_SCLK_Pin, GPIO_PIN_SET);   // SCLK up
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_SCLK_Pin, GPIO_PIN_RESET); // SCLK down
+    HAL_GPIO_WritePin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, GPIO_PIN_SET);   // CS# deassert
+}
+
 static void init_ad9548_spi(int index)
 {
+    ad9548_spi_synchronize();
+    // AD9548: CPOL=0, CPHA=0, MSB first, 3-wire
     SPI_HandleTypeDef *hspi = hspi_handle(index);
     hspi->Instance = spi_instance(index);
     hspi->Init.Mode = SPI_MODE_MASTER;
