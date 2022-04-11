@@ -28,7 +28,7 @@
 enum {DEVICE_ID_AD9548 = 0x48};
 enum {REVISION_ID_AD9548 = 0xC6};
 
-#define HARDWARE_NSS 0
+#define AD9548_HARDWARE_NSS 1
 
 void ad9548_gpio_init(BusInterface *bus)
 {
@@ -54,7 +54,7 @@ bool ad9548_gpio_test(BusInterface *bus)
 
 static void set_nss(bool state)
 {
-#if HARDWARE_NSS
+#if AD9548_HARDWARE_NSS
     (void) state;
 #else
     write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
@@ -76,31 +76,32 @@ bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)
     uint8_t address_L = address & 0xff;						// Extract 8 LSBs of the specified address
     uint8_t address_H = (address >> 8) & 0b11111;			// Extract 5 MSBs of the address
 
-    data_out |= (1 << 7) | (0 << 5) | address_H;			// Set R/~W bit to R, byte number to 1 and inserting 5 MSBs of the address
     set_nss(0);
+
+    data_out |= (1 << 7) | (0 << 5) | address_H;			// Set R/~W bit to R, byte number to 1 and inserting 5 MSBs of the address
     bool ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
     data_out = 0x00;
     data_out |= address_L;									// Loading 8 LSBs of the address into the SPI output buffer
-    set_nss(0);
     ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
     data_out = 0x00; // dummy
-    set_nss(0);
     ret = spi_driver_rx(spi, &data_in, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
+
+    set_nss(1);
 
     if (data)
         *data = data_in;
     return true;
+err:
+    set_nss(1);
+    return false;
 }
 
 bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
@@ -110,29 +111,30 @@ bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
     uint8_t address_L = address & 0xff;						// Extract 8 LSBs of the specified address
     uint8_t address_H = (address >> 8) & 0b11111;			// Extract 5 MSBs of the address
 
+    set_nss(0);
+
     data_out = 0x0;
     data_out |= (0 << 7) | (0 << 5) | address_H;			// Set R/~W bit to ~W, byte number to 1 and inserting 5 MSBs of the address
-    set_nss(0);
     bool ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
     data_out = 0x0;
     data_out |= address_L;									// Loading 8 LSBs of the address into the SPI output buffer
-    set_nss(0);
     ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
-    set_nss(0);
     ret = spi_driver_tx(spi, &value, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
+
+    set_nss(1);
 
     return true;
+err:
+    set_nss(1);
+    return false;
 }
 
 bool ad9548_ioupdate(BusInterface *bus)
