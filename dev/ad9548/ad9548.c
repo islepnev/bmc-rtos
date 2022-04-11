@@ -28,6 +28,8 @@
 enum {DEVICE_ID_AD9548 = 0x48};
 enum {REVISION_ID_AD9548 = 0xC6};
 
+#define AD9548_HARDWARE_NSS 1
+
 void ad9548_gpio_init(BusInterface *bus)
 {
     (void) bus;
@@ -52,8 +54,11 @@ bool ad9548_gpio_test(BusInterface *bus)
 
 static void set_nss(bool state)
 {
+#if AD9548_HARDWARE_NSS
     (void) state;
-//    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
+#else
+    write_gpio_pin(AD9548_SPI_NSS_GPIO_Port, AD9548_SPI_NSS_Pin, state);
+#endif
 }
 
 void ad9548_write_reset_pin(BusInterface *bus, bool reset)
@@ -71,25 +76,32 @@ bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)
     uint8_t address_L = address & 0xff;						// Extract 8 LSBs of the specified address
     uint8_t address_H = (address >> 8) & 0b11111;			// Extract 5 MSBs of the address
 
-    data_out |= (1 << 7) | (0 << 5) | address_H;			// Set R/~W bit to R, byte number to 1 and inserting 5 MSBs of the address
     set_nss(0);
+
+    data_out |= (1 << 7) | (0 << 5) | address_H;			// Set R/~W bit to R, byte number to 1 and inserting 5 MSBs of the address
     bool ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
+    if (!ret)
+        goto err;
 
     data_out = 0x00;
     data_out |= address_L;									// Loading 8 LSBs of the address into the SPI output buffer
-    set_nss(0);
     ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
+    if (!ret)
+        goto err;
 
     data_out = 0x00; // dummy
-    set_nss(0);
     ret = spi_driver_rx(spi, &data_in, 1, 1000);
+    if (!ret)
+        goto err;
+
     set_nss(1);
 
     if (data)
         *data = data_in;
-    return ret;
+    return true;
+err:
+    set_nss(1);
+    return false;
 }
 
 bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
@@ -99,29 +111,30 @@ bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
     uint8_t address_L = address & 0xff;						// Extract 8 LSBs of the specified address
     uint8_t address_H = (address >> 8) & 0b11111;			// Extract 5 MSBs of the address
 
+    set_nss(0);
+
     data_out = 0x0;
     data_out |= (0 << 7) | (0 << 5) | address_H;			// Set R/~W bit to ~W, byte number to 1 and inserting 5 MSBs of the address
-    set_nss(0);
     bool ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
     data_out = 0x0;
     data_out |= address_L;									// Loading 8 LSBs of the address into the SPI output buffer
-    set_nss(0);
     ret = spi_driver_tx(spi, &data_out, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
 
-    set_nss(0);
     ret = spi_driver_tx(spi, &value, 1, 1000);
-    set_nss(1);
     if (!ret)
-        return false;
+        goto err;
+
+    set_nss(1);
 
     return true;
+err:
+    set_nss(1);
+    return false;
 }
 
 bool ad9548_ioupdate(BusInterface *bus)
@@ -131,12 +144,54 @@ bool ad9548_ioupdate(BusInterface *bus)
 
 bool ad9548_detect(BusInterface *bus)
 {
+    const int cycles = 100;
     uint8_t device_id;
     uint8_t revision_id;
-    if (!ad9548_read_register(bus, 0x3, &device_id) ||
-        !ad9548_read_register(bus, 0x2, &revision_id))
+    for (int i=0; i<cycles; i++) {
+        if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id))
+            return false;
+        if (device_id == DEVICE_ID_AD9548) {
+            if (i>0)
+                log_printf(LOG_DEBUG, "AD9548: ID found on step %d", i);
+            break;
+        }
+    }
+    for (int i=0; i<cycles; i++) {
+        if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id))
+            return false;
+        if (device_id != DEVICE_ID_AD9548) {
+            log_printf(LOG_ERR, "AD9548: bad ID %02X on step %d", device_id, i);
+            return false;
+        }
+    }
+    if (device_id != DEVICE_ID_AD9548) return false;
+    if (!ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
         return false;
     log_printf(LOG_DEBUG, "AD9548 ID: %02X %02X", device_id, revision_id);
     if (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548) return true;
+    return false;
+}
+
+bool ad9548_repeat_read_register(BusInterface *bus, uint16_t address)
+{
+    const int cycles = 100;
+    uint8_t first_data;
+    if (!ad9548_read_register(bus, address, &first_data))
+        goto ioerr;
+    uint8_t data;
+    for (int i=0; i<cycles; i++) {
+        if (!ad9548_read_register(bus, address, &data))
+            goto ioerr;
+        if (data != first_data) {
+            log_printf(LOG_ERR, "AD9548: read %02X, %02X [%d]", first_data, data, i);
+            goto dataerr;
+        }
+    }
+    return true;
+ioerr:
+    log_put(LOG_ERR, "AD9548: SPI error");
+    return false;
+dataerr:
+    log_put(LOG_ERR, "AD9548: data error");
     return false;
 }

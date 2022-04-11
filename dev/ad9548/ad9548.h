@@ -53,6 +53,8 @@ bool ad9548_ioupdate(BusInterface *bus)
 bool ad9548_detect(BusInterface *bus)
     __attribute__((warn_unused_result));
 
+bool ad9548_repeat_read_register(BusInterface *bus, uint16_t address);
+
 #ifdef __cplusplus
 }
 #endif
