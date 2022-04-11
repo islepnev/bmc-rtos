@@ -22,17 +22,20 @@
 #include "app_task_heartbeat.h"
 #include "app_task_main.h"
 #include "app_task_pll.h"
+#include "bsp.h"
+#if !defined(BOARD_ADC64VEV1)
 #include "app_task_powermon.h"
+#endif
 #include "bsp.h"
 
-#if !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
+#if !defined(BOARD_ADC64VEV1) && !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
 #include "ad9516/app_task_auxpll.h"
 #endif
 #include "fpga/app_task_fpga.h"
 #if defined(BOARD_TTVXS)
 #include "vxsiicm/app_task_vxsiicm.h"
 #else
-#if !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
+#if !defined(BOARD_ADC64VEV1) && !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
 #include "vxsiics/app_task_vxsiics.h"
 #endif
 #endif
@@ -54,7 +57,9 @@ void create_tasks(void)
     // create_task_heartbeat(); // no need, see main task
     create_task_display();
     create_task_cli();
+#if !defined(BOARD_ADC64VEV1)
     create_task_powermon(&topdevice);
+#endif
     create_task_main();
 #if ENABLE_AD9516
     create_task_auxpll(&topdevice);
@@ -71,7 +76,7 @@ void create_tasks(void)
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
     create_task_tcpip();
 #endif
-#if !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
+#if !defined(BOARD_ADC64VEV1) && !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
     create_task_adc();
 #endif
 }

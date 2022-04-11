@@ -196,6 +196,16 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         PLL_Prof1_ADC64VE(&reg->prof[1]);
         PLL_Prof2_ADC64VE(&reg->prof[2]);
         PLL_Prof3_ADC64VE(&reg->prof[3]);
+        reg->refin.b.manual_select.b.a = 0;
+        reg->refin.b.manual_select.b.b = 2;
+        reg->refin.b.manual_select.b.c = 4;
+        reg->refin.b.manual_select.b.d = 3;
+        reg->refin.b.manual_select.b.en_a = 1;
+        reg->refin.b.manual_select.b.en_b = 1;
+        reg->refin.b.manual_select.b.en_c = 0;
+        reg->refin.b.manual_select.b.en_d = 1;
+        reg->loopmode.b.user_ref_select = 2;
+        reg->loopmode.b.select_mode = 1;
         break;
     case BOARD_PLL_TDC_VHLE:
         PLL_Output_TDC_VHLE(&reg->output);
@@ -223,6 +233,8 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
 void init_ad9548_setup(ad9548_setup_t *setup)
 {
 #if defined (BOARD_ADC64VE)
+    ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
+#elif defined (BOARD_ADC64VEV1)
     ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
 #elif defined (BOARD_TDC64VHLEV1) || defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
     ad9548_setProfile(setup, BOARD_PLL_TDC_VHLE);
