@@ -21,7 +21,7 @@
 
 const uint64_t ad9548_dds_period_fs = 8000000; // design constant
 
-#if defined(BOARD_TDC72VHLV3)
+#if defined BOARD_TDC64VHLEV1 || defined(BOARD_TDC72VHLV2) || defined(BOARD_TDC72VHLV3)
 const char *ad9548_ref_label(int refIndex)
 {
     switch (refIndex) {
