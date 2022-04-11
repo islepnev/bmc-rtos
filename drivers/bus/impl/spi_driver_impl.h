@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define SPI_DRIVER_INTERRUPT_MODE 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,6 +36,7 @@ void i2c_driver_reset_internal(struct __SPI_HandleTypeDef *hspi);
 bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
 bool spi_driver_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, uint16_t Size, uint32_t millisec);
 bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, uint16_t Size, uint32_t millisec);
+bool spi_driver_check_hal_ret(const char *title, struct __SPI_HandleTypeDef *hspi, int ret);
 
 #ifdef __cplusplus
 }
