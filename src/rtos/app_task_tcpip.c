@@ -25,7 +25,7 @@
 #include "tcpip/app_task_tcpip_impl.h"
 
 osThreadId tcpipThreadId = NULL;
-enum { tcpipThreadStackSize = configMINIMAL_STACK_SIZE + 240 };
+enum { tcpipThreadStackSize = TCPIP_THREAD_STACKSIZE };
 
 static void start_thread_tcpip( void const *arg)
 {
