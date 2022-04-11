@@ -453,7 +453,7 @@ bool fpgaWritePllStatus(Dev_fpga *dev)
 #if ENABLE_AD9548
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
     if (!d || !d->priv)
-        return false;
+        return true;
     const Dev_ad9548_priv *priv = (Dev_ad9548_priv *)device_priv_const(d);
 
     unlock_count = priv->status.pll_unlock_cntr <= 65535
