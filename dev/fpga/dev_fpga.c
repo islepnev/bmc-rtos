@@ -104,7 +104,7 @@ bool fpga_check_live_magic(struct Dev_fpga *dev)
     return fpga_write_live_magic(dev);
 }
 
-bool fpga_test(struct Dev_fpga *dev)
+bool fpga_test_v2(struct Dev_fpga *dev)
 {
     uint16_t addr1 = 0x000E;
     uint16_t addr2 = 0x000F;
@@ -270,8 +270,17 @@ bool fpga_detect_v2(Dev_fpga *dev)
     if (! fpga_r16(dev, 0, &data)) {
         return false;
     }
+    if (data == 0 || data == 0xFFFF)
+        return false;
     uint8_t data_hi = (data >> 8) & 0xFF;
     uint8_t data_lo = data & 0xFF;
+    if (data_hi == data_lo) {
+        log_printf(LOG_INFO, "FPGA SPI v1 detected, device_id %02X", data_lo);
+        dev->priv.fpga.proto_version = 1;
+        dev->priv.fpga.id = data & 0xFF;
+        dev->priv.fpga.id_read = 1;
+        return true;
+    }
     if (data_hi == (~data_lo & 0xFF) && data_lo != 0 && data_lo != 0xFF) {
         log_printf(LOG_INFO, "FPGA SPI v2 detected, device_id %02X", data_lo);
         dev->priv.fpga.proto_version = 2;
@@ -380,6 +389,20 @@ err:
     return false;
 }
 
+static bool fpga_v1_WriteBmcVersion(Dev_fpga *dev)
+{
+    bmc_version_t bmc_version;
+    bmc_version.b.major = VERSION_MAJOR_NUM;
+    bmc_version.b.minor = VERSION_MINOR_NUM;
+    uint16_t bmc_revision = VERSION_PATCH_NUM;
+
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_0, bmc_version.raw))
+        return false;
+    if (! fpga_w16(dev, FPGA_SPI_ADDR_7, bmc_revision))
+        return false;
+    return true;
+}
+
 bool fpgaWriteBmcVersion(Dev_fpga *dev)
 {
     bmc_version_t bmc_version;
@@ -398,7 +421,7 @@ bool fpgaWriteBmcTemperature(Dev_fpga *dev)
 {
     const Dev_thset_priv *p = get_thset_priv_const();
     if (!p)
-        return false;
+        return true;
 
     for (int i=0; i<4; i++) {
         int16_t v = (i < p->count && p->sensors[i].hdr.b.state == DEVICE_NORMAL)
@@ -453,7 +476,7 @@ bool fpgaWritePllStatus(Dev_fpga *dev)
 #if ENABLE_AD9548
     const DeviceBase *d = find_device_const(DEV_CLASS_AD9548);
     if (!d || !d->priv)
-        return false;
+        return true;
     const Dev_ad9548_priv *priv = (Dev_ad9548_priv *)device_priv_const(d);
 
     unlock_count = priv->status.pll_unlock_cntr <= 65535
@@ -525,16 +548,28 @@ bool fpgaWriteSensors(struct Dev_fpga *dev)
 }
 #endif
 
+bool fpga_periodic_task_v1(struct Dev_fpga *dev)
+{
+    return
+//        fpga_check_live_magic(dev) &&
+        fpga_v1_WriteBmcVersion(dev) &&
+        fpgaWriteBmcTemperature(dev) &&
+        fpgaWritePllStatus(dev) &&
+//        fpgaWriteSystemStatus(dev) &&
+//        fpgaWriteSensors(dev)
+        true;
+}
+
 bool fpga_periodic_task_v2(struct Dev_fpga *dev)
 {
     return
-            fpga_test(dev) &&
-            fpga_check_live_magic(dev) &&
-            fpgaWriteBmcVersion(dev) &&
-            fpgaWriteBmcTemperature(dev) &&
-            fpgaWritePllStatus(dev) &&
-            fpgaWriteSystemStatus(dev) &&
-            fpgaWriteSensors(dev);
+        fpga_test_v2(dev) &&
+        fpga_check_live_magic(dev) &&
+        fpgaWriteBmcVersion(dev) &&
+        fpgaWriteBmcTemperature(dev) &&
+        fpgaWritePllStatus(dev) &&
+        fpgaWriteSystemStatus(dev) &&
+        fpgaWriteSensors(dev);
 }
 
 bool fpga_periodic_task_v3(struct Dev_fpga *dev)
@@ -559,6 +594,9 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
 
 bool fpga_periodic_task(struct Dev_fpga *dev)
 {
+    if (dev->priv.fpga.proto_version == 1) {
+        return fpga_periodic_task_v1(dev);
+    }
     if (dev->priv.fpga.proto_version == 2) {
         return fpga_periodic_task_v2(dev);
     }

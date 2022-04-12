@@ -19,8 +19,6 @@
 
 #include "spi_driver_impl.h"
 
-#include <assert.h>
-
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "error_handler.h"
@@ -29,8 +27,6 @@
 #include "spi_driver_util.h"
 #include "stm32_hal.h"
 #include "stm32_ll.h"
-
-#define SPI_DRIVER_INTERRUPT_MODE 0
 
 /*
 #define HAL_SPI_ERROR_NONE              (0x00000000U)   //! No error
@@ -45,16 +41,16 @@
 
 void spi_driver_log_error(const char *title, struct __SPI_HandleTypeDef *hspi)
 {
-    log_printf(LOG_WARNING, "%s: SPI %d %s%s%s%s%s%s%s (error code 0x%04X)\n",
+    log_printf(LOG_WARNING, "%s: SPI %d error %04X%s%s%s%s%s%s%s\n",
                title, hspi_index(hspi),
+               hspi->ErrorCode,
                (hspi->ErrorCode & HAL_SPI_ERROR_MODF)          ? " MODF" : "",
                (hspi->ErrorCode & HAL_SPI_ERROR_CRC)           ? " CRC" : "",
                (hspi->ErrorCode & HAL_SPI_ERROR_OVR)           ? " OVR" : "",
                (hspi->ErrorCode & HAL_SPI_ERROR_FRE)           ? " FRE" : "",
                (hspi->ErrorCode & HAL_SPI_ERROR_DMA)           ? " DMA_transfer" : "",
                (hspi->ErrorCode & HAL_SPI_ERROR_FLAG)          ? " flag_error" : "",
-               (hspi->ErrorCode & HAL_SPI_ERROR_ABORT)         ? " Abort_error" : "",
-               hspi->ErrorCode);
+               (hspi->ErrorCode & HAL_SPI_ERROR_ABORT)         ? " Abort_error" : "");
 }
 
 void spi_driver_reset_internal(struct __SPI_HandleTypeDef *handle)
@@ -63,6 +59,14 @@ void spi_driver_reset_internal(struct __SPI_HandleTypeDef *handle)
     handle->ErrorCode = HAL_SPI_ERROR_NONE;
     handle->State = HAL_SPI_STATE_READY;
     __HAL_SPI_ENABLE(handle);
+}
+
+bool spi_driver_check_hal_ret(const char *title, struct __SPI_HandleTypeDef *hspi, int ret)
+{
+    if (HAL_OK == ret)
+        return true;
+    spi_driver_log_error(title, hspi);
+    return false;
 }
 
 #if SPI_DRIVER_INTERRUPT_MODE
@@ -84,15 +88,6 @@ static bool spi_driver_wait_complete(const char *title, struct __SPI_HandleTypeD
         return false;
     }
     return true;
-}
-
-static bool spi_driver_check_hal_ret(const char *title, struct __SPI_HandleTypeDef *hspi, int ret)
-{
-    if (HAL_OK == ret)
-        return true;
-    assert(ret != HAL_BUSY);
-    spi_driver_log_error(title, hspi);
-    return false;
 }
 
 static bool spi_driver_before_hal_call(const char *title, struct __SPI_HandleTypeDef *hspi)
@@ -157,9 +152,8 @@ bool spi_driver_tx_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf,
         Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_TransmitReceive(hspi, txBuf, rxBuf, Size, millisec);
+    spi_driver_check_hal_ret(__func__, hspi, ret);
     if (ret != HAL_OK) {
-        log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
-                   (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return false;
     }
     return true;
@@ -171,9 +165,8 @@ bool spi_driver_rx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *rxBuf, ui
         Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Receive(hspi, rxBuf, Size, millisec);
+    spi_driver_check_hal_ret(__func__, hspi, ret);
     if (ret != HAL_OK) {
-        log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
-                   (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return false;
     }
     return true;
@@ -185,9 +178,8 @@ bool spi_driver_tx_internal(struct __SPI_HandleTypeDef *hspi, uint8_t *txBuf, ui
         Error_Handler();
     HAL_StatusTypeDef ret = HAL_OK;
     ret = HAL_SPI_Transmit(hspi, txBuf, Size, millisec);
+    spi_driver_check_hal_ret(__func__, hspi, ret);
     if (ret != HAL_OK) {
-        log_printf(LOG_WARNING, "%s: SPI%d %s (code %d), %d\n", __func__, hspi_index(hspi),
-                   (ret == HAL_BUSY) ? "busy" : "error", ret, hspi->ErrorCode);
         return false;
     }
     return true;
