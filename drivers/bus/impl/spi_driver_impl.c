@@ -19,8 +19,6 @@
 
 #include "spi_driver_impl.h"
 
-#include <assert.h>
-
 #include "bus/bus_types.h"
 #include "cmsis_os.h"
 #include "error_handler.h"
@@ -67,7 +65,6 @@ bool spi_driver_check_hal_ret(const char *title, struct __SPI_HandleTypeDef *hsp
 {
     if (HAL_OK == ret)
         return true;
-    assert(ret != HAL_BUSY);
     spi_driver_log_error(title, hspi);
     return false;
 }
