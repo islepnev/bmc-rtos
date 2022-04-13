@@ -189,7 +189,21 @@ bool fpga_read_info(struct Dev_fpga *dev)
 void fpga_print_sdb(struct Dev_fpga *dev)
 {
     const struct sdb_interconnect *ic = &dev->priv.fpga.sdb.ic;
-    log_printf(LOG_INFO, "SDB: %d records", ic->sdb_records);
+    {
+        const struct sdb_product *product = &ic->sdb_component.product;
+        char version_str[16] = {0};
+        snprint_sdb_version(version_str, sizeof(version_str), product->version);
+        char date_str[16] = {0};
+        snprint_sdb_date(date_str, sizeof(date_str), product->date);
+        char name[20] = {0};
+        sdb_copy_printable(name, product->name, sizeof(product->name), '\0');
+
+        log_printf(LOG_INFO, "SDB: device %02X %s v%s, %s",
+                   product->device_id,
+                   name,
+                   version_str,
+                   date_str);
+    }
     for (int i=0; i<ic->sdb_records - 1; i++) {
         if (i >= SDB_MAX_RECORDS) {
             log_printf(LOG_WARNING, "  <too many devices>");
@@ -202,7 +216,7 @@ void fpga_print_sdb(struct Dev_fpga *dev)
         char name[20];
         sdb_copy_printable(name, d->sdb_component.product.name, sizeof(d->sdb_component.product.name), ' ');
         name[19] = 0;
-        log_printf(LOG_INFO, "  %04x-%04x: %08X v%d.%d %s",
+        log_printf(LOG_INFO, "  %06x-%06x: %08X v%d.%d %s",
                    (uint16_t)d->sdb_component.addr_first / REGIO_WORD_SIZE,
                    (uint16_t)d->sdb_component.addr_last / REGIO_WORD_SIZE,
                    (uint32_t)d->sdb_component.product.device_id,
