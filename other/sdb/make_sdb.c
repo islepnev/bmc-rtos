@@ -62,7 +62,7 @@ uint32_t datecode()
     struct tm tm;
     tm = *localtime(&now);
     uint32_t y = tm.tm_year+1900;
-    uint32_t m = tm.tm_mon;
+    uint32_t m = tm.tm_mon+1;
     uint32_t d = tm.tm_mday;
     uint32_t code = (dec2bcd(y) << 16) | (dec2bcd(m) << 8) | dec2bcd(d);
     return code;
