@@ -40,6 +40,12 @@ void sdb_interconnect_fix_endian(struct sdb_interconnect *p)
     sdb_component_fix_endian(&p->sdb_component);
 }
 
+void sdb_synthesis_fix_endian(struct sdb_synthesis *p)
+{
+    p->tool_version = ntohl(p->tool_version);
+    p->date = ntohl(p->date);
+}
+
 void sdb_device_fix_endian(struct sdb_device *p)
 {
     p->abi_class = ntohl(p->abi_class);
@@ -135,5 +141,5 @@ int snprint_sdb_date(char *str, size_t size, uint32_t date)
         bcd2bin((date >>  8) & 0xFF),
         bcd2bin((date) & 0xFF)
     };
-    return snprintf(str, size, "%d.%d.%d%d", v[3], v[2], v[0], v[1]);
+    return snprintf(str, size, "%02d.%02d.%02d%02d", v[3], v[2], v[0], v[1]);
 }

@@ -28,10 +28,12 @@ extern "C" {
 
 struct sdb_component;
 struct sdb_interconnect;
+struct sdb_synthesis;
 struct sdb_device;
 
 void sdb_component_fix_endian(struct sdb_component *p);
 void sdb_interconnect_fix_endian(struct sdb_interconnect *p);
+void sdb_synthesis_fix_endian(struct sdb_synthesis *p);
 void sdb_device_fix_endian(struct sdb_device *p);
 bool sdb_ic_validate(struct sdb_interconnect *p);
 bool sdb_dev_validate(struct sdb_device *p);
