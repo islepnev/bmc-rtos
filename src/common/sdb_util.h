@@ -35,8 +35,10 @@ void sdb_interconnect_fix_endian(struct sdb_interconnect *p);
 void sdb_device_fix_endian(struct sdb_device *p);
 bool sdb_ic_validate(struct sdb_interconnect *p);
 bool sdb_dev_validate(struct sdb_device *p);
-void sdb_copy_printable(char *dest, uint8_t *buf, size_t size, char fill);
+void sdb_copy_printable(char *dest, const uint8_t *buf, size_t size, char fill);
 void fill_sdb_string(uint8_t *buf, uint8_t size, const char *str);
+int snprint_sdb_version(char *str, size_t size, uint32_t version);
+int snprint_sdb_date(char *str, size_t size, uint32_t date);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,7 @@
 
 #include "sdb_util.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "sdb.h"
@@ -72,7 +73,7 @@ bool sdb_dev_validate(struct sdb_device *p)
     return true;
 }
 
-void sdb_copy_printable(char *dest, uint8_t *buf, size_t size, char fill)
+void sdb_copy_printable(char *dest, const uint8_t *buf, size_t size, char fill)
 {
     for (size_t i=0; i<size; i++) {
         char c = buf[i];
@@ -92,4 +93,47 @@ void fill_sdb_string(uint8_t *buf, uint8_t size, const char *str)
     memcpy(buf, str, srclen);
     if (srclen < size)
         memset(&buf[srclen], 0, size - srclen);
+}
+
+static uint8_t bcd2bin(uint8_t value)
+{
+    uint32_t tmp = 0u;
+    tmp = ((uint8_t)(value & (uint8_t)0xF0u) >> (uint8_t)0x4U) * 10u;
+    return (tmp + (value & (uint8_t)0x0FU));
+}
+
+int snprint_sdb_version(char *str, size_t size, uint32_t version)
+{
+    if (!version) {
+        if (str && size > 0)
+            str[0] = '\0';
+        return 0;
+    }
+    uint8_t v[4] = {
+        bcd2bin((version >> 24) & 0xFF),
+        bcd2bin((version >> 16) & 0xFF),
+        bcd2bin((version >>  8) & 0xFF),
+        bcd2bin((version) & 0xFF)
+    };
+    if (v[2] || v[3])
+        return snprintf(str, size, "%d.%d.%d.%d", v[0], v[1], v[2], v[3]);
+    if (v[2])
+        return snprintf(str, size, "%d.%d.%d", v[0], v[1], v[2]);
+    return snprintf(str, size, "%d.%d", v[0], v[1]);
+}
+
+int snprint_sdb_date(char *str, size_t size, uint32_t date)
+{
+    if (!date) {
+        if (str && size > 0)
+            str[0] = '\0';
+        return 0;
+    }
+    uint8_t v[4] = {
+        bcd2bin((date >> 24) & 0xFF),
+        bcd2bin((date >> 16) & 0xFF),
+        bcd2bin((date >>  8) & 0xFF),
+        bcd2bin((date) & 0xFF)
+    };
+    return snprintf(str, size, "%d.%d.%d%d", v[3], v[2], v[0], v[1]);
 }
