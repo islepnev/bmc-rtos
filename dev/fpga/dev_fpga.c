@@ -17,6 +17,8 @@
 
 #include "dev_fpga.h"
 
+#include <string.h>
+
 #include "../ad9545/dev_ad9545.h"
 #include "../ad9548/dev_ad9548.h"
 #include "app_tasks.h"
@@ -188,7 +190,21 @@ bool fpga_read_info(struct Dev_fpga *dev)
 
 void fpga_print_sdb(struct Dev_fpga *dev)
 {
-    const struct sdb_interconnect *ic = &dev->priv.fpga.sdb.ic;
+    const Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
+    {
+        const struct sdb_synthesis *syn = &sdb->syn;
+        char date_str[16] = {0};
+        snprint_sdb_date(date_str, sizeof(date_str), syn->date);
+        enum { commit_id_len = sizeof(syn->commit_id) };
+        char commit_id[commit_id_len+1] = {0};
+        sdb_copy_printable(commit_id, syn->commit_id, commit_id_len, '\0');
+        enum { user_name_len = sizeof(syn->user_name) };
+        char user_name[user_name_len+1] = {0};
+        sdb_copy_printable(user_name, syn->user_name, user_name_len, '\0');
+        if ((strlen(commit_id) > 0) || (strlen(user_name) > 0))
+            log_printf(LOG_INFO, "SDB: build %s by %s on %s", commit_id, user_name, date_str);
+    }
+    const struct sdb_interconnect *ic = &sdb->ic;
     {
         const struct sdb_product *product = &ic->sdb_component.product;
         char version_str[16] = {0};
@@ -210,6 +226,8 @@ void fpga_print_sdb(struct Dev_fpga *dev)
             break;
         }
         struct sdb_device *d = &dev->priv.fpga.sdb.devices[i];
+        if (d->sdb_component.product.record_type == sdb_type_empty)
+            continue;
         if (!sdb_dev_validate(d)) {
             log_printf(LOG_WARNING, "  <invalid record>");
         }
@@ -247,9 +265,9 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     hexdump(&csr, sizeof(csr));
     */
     Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
-    struct sdb_interconnect *ic = &sdb->ic;
-    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, ic, sizeof (*ic)))
+    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, sdb, sizeof (*sdb)))
         return false;
+    struct sdb_interconnect *ic = &sdb->ic;
     if (SDB_DUMP) {
         log_printf(LOG_DEBUG, "SDB interconnect dump:");
         hexdump(ic, sizeof(*ic));
@@ -259,19 +277,23 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         log_printf(LOG_WARNING, "SDB interconnect structure invalid");
         return false;
     }
+    struct sdb_synthesis *syn = &sdb->syn;
+    sdb_synthesis_fix_endian(syn);
     bool ok = true;
     for (int i=0; i<ic->sdb_records - 1; i++) {
         struct sdb_device *d = &sdb->devices[i];
-        size_t offset = sizeof(struct sdb_interconnect) + i*sizeof(struct sdb_device);
-        if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE + offset / REGIO_WORD_SIZE, d, sizeof (*d)))
-            return false;
+
         if (SDB_DUMP) {
             log_printf(LOG_DEBUG, "SDB device(%d) dump:", i);
             hexdump(d, sizeof(*d));
         }
         sdb_device_fix_endian(d);
-        if (!sdb_dev_validate(d))
-            ok = false;
+        if (d->sdb_component.product.record_type == sdb_type_empty)
+            continue;
+        if (d->sdb_component.product.record_type == sdb_type_device) {
+            if (!sdb_dev_validate(d))
+                ok = false;
+        }
     }
     fpga_print_sdb(dev);
     return ok;

@@ -29,7 +29,7 @@ extern "C" {
 
 enum {FPGA_REG_COUNT = 8};
 enum { SDB_MAX_RECORDS = 32 }; // 0x7C00-0x7FFF 16-bit registers capacity
-enum { SDB_MAX_DEVICES = SDB_MAX_RECORDS - 1 };
+enum { SDB_MAX_DEVICES = SDB_MAX_RECORDS - 2 };
 
 typedef enum {
     FPGA_STATE_STANDBY,
@@ -43,6 +43,7 @@ typedef enum {
 typedef struct Dev_fpga_sdb {
     struct sdb_interconnect ic;
     struct sdb_device devices[SDB_MAX_DEVICES];
+    struct sdb_synthesis syn;
 } Dev_fpga_sdb;
 
 typedef struct Dev_fpga_gpio {
