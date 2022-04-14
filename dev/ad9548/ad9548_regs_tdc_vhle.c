@@ -53,8 +53,13 @@ void PLL_Output_TDC_VHLE(AD9548_Output_TypeDef *p)
     p->b.out_3_cmos_invert = 0;
     p->b.q_0 = 0;
     p->b.q_1 = 0;
+#if defined(BOARD_TDC64VHLEV1) || defined(BOARD_TDC72VHLV2)
+    p->b.q_2 = 0;
+    p->b.q_3 = 0;
+#else
     p->b.q_2 = 2;
     p->b.q_3 = 2;
+#endif
 }
 
 // 125 MHz lowest priority

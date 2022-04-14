@@ -21,7 +21,27 @@
 
 const uint64_t ad9548_dds_period_fs = 8000000; // design constant
 
-#if defined(BOARD_TDC72VHLV3)
+#if defined(BOARD_ADC64VEV1)
+const char *ad9548_ref_label(int refIndex)
+{
+    switch (refIndex) {
+    case 0:
+    case 1:
+        return "FPGA/2 62.5 MHz";
+    case 2:
+    case 3:
+        return "TTC/2  20.8 MHz";
+    case 4:
+    case 5:
+        return "VXS/2  20.8 MHz";
+    case 6:
+    case 7:
+        return "VCXO/2 62.5 MHz";
+    default:
+        return "?";
+    }
+}
+#elif defined BOARD_TDC64VHLEV1 || defined(BOARD_TDC72VHLV2) || defined(BOARD_TDC72VHLV3)
 const char *ad9548_ref_label(int refIndex)
 {
     switch (refIndex) {
@@ -39,6 +59,26 @@ const char *ad9548_ref_label(int refIndex)
         return "VCXO/3 41.7 MHz";
     default:
         return "?";
+    }
+}
+#elif defined BOARD_TQDC16VSV1
+const char *ad9548_ref_label(int refIndex)
+{
+    switch (refIndex) {
+    case 0:
+    case 1:
+        return "FPGA";
+    case 2:
+    case 3:
+        return "TTC ";
+    case 4:
+    case 5:
+        return "    ";
+    case 6:
+    case 7:
+        return "VCXO";
+    default:
+        return "?   ";
     }
 }
 #elif defined BOARD_ADC64VE

@@ -196,6 +196,16 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         PLL_Prof1_ADC64VE(&reg->prof[1]);
         PLL_Prof2_ADC64VE(&reg->prof[2]);
         PLL_Prof3_ADC64VE(&reg->prof[3]);
+        reg->refin.b.manual_select.b.a = 0;
+        reg->refin.b.manual_select.b.b = 2;
+        reg->refin.b.manual_select.b.c = 4;
+        reg->refin.b.manual_select.b.d = 3;
+        reg->refin.b.manual_select.b.en_a = 1;
+        reg->refin.b.manual_select.b.en_b = 1;
+        reg->refin.b.manual_select.b.en_c = 0;
+        reg->refin.b.manual_select.b.en_d = 1;
+        reg->loopmode.b.user_ref_select = 2;
+        reg->loopmode.b.select_mode = 1;
         break;
     case BOARD_PLL_TDC_VHLE:
         PLL_Output_TDC_VHLE(&reg->output);
@@ -206,11 +216,16 @@ void ad9548_setProfile(ad9548_setup_t *reg, AD9548_BOARD_PLL_VARIANT variant)
         PLL_Prof4_TDC_VHLE(&reg->prof[4]);
         break;
     case BOARD_PLL_TQDC16VS:
-        memcpy(reg->output.v, PLL_Output_TQDC16VS.v, PLL_OUTCLK_SIZE);
-        PLL_Prof0_TQDC16VS(&reg->prof[0]);
-        PLL_Prof1_TQDC16VS(&reg->prof[1]);
-        PLL_Prof2_TQDC16VS(&reg->prof[2]);
-        PLL_Prof3_TQDC16VS(&reg->prof[3]);
+        //memcpy(reg->output.v, PLL_Output_TQDC16VS.v, PLL_OUTCLK_SIZE);
+        PLL_Output_TQDC16VS(&reg->output);
+        PLL_Prof_7_125(&reg->prof[7]);
+        PLL_Prof_6_125div3(&reg->prof[6]);
+        PLL_Prof_5(&reg->prof[5]);
+        PLL_Prof_0_125div3(&reg->prof[0]);
+        reg->refin.b.manual_select.b.en_d = 0;
+        reg->refin.b.powerdown.b.c = 1;
+        reg->loopmode.b.user_ref_select = 2;
+        reg->loopmode.b.select_mode = 1;
         break;
     }
 }
@@ -219,9 +234,11 @@ void init_ad9548_setup(ad9548_setup_t *setup)
 {
 #if defined (BOARD_ADC64VE)
     ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
-#elif defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
+#elif defined (BOARD_ADC64VEV1)
+    ad9548_setProfile(setup, BOARD_PLL_ADC64VE);
+#elif defined (BOARD_TDC64VHLEV1) || defined (BOARD_TDC72VHLV2) || defined (BOARD_TDC72VHLV3)
     ad9548_setProfile(setup, BOARD_PLL_TDC_VHLE);
-#elif defined (BOARD_TQDC16VS)
+#elif defined (BOARD_TQDC16VSV1)
     ad9548_setProfile(setup, BOARD_PLL_TQDC16VS);
 #endif
 }

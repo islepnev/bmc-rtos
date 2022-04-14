@@ -27,7 +27,7 @@ extern "C" {
 
 // for use with GCC flags -fstack-usage -Wstack-usage=N
 // Note: debug_printf stack overhead is 100 bytes
-#if defined(BOARD_TDC72VHLV2) || defined(BOARD_TQDC16VSV1)
+#if defined(BOARD_TDC64VHLEV1) || defined(BOARD_TDC72VHLV2) || defined(BOARD_TQDC16VSV1)
 enum { threadStackSize = 200 }; // words
 #else
 enum { threadStackSize = 512 }; // words

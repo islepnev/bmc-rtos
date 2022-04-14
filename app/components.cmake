@@ -8,6 +8,14 @@ set(COMMON_COMPONENTS
     thset
 )
 
+if(${BOARD} STREQUAL "adc64vev1")
+    set(BOARD_COMPONENTS
+        ad9548
+#        adt7301
+        fpga
+    )
+endif()
+
 if(${BOARD} STREQUAL "adc64ve")
     set(BOARD_COMPONENTS
         ad9516
@@ -70,6 +78,15 @@ if(${BOARD} STREQUAL "tdc64")
     )
 endif()
 
+if(${BOARD} STREQUAL "tdc64vhlev1")
+    set(BOARD_COMPONENTS
+        ad9548
+        adt7301
+        fpga
+    )
+endif()
+
+
 if(${BOARD} STREQUAL "tdc72")
     set(BOARD_COMPONENTS
         ad9545
@@ -94,6 +111,14 @@ if(${BOARD} STREQUAL "tdc72vhlv3")
 endif()
 
 if(${BOARD} STREQUAL "tdc72vhlv2")
+    set(BOARD_COMPONENTS
+        ad9548
+        adt7301
+        fpga
+    )
+endif()
+
+if(${BOARD} STREQUAL "tqdc16vsv1")
     set(BOARD_COMPONENTS
         ad9548
         adt7301
