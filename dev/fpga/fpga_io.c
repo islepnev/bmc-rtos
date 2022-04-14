@@ -17,7 +17,8 @@
 
 #include "fpga_io.h"
 
-#include "fpga_spi_hal.h"
+#include "fpga_spi_v2.h"
+#include "fpga_spi_v3.h"
 #include "dev_fpga_types.h"
 
 bool fpga_r16(struct Dev_fpga *d, uint32_t addr, uint16_t *data)

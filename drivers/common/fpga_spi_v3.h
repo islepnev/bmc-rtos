@@ -1,5 +1,5 @@
 /*
-**    Copyright 2019-2020 Ilja Slepnev
+**    Copyright 2022 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef FPGA_SPI_HAL_H
-#define FPGA_SPI_HAL_H
+#ifndef FPGA_SPI_V3_H
+#define FPGA_SPI_V3_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,24 +27,16 @@
 extern "C" {
 #endif
 
-typedef struct fpga_spi_stats_t {
-    uint32_t frames;
-    uint32_t regio_timeouts;
-    uint32_t regio_errors;
-    uint32_t tx_crc_errors;
-    uint32_t rx_crc_errors;
-} fpga_spi_stats_t;
+bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
+    __attribute__((warn_unused_result));
 
-bool fpga_spi_hal_tx_rx(BusInterface *bus, uint8_t *txBuf, uint8_t *rxBuf, uint16_t Size);
-bool fpga_spi_hal_tx(BusInterface *bus, uint8_t *txBuf, uint16_t Size);
-bool fpga_spi_hal_rx(BusInterface *bus, uint8_t *rxBuf, uint16_t Size);
-bool fpga_spi_duplex(BusInterface *bus);
+bool fpga_spi_v3_hal_write_reg(BusInterface *bus, uint32_t addr, uint64_t data)
+    __attribute__((warn_unused_result));
 
-void fpga_enable_interface(BusInterface *bus);
-void fpga_disable_interface(BusInterface *bus);
+bool fpga_spi_v3_hal_read_status(BusInterface *bus);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FPGA_SPI_HAL_H */
+#endif // FPGA_SPI_V3_H

@@ -31,7 +31,8 @@
 #include "display.h"
 #include "fpga_mcu_regs_v2_0.h"
 #include "fpga_io.h"
-#include "fpga_spi_hal.h"
+#include "fpga_spi_v2.h"
+#include "fpga_spi_v3.h"
 #include "log/log.h"
 #include "mac_address.h"
 #include "powermon/dev_powermon_types.h"
@@ -427,7 +428,7 @@ err:
 
 static bool fpga_v1_WriteBmcVersion(Dev_fpga *dev)
 {
-    bmc_version_t bmc_version;
+    static bmc_version_t bmc_version;
     bmc_version.b.major = VERSION_MAJOR_NUM;
     bmc_version.b.minor = VERSION_MINOR_NUM;
     uint16_t bmc_revision = VERSION_PATCH_NUM;
