@@ -15,6 +15,8 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#define _XOPEN_SOURCE 700
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -22,6 +24,8 @@
 #include <string.h>
 #include <strings.h>
 #include <time.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include "sdb.h"
 #include "sdb_util.h"
@@ -39,7 +43,13 @@ typedef struct version_t {
 uint8_t device_id = 0;
 char *board_name = "unknown";
 version_t version = {{0, 0, 0, 0}};
-
+char *commit_id = "";
+#ifndef MAX_FILENAME_LEN
+#define MAX_FILENAME_LEN 1024
+#endif
+char filename_csv[MAX_FILENAME_LEN] = {};
+char filename_bin[MAX_FILENAME_LEN] = {};
+char filename_txt[MAX_FILENAME_LEN] = {};
 
 enum mlink_bus_type {BUS_REGIO = 1, BUS_MEMIO = 2};
 
@@ -62,7 +72,7 @@ uint32_t datecode()
     struct tm tm;
     tm = *localtime(&now);
     uint32_t y = tm.tm_year+1900;
-    uint32_t m = tm.tm_mon;
+    uint32_t m = tm.tm_mon+1;
     uint32_t d = tm.tm_mday;
     uint32_t code = (dec2bcd(y) << 16) | (dec2bcd(m) << 8) | dec2bcd(d);
     return code;
@@ -70,6 +80,8 @@ uint32_t datecode()
 
 bool parse_version(const char *str, version_t *v)
 {
+    if (!str)
+        return false;
     int n = sscanf(str, "%d.%d.%d.%d",
                    &v->v[3], &v->v[2], &v->v[1], &v->v[0]);
     if (n < 1) {
@@ -83,6 +95,20 @@ uint32_t version_code(const version_t v)
 {
     uint32_t code = (dec2bcd(v.v[3]) << 24) | (dec2bcd(v.v[2]) << 16) | (dec2bcd(v.v[1]) << 8) | dec2bcd(v.v[0]);
     return code;
+}
+
+void fill_sdb_synthesis(struct sdb_synthesis *syn)
+{
+    // fill_sdb_string(syn->syn_name, sizeof(syn->syn_name), "");
+    fill_sdb_string(syn->commit_id, sizeof(syn->commit_id), commit_id);
+    // fill_sdb_string(syn->tool_name, sizeof(syn->tool_name), "");
+    syn->tool_version = 0;
+    syn->date = datecode();
+    char *user_name = getlogin();
+    if (user_name) {
+        fill_sdb_string(syn->user_name, sizeof(syn->user_name), user_name);
+    }
+    syn->record_type = sdb_type_synthesis;
 }
 
 void fill_sdb_interconnect(struct sdb_interconnect *ic)
@@ -129,10 +155,12 @@ void fill_sdb_device(struct sdb_device *p,
     product->record_type = sdb_type_device;
 }
 
-enum { MAX_SDB_DEVICE_COUNT = 32 };
+// 2048 bytes SDB PROM size limit
+enum { MAX_SDB_DEVICE_COUNT = 30 };
 struct sdb_t {
     struct sdb_interconnect ic;
     struct sdb_device device[MAX_SDB_DEVICE_COUNT];
+    struct sdb_synthesis syn;
 };
 
 enum { MAX_LINE_LENGTH = 256 };
@@ -196,7 +224,7 @@ bool parse_line(const char *filename, int linenumber, const char *str, struct sd
     return true;
 }
 
-void parse_csv_comment(const char *s, size_t size)
+void parse_csv_comment(const char *s)
 {
     if (!s)
         return;
@@ -235,13 +263,17 @@ int read_csv(const char *filename, struct sdb_t *sdb)
         linenumber++;
         trim_eol(linebuf);
         if (strlen(linebuf) && linebuf[0] == '#') {
-            parse_csv_comment(linebuf, MAX_LINE_LENGTH);
+            parse_csv_comment(linebuf);
             continue;
         }
         if (!parse_line(filename, linenumber, linebuf, &sdb->device[device_count])) {
             break;
         }
         device_count++;
+    }
+    for (int i=device_count; i<MAX_SDB_DEVICE_COUNT; i++) {
+        struct sdb_empty *p = (struct sdb_empty *) &sdb->device[i];
+        p->record_type = sdb_type_empty;
     }
     fclose(f);
     return device_count;
@@ -259,18 +291,16 @@ void sdb_fix_endian(struct sdb_t *p)
         struct sdb_device *d = &p->device[i];
         sdb_device_fix_endian(d);
     }
+    sdb_synthesis_fix_endian(&p->syn);
 }
 
 bool write_sdb_bin(const char *filename, const struct sdb_t *p)
 {
     assert(p->ic.sdb_magic == SDB_MAGIC);
-    struct sdb_t sdb_be;
-    memcpy(&sdb_be, p, sizeof(sdb_be));
-
-    int device_count = p->ic.sdb_records - 1;
+    struct sdb_t sdb_be = *p;
 
     sdb_fix_endian(&sdb_be);
-    const int sdb_size = sizeof(struct sdb_interconnect) + device_count * sizeof(struct sdb_device);
+    const int sdb_size = sizeof(struct sdb_t);
     {
         // write binary file
         FILE *f = fopen(filename, "w");
@@ -282,6 +312,7 @@ bool write_sdb_bin(const char *filename, const struct sdb_t *p)
         if (fclose(f) != 0)
             goto err;
     }
+    printf("Wrote SDB binary file %s\n", filename);
     return true;
 err:
     perror("error");
@@ -294,8 +325,7 @@ bool write_sdb_ram_txt(const char *filename, const struct sdb_t *p)
     struct sdb_t sdb_be;
     memcpy(&sdb_be, p, sizeof(sdb_be));
 
-    int device_count = p->ic.sdb_records - 1;
-    const int sdb_size = sizeof(struct sdb_interconnect) + device_count * sizeof(struct sdb_device);
+    const int sdb_size = sizeof(struct sdb_t);
 
     sdb_fix_endian(&sdb_be);
 
@@ -319,47 +349,137 @@ bool write_sdb_ram_txt(const char *filename, const struct sdb_t *p)
         if (fclose(f) != 0)
             goto err;
     }
+    printf("Wrote SDB RAM init file %s\n", filename);
     return true;
 err:
     perror("error");
     return false;
 }
 
+static struct option long_options[] = {
+
+    {"help",      no_argument,       NULL, 'h'},
+    {"bin",       required_argument, NULL, 'b'},
+    {"ram_init",  required_argument, NULL, 'r'},
+    {"version",   required_argument, NULL, 'v'},
+    {"commit_id", required_argument, NULL, 'c'},
+    {NULL, 0, NULL, 0}
+};
+
 void usage(int argc, char *argv[])
 {
-    fprintf(stderr, "USAGE: %s <description.csv> <sdb.bin> <sdb.ram_init.txt> [version]\n\n",
+    (void)argc;
+    fprintf(stderr, "\nUSAGE:\n %s [options] <description.csv> [sdb.bin] [ram_init.txt]\n\n",
             argv[0]);
+    fprintf(stderr, "Options:\n");
+    fprintf(stderr, " -h, --help              display this help\n");
+    fprintf(stderr, " -b, --bin=<filename>    output binary file\n");
+    fprintf(stderr, " -r, --ram=<filename>    output ram init text file\n");
+    fprintf(stderr, " -v, --version=<text>    product version (a.b.c.d format)\n");
+    fprintf(stderr, " -c, --commit_id=<text>  revision or git hash\n");
     exit(1);
+}
+
+void parse_options(int argc, char *argv[])
+{
+    while (1) {
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "hb:r:v:c:",
+                            long_options, &option_index);
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 'b':
+            if (optarg)
+                strcpy(filename_bin, optarg);
+            break;
+        case 'r':
+            if (optarg)
+                strcpy(filename_txt, optarg);
+            break;
+        case 'v':
+            if (optarg)
+                parse_version(optarg, &version);
+            break;
+        case 'c':
+            if (optarg)
+                commit_id = strdup(optarg);
+            break;
+        default:
+            usage(argc, argv);
+        }
+    }
+
+    if (optind < argc) {
+        int pos = 0;
+        while (optind < argc) {
+            if (pos == 0)
+                strcpy(filename_csv, argv[optind]);
+            if (pos == 1)
+                strcpy(filename_bin, argv[optind]);
+            if (pos == 2)
+                strcpy(filename_txt, argv[optind]);
+            if (pos == 3)
+                parse_version(argv[optind], &version);
+            pos++;
+            optind++;
+        }
+        printf("\n");
+    }
+}
+
+void str_replace_tail(char *str, const char *search, const char *replacement)
+{
+    int tailpos = strlen(str) - strlen(search);
+    if (tailpos < 0)
+        return;
+    if (0 == strcmp(&str[tailpos], search))
+        str[tailpos] = '\0';
+    strncat(str, replacement, MAX_FILENAME_LEN-1);
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc < 4 || argc > 5)
-        usage(argc, argv);
+    parse_options(argc, argv);
 
-    const char *filename_csv = argv[1];
-    const char *filename_bin = argv[2];
-    const char *filename_txt = argv[3];
-    if (argc >= 5) {
-        parse_version(argv[4], &version);
+    if (0 == strlen(filename_csv)) {
+        fprintf(stderr, "Error: input file not specified\n");
+        usage(argc, argv);
+    }
+
+    if (0 == strlen(filename_bin)) {
+        strncpy(filename_bin, filename_csv, sizeof(filename_bin));
+        str_replace_tail(filename_bin, ".csv", ".bin");
+    }
+    if (0 == strlen(filename_txt)) {
+        strncpy(filename_txt, filename_csv, sizeof(filename_txt));
+        str_replace_tail(filename_txt, ".csv", "_init.txt");
     }
 
     if ((0 == strcmp(filename_csv, filename_bin)) ||
-            (0 == strcmp(filename_csv, filename_txt)) ||
-            (0 == strcmp(filename_bin, filename_txt)))
+        (0 == strcmp(filename_csv, filename_txt))) {
+        fprintf(stderr, "Error: input and output files should not be the same\n");
         usage(argc, argv);
-
+    }
     bool ok = true;
-    struct sdb_t sdb;
+    struct sdb_t sdb = {};
+    memset(&sdb, 0, sizeof(sdb));
 
 //    fill_sdb_interconnect(&sdb.ic);
     int device_count = read_csv(filename_csv, &sdb);
+    if (device_count <= 0)
+        usage(argc, argv);
     fill_sdb_interconnect(&sdb.ic);
+    fill_sdb_synthesis(&sdb.syn);
     sdb.ic.sdb_records = 1 + device_count;
     print_meta();
     print_sdb(&sdb);
-    ok &= write_sdb_bin(filename_bin, &sdb);
-    ok &= write_sdb_ram_txt(filename_txt, &sdb);
+    if (strlen(filename_bin) > 0) {
+        ok &= write_sdb_bin(filename_bin, &sdb);
+    }
+    if (strlen(filename_txt) > 0)
+        ok &= write_sdb_ram_txt(filename_txt, &sdb);
 
     return ok ? 0 : 1;
 }
