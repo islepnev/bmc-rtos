@@ -44,6 +44,7 @@ uint8_t device_id = 0;
 char *board_name = "unknown";
 version_t version = {{0, 0, 0, 0}};
 char *commit_id = "";
+uint32_t commit_datecode = 0;
 #ifndef MAX_FILENAME_LEN
 #define MAX_FILENAME_LEN 1024
 #endif
@@ -78,6 +79,26 @@ uint32_t datecode()
     return code;
 }
 
+bool parse_date(const char *str, uint32_t *datecode)
+{
+    if (!str)
+        return false;
+    uint32_t dd = 0;
+    uint32_t mm = 0;
+    uint32_t yyyy = 0;
+    int n = sscanf(str, "%d.%d.%d",
+                   &dd, &mm, &yyyy);
+    if (n < 3) {
+        fprintf(stderr, "Date parse error: %s\n", str);
+        return false;
+    }
+    uint32_t code = (dec2bcd(yyyy) << 16) | (dec2bcd(mm) << 8) | dec2bcd(dd);
+    if (datecode) {
+        *datecode = code;
+    }
+    return true;
+}
+
 bool parse_version(const char *str, version_t *v)
 {
     if (!str)
@@ -103,7 +124,7 @@ void fill_sdb_synthesis(struct sdb_synthesis *syn)
     fill_sdb_string(syn->commit_id, sizeof(syn->commit_id), commit_id);
     // fill_sdb_string(syn->tool_name, sizeof(syn->tool_name), "");
     syn->tool_version = 0;
-    syn->date = datecode();
+    syn->date = commit_datecode;
     char *user_name = getlogin();
     if (user_name) {
         fill_sdb_string(syn->user_name, sizeof(syn->user_name), user_name);
@@ -358,11 +379,13 @@ err:
 
 static struct option long_options[] = {
 
-    {"help",      no_argument,       NULL, 'h'},
-    {"bin",       required_argument, NULL, 'b'},
-    {"mem",       required_argument, NULL, 'm'},
-    {"version",   required_argument, NULL, 'v'},
-    {"commit_id", required_argument, NULL, 'c'},
+    {"help",        no_argument,       NULL, 'h'},
+    {"bin",         required_argument, NULL, 'b'},
+    {"mem",         required_argument, NULL, 'm'},
+    {"version",     required_argument, NULL, 'v'},
+    {"commit-id",   required_argument, NULL, 'c'},
+    {"commit-date", required_argument, NULL, 'd'},
+
     {NULL, 0, NULL, 0}
 };
 
@@ -376,7 +399,9 @@ void usage(int argc, char *argv[])
     fprintf(stderr, " -b, --bin=<filename>    output binary file\n");
     fprintf(stderr, " -r, --mem=<filename>    output hex memory dump file\n");
     fprintf(stderr, " -v, --version=<text>    product version (a.b.c.d format)\n");
-    fprintf(stderr, " -c, --commit_id=<text>  revision or git hash\n");
+    fprintf(stderr, " -c, --commit-id=<text>  revision or git hash\n");
+    fprintf(stderr, " -d, --commit-date=<dd.mm.yyyy> date of last commit\n");
+
     exit(1);
 }
 
@@ -405,6 +430,10 @@ void parse_options(int argc, char *argv[])
         case 'c':
             if (optarg)
                 commit_id = strdup(optarg);
+            break;
+        case 'd':
+            if (optarg)
+                parse_date(optarg, &commit_datecode);
             break;
         default:
             usage(argc, argv);
