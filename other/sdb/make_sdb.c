@@ -49,7 +49,7 @@ char *commit_id = "";
 #endif
 char filename_csv[MAX_FILENAME_LEN] = {};
 char filename_bin[MAX_FILENAME_LEN] = {};
-char filename_txt[MAX_FILENAME_LEN] = {};
+char filename_mem[MAX_FILENAME_LEN] = {};
 
 enum mlink_bus_type {BUS_REGIO = 1, BUS_MEMIO = 2};
 
@@ -319,7 +319,7 @@ err:
     return false;
 }
 
-bool write_sdb_ram_txt(const char *filename, const struct sdb_t *p)
+bool write_sdb_hex(const char *filename, const struct sdb_t *p)
 {
     assert(p->ic.sdb_magic == SDB_MAGIC);
     struct sdb_t sdb_be;
@@ -349,7 +349,7 @@ bool write_sdb_ram_txt(const char *filename, const struct sdb_t *p)
         if (fclose(f) != 0)
             goto err;
     }
-    printf("Wrote SDB RAM init file %s\n", filename);
+    printf("Wrote SDB hex memory dump file %s\n", filename);
     return true;
 err:
     perror("error");
@@ -360,7 +360,7 @@ static struct option long_options[] = {
 
     {"help",      no_argument,       NULL, 'h'},
     {"bin",       required_argument, NULL, 'b'},
-    {"ram_init",  required_argument, NULL, 'r'},
+    {"mem",       required_argument, NULL, 'm'},
     {"version",   required_argument, NULL, 'v'},
     {"commit_id", required_argument, NULL, 'c'},
     {NULL, 0, NULL, 0}
@@ -369,12 +369,12 @@ static struct option long_options[] = {
 void usage(int argc, char *argv[])
 {
     (void)argc;
-    fprintf(stderr, "\nUSAGE:\n %s [options] <description.csv> [sdb.bin] [ram_init.txt]\n\n",
+    fprintf(stderr, "\nUSAGE:\n %s [options] <description.csv> [sdb.bin] [sdb.mem]\n\n",
             argv[0]);
     fprintf(stderr, "Options:\n");
     fprintf(stderr, " -h, --help              display this help\n");
     fprintf(stderr, " -b, --bin=<filename>    output binary file\n");
-    fprintf(stderr, " -r, --ram=<filename>    output ram init text file\n");
+    fprintf(stderr, " -r, --mem=<filename>    output hex memory dump file\n");
     fprintf(stderr, " -v, --version=<text>    product version (a.b.c.d format)\n");
     fprintf(stderr, " -c, --commit_id=<text>  revision or git hash\n");
     exit(1);
@@ -394,9 +394,9 @@ void parse_options(int argc, char *argv[])
             if (optarg)
                 strcpy(filename_bin, optarg);
             break;
-        case 'r':
+        case 'm':
             if (optarg)
-                strcpy(filename_txt, optarg);
+                strcpy(filename_mem, optarg);
             break;
         case 'v':
             if (optarg)
@@ -419,7 +419,7 @@ void parse_options(int argc, char *argv[])
             if (pos == 1)
                 strcpy(filename_bin, argv[optind]);
             if (pos == 2)
-                strcpy(filename_txt, argv[optind]);
+                strcpy(filename_mem, argv[optind]);
             if (pos == 3)
                 parse_version(argv[optind], &version);
             pos++;
@@ -452,13 +452,13 @@ int main(int argc, char *argv[])
         strncpy(filename_bin, filename_csv, sizeof(filename_bin));
         str_replace_tail(filename_bin, ".csv", ".bin");
     }
-    if (0 == strlen(filename_txt)) {
-        strncpy(filename_txt, filename_csv, sizeof(filename_txt));
-        str_replace_tail(filename_txt, ".csv", "_init.txt");
+    if (0 == strlen(filename_mem)) {
+        strncpy(filename_mem, filename_csv, sizeof(filename_mem));
+        str_replace_tail(filename_mem, ".csv", ".mem");
     }
 
     if ((0 == strcmp(filename_csv, filename_bin)) ||
-        (0 == strcmp(filename_csv, filename_txt))) {
+        (0 == strcmp(filename_csv, filename_mem))) {
         fprintf(stderr, "Error: input and output files should not be the same\n");
         usage(argc, argv);
     }
@@ -478,8 +478,8 @@ int main(int argc, char *argv[])
     if (strlen(filename_bin) > 0) {
         ok &= write_sdb_bin(filename_bin, &sdb);
     }
-    if (strlen(filename_txt) > 0)
-        ok &= write_sdb_ram_txt(filename_txt, &sdb);
+    if (strlen(filename_mem) > 0)
+        ok &= write_sdb_hex(filename_mem, &sdb);
 
     return ok ? 0 : 1;
 }
