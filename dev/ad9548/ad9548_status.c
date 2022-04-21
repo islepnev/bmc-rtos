@@ -22,6 +22,7 @@
 #include "ad9548_setup.h"
 #include "ad9548_setup_regs.h"
 #include "ad9548_status_regs.h"
+#include "log/log.h"
 
 typedef union {
     uint64_t value:48;
@@ -73,7 +74,13 @@ bool ad9548_read_status(BusInterface *bus, AD9548_Status *status)
 {
     bool ok = true;
     ok &= ad9548_ioupdate(bus);
+    bool id_ok;
+    ok &= ad9548_check_id(bus, &id_ok);
     ok &= ad9548_read_register(bus, 0x0D01, &status->sysclk.raw);
+    if (status->sysclk.raw == 0xFF) {
+        log_printf(LOG_ERR, "sysclk status: %02X", status->sysclk.raw);
+        return false;
+    }
     ok &= ad9548_read_register(bus, 0x0D0A, &status->DpllStat.raw);
     ok &= ad9548_read_register(bus, 0x0D0B, &status->DpllStat2.raw);
     ok &= ad9548_read_register(bus, 0x0500, &status->refPowerDown);
