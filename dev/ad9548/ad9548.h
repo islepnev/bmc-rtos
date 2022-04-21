@@ -47,6 +47,9 @@ bool ad9548_read_register(BusInterface *bus, uint16_t address, uint8_t *data)
 bool ad9548_write_register(BusInterface *bus, uint16_t address, uint8_t value)
     __attribute__((warn_unused_result));
 
+bool ad9548_check_id(BusInterface *bus, bool *ok)
+    __attribute__((warn_unused_result));
+
 bool ad9548_ioupdate(BusInterface *bus)
     __attribute__((warn_unused_result));
 
