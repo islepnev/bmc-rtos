@@ -142,6 +142,18 @@ bool ad9548_ioupdate(BusInterface *bus)
     return ad9548_write_register(bus, 0x0005, 0x01);
 }
 
+bool ad9548_check_id(BusInterface *bus, bool *ok)
+{
+    uint8_t device_id;
+    uint8_t revision_id;
+    if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id) ||
+        !ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
+        return false;
+    if (ok)
+        *ok = (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548);
+    return true;
+}
+
 bool ad9548_detect(BusInterface *bus)
 {
     const int cycles = 100;
@@ -160,15 +172,15 @@ bool ad9548_detect(BusInterface *bus)
         if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id))
             return false;
         if (device_id != DEVICE_ID_AD9548) {
-            log_printf(LOG_ERR, "AD9548: bad ID %02X on step %d", device_id, i);
+            // log_printf(LOG_ERR, "AD9548: bad ID %02X on step %d", device_id, i);
             return false;
         }
     }
     if (device_id != DEVICE_ID_AD9548) return false;
     if (!ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
         return false;
-    log_printf(LOG_DEBUG, "AD9548 ID: %02X %02X", device_id, revision_id);
     if (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548) return true;
+    log_printf(LOG_WARNING, "Unknown AD9548 ID: %02X %02X", device_id, revision_id);
     return false;
 }
 

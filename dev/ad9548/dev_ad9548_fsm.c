@@ -54,6 +54,7 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
     const ad9548_state_t old_state = d->priv.fsm_state;
     switch(d->priv.fsm_state) {
     case AD9548_STATE_INIT:
+        ad9548_write_reset_pin(bus, true);
         ad9548_write_reset_pin(bus, false);
         if (ad9548_gpio_test(bus)) {
             d->priv.fsm_state = AD9548_STATE_RESET;
@@ -61,12 +62,16 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
             log_put(LOG_ERR, "PLL AD9548 GPIO test fail");
             d->priv.fsm_state = AD9548_STATE_ERROR;
         }
+        if (!ad9548_configure_spi(bus)) {
+            break;
+        }
+//        if (!ad9548_software_reset(bus)) {
+//            d->priv.fsm_state = AD9548_STATE_ERROR;
+//            break;
+//        }
         break;
     case AD9548_STATE_RESET:
-        ad9548_write_reset_pin(bus, true);
-        ad9548_write_reset_pin(bus, false);
-        if (!ad9548_software_reset(bus)) {
-            d->priv.fsm_state = AD9548_STATE_ERROR;
+        if (!ad9548_configure_spi(bus)) {
             break;
         }
         d->dev.device_status = ad9548_detect(bus) ? DEVICE_NORMAL : DEVICE_FAIL;
@@ -92,6 +97,9 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
         d->priv.fsm_state = AD9548_STATE_SYSCLK_WAITLOCK;
         break;
     case AD9548_STATE_SYSCLK_WAITLOCK:
+        if (!ad9548_read_sysclk_status(bus, &d->priv.status)) {
+            d->priv.fsm_state = AD9548_STATE_ERROR;
+        }
         if (ad9548_sysclk_is_locked(d->priv.status.sysclk)) {
             d->priv.fsm_state = AD9548_STATE_SETUP;
         }
@@ -144,7 +152,9 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
          d->priv.fsm_state != AD9548_STATE_ERROR &&
          d->priv.fsm_state != AD9548_STATE_FATAL);
     if (state_detected) {
-        if (!ad9548_read_sysclk_status(bus, &d->priv.status)) {
+        bool id_ok;
+        if (!ad9548_check_id(bus, &id_ok)) {
+            log_put(LOG_ERR, "PLL AD9548 id check error");
             d->priv.fsm_state = AD9548_STATE_ERROR;
         }
     } else {
@@ -174,4 +184,12 @@ void dev_ad9548_run(Dev_ad9548 *d, bool enable)
             log_put(LOG_INFO, "PLL AD9548 started");
         }
     }
+
+#if defined(BOARD_TDC72VHLV2)
+    if (d->dev.sensor == SENSOR_NORMAL) {
+        log_put(LOG_INFO, "AD9548 thread stopped");
+        osDelay(osWaitForever);
+    }
+#endif
+
 }

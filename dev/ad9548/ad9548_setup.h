@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+bool ad9548_configure_spi(BusInterface *bus)
+    __attribute__((warn_unused_result));
+
 bool ad9548_software_reset(BusInterface *bus)
     __attribute__((warn_unused_result));
 
