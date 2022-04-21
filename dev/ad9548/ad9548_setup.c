@@ -27,6 +27,7 @@
 #include "board_config_ad9548.h"
 #include "cmsis_os.h"
 #include "log/log.h"
+#include "spi.h"
 
 bool ad9548_output_sync(BusInterface *bus)
 {
@@ -37,12 +38,29 @@ bool ad9548_output_sync(BusInterface *bus)
         ad9548_ioupdate(bus);
 }
 
+#if defined(BOARD_TDC72VHLV2)
+const int sdo_enable = 0;
+#else
+const int sdo_enable = 1;
+#endif
+
+bool ad9548_configure_spi(BusInterface *bus)
+{
+    AD9548_Control_REG1_Type ctrl;
+    ctrl.raw = 0;
+    ctrl.b.long_instr = 1;
+    ctrl.b.sdo_enable = sdo_enable;
+    bool ok = true;
+    ok &= ad9548_write_register(bus, 0x0000, ctrl.raw);
+    return ok;
+}
+
 bool ad9548_software_reset(BusInterface *bus)
 {
     AD9548_Control_REG1_Type ctrl;
     ctrl.raw = 0;
     ctrl.b.long_instr = 1;
-    ctrl.b.sdo_enable = 1;
+    ctrl.b.sdo_enable = sdo_enable;
     ctrl.b.softreset = 1;
     bool ok = true;
     ok &= ad9548_write_register(bus, 0x0000, ctrl.raw);
