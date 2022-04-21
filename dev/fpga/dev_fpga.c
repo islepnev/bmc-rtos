@@ -375,7 +375,11 @@ bool fpga_detect_v3(Dev_fpga *dev)
 bool fpgaDetect(Dev_fpga *dev)
 {
     int err = 0;
-
+#if defined(BOARD_TDC72VHLV2)
+    dev->priv.fpga.proto_version = 1;
+    dev->dev.device_status = DEVICE_NORMAL;
+    return true;
+#endif
     dev->priv.fpga.proto_version = 0;
 
     if (ENABLE_V2_PROTOCOL && fpga_detect_v2(dev)) {
@@ -392,7 +396,6 @@ bool fpgaDetect(Dev_fpga *dev)
         dev->dev.device_status = DEVICE_NORMAL;
         return true;
     }
-
     dev->dev.device_status = DEVICE_FAIL;
     return false;
 }
