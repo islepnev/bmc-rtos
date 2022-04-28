@@ -119,3 +119,10 @@ bool fpga_write(struct Dev_fpga *dev, uint32_t addr, const void *buf, size_t siz
     }
     return true;
 }
+
+bool fpga_read_spi_status(struct Dev_fpga *d)
+{
+    if (d->priv.fpga.proto_version < 3)
+        return true;
+    return fpga_spi_v3_hal_read_status(&d->dev.bus);
+}

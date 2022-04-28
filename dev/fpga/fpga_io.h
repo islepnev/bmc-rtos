@@ -56,6 +56,9 @@ bool fpga_read(struct Dev_fpga *d, uint32_t addr, void *buf, size_t size)
 bool fpga_write(struct Dev_fpga *d, uint32_t addr, const void *buf, size_t size)
     __attribute__((warn_unused_result));
 
+bool fpga_read_spi_status(struct Dev_fpga *d)
+    __attribute__((warn_unused_result));
+
 #ifdef __cplusplus
 }
 #endif

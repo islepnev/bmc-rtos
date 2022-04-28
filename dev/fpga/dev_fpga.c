@@ -45,6 +45,9 @@
 static uint16_t live_magic = 0x55AA;
 static const bool ENABLE_V2_PROTOCOL = true;
 
+static bool SDB_COMPONENT_PRINT = false;
+static bool SDB_DUMP = false;
+
 static const int REG_CSR_DEVICE_ID = 0x42;
 
 enum {
@@ -189,44 +192,15 @@ bool fpga_read_info(struct Dev_fpga *dev)
     return true;
 }
 
-void fpga_print_sdb(struct Dev_fpga *dev)
+static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
 {
-    const Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
-    {
-        const struct sdb_synthesis *syn = &sdb->syn;
-        char date_str[16] = {0};
-        snprint_sdb_date(date_str, sizeof(date_str), syn->date);
-        enum { commit_id_len = sizeof(syn->commit_id) };
-        char commit_id[commit_id_len+1] = {0};
-        sdb_copy_printable(commit_id, syn->commit_id, commit_id_len, '\0');
-        enum { user_name_len = sizeof(syn->user_name) };
-        char user_name[user_name_len+1] = {0};
-        sdb_copy_printable(user_name, syn->user_name, user_name_len, '\0');
-        if ((strlen(commit_id) > 0) || (strlen(user_name) > 0))
-            log_printf(LOG_INFO, "SDB: build %s by %s on %s", commit_id, user_name, date_str);
-    }
     const struct sdb_interconnect *ic = &sdb->ic;
-    {
-        const struct sdb_product *product = &ic->sdb_component.product;
-        char version_str[16] = {0};
-        snprint_sdb_version(version_str, sizeof(version_str), product->version);
-        char date_str[16] = {0};
-        snprint_sdb_date(date_str, sizeof(date_str), product->date);
-        char name[20] = {0};
-        sdb_copy_printable(name, product->name, sizeof(product->name), '\0');
-
-        log_printf(LOG_INFO, "SDB: device %02X %s v%s, %s",
-                   product->device_id,
-                   name,
-                   version_str,
-                   date_str);
-    }
     for (int i=0; i<ic->sdb_records - 1; i++) {
         if (i >= SDB_MAX_RECORDS) {
             log_printf(LOG_WARNING, "  <too many devices>");
             break;
         }
-        struct sdb_device *d = &dev->priv.fpga.sdb.devices[i];
+        const struct sdb_device *d = &sdb->devices[i];
         if (d->sdb_component.product.record_type == sdb_type_empty)
             continue;
         if (!sdb_dev_validate(d)) {
@@ -243,9 +217,44 @@ void fpga_print_sdb(struct Dev_fpga *dev)
                    d->abi_ver_minor,
                    name);
     }
+
 }
 
-static bool SDB_DUMP = false;
+void fpga_print_sdb(struct Dev_fpga *dev)
+{
+    const Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
+    {
+        const struct sdb_synthesis *syn = &sdb->syn;
+        char date_str[16] = {0};
+        snprint_sdb_date(date_str, sizeof(date_str), syn->date);
+        enum { commit_id_len = sizeof(syn->commit_id) };
+        char commit_id[commit_id_len+1] = {0};
+        sdb_copy_printable(commit_id, syn->commit_id, commit_id_len, '\0');
+        enum { user_name_len = sizeof(syn->user_name) };
+        char user_name[user_name_len+1] = {0};
+        sdb_copy_printable(user_name, syn->user_name, user_name_len, '\0');
+        if ((strlen(commit_id) > 0) || (strlen(user_name) > 0))
+            log_printf(LOG_INFO, "FPGA SDB: build %s by %s on %s", commit_id, user_name, date_str);
+    }
+    const struct sdb_interconnect *ic = &sdb->ic;
+    {
+        const struct sdb_product *product = &ic->sdb_component.product;
+        char version_str[16] = {0};
+        snprint_sdb_version(version_str, sizeof(version_str), product->version);
+        char date_str[16] = {0};
+        snprint_sdb_date(date_str, sizeof(date_str), product->date);
+        char name[20] = {0};
+        sdb_copy_printable(name, product->name, sizeof(product->name), '\0');
+
+        log_printf(LOG_INFO, "FPGA SDB: device %02X %s v%s, %s",
+                   product->device_id,
+                   name,
+                   version_str,
+                   date_str);
+    }
+    if (SDB_COMPONENT_PRINT)
+        fpga_print_sdb_components(sdb);
+}
 
 bool fpga_read_sdb(struct Dev_fpga *dev)
 {
@@ -357,11 +366,10 @@ bool fpga_detect_v3(Dev_fpga *dev)
     }
     if (!fpga_read_base_csr(dev))
         return false;
-    log_printf(LOG_INFO, "FPGA firmware %d.%d.%d",
+    log_printf(LOG_INFO, "FPGA CSR: firmware %d.%d.%d, serial %04X-%04X-%04X",
                (dev->priv.fpga.fw_ver >> 8) & 0xFF,
                (dev->priv.fpga.fw_ver) & 0xFF,
-               dev->priv.fpga.fw_rev);
-    log_printf(LOG_INFO, "Board serial %04X-%04X-%04X",
+               dev->priv.fpga.fw_rev,
                (uint16_t)((dev->priv.fpga.ow_id >> 40) & 0xFFFF),
                (uint16_t)((dev->priv.fpga.ow_id >> 24) & 0xFFFF),
                (uint16_t)((dev->priv.fpga.ow_id >> 8) & 0xFFFF));
@@ -396,8 +404,8 @@ bool fpgaDetect(Dev_fpga *dev)
         dev->dev.device_status = DEVICE_NORMAL;
         return true;
     }
-    dev->dev.device_status = DEVICE_FAIL;
-    return false;
+    dev->dev.device_status = DEVICE_UNKNOWN;
+    return true;
 }
 
 bool fpga_test_v3(Dev_fpga *dev)
@@ -612,6 +620,11 @@ bool fpga_periodic_task_v2(struct Dev_fpga *dev)
         fpgaWriteSensors(dev);
 }
 
+bool fpga_read_v3_spi_stats(struct Dev_fpga *dev)
+{
+    return fpga_read_spi_status(dev);
+}
+
 bool fpga_periodic_task_v3(struct Dev_fpga *dev)
 {
 // destructive test
@@ -628,7 +641,8 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
             fpgaWritePllStatus(dev) &&
             fpgaWriteSystemStatus(dev) &&
             fpgaWriteSensors(dev) &&
-            fpgaBoardSpecificPoll(dev);
+    fpgaBoardSpecificPoll(dev);
+    fpga_read_v3_spi_stats(dev);
     return ok;
 }
 
