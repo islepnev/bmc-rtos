@@ -73,7 +73,7 @@ void display_clear_page(void)
 void display_devices_page(int y, bool repaint)
 {
     print_goto(y, 1);
-    printf("Device list\n"); y++;
+    printf("Device list" ANSI_COL50 "state      i/o   comm_err   dev_err\n"); y++;
     devicelist_print(deviceList.list[0], 0); y += deviceList.count;
     printf("\n");
 }
