@@ -53,7 +53,7 @@ void sdb_device_fix_endian(struct sdb_device *p)
     sdb_component_fix_endian(&p->sdb_component);
 }
 
-bool sdb_ic_validate(struct sdb_interconnect *p)
+bool sdb_ic_validate(const struct sdb_interconnect *p)
 {
     if (p->sdb_magic != SDB_MAGIC)
         return false;
@@ -68,7 +68,7 @@ bool sdb_ic_validate(struct sdb_interconnect *p)
     return true;
 }
 
-bool sdb_dev_validate(struct sdb_device *p)
+bool sdb_dev_validate(const struct sdb_device *p)
 {
     if (p->abi_class != 0) {
         return false;
