@@ -33,6 +33,7 @@
 #include "display_boards.h"
 #include "display_brief.h"
 #include "display_common.h"
+#include "display_fpga.h"
 #include "display_log.h"
 #include "display_menu.h"
 #include "display_sensors.h"
@@ -173,7 +174,11 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_auxpll_detail(DISPLAY_AUXPLL_DETAIL_Y);
         break;
     case DISPLAY_BOARDS:
+#if defined(BOARD_TTVXS)
         display_boards_page(DISPLAY_PAGE_Y, repaint);
+#else
+        display_fpga_page(DISPLAY_PAGE_Y, repaint);
+#endif
         break;
     case DISPLAY_SFP_DETAIL:
 #ifdef ENABLE_SFPIIC

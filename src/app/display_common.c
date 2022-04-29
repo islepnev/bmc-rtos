@@ -167,7 +167,7 @@ static const char *keys[10] = {
     "F5", "F6", "F7", "F8", "F9"
 };
 static const char *pages[10] = {
-    "Next", "Power", "Home", "VXS", "SFP",
+    "Next", "Power", "Home", "Info", "SFP",
     "PLL", "Adj", "Log", "Tasks", "Devs"
 };
 static const display_mode_t modes[10] = {

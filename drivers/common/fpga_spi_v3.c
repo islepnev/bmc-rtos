@@ -297,6 +297,7 @@ bool fpga_spi_v3_hal_read_status(BusInterface *bus)
             return true;
         }
         default: {
+            bus->iostat.rx_opcode_errors++;
             if (error_log_inc())
                 log_printf(LOG_ERR, "FPGA SPI: unexpected opcode %d, should be %d",
                            v3_rxBuf.b.op.b.opcode, FPGA_SPI_V3_OP_ST);
@@ -305,6 +306,7 @@ bool fpga_spi_v3_hal_read_status(BusInterface *bus)
         }
         osDelay(1);
     }
+    bus->iostat.rx_timeouts++;
     if (error_log_inc())
         log_printf(LOG_ERR, "%s: retry limit exceeded", __func__);
 
@@ -338,13 +340,17 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         switch (v3_rxBuf.b.op.b.opcode) {
         case FPGA_SPI_V3_OP_NULL: break;
         case  FPGA_SPI_V3_OP_RD: {
-            if (enable_length_check && v3_rxBuf.b.op.b.length != 1) {
-                if (error_log_inc())
-                    log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
-                               __func__, v3_rxBuf.b.op.b.length);
-                continue;
+            if (v3_rxBuf.b.op.b.length != 1) {
+                bus->iostat.rx_len_errors++;
+                if (enable_length_check) {
+                    if (error_log_inc())
+                        log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
+                                   __func__, v3_rxBuf.b.op.b.length);
+                    continue;
+                }
             }
             if (v3_rxBuf.b.addr != addr) {
+                bus->iostat.rx_addr_errors++;
                 if (error_log_inc())
                     log_printf(LOG_ERR, "%s: address mismatch: request %08X != reply %08X, data=%08llX, crc=%04X",
                                __func__, addr, v3_rxBuf.b.addr, v3_rxBuf.b.data, v3_rxBuf.b.crc);
@@ -357,6 +363,7 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
             return true;
         }
         default: {
+            bus->iostat.rx_opcode_errors++;
             if (error_log_inc())
                 log_printf(LOG_ERR, "FPGA SPI: unexpected opcode %d, should be %d",
                            v3_rxBuf.b.op.b.opcode, FPGA_SPI_V3_OP_RD);
@@ -365,6 +372,7 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         }
         osDelay(1);
     }
+    bus->iostat.rx_timeouts++;
     if (error_log_inc())
         log_printf(LOG_ERR, "%s(%08X): retry limit exceeded", __func__, addr);
     return false;

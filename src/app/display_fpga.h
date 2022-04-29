@@ -15,30 +15,19 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef DEV_FPGA_PRINT_H
-#define DEV_FPGA_PRINT_H
+#ifndef DISPLAY_FPGA_H
+#define DISPLAY_FPGA_H
 
 #include <stdbool.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Dev_fpga_priv;
-
-extern char fpga_sdb_commit_id[16+1];
-//extern char fpga_version_str[16+1];
-extern char fpga_product_name[19+1];
-extern char fpga_ow_serial_str[14+1];
-
-void dev_fpga_print_box(void);
-bool onewire_id_valid(uint64_t ow_id);
-void dev_fpga_print_comm_state(const struct Dev_fpga_priv *priv);
-void decode_fpga_info(const struct Dev_fpga_priv *priv);
+void display_fpga_page(int y, bool repaint);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DEV_FPGA_PRINT_H
+#endif // DISPLAY_FPGA_H
