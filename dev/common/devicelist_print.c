@@ -22,6 +22,20 @@
 
 #include "ansi_escape_codes.h"
 
+const char *short_device_status_str(DeviceStatus status)
+{
+    switch (status) {
+    case DEVICE_UNKNOWN:
+        return "   ?";
+    case DEVICE_NORMAL:
+        return "  Ok";
+    case DEVICE_FAIL:
+        return ANSI_RED "FAIL" ANSI_CLEAR;
+    default:
+        return "   ?";
+    }
+}
+
 void devicelist_print(DeviceBase *d, int depth)
 {
     if (!d) {
@@ -44,10 +58,16 @@ void devicelist_print(DeviceBase *d, int depth)
                bus->bus_number,
                bus->address
                );
-    printf("    %s '%s'%s\n",
+    printf("    %s '%s'" ANSI_COL50 "%s",
            device_class_str(d->device_class),
            d->name,
-           deviceStatusResultStr(d->device_status));
+           short_device_status_str(d->device_status));
+    uint32_t nerr_device = bus_iostat_dev_errors(&d->bus.iostat);
+    uint32_t nerr_comm = bus_iostat_comm_errors(&d->bus.iostat);
+    uint32_t nop = d->bus.iostat.tx_count;
+    if (nop + nerr_comm + nerr_device)
+        printf("  %9d %9d %9d", nop, nerr_comm, nerr_device);
+    printf("\n");
 
     DeviceBase *p = d->children;
     while (p) {

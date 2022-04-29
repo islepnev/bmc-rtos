@@ -18,11 +18,13 @@
 #include "dev_fpga_print.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "ansi_escape_codes.h"
 #include "dev_fpga_types.h"
 #include "devicelist.h"
 #include "display.h"
+#include "sdb_util.h"
 
 static const char *fpga_state_str(fpga_state_t state)
 {
@@ -37,6 +39,10 @@ static const char *fpga_state_str(fpga_state_t state)
     return "unknown";
 }
 
+char commit_id[16+1] = {0};
+char version_str[16+1] = {0};
+char product_name[19+1] = {0};
+
 void dev_fpga_print_box(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
@@ -49,20 +55,38 @@ void dev_fpga_print_box(void)
            gpio->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
     if (gpio->initb && !gpio->done)
         printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
-    if (gpio->done && fpga->id_read) {
+    bool sdb_ok = fpga->sdb.syn.date;
+    if (gpio->done && (fpga->id_read || sdb_ok)) {
         uint64_t serial = (fpga->ow_id >> 8) & 0xFFFFFFFFFFFF;
-        int16_t rawTemp = fpga->temp & 0xFFF;
-        if (rawTemp & 0x800) rawTemp = -(rawTemp&0x7FF);
-        double temp = rawTemp / 16.0;
-        printf("%02X %04llX-%04llX v%d.%d.%d %.1f\u00b0C", fpga->id,
-               serial >> 16,
-               serial & 0xFFFF,
-               (fpga->fw_ver >> 8) & 0xFF,
-               fpga->fw_ver & 0xFF,
-               fpga->fw_rev,
-               temp);
+        if (sdb_ok) {
+            const Dev_fpga_sdb *sdb = &fpga->sdb;
+            const struct sdb_synthesis *syn = &sdb->syn;
+            sdb_copy_printable(commit_id, syn->commit_id, sizeof(syn->commit_id), '\0');
+            if (!strlen(commit_id))
+                snprintf(commit_id, sizeof (commit_id), "v%d.%d.%d",
+                         (fpga->fw_ver >> 8) & 0xFF,
+                         fpga->fw_ver & 0xFF,
+                         fpga->fw_rev);
+            const struct sdb_interconnect *ic = &sdb->ic;
+            const struct sdb_product *product = &ic->sdb_component.product;
+            snprint_sdb_version(version_str, sizeof(version_str), product->version);
+            sdb_copy_printable(product_name, product->name, sizeof(product->name), '\0');
+            if (!strlen(product_name))
+                snprintf(product_name, sizeof(product_name), "%02X", fpga->id);
+            printf("%04llX-%04llX  %s  %s",
+                   serial >> 16, serial & 0xFFFF,
+                   product_name,
+                   commit_id);
+        } else {
+            printf("%02X  %04llX-%04llX  %d.%d.%d", fpga->id,
+                   serial >> 16,
+                   serial & 0xFFFF,
+                   (fpga->fw_ver >> 8) & 0xFF,
+                   fpga->fw_ver & 0xFF,
+                   fpga->fw_rev);
+        }
     }
-    printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->fsm.state));
+    // printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->fsm.state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");
 }

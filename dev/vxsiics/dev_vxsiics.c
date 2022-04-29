@@ -116,8 +116,12 @@ void dev_vxsiics_poll_status(Dev_vxsiics *d)
     }
     static bool ttvxs_update_state = 0;
     if (now - d->priv.ttvxs_uptime_timestamp > 2) {
-        if (ttvxs_update_state)
-            log_printf(LOG_INFO, "TTVXS: update stopped at uptime %d", d->priv.ttvxs_uptime);
+        if (ttvxs_update_state) {
+            if (d->priv.ttvxs_uptime)
+                log_printf(LOG_INFO, "TTVXS: update stopped at uptime %d", d->priv.ttvxs_uptime);
+            else
+                log_printf(LOG_INFO, "TTVXS: no data");
+        }
         ttvxs_update_state = 0;
     } else {
         if (!ttvxs_update_state) {

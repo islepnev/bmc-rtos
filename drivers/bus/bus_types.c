@@ -22,3 +22,27 @@ const BusInterface null_bus_info = {
     .bus_number = 0,
     .address = 0
 };
+
+
+uint32_t bus_iostat_comm_errors(const BusIoStat *iostat)
+{
+    return
+        iostat->hal_errors +
+        iostat->no_response_errors +
+        iostat->rx_crc_errors +
+        iostat->tx_crc_errors;
+}
+
+uint32_t bus_iostat_dev_errors(const BusIoStat *iostat)
+{
+    return
+        iostat->bus_errors +
+        iostat->bus_timeouts;
+}
+
+uint32_t bus_iostat_total_errors(const BusIoStat *iostat)
+{
+    return
+        bus_iostat_comm_errors(iostat) +
+        bus_iostat_dev_errors(iostat);
+}

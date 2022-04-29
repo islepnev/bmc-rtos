@@ -18,9 +18,22 @@
 #ifndef BUS_TYPES_H
 #define BUS_TYPES_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct BusIoStat {
+    uint32_t bus_errors;
+    uint32_t bus_timeouts;
+    uint32_t hal_errors;
+    uint32_t no_response_errors;
+    uint32_t rx_count;
+    uint32_t rx_crc_errors;
+    uint32_t tx_count;
+    uint32_t tx_crc_errors;
+} BusIoStat;
 
 typedef enum BusType {
     BUS_NONE,
@@ -35,9 +48,14 @@ typedef struct BusInterface {
     int bus_number;
     BusIndex address;
     struct DeviceBase *dev;
+    BusIoStat iostat;
 } BusInterface;
 
 extern const BusInterface null_bus_info;
+
+uint32_t bus_iostat_comm_errors(const BusIoStat *iostat);
+uint32_t bus_iostat_dev_errors(const BusIoStat *iostat);
+uint32_t bus_iostat_total_errors(const BusIoStat *iostat);
 
 #ifdef __cplusplus
 }

@@ -85,7 +85,7 @@ void fpga_task_run(Dev_fpga *d)
     }
 #endif
     int fpga_power_present = enable_power && fpga_core_power_present;
-    int fpga_enable = fpga_power_present && gpio->initb;
+    int fpga_enable = main_clock_ready && fpga_power_present && gpio->initb;
 //    int fpga_loading = fpga_power_present && gpio->initb && !gpio->done;
     int fpga_done = fpga_power_present && gpio->done;
     bool fpga_loaded = !old_fpga_done && fpga_done;
@@ -143,27 +143,28 @@ void fpga_task_run(Dev_fpga *d)
         }
         d->dev.device_status = DEVICE_UNKNOWN;
         d->priv.fpga.id_read = 0;
-        if (fpgaDetect(d)) {
-            d->priv.fsm.state = FPGA_STATE_RUN;
-            log_printf(LOG_INFO, "FPGA device Ok");
-            if (! fpga_done_pin_present()) {
-                const uint32_t tick_freq_hz = osKernelSysTickFrequency;
-                const uint32_t ticks = osKernelSysTick() - d->priv.fsm.fpga_load_start_tick;
-                if (fpga_loaded)
-                    log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
-            }
-        } else {
-            log_put(LOG_ERR, "FPGA detect error");
+        if (!fpgaDetect(d)) {
             d->priv.fsm.state = FPGA_STATE_ERROR;
             break;
         }
+        if (d->dev.device_status == DEVICE_NORMAL) {
+            d->priv.fsm.state = FPGA_STATE_RUN;
+            break;
+        }
+        // log_printf(LOG_INFO, "FPGA device Ok");
+        // if (! fpga_done_pin_present()) {
+        // const uint32_t tick_freq_hz = osKernelSysTickFrequency;
+        // const uint32_t ticks = osKernelSysTick() - d->priv.fsm.fpga_load_start_tick;
+        // if (fpga_loaded)
+        //     log_printf(LOG_INFO, "FPGA loaded in %u ms", ticks * 1000 / tick_freq_hz);
+        // }
         {
             uint32_t detect_timeout = DETECT_DELAY_TICKS;
             if (! fpga_done_pin_present())
                 detect_timeout += LOAD_DELAY_TICKS;
             if (stateTicks(&d->priv) > detect_timeout) {
-                if (! fpga_detect_fail_count)
-                     log_put(LOG_ERR, "FPGA detect timeout");
+                // if (! fpga_detect_fail_count)
+                //      log_put(LOG_ERR, "FPGA detect timeout");
                 fpga_detect_fail_count++;
                 d->priv.fsm.state = FPGA_STATE_ERROR;
             }
@@ -174,13 +175,22 @@ void fpga_task_run(Dev_fpga *d)
             d->priv.fsm.state = FPGA_STATE_STANDBY;
             break;
         }
-        if (!fpga_done)
+        if (!fpga_done) {
             d->priv.fsm.state = FPGA_STATE_STANDBY;
+            break;
+        }
+        uint32_t dev_errors_before = bus_iostat_total_errors(&d->dev.bus.iostat);
         if (fpga_periodic_task(d)) {
             d->priv.fsm.state = FPGA_STATE_PAUSE;
+            uint32_t dev_errors_after = bus_iostat_total_errors(&d->dev.bus.iostat);
+            uint32_t nerr = dev_errors_after - dev_errors_before;
+            if (nerr && d->dev.sensor == SENSOR_NORMAL)
+                d->dev.sensor = SENSOR_WARNING;
+            if (!nerr && d->dev.sensor == SENSOR_WARNING)
+                d->dev.sensor = SENSOR_NORMAL;
             break;
         } else {
-            log_printf(LOG_ERR, "FPGA SPI error");
+            // log_printf(LOG_ERR, "FPGA communication error");
             fpga_error_count++;
             d->priv.fsm.state = FPGA_STATE_ERROR;
             break;
@@ -193,8 +203,8 @@ void fpga_task_run(Dev_fpga *d)
         }
         break;
     case FPGA_STATE_ERROR:
-        if (!fpga_error_count)
-            log_printf(LOG_ERR, "FPGA error");
+        // if (!fpga_error_count)
+        //     log_printf(LOG_ERR, "FPGA error");
         fpga_error_count++;
         d->dev.device_status = DEVICE_FAIL;
         if (stateTicks(&d->priv) > ERROR_DELAY_TICKS) {

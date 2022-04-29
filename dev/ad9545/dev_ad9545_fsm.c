@@ -32,23 +32,40 @@ static uint32_t stateTicks(const Dev_ad9545_priv *p)
 
 static AD9545_Status old_status = {};
 
+enum {LOG_BUF_SIZE = 100 };
+static char buf[LOG_BUF_SIZE];
+
 void log_ad9545_status(Dev_ad9545 *d)
 {
-    if (old_status.ref[0].b.valid && ! d->priv.status.ref[0].b.valid)
-        log_printf(LOG_WARNING, "%s: REFA invalid", d->dev.name);
-    if (!old_status.ref[0].b.valid && d->priv.status.ref[0].b.valid)
-        log_printf(LOG_INFO, "%s: REFA valid", d->dev.name);
-
-    if (old_status.ref[2].b.valid && ! d->priv.status.ref[2].b.valid)
-        log_printf(LOG_WARNING, "%s: REFB invalid", d->dev.name);
-    if (!old_status.ref[2].b.valid && d->priv.status.ref[2].b.valid)
-        log_printf(LOG_INFO, "%s: REFB valid", d->dev.name);
-
-    if (old_status.sysclk.b.pll0_locked && ! d->priv.status.sysclk.b.pll0_locked)
-        log_printf(LOG_WARNING, "%s: DPLL0 unlocked", d->dev.name);
-    if (!old_status.sysclk.b.pll0_locked && d->priv.status.sysclk.b.pll0_locked)
-        log_printf(LOG_INFO, "%s: DPLL0 locked", d->dev.name);
-
+    snprintf(buf, sizeof(buf), "%s:", d->dev.name);
+    bool warn = false;
+    bool info = false;
+    if (old_status.ref[0].b.valid && ! d->priv.status.ref[0].b.valid) {
+        warn = true;
+        strncat(buf, " REFA invalid", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (!old_status.ref[0].b.valid && d->priv.status.ref[0].b.valid) {
+        info = true;
+        strncat(buf, " REFA valid", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (old_status.ref[2].b.valid && ! d->priv.status.ref[2].b.valid) {
+        warn = true;
+        strncat(buf, " REFB invalid", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (!old_status.ref[2].b.valid && d->priv.status.ref[2].b.valid) {
+        info = true;
+        strncat(buf, " REFB valid", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (old_status.sysclk.b.pll0_locked && ! d->priv.status.sysclk.b.pll0_locked) {
+        warn = true;
+        strncat(buf, " DPLL0 unlocked", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (!old_status.sysclk.b.pll0_locked && d->priv.status.sysclk.b.pll0_locked) {
+        info = true;
+        strncat(buf, " DPLL0 locked", sizeof(buf) - strlen(buf) - 1);
+    }
+    if (warn || info)
+        log_put(warn ? LOG_WARNING : LOG_INFO, buf);
     old_status = d->priv.status;
 }
 
