@@ -25,6 +25,7 @@
 #include "devicelist.h"
 #include "display.h"
 #include "sdb_util.h"
+#include "crc8_dallas_maxim.h"
 
 static const char *fpga_state_str(fpga_state_t state)
 {
@@ -39,9 +40,82 @@ static const char *fpga_state_str(fpga_state_t state)
     return "unknown";
 }
 
-char commit_id[16+1] = {0};
-char version_str[16+1] = {0};
-char product_name[19+1] = {0};
+static bool onewire_crc_valid(uint64_t ow_id)
+{
+    const uint8_t ow_crc = ow_id >> 56;
+    unsigned char crc = 0;
+    for (int i=0; i<7; i++)
+        crc = crc8_dallas_maxim((ow_id >> i*8) & 0xFF, crc);
+    return crc == ow_crc;
+}
+
+bool onewire_id_valid(uint64_t ow_id)
+{
+    return ((ow_id & 0xFF) == 0x28) && onewire_crc_valid(ow_id);
+}
+
+char fpga_sdb_commit_id[16+1] = {0};
+//char fpga_version_str[16+1] = {0};
+char fpga_product_name[19+1] = {0};
+char fpga_ow_serial_str[14+1] = {0};
+
+void decode_fpga_info(const Dev_fpga_priv *priv)
+{
+    const Dev_fpga_runtime *fpga = &priv->fpga;
+    bool ow_ok = onewire_id_valid(fpga->ow_id);
+    if (ow_ok) {
+        uint64_t serial = (fpga->ow_id >> 8) & 0xFFFFFFFFFFFF;
+        snprintf(fpga_ow_serial_str, sizeof(fpga_ow_serial_str), "%04llX-%04llX",
+                 serial >> 16, serial & 0xFFFF);
+    } else {
+        fpga_ow_serial_str[0] = '\0';
+    }
+
+    const Dev_fpga_sdb *sdb = &fpga->sdb;
+    const struct sdb_synthesis *syn = &sdb->syn;
+    sdb_copy_printable(fpga_sdb_commit_id, syn->commit_id, sizeof(syn->commit_id), '\0');
+    if (!strlen(fpga_sdb_commit_id) && (fpga->fw_ver != 0 || fpga->fw_rev != 0))
+        snprintf(fpga_sdb_commit_id, sizeof (fpga_sdb_commit_id), "v%d.%d.%d",
+                 (fpga->fw_ver >> 8) & 0xFF,
+                 fpga->fw_ver & 0xFF,
+                 fpga->fw_rev);
+    const struct sdb_interconnect *ic = &sdb->ic;
+    const struct sdb_product *product = &ic->sdb_component.product;
+//    snprint_sdb_version(fpga_version_str, sizeof(fpga_version_str), product->version);
+    sdb_copy_printable(fpga_product_name, product->name, sizeof(product->name), '\0');
+    if (!strlen(fpga_product_name))
+        snprintf(fpga_product_name, sizeof(fpga_product_name), "%02X", fpga->id);
+}
+
+void dev_fpga_print_comm_state(const Dev_fpga_priv *priv)
+{
+    const Dev_fpga_gpio *gpio = &priv->gpio;
+    const Dev_fpga_runtime *fpga = &priv->fpga;
+    const Dev_fpga_sdb *sdb = &fpga->sdb;
+    bool sdb_ok = (sdb->ic.sdb_magic == SDB_MAGIC);
+    printf("FPGA");
+    if (!gpio->initb)
+        printf(ANSI_RED " INIT_B low" ANSI_CLEAR);
+    if (gpio->initb && !gpio->done)
+        printf(ANSI_YELLOW " DONE low" ANSI_CLEAR);
+    if (gpio->initb && gpio->done) {
+        if (fpga->proto_version == 0) {
+            printf(ANSI_RED " SPI: no connection" ANSI_CLEAR);
+        } else {
+            printf(" SPI v%d", fpga->proto_version);
+            if (!fpga->id_read) {
+                printf(ANSI_RED " No CSR" ANSI_CLEAR);
+            } else {
+            }
+            if (!sdb_ok)
+                printf(ANSI_RED " No SDB" ANSI_CLEAR);
+        }
+    }
+    if (gpio->done && fpga->id_read) {
+        decode_fpga_info(priv);
+        printf("  %s  %s  %s", fpga_ow_serial_str, fpga_product_name, fpga_sdb_commit_id);
+    }
+}
 
 void dev_fpga_print_box(void)
 {
@@ -51,41 +125,7 @@ void dev_fpga_print_box(void)
     const Dev_fpga_priv *priv = (const Dev_fpga_priv *)device_priv_const(d);
     const Dev_fpga_gpio *gpio = &priv->gpio;
     const Dev_fpga_runtime *fpga = &priv->fpga;
-    printf("FPGA %s",
-           gpio->initb ? "" : ANSI_RED "INIT_B low " ANSI_CLEAR);
-    if (gpio->initb && !gpio->done)
-        printf(ANSI_YELLOW "DONE low" ANSI_CLEAR);
-    bool sdb_ok = fpga->sdb.syn.date;
-    if (gpio->done && (fpga->id_read || sdb_ok)) {
-        uint64_t serial = (fpga->ow_id >> 8) & 0xFFFFFFFFFFFF;
-        if (sdb_ok) {
-            const Dev_fpga_sdb *sdb = &fpga->sdb;
-            const struct sdb_synthesis *syn = &sdb->syn;
-            sdb_copy_printable(commit_id, syn->commit_id, sizeof(syn->commit_id), '\0');
-            if (!strlen(commit_id))
-                snprintf(commit_id, sizeof (commit_id), "v%d.%d.%d",
-                         (fpga->fw_ver >> 8) & 0xFF,
-                         fpga->fw_ver & 0xFF,
-                         fpga->fw_rev);
-            const struct sdb_interconnect *ic = &sdb->ic;
-            const struct sdb_product *product = &ic->sdb_component.product;
-            snprint_sdb_version(version_str, sizeof(version_str), product->version);
-            sdb_copy_printable(product_name, product->name, sizeof(product->name), '\0');
-            if (!strlen(product_name))
-                snprintf(product_name, sizeof(product_name), "%02X", fpga->id);
-            printf("%04llX-%04llX  %s  %s",
-                   serial >> 16, serial & 0xFFFF,
-                   product_name,
-                   commit_id);
-        } else {
-            printf("%02X  %04llX-%04llX  %d.%d.%d", fpga->id,
-                   serial >> 16,
-                   serial & 0xFFFF,
-                   (fpga->fw_ver >> 8) & 0xFF,
-                   fpga->fw_ver & 0xFF,
-                   fpga->fw_rev);
-        }
-    }
+    dev_fpga_print_comm_state(priv);
     // printf(ANSI_CLEAR_EOL ANSI_COL50 "%9s ", fpga_state_str(priv->fsm.state));
     printf("%s", sensor_status_ansi_str(get_fpga_sensor_status()));
     printf("\n");

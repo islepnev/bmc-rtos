@@ -29,6 +29,8 @@
 
 static bool debug_spi_transactions = false;
 static bool enable_length_check = false; // FIXME
+static const uint32_t addr_op_stat = 0x57A714F0;
+static const uint32_t addr_op_null = 0xDEADCA5E;
 
 enum {
     FPGA_SPI_V3_OP_NULL = 0,
@@ -64,6 +66,8 @@ enum {SPI_FRAME_LEN = sizeof(fpga_spi_v3_txn_t) / sizeof(uint16_t)};
 // global buffers (reduce stack allocations)
 static fpga_spi_v3_txn_t v3_txBuf = {0};
 static fpga_spi_v3_txn_t v3_rxBuf = {0};
+static bool v3_rx_crc_error = 0;
+static bool v3_rx_addr_error = 0;
 
 void clear_v3_buf()
 {
@@ -209,7 +213,8 @@ static bool fpga_spi_v3_txn(BusInterface *bus, fpga_spi_v3_txn_t *txBuf, fpga_sp
         return false;
 
     uint16_t crc = fpga_spi_v3_crc(rxBuf);
-    if (crc != rxBuf->b.crc) {
+    v3_rx_crc_error = (crc != rxBuf->b.crc);
+    if (v3_rx_crc_error) {
         bus->iostat.rx_crc_errors++;
         if (error_log_inc()) {
             log_printf(LOG_ERR, "FPGA SPI: RX CRC error");
@@ -220,7 +225,18 @@ static bool fpga_spi_v3_txn(BusInterface *bus, fpga_spi_v3_txn_t *txBuf, fpga_sp
 
     rxBuf->b.addr = wswap_32(rxBuf->b.addr);
     rxBuf->b.data = wswap_64(rxBuf->b.data);
-
+    v3_rx_addr_error = 0;
+    switch (rxBuf->b.op.b.opcode) {
+    case FPGA_SPI_V3_OP_NULL:
+        v3_rx_addr_error = (rxBuf->b.addr != addr_op_null);
+        break;
+    case FPGA_SPI_V3_OP_ST:
+        v3_rx_addr_error = (rxBuf->b.addr != addr_op_stat);
+        break;
+    default:;
+    }
+    if (v3_rx_addr_error)
+        bus->iostat.rx_addr_errors++;
     return true;
 }
 
@@ -231,9 +247,9 @@ static void add_spi_stat(BusInterface *bus, const fpga_spi_v3_txn_t *txn)
     static uint16_t prev_regio_errors = 0;
     if (!txn)
         return;
-    uint16_t regio_timeouts = (txn->b.data >> 32) & 0xFFFF;
-    uint16_t spi_crc_errors = (txn->b.data >> 16) & 0xFFFF;
-    uint16_t regio_errors   = (txn->b.data) & 0xFFFF;
+    uint16_t regio_timeouts = (txn->b.data >> 48) & 0xFFFF;
+    uint16_t spi_crc_errors = (txn->b.data >> 32) & 0xFFFF;
+    uint16_t regio_errors   = (txn->b.data >> 16) & 0xFFFF;
 
     uint16_t inc_regio_timeouts = regio_timeouts - prev_regio_timeouts;
     if (inc_regio_timeouts > 0x8000u)
@@ -272,6 +288,8 @@ bool fpga_spi_v3_hal_read_status(BusInterface *bus)
         v3_txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_NULL;
         if (!fpga_spi_v3_txn(bus, &v3_txBuf, &v3_rxBuf))
             return false;
+        if (v3_rx_crc_error || v3_rx_addr_error)
+            continue;
         switch (v3_rxBuf.b.op.b.opcode) {
         case FPGA_SPI_V3_OP_NULL: break;
         case FPGA_SPI_V3_OP_ST: {
@@ -279,6 +297,7 @@ bool fpga_spi_v3_hal_read_status(BusInterface *bus)
             return true;
         }
         default: {
+            bus->iostat.rx_opcode_errors++;
             if (error_log_inc())
                 log_printf(LOG_ERR, "FPGA SPI: unexpected opcode %d, should be %d",
                            v3_rxBuf.b.op.b.opcode, FPGA_SPI_V3_OP_ST);
@@ -287,6 +306,7 @@ bool fpga_spi_v3_hal_read_status(BusInterface *bus)
         }
         osDelay(1);
     }
+    bus->iostat.rx_timeouts++;
     if (error_log_inc())
         log_printf(LOG_ERR, "%s: retry limit exceeded", __func__);
 
@@ -315,16 +335,22 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         v3_txBuf.b.op.b.opcode = FPGA_SPI_V3_OP_NULL;
         if (!fpga_spi_v3_txn(bus, &v3_txBuf, &v3_rxBuf))
             return false;
+        if (v3_rx_crc_error || v3_rx_addr_error)
+            continue;
         switch (v3_rxBuf.b.op.b.opcode) {
         case FPGA_SPI_V3_OP_NULL: break;
         case  FPGA_SPI_V3_OP_RD: {
-            if (enable_length_check && v3_rxBuf.b.op.b.length != 1) {
-                if (error_log_inc())
-                    log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
-                               __func__, v3_rxBuf.b.op.b.length);
-                continue;
+            if (v3_rxBuf.b.op.b.length != 1) {
+                bus->iostat.rx_len_errors++;
+                if (enable_length_check) {
+                    if (error_log_inc())
+                        log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",
+                                   __func__, v3_rxBuf.b.op.b.length);
+                    continue;
+                }
             }
             if (v3_rxBuf.b.addr != addr) {
+                bus->iostat.rx_addr_errors++;
                 if (error_log_inc())
                     log_printf(LOG_ERR, "%s: address mismatch: request %08X != reply %08X, data=%08llX, crc=%04X",
                                __func__, addr, v3_rxBuf.b.addr, v3_rxBuf.b.data, v3_rxBuf.b.crc);
@@ -337,6 +363,7 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
             return true;
         }
         default: {
+            bus->iostat.rx_opcode_errors++;
             if (error_log_inc())
                 log_printf(LOG_ERR, "FPGA SPI: unexpected opcode %d, should be %d",
                            v3_rxBuf.b.op.b.opcode, FPGA_SPI_V3_OP_RD);
@@ -345,6 +372,7 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         }
         osDelay(1);
     }
+    bus->iostat.rx_timeouts++;
     if (error_log_inc())
         log_printf(LOG_ERR, "%s(%08X): retry limit exceeded", __func__, addr);
     return false;

@@ -24,23 +24,26 @@ const BusInterface null_bus_info = {
 };
 
 
-uint32_t bus_iostat_comm_errors(const BusIoStat *iostat)
+int bus_iostat_comm_errors(const BusIoStat *iostat)
 {
     return
         iostat->hal_errors +
         iostat->no_response_errors +
+        iostat->rx_addr_errors +
         iostat->rx_crc_errors +
+        iostat->rx_len_errors +
+        iostat->rx_opcode_errors +
         iostat->tx_crc_errors;
 }
 
-uint32_t bus_iostat_dev_errors(const BusIoStat *iostat)
+int bus_iostat_dev_errors(const BusIoStat *iostat)
 {
     return
         iostat->bus_errors +
         iostat->bus_timeouts;
 }
 
-uint32_t bus_iostat_total_errors(const BusIoStat *iostat)
+int bus_iostat_total_errors(const BusIoStat *iostat)
 {
     return
         bus_iostat_comm_errors(iostat) +
