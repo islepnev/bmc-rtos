@@ -18,6 +18,7 @@
 #include "dev_ad9545_fsm.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #include "ad9545/ad9545.h"
 #include "ad9545_commands.h"
