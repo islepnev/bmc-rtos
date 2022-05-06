@@ -51,16 +51,21 @@ typedef struct Dev_fpga_gpio {
     uint8_t done;
 } Dev_fpga_gpio;
 
-typedef struct Dev_fpga_runtime {
-    struct Dev_fpga_sdb sdb;
-    uint16_t regs[FPGA_REG_COUNT];
-    uint8_t proto_version;
-    uint16_t id_read;
+typedef struct Dev_fpga_csr {
     uint16_t id;
     uint16_t fw_ver;
     uint16_t fw_rev;
     uint16_t temp;
     uint64_t ow_id;
+} Dev_fpga_csr;
+
+typedef struct Dev_fpga_runtime {
+    struct Dev_fpga_sdb sdb;
+    struct Dev_fpga_csr csr;
+    uint16_t regs[FPGA_REG_COUNT];
+    int proto_version;
+    bool sdb_read;
+    bool csr_read;
 } Dev_fpga_runtime;
 
 typedef struct Dev_fpga_fsm {

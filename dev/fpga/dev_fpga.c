@@ -49,6 +49,10 @@ static bool SDB_COMPONENT_PRINT = false;
 static bool SDB_DUMP = false;
 
 static const int REG_CSR_DEVICE_ID = 0x42;
+static const int REG_CSR_FW_VER    = 0x4C;
+static const int REG_CSR_FW_REV    = 0x4D;
+static const int REG_CSR_TEMP      = 0x4D;
+static const int REG64_CSR_OW_ID   = 0x50;
 
 enum {
     FPGA_SPI_ADDR_0 = FPGA_REG_BASE_MCU + 0,
@@ -69,6 +73,18 @@ enum {
     FPGA_SPI_ADDR_F = FPGA_REG_BASE_MCU + 0xF,
     FPGA_SPI_ADDR_SDB_BASE = 0x7C00,
 };
+
+void fpga_print_base_csr(Dev_fpga_csr *csr)
+{
+    log_printf(LOG_INFO, "FPGA CSR: id %02X, firmware %d.%d.%d, serial %04X-%04X-%04X",
+               csr->id,
+               (csr->fw_ver >> 8) & 0xFF,
+               (csr->fw_ver) & 0xFF,
+               csr->fw_rev,
+               (uint16_t)((csr->ow_id >> 40) & 0xFFFF),
+               (uint16_t)((csr->ow_id >> 24) & 0xFFFF),
+               (uint16_t)((csr->ow_id >> 8) & 0xFFFF));
+}
 
 #if 0
 static bool fpga_test_reg(DeviceBase *dev, uint16_t addr, uint16_t wdata, uint16_t *rdata)
@@ -141,55 +157,56 @@ err:
 
 bool fpga_read_base_csr(struct Dev_fpga *dev)
 {
+    static struct Dev_fpga_csr csr;
+    memset(&csr, 0, sizeof(csr));
+    // read Device ID
+    {
+        uint16_t data = 0;
+        if (!fpga_r16(dev, REG_CSR_DEVICE_ID, &data)) {
+            goto err;
+        }
+        csr.id = (data >> 8) & 0xFF;
+    }
     // read Firmware Version
     {
         uint16_t data[2] = {0};
         if (
-                fpga_r16(dev, 0x4C, &data[0]) &&
-                fpga_r16(dev, 0x4D, &data[1])
+                fpga_r16(dev, REG_CSR_FW_VER, &data[0]) &&
+                fpga_r16(dev, REG_CSR_FW_REV, &data[1])
                 ) {
-            dev->priv.fpga.fw_ver = data[0] & 0xFFFF;
-            dev->priv.fpga.fw_rev = data[1] & 0xFFFF;
+            csr.fw_ver = data[0] & 0xFFFF;
+            csr.fw_rev = data[1] & 0xFFFF;
         } else {
-            return false;
+            goto err;
         }
     }
     // read 1Wire ID
     {
         uint64_t data;
-        if (!fpga_r64(dev, 0x50, &data))
-            return false;
-        dev->priv.fpga.ow_id = data;
+        if (!fpga_r64(dev, REG64_CSR_OW_ID, &data))
+            goto err;
+        csr.ow_id = data;
     }
+    bool changed = memcmp(&dev->priv.fpga.csr, &csr, sizeof(csr));
+    dev->priv.fpga.csr = csr;
+    dev->priv.fpga.csr_read = 1;
+    if (changed)
+        fpga_print_base_csr(&csr);
     return true;
+err:
+    dev->priv.fpga.csr_read = 0;
+    return false;
 }
 
-bool fpga_read_info(struct Dev_fpga *dev)
+bool fpga_read_temp(struct Dev_fpga *dev)
 {
-    // read Temp
-    {
-        uint16_t data = {0};
-        if (fpga_r16(dev, 0x4B, &data)) {
-            dev->priv.fpga.temp = data & 0xFFFF;
-        } else {
-            return false;
-        }
+    uint16_t data = {0};
+    if (fpga_r16(dev, REG_CSR_TEMP, &data)) {
+        dev->priv.fpga.csr.temp = data & 0xFFFF;
+        return true;
+    } else {
+        return false;
     }
-//    uint64_t data = 0;
-//    for (int addr=0x40; addr<0x60; addr++) {
-//        if (! fpga_spi_v3_hal_read_reg(bus, addr, &data)) {
-//            log_printf(LOG_ERR, "%s failed", __func__);
-//            return false;
-//        }
-//        log_printf(LOG_INFO, "FPGA Reg %X = %8llX", addr, data);
-//    }
-
-//    if (! fpga_spi_v3_hal_read_reg(bus, 0x50, &data)) {
-//        log_printf(LOG_ERR, "%s failed", __func__);
-//        return false;
-//    }
-//    dev->priv.serial = data;
-    return true;
 }
 
 static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
@@ -220,9 +237,8 @@ static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
 
 }
 
-void fpga_print_sdb(struct Dev_fpga *dev)
+void fpga_print_sdb(struct Dev_fpga_sdb *sdb)
 {
-    const Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
     {
         const struct sdb_synthesis *syn = &sdb->syn;
         char date_str[16] = {0};
@@ -258,26 +274,28 @@ void fpga_print_sdb(struct Dev_fpga *dev)
 
 bool fpga_read_sdb(struct Dev_fpga *dev)
 {
+    static Dev_fpga_sdb sdb;
+    memset(&sdb, 0, sizeof(sdb));
     uint32_t sdb_magic;
     if (! fpga_r32(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb_magic))
-        return false;
+        goto err;
     sdb_magic = ntohl(sdb_magic);
     if (sdb_magic != SDB_MAGIC) {
         log_printf(LOG_INFO, "SDB not found at %04X: read magic %08X, expected %08X",
                    FPGA_SPI_ADDR_SDB_BASE, sdb_magic, SDB_MAGIC);
+        dev->priv.fpga.sdb_read = false;
         return true;
     }
     /*
     uint32_t csr[0x10];
     if (! fpga_read(dev, 0x40, &csr, sizeof (csr)))
-        return false;
+        goto err;
     log_printf(LOG_DEBUG, "CSR dump:");
     hexdump(&csr, sizeof(csr));
     */
-    Dev_fpga_sdb *sdb = &dev->priv.fpga.sdb;
-    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, sdb, sizeof (*sdb)))
-        return false;
-    struct sdb_interconnect *ic = &sdb->ic;
+    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb, sizeof (sdb)))
+        goto err;
+    struct sdb_interconnect *ic = &sdb.ic;
     if (SDB_DUMP) {
         log_printf(LOG_DEBUG, "SDB interconnect dump:");
         hexdump(ic, sizeof(*ic));
@@ -285,13 +303,13 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     sdb_interconnect_fix_endian(ic);
     if (!sdb_ic_validate(ic)) {
         log_printf(LOG_WARNING, "SDB interconnect structure invalid");
-        return false;
+        goto err;
     }
-    struct sdb_synthesis *syn = &sdb->syn;
+    struct sdb_synthesis *syn = &sdb.syn;
     sdb_synthesis_fix_endian(syn);
     bool ok = true;
     for (int i=0; i<ic->sdb_records - 1; i++) {
-        struct sdb_device *d = &sdb->devices[i];
+        struct sdb_device *d = &sdb.devices[i];
 
         if (SDB_DUMP) {
             log_printf(LOG_DEBUG, "SDB device(%d) dump:", i);
@@ -305,8 +323,15 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
                 ok = false;
         }
     }
-    fpga_print_sdb(dev);
+    bool changed = memcmp(&dev->priv.fpga.sdb, &sdb, sizeof(sdb));
+    dev->priv.fpga.sdb = sdb;
+    dev->priv.fpga.sdb_read = true;
+    if (changed)
+        fpga_print_sdb(&sdb);
     return ok;
+err:
+    dev->priv.fpga.sdb_read = false;
+    return false;
 }
 
 bool fpga_detect_v2(Dev_fpga *dev)
@@ -323,15 +348,15 @@ bool fpga_detect_v2(Dev_fpga *dev)
     if (data_hi == data_lo) {
         log_printf(LOG_INFO, "FPGA SPI v1 detected, device_id %02X", data_lo);
         dev->priv.fpga.proto_version = 1;
-        dev->priv.fpga.id = data & 0xFF;
-        dev->priv.fpga.id_read = 1;
+        dev->priv.fpga.csr.id = data & 0xFF;
+        dev->priv.fpga.csr_read = 1;
         return true;
     }
     if (data_hi == (~data_lo & 0xFF) && data_lo != 0 && data_lo != 0xFF) {
         log_printf(LOG_INFO, "FPGA SPI v2 detected, device_id %02X", data_lo);
         dev->priv.fpga.proto_version = 2;
-        dev->priv.fpga.id = data & 0xFF;
-        dev->priv.fpga.id_read = 1;
+        dev->priv.fpga.csr.id = data & 0xFF;
+        dev->priv.fpga.csr_read = 1;
         return true;
     }
     return false;
@@ -349,6 +374,12 @@ bool fpga_detect_v3(Dev_fpga *dev)
 //        fpga_spi_v3_hal_read_status(bus);
 //        osDelay(100);
 //    }
+    if (!fpga_spi_v3_hal_read_status(&dev->dev.bus))
+        return false;
+    dev->priv.fpga.proto_version = 3;
+    log_put(LOG_INFO, "FPGA SPI v3 detected");
+    return true;
+    /*
     uint64_t data = 0;
     if (!fpga_spi_v3_hal_read_reg(&dev->dev.bus, REG_CSR_DEVICE_ID, &data)) {
         return false;
@@ -360,24 +391,17 @@ bool fpga_detect_v3(Dev_fpga *dev)
             return false;
         }
         log_printf(LOG_INFO, "FPGA SPI v3 detected, device_id %02X", id);
-        dev->priv.fpga.proto_version = 3;
         dev->priv.fpga.id = id;
         dev->priv.fpga.id_read = 1;
     }
     if (!fpga_read_base_csr(dev))
         return false;
-    log_printf(LOG_INFO, "FPGA CSR: firmware %d.%d.%d, serial %04X-%04X-%04X",
-               (dev->priv.fpga.fw_ver >> 8) & 0xFF,
-               (dev->priv.fpga.fw_ver) & 0xFF,
-               dev->priv.fpga.fw_rev,
-               (uint16_t)((dev->priv.fpga.ow_id >> 40) & 0xFFFF),
-               (uint16_t)((dev->priv.fpga.ow_id >> 24) & 0xFFFF),
-               (uint16_t)((dev->priv.fpga.ow_id >> 8) & 0xFFFF));
-    if (!fpga_read_info(dev))
+    if (!fpga_read_temp(dev))
         return false;
     if (!fpga_read_sdb(dev))
         return true; // not a problem
     return true;
+*/
 }
 
 bool fpgaDetect(Dev_fpga *dev)
@@ -627,21 +651,20 @@ bool fpga_read_v3_spi_stats(struct Dev_fpga *dev)
 
 bool fpga_periodic_task_v3(struct Dev_fpga *dev)
 {
-// destructive test
-//    int nloops = 3;
-//    for (int i=0; i<nloops; i++) {
-//        if (!fpga_test_v3(dev))
-//            return false;
-//    }
+    if (!fpga_read_v3_spi_stats(dev))
+        return false;
+
+    fpga_read_sdb(dev);
+    fpga_read_base_csr(dev);
+//    fpga_read_temp(dev);
     bool ok =
-            fpga_read_info(dev) &&
-            fpgaWriteBmcVersion(dev) &&
-            fpgaWriteBmcTemperature(dev) &&
-            fpgaWriteBmcNetworkInfo(dev) &&
-            fpgaWritePllStatus(dev) &&
-            fpgaWriteSystemStatus(dev) &&
-            fpgaWriteSensors(dev) &&
-    fpgaBoardSpecificPoll(dev);
+        fpgaWriteBmcVersion(dev) &&
+        fpgaWriteBmcTemperature(dev) &&
+        fpgaWriteBmcNetworkInfo(dev) &&
+        fpgaWritePllStatus(dev) &&
+        fpgaWriteSystemStatus(dev) &&
+        fpgaWriteSensors(dev) &&
+        fpgaBoardSpecificPoll(dev);
     fpga_read_v3_spi_stats(dev);
     return ok;
 }

@@ -36,7 +36,7 @@
 static const uint32_t LOAD_DELAY_TICKS = 5000;
 static const uint32_t DETECT_DELAY_TICKS = 100;
 static const uint32_t ERROR_DELAY_TICKS = 3000;
-static const uint32_t POLL_DELAY_TICKS  = 1000;
+static const uint32_t POLL_DELAY_TICKS  = 500;
 
 
 static uint32_t stateTicks(const Dev_fpga_priv *p)
@@ -142,7 +142,7 @@ void fpga_task_run(Dev_fpga *d)
             break;
         }
         d->dev.device_status = DEVICE_UNKNOWN;
-        d->priv.fpga.id_read = 0;
+        d->priv.fpga.csr_read = 0;
         if (!fpgaDetect(d)) {
             d->priv.fsm.state = FPGA_STATE_ERROR;
             break;

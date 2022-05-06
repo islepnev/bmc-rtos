@@ -56,7 +56,7 @@ SensorStatus get_fpga_sensor_status(void)
       return SENSOR_CRITICAL;
    if (!gpio->done)
       return SENSOR_CRITICAL;
-   if (fpga->id == 0 || fpga->id == 0xFFFFu)
+   if (fpga->csr.id == 0 || fpga->csr.id == 0xFFFFu)
       return SENSOR_WARNING;
    return SENSOR_NORMAL;
 }
@@ -66,7 +66,7 @@ uint32_t get_fpga_id(void)
     const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
     if (!fpga)
         return 0;
-    return fpga->id;
+    return fpga->csr.id;
 }
 
 uint64_t get_fpga_ow_id(void)
@@ -74,7 +74,7 @@ uint64_t get_fpga_ow_id(void)
     const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
     if (!fpga)
         return 0;
-    return fpga->ow_id;
+    return fpga->csr.ow_id;
 }
 
 uint32_t get_fpga_serial(void)
@@ -87,7 +87,7 @@ uint32_t get_fpga_fw_ver(void)
     const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
     if (!fpga)
         return 0;
-    return fpga->fw_ver;
+    return fpga->csr.fw_ver;
 }
 
 uint32_t get_fpga_fw_rev(void)
@@ -95,5 +95,5 @@ uint32_t get_fpga_fw_rev(void)
     const Dev_fpga_runtime *fpga = get_fpga_runtime_const();
     if (!fpga)
         return 0;
-    return fpga->fw_rev;
+    return fpga->csr.fw_rev;
 }

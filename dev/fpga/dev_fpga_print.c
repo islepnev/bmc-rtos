@@ -62,9 +62,9 @@ char fpga_ow_serial_str[14+1] = {0};
 void decode_fpga_info(const Dev_fpga_priv *priv)
 {
     const Dev_fpga_runtime *fpga = &priv->fpga;
-    bool ow_ok = onewire_id_valid(fpga->ow_id);
+    bool ow_ok = onewire_id_valid(fpga->csr.ow_id);
     if (ow_ok) {
-        uint64_t serial = (fpga->ow_id >> 8) & 0xFFFFFFFFFFFF;
+        uint64_t serial = (fpga->csr.ow_id >> 8) & 0xFFFFFFFFFFFF;
         snprintf(fpga_ow_serial_str, sizeof(fpga_ow_serial_str), "%04llX-%04llX",
                  serial >> 16, serial & 0xFFFF);
     } else {
@@ -74,17 +74,17 @@ void decode_fpga_info(const Dev_fpga_priv *priv)
     const Dev_fpga_sdb *sdb = &fpga->sdb;
     const struct sdb_synthesis *syn = &sdb->syn;
     sdb_copy_printable(fpga_sdb_commit_id, syn->commit_id, sizeof(syn->commit_id), '\0');
-    if (!strlen(fpga_sdb_commit_id) && (fpga->fw_ver != 0 || fpga->fw_rev != 0))
+    if (!strlen(fpga_sdb_commit_id) && (fpga->csr.fw_ver != 0 || fpga->csr.fw_rev != 0))
         snprintf(fpga_sdb_commit_id, sizeof (fpga_sdb_commit_id), "v%d.%d.%d",
-                 (fpga->fw_ver >> 8) & 0xFF,
-                 fpga->fw_ver & 0xFF,
-                 fpga->fw_rev);
+                 (fpga->csr.fw_ver >> 8) & 0xFF,
+                 fpga->csr.fw_ver & 0xFF,
+                 fpga->csr.fw_rev);
     const struct sdb_interconnect *ic = &sdb->ic;
     const struct sdb_product *product = &ic->sdb_component.product;
 //    snprint_sdb_version(fpga_version_str, sizeof(fpga_version_str), product->version);
     sdb_copy_printable(fpga_product_name, product->name, sizeof(product->name), '\0');
     if (!strlen(fpga_product_name))
-        snprintf(fpga_product_name, sizeof(fpga_product_name), "%02X", fpga->id);
+        snprintf(fpga_product_name, sizeof(fpga_product_name), "%02X", fpga->csr.id);
 }
 
 void dev_fpga_print_comm_state(const Dev_fpga_priv *priv)
@@ -103,7 +103,7 @@ void dev_fpga_print_comm_state(const Dev_fpga_priv *priv)
             printf(ANSI_RED " SPI: no connection" ANSI_CLEAR);
         } else {
             printf(" SPI v%d", fpga->proto_version);
-            if (!fpga->id_read) {
+            if (!fpga->csr_read) {
                 printf(ANSI_RED " No CSR" ANSI_CLEAR);
             } else {
             }
@@ -111,7 +111,7 @@ void dev_fpga_print_comm_state(const Dev_fpga_priv *priv)
                 printf(ANSI_RED " No SDB" ANSI_CLEAR);
         }
     }
-    if (gpio->done && fpga->id_read) {
+    if (gpio->done && fpga->csr_read) {
         decode_fpga_info(priv);
         printf("  %s  %s  %s", fpga_ow_serial_str, fpga_product_name, fpga_sdb_commit_id);
     }
