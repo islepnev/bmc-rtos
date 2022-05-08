@@ -21,15 +21,13 @@
 #include <stdint.h>
 
 #include "devicebase.h"
-#include "sdb.h"
+#include "sdb_rom.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 enum {FPGA_REG_COUNT = 8};
-enum { SDB_MAX_RECORDS = 32 }; // 0x7C00-0x7FFF 16-bit registers capacity
-enum { SDB_MAX_DEVICES = SDB_MAX_RECORDS - 2 };
 
 typedef enum {
     FPGA_STATE_STANDBY,
@@ -39,12 +37,6 @@ typedef enum {
     FPGA_STATE_PAUSE,
     FPGA_STATE_ERROR
 } fpga_state_t;
-
-typedef struct Dev_fpga_sdb {
-    struct sdb_interconnect ic;
-    struct sdb_device devices[SDB_MAX_DEVICES];
-    struct sdb_synthesis syn;
-} Dev_fpga_sdb;
 
 typedef struct Dev_fpga_gpio {
     uint8_t initb;
@@ -60,7 +52,7 @@ typedef struct Dev_fpga_csr {
 } Dev_fpga_csr;
 
 typedef struct Dev_fpga_runtime {
-    struct Dev_fpga_sdb sdb;
+    struct sdb_rom_t sdb;
     struct Dev_fpga_csr csr;
     uint16_t regs[FPGA_REG_COUNT];
     int proto_version;

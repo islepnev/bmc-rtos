@@ -15,12 +15,12 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "crc16.h"
+#include "sdb_crc16.h"
 
 static const uint16_t crc16_poly = 0x8BB7; // CRC-16-T10-DIF (SCSI DIF)
 static const uint16_t crc16_init = 0xFFFF; // differs from standard init 0
 
-uint16_t crc16_d8(const uint8_t buf[], size_t len)
+uint16_t sdb_crc16_d8(const uint8_t buf[], size_t len)
 {
     uint16_t crc = crc16_init;
     for (size_t i = 0; i < len; i++) {
@@ -31,7 +31,7 @@ uint16_t crc16_d8(const uint8_t buf[], size_t len)
     return crc;
 }
 
-uint16_t crc16_be16(const uint16_t buf[], size_t len)
+uint16_t sdb_crc16_be16(const uint16_t buf[], size_t len)
 {
     uint16_t crc = crc16_init;
     for (size_t i = 0; i < len; i++) {

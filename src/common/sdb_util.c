@@ -20,8 +20,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "sdb_crc16.h"
 #include "sdb.h"
+#include "sdb_rom.h"
 #include "bswap.h"
+
+static const uint16_t checksum_crc16_marker = 0x0016;
 
 void sdb_component_fix_endian(struct sdb_component *p)
 {
@@ -77,6 +81,56 @@ bool sdb_dev_validate(const struct sdb_device *p)
         return false;
     }
     return true;
+}
+
+bool sdb_checksum_present(const struct sdb_rom_t *sdb)
+{
+    enum {syn_name_size = sizeof(sdb->syn.syn_name)};
+    uint16_t *pz = (uint16_t *) &sdb->syn.syn_name[syn_name_size-4];
+//    uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
+//    printf("pz=%04X crc=%04X\n", *pz, *pcrc);
+    return *pz == ntohs(checksum_crc16_marker);
+}
+
+uint16_t sdb_checksum(const struct sdb_rom_t *sdb)
+{
+    return sdb_crc16_d8((const uint8_t*)sdb, sizeof(struct sdb_rom_t));
+}
+
+// non-reentrant
+bool sdb_validate_checksum_nr(const struct sdb_rom_t *sdb)
+{
+    if (!sdb_checksum_present(sdb)) return true;
+    static struct sdb_rom_t sdb_copy;
+    memcpy(&sdb_copy, sdb, sizeof(struct sdb_rom_t));
+    sdb_fill_checksum(&sdb_copy);
+    enum {syn_name_size = sizeof(sdb->syn.syn_name)};
+    uint16_t *pcopycrc = (uint16_t *) &sdb_copy.syn.syn_name[syn_name_size-2];
+    uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
+    return *pcrc == *pcopycrc;
+}
+
+bool sdb_validate_checksum(const struct sdb_rom_t *sdb)
+{
+    if (!sdb_checksum_present(sdb)) return true;
+    struct sdb_rom_t sdb_copy;
+    memcpy(&sdb_copy, sdb, sizeof(struct sdb_rom_t));
+    sdb_fill_checksum(&sdb_copy);
+    enum {syn_name_size = sizeof(sdb->syn.syn_name)};
+    uint16_t *pcopycrc = (uint16_t *) &sdb_copy.syn.syn_name[syn_name_size-2];
+    uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
+    return *pcrc == *pcopycrc;
+}
+
+void sdb_fill_checksum(struct sdb_rom_t *sdb)
+{
+    enum {syn_name_size = sizeof(sdb->syn.syn_name)};
+    uint16_t *pz = (uint16_t *) &sdb->syn.syn_name[syn_name_size-4];
+    uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
+    *pz = ntohs(checksum_crc16_marker);
+    *pcrc = 0;
+    uint16_t crc = ntohs(sdb_checksum(sdb));
+    *pcrc = crc;
 }
 
 void sdb_copy_printable(char *dest, const uint8_t *buf, size_t size, char fill)

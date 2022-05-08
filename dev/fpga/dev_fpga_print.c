@@ -24,6 +24,7 @@
 #include "dev_fpga_types.h"
 #include "devicelist.h"
 #include "display.h"
+#include "sdb_rom.h"
 #include "sdb_util.h"
 #include "crc8_dallas_maxim.h"
 
@@ -71,7 +72,7 @@ void decode_fpga_info(const Dev_fpga_priv *priv)
         fpga_ow_serial_str[0] = '\0';
     }
 
-    const Dev_fpga_sdb *sdb = &fpga->sdb;
+    const struct sdb_rom_t *sdb = &fpga->sdb;
     const struct sdb_synthesis *syn = &sdb->syn;
     sdb_copy_printable(fpga_sdb_commit_id, syn->commit_id, sizeof(syn->commit_id), '\0');
     if (!strlen(fpga_sdb_commit_id) && (fpga->csr.fw_ver != 0 || fpga->csr.fw_rev != 0))
@@ -91,7 +92,7 @@ void dev_fpga_print_comm_state(const Dev_fpga_priv *priv)
 {
     const Dev_fpga_gpio *gpio = &priv->gpio;
     const Dev_fpga_runtime *fpga = &priv->fpga;
-    const Dev_fpga_sdb *sdb = &fpga->sdb;
+    const struct sdb_rom_t *sdb = &fpga->sdb;
     bool sdb_ok = (sdb->ic.sdb_magic == SDB_MAGIC);
     printf("FPGA");
     if (!gpio->initb)

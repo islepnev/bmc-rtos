@@ -36,6 +36,7 @@
 #include "log/log.h"
 #include "mac_address.h"
 #include "powermon/dev_powermon_types.h"
+#include "sdb_rom.h"
 #include "sdb_util.h"
 #include "system_status.h"
 #include "system_status_common.h"
@@ -209,7 +210,7 @@ bool fpga_read_temp(struct Dev_fpga *dev)
     }
 }
 
-static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
+static void fpga_print_sdb_components(const struct sdb_rom_t *sdb)
 {
     const struct sdb_interconnect *ic = &sdb->ic;
     for (int i=0; i<ic->sdb_records - 1; i++) {
@@ -217,7 +218,7 @@ static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
             log_printf(LOG_WARNING, "  <too many devices>");
             break;
         }
-        const struct sdb_device *d = &sdb->devices[i];
+        const struct sdb_device *d = &sdb->device[i];
         if (d->sdb_component.product.record_type == sdb_type_empty)
             continue;
         if (!sdb_dev_validate(d)) {
@@ -237,7 +238,7 @@ static void fpga_print_sdb_components(const Dev_fpga_sdb *sdb)
 
 }
 
-void fpga_print_sdb(struct Dev_fpga_sdb *sdb)
+void fpga_print_sdb(struct sdb_rom_t *sdb)
 {
     {
         const struct sdb_synthesis *syn = &sdb->syn;
@@ -249,8 +250,13 @@ void fpga_print_sdb(struct Dev_fpga_sdb *sdb)
         enum { user_name_len = sizeof(syn->user_name) };
         char user_name[user_name_len+1] = {0};
         sdb_copy_printable(user_name, syn->user_name, user_name_len, '\0');
+        bool crc_present = sdb_checksum_present(sdb);
+        bool crc_ok = sdb_validate_checksum_nr(sdb);
+        char *crc_str = "";
+        if (crc_present)
+            crc_str = crc_ok ? ", CRC Ok" : ", CRC error";
         if ((strlen(commit_id) > 0) || (strlen(user_name) > 0))
-            log_printf(LOG_INFO, "FPGA SDB: build %s by %s on %s", commit_id, user_name, date_str);
+            log_printf(LOG_INFO, "FPGA SDB: build %s by %s on %s%s", commit_id, user_name, date_str, crc_str);
     }
     const struct sdb_interconnect *ic = &sdb->ic;
     {
@@ -274,7 +280,7 @@ void fpga_print_sdb(struct Dev_fpga_sdb *sdb)
 
 bool fpga_read_sdb(struct Dev_fpga *dev)
 {
-    static Dev_fpga_sdb sdb;
+    static struct sdb_rom_t sdb;
     memset(&sdb, 0, sizeof(sdb));
     uint32_t sdb_magic;
     if (! fpga_r32(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb_magic))
@@ -295,6 +301,16 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     */
     if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb, sizeof (sdb)))
         goto err;
+    //hexdump(&sdb.syn, sizeof(struct sdb_synthesis));
+    bool has_checksum = sdb_checksum_present(&sdb);
+    if (has_checksum) {
+        bool crc_ok = sdb_validate_checksum_nr(&sdb);
+        if (!crc_ok) {
+            log_put(LOG_DEBUG, "SDB checksum error");
+            goto err;
+        }
+    }
+
     struct sdb_interconnect *ic = &sdb.ic;
     if (SDB_DUMP) {
         log_printf(LOG_DEBUG, "SDB interconnect dump:");
@@ -309,7 +325,7 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     sdb_synthesis_fix_endian(syn);
     bool ok = true;
     for (int i=0; i<ic->sdb_records - 1; i++) {
-        struct sdb_device *d = &sdb.devices[i];
+        struct sdb_device *d = &sdb.device[i];
 
         if (SDB_DUMP) {
             log_printf(LOG_DEBUG, "SDB device(%d) dump:", i);

@@ -51,7 +51,7 @@ static char printable(char c, char fill)
     return c;
 }
 
-enum {XD_LINE_BYTES = 16};
+enum {XD_LINE_BYTES = 32};
 enum {XD_GROUPBY = 4};
 
 static void hexdump_line(int address, const void *ptr, int len)

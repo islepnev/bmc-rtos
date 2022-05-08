@@ -28,9 +28,9 @@
 #include <getopt.h>
 
 #include "sdb.h"
+#include "sdb_rom.h"
 #include "sdb_util.h"
 #include "str_util.h"
-
 
 static const uint64_t VENDOR_ID = 0x414649; // 'AFI'
 static const uint16_t REGIO_FIRST_REG = 0;
@@ -176,13 +176,6 @@ void fill_sdb_device(struct sdb_device *p,
     product->record_type = sdb_type_device;
 }
 
-// 2048 bytes SDB PROM size limit
-enum { MAX_SDB_DEVICE_COUNT = 30 };
-struct sdb_t {
-    struct sdb_interconnect ic;
-    struct sdb_device device[MAX_SDB_DEVICE_COUNT];
-    struct sdb_synthesis syn;
-};
 
 enum { MAX_LINE_LENGTH = 256 };
 
@@ -195,7 +188,7 @@ typedef struct csv_line {
 
 enum { REGIO_WORD_SIZE = 2 };
 
-void print_sdb(struct sdb_t *dev)
+void print_sdb(struct sdb_rom_t *dev)
 {
     const struct sdb_interconnect *ic = &dev->ic;
     printf("SDB: %d records\n", ic->sdb_records);
@@ -271,7 +264,7 @@ void parse_csv_comment(const char *s)
     }
 }
 
-int read_csv(const char *filename, struct sdb_t *sdb)
+int read_csv(const char *filename, struct sdb_rom_t *sdb)
 {
     FILE *f = fopen(filename, "r");
     if (!f)
@@ -300,7 +293,7 @@ int read_csv(const char *filename, struct sdb_t *sdb)
     return device_count;
 }
 
-void sdb_fix_endian(struct sdb_t *p)
+void sdb_fix_endian(struct sdb_rom_t *p)
 {
     assert(p->ic.sdb_magic == SDB_MAGIC);
     int device_count = p->ic.sdb_records - 1;
@@ -315,20 +308,16 @@ void sdb_fix_endian(struct sdb_t *p)
     sdb_synthesis_fix_endian(&p->syn);
 }
 
-bool write_sdb_bin(const char *filename, const struct sdb_t *p)
+bool write_sdb_bin(const char *filename, const struct sdb_rom_t *p)
 {
-    assert(p->ic.sdb_magic == SDB_MAGIC);
-    struct sdb_t sdb_be = *p;
-
-    sdb_fix_endian(&sdb_be);
-    const int sdb_size = sizeof(struct sdb_t);
+    const int sdb_size = sizeof(struct sdb_rom_t);
     {
         // write binary file
         FILE *f = fopen(filename, "w");
         if (!f)
             goto err;
 
-        if (fwrite(&sdb_be, sdb_size, 1, f) != 1)
+        if (fwrite(p, sdb_size, 1, f) != 1)
             goto err;
         if (fclose(f) != 0)
             goto err;
@@ -340,23 +329,16 @@ err:
     return false;
 }
 
-bool write_sdb_hex(const char *filename, const struct sdb_t *p)
+bool write_sdb_hex(const char *filename, const struct sdb_rom_t *p)
 {
-    assert(p->ic.sdb_magic == SDB_MAGIC);
-    struct sdb_t sdb_be;
-    memcpy(&sdb_be, p, sizeof(sdb_be));
-
-    const int sdb_size = sizeof(struct sdb_t);
-
-    sdb_fix_endian(&sdb_be);
-
+    const int sdb_size = sizeof(struct sdb_rom_t);
     const int sdb_words = sdb_size/2;
     {
         // write RAM init file
         FILE *f = fopen(filename, "w");
         if (!f)
             goto err;
-        const uint16_t *sdb_alias = (const uint16_t *)&sdb_be;
+        const uint16_t *sdb_alias = (const uint16_t *)p;
         for (int i=0; i<sdb_words; i++)
             if (fprintf(f, "%04x\n", sdb_alias [i]) < 0)
                 goto err;
@@ -492,7 +474,7 @@ int main(int argc, char *argv[])
         usage(argc, argv);
     }
     bool ok = true;
-    struct sdb_t sdb = {};
+    struct sdb_rom_t sdb;
     memset(&sdb, 0, sizeof(sdb));
 
 //    fill_sdb_interconnect(&sdb.ic);
@@ -504,11 +486,17 @@ int main(int argc, char *argv[])
     sdb.ic.sdb_records = 1 + device_count;
     print_meta();
     print_sdb(&sdb);
+    // convert endianness
+    struct sdb_rom_t sdb_be;
+    memcpy(&sdb_be, &sdb, sizeof(struct sdb_rom_t));
+    sdb_fix_endian(&sdb_be);
+
+    sdb_fill_checksum(&sdb_be);
     if (strlen(filename_bin) > 0) {
-        ok &= write_sdb_bin(filename_bin, &sdb);
+        ok &= write_sdb_bin(filename_bin, &sdb_be);
     }
     if (strlen(filename_mem) > 0)
-        ok &= write_sdb_hex(filename_mem, &sdb);
+        ok &= write_sdb_hex(filename_mem, &sdb_be);
 
     return ok ? 0 : 1;
 }
