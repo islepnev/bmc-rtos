@@ -57,6 +57,8 @@ typedef struct Dev_fpga_runtime {
     uint16_t regs[FPGA_REG_COUNT];
     int proto_version;
     bool sdb_read;
+    bool sdb_crc_present;
+    bool sdb_crc_valid;
     bool csr_read;
 } Dev_fpga_runtime;
 
