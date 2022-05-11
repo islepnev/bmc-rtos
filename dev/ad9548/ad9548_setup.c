@@ -29,6 +29,8 @@
 #include "log/log.h"
 #include "spi.h"
 
+static AD9548_Status status;
+
 bool ad9548_output_sync(BusInterface *bus)
 {
     return
@@ -118,7 +120,6 @@ bool ad9548_initial_setup(BusInterface *bus, ad9548_setup_t *reg)
     if (!ad9548_ioupdate(bus))
         return false;
 
-    AD9548_Status status;
     if (!ad9548_poll_irq_state(bus, &status))
         return false; // clear pending IRQs
 
@@ -139,7 +140,7 @@ bool ad9548_ProfileConfig(BusInterface *bus, ad9548_setup_t *reg)
             return false;
     }
 
-    int base[AD9548_DPLL_PROFILE_COUNT] = {
+    static const int base[AD9548_DPLL_PROFILE_COUNT] = {
         AD9545_REG_PROFILE_0_BASE,
         AD9545_REG_PROFILE_1_BASE,
         AD9545_REG_PROFILE_2_BASE,
