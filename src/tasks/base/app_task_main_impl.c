@@ -42,9 +42,9 @@ void check_clock_ready(void)
     if (old_clock_ready != clock_ready) {
         bsp_update_system_powergood_pin(clock_ready);
         if (clock_ready)
-            log_printf(LOG_INFO, "clock ready");
+            log_put(LOG_INFO, "clock ready");
         else
-            log_printf(LOG_WARNING, "clock not ready");
+            log_put(LOG_WARNING, "clock not ready");
         old_clock_ready = clock_ready;
     }
 }
