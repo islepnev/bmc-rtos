@@ -62,11 +62,6 @@ void devicelist_print(DeviceBase *d, int depth)
            device_class_str(d->device_class),
            d->name,
            short_device_status_str(d->device_status));
-    uint32_t nerr_device = bus_iostat_dev_errors(&d->bus.iostat);
-    uint32_t nerr_comm = bus_iostat_comm_errors(&d->bus.iostat);
-    uint32_t nop = d->bus.iostat.tx_count;
-    if (nop + nerr_comm + nerr_device)
-        printf("  %9d %9d %9d", nop, nerr_comm, nerr_device);
     printf("\n");
 
     DeviceBase *p = d->children;

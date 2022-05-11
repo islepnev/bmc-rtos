@@ -27,6 +27,7 @@
 #include "app_task_powermon.h"
 #endif
 #include "bsp.h"
+#include "debug_helpers.h"
 
 #if !defined(BOARD_ADC64VEV1) && !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
 #include "ad9516/app_task_auxpll.h"
@@ -47,6 +48,14 @@
 #include "dev_common_types.h"
 #include "devicelist.h"
 
+void debug_heap_usage(const char *str)
+{
+    static size_t prev = 0;
+    size_t heapSize = xPortGetFreeHeapSize();
+    debug_printf("  [heap: %+6d %6d] created task %s\n", heapSize - prev, heapSize, str);
+    prev = heapSize;
+}
+
 static DeviceBase topdevice = {0};
 
 void create_tasks(void)
@@ -56,27 +65,41 @@ void create_tasks(void)
 
     // create_task_heartbeat(); // no need, see main task
     create_task_display();
+    debug_heap_usage("display");
+
     create_task_cli();
+    debug_heap_usage("cli");
+
 #if !defined(BOARD_ADC64VEV1)
     create_task_powermon(&topdevice);
+    debug_heap_usage("powermon");
 #endif
     create_task_main();
+    debug_heap_usage("main");
+
 #if ENABLE_AD9516
     create_task_auxpll(&topdevice);
+    debug_heap_usage("auxpll");
 #endif
     create_task_pll(&topdevice);
+    debug_heap_usage("pll");
     create_task_fpga(&topdevice);
+    debug_heap_usage("fpga");
 #ifdef ENABLE_VXSIICM
     create_task_vxsiicm(&topdevice);
+    debug_heap_usage("vxsiicm");
 #else
 #ifdef ENABLE_VXSIICS
     create_task_vxsiics(&topdevice);
+    debug_heap_usage("vxsiics");
 #endif
 #endif
 #if defined(BOARD_TTVXS) || defined(BOARD_CRU16) || defined(BOARD_TQDC) || defined(BOARD_TDC64VLE)
     create_task_tcpip();
+    debug_heap_usage("tcpip");
 #endif
 #if !defined(BOARD_ADC64VEV1) && !defined(BOARD_TDC64VHLEV1) && !defined(BOARD_TDC72VHLV2) && !defined(BOARD_TQDC16VSV1)
     create_task_adc();
+    debug_heap_usage("adc");
 #endif
 }

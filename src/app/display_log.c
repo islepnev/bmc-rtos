@@ -54,6 +54,9 @@ static void print_log_lines(int y, int count, bool repaint)
     if (max_count > LOG_BUF_SIZE)
         max_count = LOG_BUF_SIZE;
     volatile const uint32_t log_count = log_get_count();
+    if (max_count > log_count)
+        max_count = log_count;
+
     volatile const uint32_t log_wptr = log_get_wptr();
     volatile const uint32_t log_start = (log_count > max_count) ? (log_wptr + LOG_BUF_SIZE - max_count) % LOG_BUF_SIZE : 0;
     if (!repaint && old_log_wptr == log_wptr)

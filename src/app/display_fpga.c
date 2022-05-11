@@ -27,6 +27,7 @@
 #include "log/log.h"
 #include "fpga/dev_fpga_types.h"
 #include "fpga/dev_fpga_print.h"
+#include "fpga_spi_iostat.h"
 
 static void display_fpga_spi_stats()
 {
@@ -34,30 +35,29 @@ static void display_fpga_spi_stats()
     if (!d || !d->priv)
         return;
     // printf("SPI stats\n");
-    const BusIoStat *iostat = &d->bus.iostat;
-    int mcu_rx_errors = iostat->rx_crc_errors + iostat->rx_timeouts +
-                        iostat->no_response_errors + iostat->rx_addr_errors +
-                        iostat->rx_opcode_errors + iostat->rx_len_errors;
-    int fpga_errors = iostat->tx_crc_errors + iostat->bus_errors + iostat->bus_timeouts;
-    int errors = bus_iostat_total_errors(iostat);
-    printf("MCU packets   %-10d FPGA packets %-10d ", iostat->tx_count, iostat->rx_count);
+    int mcu_rx_errors = iostat.rx_crc_errors + iostat.rx_timeouts +
+                        iostat.no_response_errors + iostat.rx_addr_errors +
+                        iostat.rx_opcode_errors + iostat.rx_len_errors;
+    int fpga_errors = iostat.tx_crc_errors + iostat.bus_errors + iostat.bus_timeouts;
+    int errors = bus_iostat_total_errors(&iostat);
+    printf("MCU packets   %-10d FPGA packets %-10d ", iostat.tx_count, iostat.rx_count);
     if (errors == 0) {
         printf("(no errors)\n");
     } else {
         printf("Errors %-10d\n", errors);
         if (mcu_rx_errors) {
             printf("MCU Rx status\n");
-            if (iostat->hal_errors)
-                printf("   HAL error   %-10d\n", iostat->hal_errors);
+            if (iostat.hal_errors)
+                printf("   HAL error   %-10d\n", iostat.hal_errors);
             printf("   Bad CRC     %-10d Op timeout  %-10d No reply    %-10d\n",
-                   iostat->rx_crc_errors, iostat->rx_timeouts, iostat->no_response_errors);
+                   iostat.rx_crc_errors, iostat.rx_timeouts, iostat.no_response_errors);
             printf("   Bad address %-10d Bad opcode  %-10d Bad length  %-10d\n",
-                   iostat->rx_addr_errors, iostat->rx_opcode_errors, iostat->rx_len_errors);
+                   iostat.rx_addr_errors, iostat.rx_opcode_errors, iostat.rx_len_errors);
         }
         if (fpga_errors) {
             printf("FPGA status\n");
             printf("   Bad CRC     %-10d Bus error   %-10d Bus timeout %-10d\n",
-                   iostat->tx_crc_errors, iostat->bus_errors, iostat->bus_timeouts);
+                   iostat.tx_crc_errors, iostat.bus_errors, iostat.bus_timeouts);
         }
     }
 }

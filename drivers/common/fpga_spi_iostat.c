@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2022 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,10 +15,32 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bus_types.h"
+#include "fpga_spi_iostat.h"
 
-const BusInterface null_bus_info = {
-    .type = BUS_NONE,
-    .bus_number = 0,
-    .address = 0
-};
+BusIoStat iostat = {0};
+
+int bus_iostat_comm_errors(const BusIoStat *iostat)
+{
+    return
+        iostat->hal_errors +
+        iostat->no_response_errors +
+        iostat->rx_addr_errors +
+        iostat->rx_crc_errors +
+        iostat->rx_len_errors +
+        iostat->rx_opcode_errors +
+        iostat->tx_crc_errors;
+}
+
+int bus_iostat_dev_errors(const BusIoStat *iostat)
+{
+    return
+        iostat->bus_errors +
+        iostat->bus_timeouts;
+}
+
+int bus_iostat_total_errors(const BusIoStat *iostat)
+{
+    return
+        bus_iostat_comm_errors(iostat) +
+        bus_iostat_dev_errors(iostat);
+}

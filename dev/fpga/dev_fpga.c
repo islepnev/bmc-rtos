@@ -238,9 +238,10 @@ static void fpga_print_sdb_components(const struct sdb_rom_t *sdb)
 
 }
 
-void fpga_print_sdb(struct sdb_rom_t *sdb)
+static void fpga_print_sdb(const Dev_fpga *dev)
 {
-    {
+    const struct sdb_rom_t *sdb = &dev->priv.fpga.sdb;
+   {
         const struct sdb_synthesis *syn = &sdb->syn;
         char date_str[16] = {0};
         snprint_sdb_date(date_str, sizeof(date_str), syn->date);
@@ -250,8 +251,8 @@ void fpga_print_sdb(struct sdb_rom_t *sdb)
         enum { user_name_len = sizeof(syn->user_name) };
         char user_name[user_name_len+1] = {0};
         sdb_copy_printable(user_name, syn->user_name, user_name_len, '\0');
-        bool crc_present = sdb_checksum_present(sdb);
-        bool crc_ok = sdb_validate_checksum_nr(sdb);
+        bool crc_present = dev->priv.fpga.sdb_crc_present;
+        bool crc_ok = dev->priv.fpga.sdb_crc_valid;
         char *crc_str = "";
         if (crc_present)
             crc_str = crc_ok ? ", CRC Ok" : ", CRC error";
@@ -303,12 +304,15 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         goto err;
     //hexdump(&sdb.syn, sizeof(struct sdb_synthesis));
     bool has_checksum = sdb_checksum_present(&sdb);
+    dev->priv.fpga.sdb_crc_present = has_checksum;
+    dev->priv.fpga.sdb_crc_valid = false;
     if (has_checksum) {
         bool crc_ok = sdb_validate_checksum_nr(&sdb);
         if (!crc_ok) {
             log_put(LOG_DEBUG, "SDB checksum error");
             goto err;
         }
+        dev->priv.fpga.sdb_crc_valid = true;
     }
 
     struct sdb_interconnect *ic = &sdb.ic;
@@ -343,7 +347,7 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     dev->priv.fpga.sdb = sdb;
     dev->priv.fpga.sdb_read = true;
     if (changed)
-        fpga_print_sdb(&sdb);
+        fpga_print_sdb(dev);
     return ok;
 err:
     dev->priv.fpga.sdb_read = false;

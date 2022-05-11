@@ -29,7 +29,7 @@
 
 osThreadId fpgaThreadId = NULL;
 enum { fpgaThreadStackSize = threadStackSize + 130 };
-static const uint32_t fpgaTaskLoopDelay = 10;
+static const uint32_t fpgaTaskLoopDelay = 50;
 
 static BusInterface fpga_bus_info = {
     .type = BUS_SPI,
