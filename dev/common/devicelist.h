@@ -21,7 +21,12 @@
 #include "dev_common_types.h"
 #include "devicebase.h"
 
+#ifdef STM32F3
+enum { DEVICE_LIST_SIZE = 10 };
+#else
 enum { DEVICE_LIST_SIZE = 40 };
+#endif
+
 typedef struct DeviceList {
     int count;
     struct DeviceBase *list[DEVICE_LIST_SIZE];
