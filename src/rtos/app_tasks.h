@@ -19,7 +19,6 @@
 #define APP_TASKS_H
 
 #include "cmsis_os.h"
-#include "bsp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +26,8 @@ extern "C" {
 
 // for use with GCC flags -fstack-usage -Wstack-usage=N
 // Note: debug_printf stack overhead is 100 bytes
-#if defined(BOARD_TDC64VHLEV1) || defined(BOARD_TDC72VHLV2) || defined(BOARD_TQDC16VSV1)
-enum { threadStackSize = 200 }; // words
+#ifdef STM32F3
+enum { threadStackSize = 128 }; // words
 #else
 enum { threadStackSize = 512 }; // words
 #endif
