@@ -24,42 +24,23 @@
 extern "C" {
 #endif
 
-typedef struct BusIoStat {
-    int bus_errors;
-    int bus_timeouts;
-    int hal_errors;
-    int no_response_errors;
-    int rx_addr_errors;
-    int rx_count;
-    int rx_crc_errors;
-    int rx_len_errors;
-    int rx_opcode_errors;
-    int rx_timeouts;
-    int tx_count;
-    int tx_crc_errors;
-} BusIoStat;
 
-typedef enum BusType {
+typedef enum  BusType {
     BUS_NONE,
     BUS_SPI,
     BUS_IIC
 } BusType;
 
-typedef int BusIndex;
+typedef uint16_t BusIndex;
 
 typedef struct BusInterface {
-    BusType type;
-    int bus_number;
+    uint8_t type; // BusType
+    uint8_t bus_number;
     BusIndex address;
     struct DeviceBase *dev;
-    BusIoStat iostat;
 } BusInterface;
 
 extern const BusInterface null_bus_info;
-
-int bus_iostat_comm_errors(const BusIoStat *iostat);
-int bus_iostat_dev_errors(const BusIoStat *iostat);
-int bus_iostat_total_errors(const BusIoStat *iostat);
 
 #ifdef __cplusplus
 }

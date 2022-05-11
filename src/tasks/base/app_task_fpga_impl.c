@@ -28,6 +28,7 @@
 #include "fpga/dev_fpga.h"
 #include "fpga/dev_fpga_types.h"
 #include "fpga_spi_hal.h"
+#include "fpga_spi_iostat.h"
 #include "gpio.h"
 #include "log/log.h"
 #include "powermon/dev_powermon.h"
@@ -179,10 +180,10 @@ void fpga_task_run(Dev_fpga *d)
             d->priv.fsm.state = FPGA_STATE_STANDBY;
             break;
         }
-        uint32_t dev_errors_before = bus_iostat_total_errors(&d->dev.bus.iostat);
+        uint32_t dev_errors_before = bus_iostat_total_errors(&iostat);
         if (fpga_periodic_task(d)) {
             d->priv.fsm.state = FPGA_STATE_PAUSE;
-            uint32_t dev_errors_after = bus_iostat_total_errors(&d->dev.bus.iostat);
+            uint32_t dev_errors_after = bus_iostat_total_errors(&iostat);
             uint32_t nerr = dev_errors_after - dev_errors_before;
             if (nerr && d->dev.sensor == SENSOR_NORMAL)
                 d->dev.sensor = SENSOR_WARNING;

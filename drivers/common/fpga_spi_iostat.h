@@ -1,5 +1,5 @@
 /*
-**    Copyright 2020 Ilja Slepnev
+**    Copyright 2022 Ilia Slepnev
 **
 **    This program is free software: you can redistribute it and/or modify
 **    it under the terms of the GNU General Public License as published by
@@ -15,10 +15,36 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "bus_types.h"
+#ifndef FPGA_SPI_IOSTAT_H
+#define FPGA_SPI_IOSTAT_H
 
-const BusInterface null_bus_info = {
-    .type = BUS_NONE,
-    .bus_number = 0,
-    .address = 0
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct BusIoStat {
+    int bus_errors;
+    int bus_timeouts;
+    int hal_errors;
+    int no_response_errors;
+    int rx_addr_errors;
+    int rx_count;
+    int rx_crc_errors;
+    int rx_len_errors;
+    int rx_opcode_errors;
+    int rx_timeouts;
+    int tx_count;
+    int tx_crc_errors;
+} BusIoStat;
+
+extern BusIoStat iostat;
+
+int bus_iostat_comm_errors(const BusIoStat *iostat);
+int bus_iostat_dev_errors(const BusIoStat *iostat);
+int bus_iostat_total_errors(const BusIoStat *iostat);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FPGA_SPI_IOSTAT_H
