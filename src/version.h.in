@@ -21,7 +21,7 @@
 #define VERSION_MAJOR_NUM @GIT_TAG_MAJOR_NUM@
 #define VERSION_MINOR_NUM @GIT_TAG_MINOR_NUM@
 #define VERSION_PATCH_NUM @GIT_COMMIT_COUNT@
-//#define VERSION_STR "@GIT_DESCR@"
+#define GIT_DESCR "@GIT_DESCR@"
 
 #define xstr(s) str(s)
 #define str(s) #s

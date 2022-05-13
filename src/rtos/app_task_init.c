@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "ansi_escape_codes.h"
+#include "app_name.h"
 #include "bsp.h"
 #include "bsp_tty.h"
 #include "clock.h"
@@ -37,7 +38,7 @@ void app_task_init(void)
     bsp_tty_setup_uart();
 
     debug_print(ANSI_CLEAR "\n");
-    debug_print("Initializing\n");
+    debug_print(APP_DESCR_FULL "\n");
     configureTimerForRunTimeStats();
     test_timers();
     init_logging();

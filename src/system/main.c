@@ -15,6 +15,7 @@
 **    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "app_name.h"
 #include "app_task_init.h"
 #include "app_tasks.h"
 #include "clock.h"
@@ -45,7 +46,9 @@ int main(void)
 
     app_task_init();
 
+    log_put(LOG_INFO, APP_DESCR_FULL);
     create_tasks();
+
     if (sysclk_source == SYSCLK_HSI)
         log_printf(LOG_WARNING, "System clock: internal oscillator");
     if (sysclk_source == SYSCLK_HSE)
