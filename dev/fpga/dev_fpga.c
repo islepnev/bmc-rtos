@@ -294,8 +294,20 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         dev->priv.fpga.sdb_read = false;
         return true;
     }
-    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, sdb, sizeof(struct sdb_rom_t)))
+    int address = FPGA_SPI_ADDR_SDB_BASE;
+    if (! fpga_read(dev, address, &sdb->ic, sizeof(sdb->ic)))
         goto err;
+    address += sizeof(sdb->ic) / 2;
+    osThreadYield();
+    for (int i=0; i<MAX_SDB_DEVICE_COUNT; i++) {
+        if (! fpga_read(dev, address, &sdb->device[i], sizeof(sdb->device[0])))
+            goto err;
+        address += sizeof(sdb->device[0]) / 2;
+        osThreadYield();
+    }
+    if (! fpga_read(dev, address, &sdb->syn, sizeof(sdb->syn)))
+        goto err;
+    osThreadYield();
     // hexdump(&sdb->syn, sizeof(struct sdb_synthesis));
     bool has_checksum = sdb_checksum_present(sdb);
     dev->priv.fpga.sdb_crc_present = has_checksum;
