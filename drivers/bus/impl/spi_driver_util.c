@@ -30,9 +30,10 @@
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi3;
+#ifndef STM32F3
 extern SPI_HandleTypeDef hspi4;
 extern SPI_HandleTypeDef hspi5;
-
+#endif
 enum {SPI_BUS_COUNT = 5};
 
 // interrupt wait semaphores
@@ -139,10 +140,12 @@ SemaphoreHandle_t spi_driver_it_sem_by_hspi(struct __SPI_HandleTypeDef *hspi)
         return spi2_it_sem;
     if (hspi == &hspi3)
         return spi3_it_sem;
+#ifndef STM32F3
     if (hspi == &hspi4)
         return spi4_it_sem;
     if (hspi == &hspi5)
         return spi5_it_sem;
+#endif
     assert(false);
     return NULL;
 }
@@ -169,10 +172,12 @@ int hspi_index(struct __SPI_HandleTypeDef *hspi)
         return 2;
     if (hspi == &hspi3)
         return 3;
+#ifndef STM32F3
     if (hspi == &hspi4)
         return 4;
     if (hspi == &hspi5)
         return 5;
+#endif
     assert(false);
     return 0;
 }
@@ -185,10 +190,12 @@ struct __SPI_HandleTypeDef * hspi_handle(BusIndex index)
         return &hspi2;
     if (3 == index)
         return &hspi3;
+#ifndef STM32F3
     if (4 == index)
         return &hspi4;
     if (5 == index)
         return &hspi5;
+#endif
     assert(false);
     return NULL;
 }
