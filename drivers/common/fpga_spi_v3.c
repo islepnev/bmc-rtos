@@ -184,9 +184,9 @@ bool fpga_spi_v3_tx_rx(BusInterface *bus, uint16_t *txBuf, uint16_t *rxBuf, uint
     uint32_t sum = 0;
     for (int i=0; i<wordcount; i++)
         sum += rxBuf[i];
-    if (sum == 0) {
+    if (sum == 0 || sum == (uint32_t)0xFFFFu * wordcount) {
         // if (error_log_inc())
-        //     log_printf(LOG_WARNING, "FPGA SPI: no data received (all zeroes)");
+        //     log_printf(LOG_WARNING, "FPGA SPI: no data received");
         iostat.no_response_errors++;
         return false;
     }
