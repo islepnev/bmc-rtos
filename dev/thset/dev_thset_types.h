@@ -34,8 +34,11 @@ typedef enum {
     THSET_STATE_2,
 } thset_state_t;
 
+#ifdef STM32F3
+enum {DEV_THSET_MAX_COUNT = 4};
+#else
 enum {DEV_THSET_MAX_COUNT = 8};
-
+#endif
 typedef struct Dev_thset_priv {
     thset_state_t state;
     int count;
