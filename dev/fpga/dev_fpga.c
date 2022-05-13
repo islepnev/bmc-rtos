@@ -307,7 +307,7 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
     dev->priv.fpga.sdb_crc_present = has_checksum;
     dev->priv.fpga.sdb_crc_valid = false;
     if (has_checksum) {
-        bool crc_ok = sdb_validate_checksum_nr(&sdb);
+        bool crc_ok = sdb_validate_checksum(&sdb);
         if (!crc_ok) {
             log_put(LOG_DEBUG, "SDB checksum error");
             goto err;

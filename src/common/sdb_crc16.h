@@ -25,8 +25,11 @@
 extern "C" {
 #endif
 
-uint16_t sdb_crc16_d8(const uint8_t buf[], size_t len);
-uint16_t sdb_crc16_be16(const uint16_t buf[], size_t len);
+extern const uint16_t crc16_poly;
+extern const uint16_t crc16_init;
+
+uint16_t sdb_crc16_d8(uint16_t init, const uint8_t buf[], size_t len);
+uint16_t sdb_crc16_be16(uint16_t init, const uint16_t buf[], size_t len);
 
 #ifdef __cplusplus
 }
