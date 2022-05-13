@@ -29,7 +29,11 @@
 #include "RunTimeStatsTimer.h"
 #include "stm32_hal.h"
 
+#ifdef STM32F3
+enum {MAX_TASK_COUNT = 10};
+#else
 enum {MAX_TASK_COUNT = 30};
+#endif
 typedef struct task_item {
     uint8_t index;
     uint8_t prio;
