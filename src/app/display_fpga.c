@@ -37,7 +37,7 @@ static void display_fpga_spi_stats()
     // printf("SPI stats\n");
     int mcu_rx_errors = iostat.rx_crc_errors + iostat.rx_timeouts +
                         iostat.no_response_errors + iostat.rx_addr_errors +
-                        iostat.rx_opcode_errors + iostat.rx_len_errors;
+                        iostat.rx_opcode_errors + iostat.rx_other_errors;
     int fpga_errors = iostat.tx_crc_errors + iostat.bus_errors + iostat.bus_timeouts;
     int errors = bus_iostat_total_errors(&iostat);
     printf("MCU packets   %-10d FPGA packets %-10d ", iostat.tx_count, iostat.rx_count);
@@ -51,8 +51,8 @@ static void display_fpga_spi_stats()
                 printf("   HAL error   %-10d\n", iostat.hal_errors);
             printf("   Bad CRC     %-10d Op timeout  %-10d No reply    %-10d\n",
                    iostat.rx_crc_errors, iostat.rx_timeouts, iostat.no_response_errors);
-            printf("   Bad address %-10d Bad opcode  %-10d Bad length  %-10d\n",
-                   iostat.rx_addr_errors, iostat.rx_opcode_errors, iostat.rx_len_errors);
+            printf("   Bad address %-10d Bad opcode  %-10d Other error %-10d\n",
+                   iostat.rx_addr_errors, iostat.rx_opcode_errors, iostat.rx_other_errors);
         }
         if (fpga_errors) {
             printf("FPGA status\n");
