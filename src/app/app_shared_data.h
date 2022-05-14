@@ -34,7 +34,7 @@ typedef enum {
     DISPLAY_SFP_DETAIL,
     DISPLAY_TASKS,
     DISPLAY_DEVICES,
-    DISPLAY_MENU,
+//    DISPLAY_MENU,
     DISPLAY_MODE_COUNT // last element
 } display_mode_t;
 

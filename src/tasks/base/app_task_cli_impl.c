@@ -21,14 +21,14 @@
 
 #include "app_shared_data.h"
 #include "commands_digipot.h"
-#include "commands_menu.h"
+//#include "commands_menu.h"
 #include "keysyms.h"
 
 display_mode_t next_display_mode(display_mode_t mode)
 {
     switch (mode) {
-    case DISPLAY_MENU:
-        return DISPLAY_SUMMARY;
+//    case DISPLAY_MENU:
+//        return DISPLAY_SUMMARY;
     case DISPLAY_SUMMARY:
         return DISPLAY_BOARDS;
     case DISPLAY_BOARDS:
@@ -68,9 +68,9 @@ void cycle_display_mode(void)
 
 void screen_handle_key(char ch)
 {
-    if (DISPLAY_MENU == display_mode) {
-        menu_screen_handle_key(ch);
-    }
+//    if (DISPLAY_MENU == display_mode) {
+//        menu_screen_handle_key(ch);
+//    }
     if (DISPLAY_DIGIPOT == display_mode) {
         digipot_screen_handle_key(ch);
     }
@@ -89,10 +89,10 @@ bool app_handle_escape_seq(const char *str)
         display_mode = next_display_mode(display_mode);
         handled = true;
     }
-    if (0 == strcmp(str, ESC_CODE_F1)) {
-        display_mode = DISPLAY_MENU;
-        handled = true;
-    }
+//    if (0 == strcmp(str, ESC_CODE_F1)) {
+//        display_mode = DISPLAY_MENU;
+//        handled = true;
+//    }
     if (0 == strcmp(str, ESC_CODE_F2)) {
         display_mode = DISPLAY_SUMMARY;
         handled = true;
@@ -126,11 +126,11 @@ bool app_handle_escape_seq(const char *str)
         handled = true;
     }
 
-    if (display_mode == DISPLAY_MENU) {
-        if (menu_handle_escape_seq(str)) {
-            handled = true;
-        }
-    }
+//    if (display_mode == DISPLAY_MENU) {
+//        if (menu_handle_escape_seq(str)) {
+//            handled = true;
+//        }
+//    }
     if (display_mode == DISPLAY_DIGIPOT) {
         if (digipot_handle_escape_seq(str)) {
             handled = true;

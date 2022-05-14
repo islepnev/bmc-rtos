@@ -29,22 +29,8 @@
 #include "display.h"
 #include "log/log.h"
 #include "keysyms.h"
-#include "microrl.h"
 
 static const uint32_t ESCAPE_TIMEOUT = 500; // ms
-
-// print callback for microrl library
-static void print (const char * str)
-{
-    fprintf (stdout, "%s", str);
-}
-
-// execute callback for microrl library
-// do what you want here, but don't write to argv!!! read only!!
-static int execute (int argc, const char * const * argv)
-{
-    return 0;
-}
 
 static int new_screen_width = 0;
 static int new_screen_height = 0;
@@ -116,7 +102,7 @@ static uint32_t escTick = 0;
 static bool handle_escape_char(char ch)
 {
     if (escpos >= sizeof (escbuf)-1) {
-        log_printf(LOG_DEBUG, "Too long esc sequence: %s", escbuf);
+        log_put(LOG_DEBUG, "Too long esc sequence");
         return false;
     }
     escbuf[escpos++] = ch;
@@ -142,10 +128,6 @@ void cliTask(void const *arg)
 {
     (void) arg;
 
-    static microrl_t rl;
-    static microrl_t * prl = &rl;
-    microrl_init (prl, print);
-    microrl_set_execute_callback (prl, execute);
     setvbuf(stdin, NULL, _IONBF, 0);
     static bool esc = false;
     const uint32_t tick = osKernelSysTick();

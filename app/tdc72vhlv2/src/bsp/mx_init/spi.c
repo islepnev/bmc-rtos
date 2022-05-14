@@ -29,8 +29,6 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
-SPI_HandleTypeDef hspi4;
-SPI_HandleTypeDef hspi5;
 
 //static SPI_TypeDef *ad9548_spi_instance  = SPI1;
 //static SPI_TypeDef *fpga_spi_instance    = SPI2;

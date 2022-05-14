@@ -33,7 +33,20 @@ typedef struct uart_errors_t {
     uint32_t noise;
 } uart_errors_t;
 
+#if defined USART6
 #define UART_COUNT 6
+#elif defined USART5
+#define UART_COUNT 5
+#elif defined USART4
+#define UART_COUNT 4
+#elif defined USART3
+#define UART_COUNT 3
+#elif defined USART2
+#define UART_COUNT 2
+#else
+#define UART_COUNT 1
+#endif
+
 uart_errors_t uart_errors[UART_COUNT] = {};
 
 osMessageQDef(message_q_ttyrx, 1, uint32_t);
@@ -62,8 +75,10 @@ int uart_index(const USART_TypeDef *usart)
         return 0;
     if (usart == USART2)
         return 1;
+#ifdef USART3
     if (usart == USART3)
         return 2;
+#endif
 #ifdef USART4
     if (usart == USART4)
         return 3;

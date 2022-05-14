@@ -30,7 +30,7 @@ typedef struct BusIoStat {
     int rx_addr_errors;
     int rx_count;
     int rx_crc_errors;
-    int rx_len_errors;
+    int rx_other_errors;
     int rx_opcode_errors;
     int rx_timeouts;
     int tx_count;

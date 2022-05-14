@@ -51,6 +51,7 @@ static uint32_t stateTicks(const Dev_powermon_priv *p)
     return osKernelSysTick() - p->stateStartTick;
 }
 
+#if POWERMON_SENSORS
 static SensorStatus oldSensorStatus[POWERMON_SENSORS] = {SENSOR_UNKNOWN};
 static void clearOldSensorStatus(void)
 {
@@ -58,6 +59,9 @@ static void clearOldSensorStatus(void)
         oldSensorStatus[i] = SENSOR_NORMAL;
 }
 
+#else
+static void clearOldSensorStatus(void) {}
+#endif
 static void log_sensor_status(const pm_sensor *p)
 {
     const SensorStatus status = pm_sensor_status(p);
@@ -95,6 +99,7 @@ static void log_sensor_status(const pm_sensor *p)
 
 static void log_sensors_change(const Dev_powermon_priv *p)
 {
+#if POWERMON_SENSORS
     const pm_sensors_arr *sensors = &p->sensors;
     for (int i=0; i<sensors->count; i++) {
         const pm_sensor *sensor = &p->sensors.arr[i];
@@ -106,6 +111,7 @@ static void log_sensors_change(const Dev_powermon_priv *p)
             oldSensorStatus[i] = status;
         }
     }
+#endif
 }
 
 static void log_critical_sensors(const Dev_powermon *pm)

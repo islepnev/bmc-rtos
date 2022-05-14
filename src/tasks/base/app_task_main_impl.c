@@ -51,7 +51,6 @@ void check_clock_ready(void)
 
 void task_main_init(void)
 {
-
 }
 
 SensorStatus old_status = SENSOR_UNKNOWN;

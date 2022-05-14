@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 #ifdef STM32F3
-enum {LOG_BUF_SIZE = 30};
+enum {LOG_BUF_SIZE = 50};
 #else
 enum {LOG_BUF_SIZE = 100};
 #endif

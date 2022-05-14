@@ -22,13 +22,18 @@
 #include <stdlib.h>
 
 #include "ansi_escape_codes.h"
+#include "app_name.h"
 #include "app_shared_data.h"
 #include "cmsis_os.h"
 #include "display.h"
 #include "RunTimeStatsTimer.h"
 #include "stm32_hal.h"
 
+#ifdef STM32F3
+enum {MAX_TASK_COUNT = 10};
+#else
 enum {MAX_TASK_COUNT = 30};
+#endif
 typedef struct task_item {
     uint8_t index;
     uint8_t prio;
@@ -122,6 +127,7 @@ static void print_osThreadList(void)
 
 static void print_sysinfo_brief(void)
 {
+    printf(APP_DESCR_FULL "\n");
     printf("FreeRTOS %s, CMSIS %u.%u, CMSIS-OS %u.%u, HAL %lX\n", tskKERNEL_VERSION_NUMBER,
            __CM_CMSIS_VERSION >> 16, __CM_CMSIS_VERSION & 0xFFFF,
            osCMSIS >> 16, osCMSIS & 0xFFFF,

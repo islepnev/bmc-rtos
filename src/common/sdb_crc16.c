@@ -16,13 +16,14 @@
 */
 
 #include "sdb_crc16.h"
+#include "bswap.h"
 
-static const uint16_t crc16_poly = 0x8BB7; // CRC-16-T10-DIF (SCSI DIF)
-static const uint16_t crc16_init = 0xFFFF; // differs from standard init 0
+const uint16_t crc16_poly = 0x8BB7; // CRC-16-T10-DIF (SCSI DIF)
+const uint16_t crc16_init = 0xFFFF; // differs from standard init 0
 
-uint16_t sdb_crc16_d8(const uint8_t buf[], size_t len)
+uint16_t sdb_crc16_d8(uint16_t init, const uint8_t buf[], size_t len)
 {
-    uint16_t crc = crc16_init;
+    uint16_t crc = init;
     for (size_t i = 0; i < len; i++) {
         crc ^= (uint16_t)(buf[i]) << 8;
         for (int k = 0; k < 8; k++)
@@ -31,9 +32,9 @@ uint16_t sdb_crc16_d8(const uint8_t buf[], size_t len)
     return crc;
 }
 
-uint16_t sdb_crc16_be16(const uint16_t buf[], size_t len)
+uint16_t sdb_crc16_be16(uint16_t init, const uint16_t buf[], size_t len)
 {
-    uint16_t crc = crc16_init;
+    uint16_t crc = init;
     for (size_t i = 0; i < len; i++) {
         // MSB
         uint16_t data = (buf[i] >> 8) & 0xFF;

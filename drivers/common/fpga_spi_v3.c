@@ -184,9 +184,9 @@ bool fpga_spi_v3_tx_rx(BusInterface *bus, uint16_t *txBuf, uint16_t *rxBuf, uint
     uint32_t sum = 0;
     for (int i=0; i<wordcount; i++)
         sum += rxBuf[i];
-    if (sum == 0) {
+    if (sum == 0 || sum == (uint32_t)0xFFFFu * wordcount) {
         // if (error_log_inc())
-        //     log_printf(LOG_WARNING, "FPGA SPI: no data received (all zeroes)");
+        //     log_printf(LOG_WARNING, "FPGA SPI: no data received");
         iostat.no_response_errors++;
         return false;
     }
@@ -224,21 +224,25 @@ static bool fpga_spi_v3_txn(BusInterface *bus, fpga_spi_v3_txn_t *txBuf, fpga_sp
             log_rx_txn(bus, (const uint16_t *)&v3_rxBuf, SPI_FRAME_LEN);
         }
     }
-
-    rxBuf->b.addr = wswap_32(rxBuf->b.addr);
-    rxBuf->b.data = wswap_64(rxBuf->b.data);
-    v3_rx_addr_error = 0;
+    v3_rx_addr_error = false;
     switch (rxBuf->b.op.b.opcode) {
     case FPGA_SPI_V3_OP_NULL:
-        v3_rx_addr_error = (rxBuf->b.addr != addr_op_null);
+        v3_rx_addr_error = (wswap_32(rxBuf->b.addr) != addr_op_null);
         break;
     case FPGA_SPI_V3_OP_ST:
-        v3_rx_addr_error = (rxBuf->b.addr != addr_op_stat);
+        v3_rx_addr_error = (wswap_32(rxBuf->b.addr) != addr_op_stat);
         break;
     default:;
     }
-    if (v3_rx_addr_error)
+    if (v3_rx_addr_error) {
         iostat.rx_addr_errors++;
+        if (error_log_inc()) {
+            log_printf(LOG_ERR, "FPGA SPI: RX address error");
+            log_rx_txn(bus, (const uint16_t *)&v3_rxBuf, SPI_FRAME_LEN);
+        }
+    }
+    rxBuf->b.addr = wswap_32(rxBuf->b.addr);
+    rxBuf->b.data = wswap_64(rxBuf->b.data);
     return true;
 }
 
@@ -342,8 +346,9 @@ bool fpga_spi_v3_hal_read_reg(BusInterface *bus, uint32_t addr, uint64_t *data)
         switch (v3_rxBuf.b.op.b.opcode) {
         case FPGA_SPI_V3_OP_NULL: break;
         case  FPGA_SPI_V3_OP_RD: {
-            if (v3_rxBuf.b.op.b.length != 1) {
-                iostat.rx_len_errors++;
+            // rx length field is reserved in v3
+            if (false && (v3_rxBuf.b.op.b.length != 1)) {
+                iostat.rx_other_errors++;
                 if (enable_length_check) {
                     if (error_log_inc())
                         log_printf(LOG_ERR, "%s: unexpected length %d, should be 1",

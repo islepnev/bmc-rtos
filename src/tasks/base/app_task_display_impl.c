@@ -35,11 +35,9 @@
 #include "display_common.h"
 #include "display_fpga.h"
 #include "display_log.h"
-#include "display_menu.h"
 #include "display_sensors.h"
 #include "display_tasks.h"
 #include "fpga/dev_fpga_print.h"
-#include "menu/menu.h"
 #include "powermon/dev_powermon_display.h"
 #include "rtc_util.h"
 #include "sfpiic/dev_sfpiic_print.h"
@@ -155,9 +153,9 @@ void display_page_contents(display_mode_t mode, bool repaint)
         display_clear_page();
 
     switch (display_mode) {
-    case DISPLAY_MENU:
-        display_menu_page(DISPLAY_PAGE_Y, repaint);
-        break;
+//    case DISPLAY_MENU:
+//        display_menu_page(DISPLAY_PAGE_Y, repaint);
+//        break;
     case DISPLAY_SUMMARY:
         display_summary_page(DISPLAY_PAGE_Y, repaint);
         break;
@@ -277,5 +275,5 @@ void display_task_init(void)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
-    init_menu();
+//    init_menu();
 }

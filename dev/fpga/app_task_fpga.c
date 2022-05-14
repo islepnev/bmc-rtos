@@ -28,7 +28,7 @@
 #include "fpga/dev_fpga_types.h"
 
 osThreadId fpgaThreadId = NULL;
-enum { fpgaThreadStackSize = threadStackSize + 130 };
+enum { fpgaThreadStackSize = threadStackSize + 150 };
 static const uint32_t fpgaTaskLoopDelay = 50;
 
 static BusInterface fpga_bus_info = {
@@ -37,11 +37,11 @@ static BusInterface fpga_bus_info = {
     .address = 0
 };
 
-static Dev_fpga d = {0};
+static Dev_fpga dev_fpga = {0};
 
 static void local_init(DeviceBase *parent)
 {
-    create_device(parent, &d.dev, &d.priv, DEV_CLASS_FPGA, fpga_bus_info, "FPGA");
+    create_device(parent, &dev_fpga.dev, &dev_fpga.priv, DEV_CLASS_FPGA, fpga_bus_info, "FPGA");
 }
 
 static void start_fpga_thread(void const *arg)
@@ -50,12 +50,12 @@ static void start_fpga_thread(void const *arg)
 
     for( ;; )
     {
-        fpga_task_run(&d);
+        fpga_task_run(&dev_fpga);
         osDelay(fpgaTaskLoopDelay);
     }
 }
 
-osThreadDef(fpga, start_fpga_thread, osPriorityNormal,  1, fpgaThreadStackSize);
+osThreadDef(fpga, start_fpga_thread, osPriorityBelowNormal,  1, fpgaThreadStackSize);
 
 void create_task_fpga(DeviceBase *parent)
 {

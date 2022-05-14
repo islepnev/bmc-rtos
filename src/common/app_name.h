@@ -19,6 +19,7 @@
 #define APP_NAME_H
 
 #include "bsp.h"
+#include "version.h"
 
 #if defined(BOARD_ADC64VE)
 #define APP_NAME_STR "ADC64VE"
@@ -50,8 +51,10 @@
 
 #define APP_NAME_STR_BMC APP_NAME_STR "-BMC"
 
-#define APP_DESCR_STR APP_NAME_STR_BMC " v" VERSION_STR
+#define APP_DESCR_STR APP_NAME_STR_BMC " " VERSION_STR
 
 #define VENDOR_STR "JINR AFI"
+
+#define APP_DESCR_FULL APP_NAME_STR_BMC " " GIT_DESCR ", " __DATE__
 
 #endif // APP_NAME_H

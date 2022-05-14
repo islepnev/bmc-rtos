@@ -27,7 +27,7 @@ extern "C" {
 // for use with GCC flags -fstack-usage -Wstack-usage=N
 // Note: debug_printf stack overhead is 100 bytes
 #ifdef STM32F3
-enum { threadStackSize = 128 }; // words
+enum { threadStackSize = configMINIMAL_STACK_SIZE + 72 }; // words
 #else
 enum { threadStackSize = 512 }; // words
 #endif

@@ -26,7 +26,7 @@
 osThreadId cliThreadId = NULL;
 enum { cliThreadStackSize = threadStackSize };
 
-osThreadDef(cli, cliTask,    osPriorityNormal, 1, cliThreadStackSize);
+osThreadDef(cli, cliTask,    osPriorityAboveNormal, 1, cliThreadStackSize);
 
 void create_task_cli(void)
 {

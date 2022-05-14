@@ -94,32 +94,31 @@ bool sdb_checksum_present(const struct sdb_rom_t *sdb)
 
 uint16_t sdb_checksum(const struct sdb_rom_t *sdb)
 {
-    return sdb_crc16_d8((const uint8_t*)sdb, sizeof(struct sdb_rom_t));
-}
-
-// non-reentrant
-bool sdb_validate_checksum_nr(const struct sdb_rom_t *sdb)
-{
-    if (!sdb_checksum_present(sdb)) return true;
-    static struct sdb_rom_t sdb_copy;
-    memcpy(&sdb_copy, sdb, sizeof(struct sdb_rom_t));
-    sdb_fill_checksum(&sdb_copy);
-    enum {syn_name_size = sizeof(sdb->syn.syn_name)};
-    uint16_t *pcopycrc = (uint16_t *) &sdb_copy.syn.syn_name[syn_name_size-2];
-    uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
-    return *pcrc == *pcopycrc;
+    return sdb_crc16_d8(crc16_init, (const uint8_t*)sdb, sizeof(struct sdb_rom_t));
 }
 
 bool sdb_validate_checksum(const struct sdb_rom_t *sdb)
 {
     if (!sdb_checksum_present(sdb)) return true;
-    struct sdb_rom_t sdb_copy;
-    memcpy(&sdb_copy, sdb, sizeof(struct sdb_rom_t));
-    sdb_fill_checksum(&sdb_copy);
     enum {syn_name_size = sizeof(sdb->syn.syn_name)};
-    uint16_t *pcopycrc = (uint16_t *) &sdb_copy.syn.syn_name[syn_name_size-2];
+    uint16_t crc = crc16_init;
+    // first part
+    uint8_t *b1 = (uint8_t *)sdb;
+    uint8_t *e1 = (uint8_t *)&sdb->syn.syn_name[syn_name_size-4];
+    ssize_t s1 = e1 - b1;
+    crc = sdb_crc16_d8(crc, b1, s1);
+    // hole
+    uint16_t pmarker = ntohs(checksum_crc16_marker);
+    uint16_t zz = 0;
+    crc = sdb_crc16_d8(crc, (uint8_t *)&pmarker, 2);
+    crc = sdb_crc16_d8(crc, (uint8_t *)&zz, 2);
+    // second part
+    uint8_t *b2 = e1 + 4;
+    ssize_t s2 = sizeof(struct sdb_rom_t) - s1 - 4;
+    crc = sdb_crc16_d8(crc, b2, s2);
+    crc = htons(crc);
     uint16_t *pcrc = (uint16_t *) &sdb->syn.syn_name[syn_name_size-2];
-    return *pcrc == *pcopycrc;
+    return crc == *pcrc;
 }
 
 void sdb_fill_checksum(struct sdb_rom_t *sdb)

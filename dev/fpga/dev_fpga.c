@@ -281,8 +281,9 @@ static void fpga_print_sdb(const Dev_fpga *dev)
 
 bool fpga_read_sdb(struct Dev_fpga *dev)
 {
-    static struct sdb_rom_t sdb;
-    memset(&sdb, 0, sizeof(sdb));
+    struct sdb_rom_t *sdb = &dev->priv.fpga.sdb;
+    uint16_t old_crc = sdb_checksum(sdb);
+    memset(sdb, 0, sizeof(struct sdb_rom_t));
     uint32_t sdb_magic;
     if (! fpga_r32(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb_magic))
         goto err;
@@ -293,21 +294,26 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         dev->priv.fpga.sdb_read = false;
         return true;
     }
-    /*
-    uint32_t csr[0x10];
-    if (! fpga_read(dev, 0x40, &csr, sizeof (csr)))
+    int address = FPGA_SPI_ADDR_SDB_BASE;
+    if (! fpga_read(dev, address, &sdb->ic, sizeof(sdb->ic)))
         goto err;
-    log_printf(LOG_DEBUG, "CSR dump:");
-    hexdump(&csr, sizeof(csr));
-    */
-    if (! fpga_read(dev, FPGA_SPI_ADDR_SDB_BASE, &sdb, sizeof (sdb)))
+    address += sizeof(sdb->ic) / 2;
+    osThreadYield();
+    for (int i=0; i<MAX_SDB_DEVICE_COUNT; i++) {
+        if (! fpga_read(dev, address, &sdb->device[i], sizeof(sdb->device[0])))
+            goto err;
+        address += sizeof(sdb->device[0]) / 2;
+        osThreadYield();
+    }
+    if (! fpga_read(dev, address, &sdb->syn, sizeof(sdb->syn)))
         goto err;
-    //hexdump(&sdb.syn, sizeof(struct sdb_synthesis));
-    bool has_checksum = sdb_checksum_present(&sdb);
+    osThreadYield();
+    // hexdump(&sdb->syn, sizeof(struct sdb_synthesis));
+    bool has_checksum = sdb_checksum_present(sdb);
     dev->priv.fpga.sdb_crc_present = has_checksum;
     dev->priv.fpga.sdb_crc_valid = false;
     if (has_checksum) {
-        bool crc_ok = sdb_validate_checksum_nr(&sdb);
+        bool crc_ok = sdb_validate_checksum(sdb);
         if (!crc_ok) {
             log_put(LOG_DEBUG, "SDB checksum error");
             goto err;
@@ -315,7 +321,7 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         dev->priv.fpga.sdb_crc_valid = true;
     }
 
-    struct sdb_interconnect *ic = &sdb.ic;
+    struct sdb_interconnect *ic = &sdb->ic;
     if (SDB_DUMP) {
         log_printf(LOG_DEBUG, "SDB interconnect dump:");
         hexdump(ic, sizeof(*ic));
@@ -325,11 +331,11 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
         log_printf(LOG_WARNING, "SDB interconnect structure invalid");
         goto err;
     }
-    struct sdb_synthesis *syn = &sdb.syn;
+    struct sdb_synthesis *syn = &sdb->syn;
     sdb_synthesis_fix_endian(syn);
     bool ok = true;
     for (int i=0; i<ic->sdb_records - 1; i++) {
-        struct sdb_device *d = &sdb.device[i];
+        struct sdb_device *d = &sdb->device[i];
 
         if (SDB_DUMP) {
             log_printf(LOG_DEBUG, "SDB device(%d) dump:", i);
@@ -343,8 +349,9 @@ bool fpga_read_sdb(struct Dev_fpga *dev)
                 ok = false;
         }
     }
-    bool changed = memcmp(&dev->priv.fpga.sdb, &sdb, sizeof(sdb));
-    dev->priv.fpga.sdb = sdb;
+    uint16_t new_crc = sdb_checksum(&dev->priv.fpga.sdb);
+
+    bool changed = new_crc != old_crc;
     dev->priv.fpga.sdb_read = true;
     if (changed)
         fpga_print_sdb(dev);

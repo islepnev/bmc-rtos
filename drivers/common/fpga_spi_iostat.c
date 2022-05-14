@@ -26,7 +26,7 @@ int bus_iostat_comm_errors(const BusIoStat *iostat)
         iostat->no_response_errors +
         iostat->rx_addr_errors +
         iostat->rx_crc_errors +
-        iostat->rx_len_errors +
+        iostat->rx_other_errors +
         iostat->rx_opcode_errors +
         iostat->tx_crc_errors;
 }

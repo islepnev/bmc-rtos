@@ -47,7 +47,11 @@ typedef struct GenericSensor {
 } GenericSensor;
 #pragma pack(pop)
 
+#ifdef STM32F3
+enum { MAX_SENSOR_COUNT = 8 };
+#else
 enum { MAX_SENSOR_COUNT = 48 };
+#endif
 
 typedef struct IpmiSensors {
     uint32_t sensor_count;
