@@ -23,6 +23,9 @@
 #include "dev_tqdc_clkmux_types.h"
 #include "log/log.h"
 #include "mcp23017/mcp23017_i2c_hal.h"
+#include "app_shared_data.h"
+#include "devicelist.h"
+#include "display_common.h"
 
 typedef union {
     struct {
@@ -55,15 +58,66 @@ typedef enum {
 void dev_tqdc_clkmux_init(Dev_tqdc_clkmux *d)
 {
     set_device_status(&d->dev, DEVICE_UNKNOWN);
-    d->priv.clk_source = TQDC_CLK_SOURCE_LOCAL_DIRECT;
+    d->priv.clk_source = TQDC_CLK_SOURCE_LOCAL;
+}
+
+static bool is_fpga_device_ok()
+{
+    const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
+    if (!d)
+        return false;
+    return d->device_status != DEVICE_UNKNOWN;
+}
+
+tqdc_clk_source_t get_clk_source()
+{
+    bool control_valid = is_fpga_device_ok();
+    bool pll_bypass = control_valid ? clock_control.pll_bypass : false;
+    clock_source_t selected_source = control_valid ? clock_control.source : CLOCK_SOURCE_LOCAL;
+    switch (selected_source) {
+    case CLOCK_SOURCE_VXS:
+    case CLOCK_SOURCE_TTC:
+    case CLOCK_SOURCE_LOCAL:
+    case CLOCK_SOURCE_AUTO:
+        break;
+    default: selected_source = CLOCK_SOURCE_AUTO;
+    }
+    if (selected_source == CLOCK_SOURCE_AUTO) {
+        if (clock_control.valid & CLOCK_SOURCE_VXS)
+            selected_source = CLOCK_SOURCE_VXS;
+        else
+        if (clock_control.valid & CLOCK_SOURCE_TTC)
+            selected_source = CLOCK_SOURCE_TTC;
+        else
+            selected_source = CLOCK_SOURCE_LOCAL;
+    }
+    switch (selected_source) {
+    case CLOCK_SOURCE_VXS:
+        return pll_bypass ? TQDC_CLK_SOURCE_VXS: TQDC_CLK_SOURCE_VXS_PLL;
+    case CLOCK_SOURCE_TTC:
+        return pll_bypass ? TQDC_CLK_SOURCE_REFIN: TQDC_CLK_SOURCE_REFIN_PLL;
+    default:
+        return pll_bypass ? TQDC_CLK_SOURCE_LOCAL: TQDC_CLK_SOURCE_LOCAL_PLL;
+    }
 }
 
 bool dev_tqdc_clkmux_set(Dev_tqdc_clkmux *d)
 {
+    static tqdc_clk_source_t prev_source = -1;
+    d->priv.clk_source = get_clk_source();
+    if (d->priv.clk_source != prev_source) {
+        prev_source = d->priv.clk_source;
+        log_printf(LOG_INFO, "ClkMux: switch to %s", tqdc_clk_source_text(d->priv.clk_source));
+    }
     clkmux_gpioa gpioa;
     gpioa.all = 0;
-    gpioa.bit.clk_adc_sel = (d->priv.clk_source == TQDC_CLK_SOURCE_LOCAL_DIRECT);
-    gpioa.bit.clk_tdc_sel = !gpioa.bit.clk_adc_sel;
+    gpioa.bit.clk_adc_sel =
+        d->priv.clk_source == TQDC_CLK_SOURCE_LOCAL;
+    gpioa.bit.clk_tdc_sel =
+        d->priv.clk_source == TQDC_CLK_SOURCE_LOCAL_PLL ||
+        d->priv.clk_source == TQDC_CLK_SOURCE_VXS_PLL ||
+        d->priv.clk_source == TQDC_CLK_SOURCE_REFIN_PLL;
+
     if (!mcp23017_write(&d->dev, MCP23017_GPIOB, gpioa.all))
         goto err;
 
@@ -73,8 +127,12 @@ bool dev_tqdc_clkmux_set(Dev_tqdc_clkmux *d)
         goto err;
     crsw_enum_t crsw_in_main;
     switch (d->priv.clk_source) {
-    case TQDC_CLK_SOURCE_VXS: crsw_in_main = CRSW1_IN_VXS; break;
-    case TQDC_CLK_SOURCE_REFIN: crsw_in_main = CRSW1_IN_REFIN; break;
+    case TQDC_CLK_SOURCE_VXS:
+    case TQDC_CLK_SOURCE_VXS_PLL:
+        crsw_in_main = CRSW1_IN_VXS; break;
+    case TQDC_CLK_SOURCE_REFIN:
+    case TQDC_CLK_SOURCE_REFIN_PLL:
+        crsw_in_main = CRSW1_IN_REFIN; break;
     default: crsw_in_main = CRSW1_IN_AD9516_DIV3; break;
     }
     int crsw1_output_map[4] = {

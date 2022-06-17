@@ -36,6 +36,9 @@
 #include "system_status.h"
 #include "thset/dev_thset_print.h"
 
+#if defined(BOARD_TDC64VLE) || defined (BOARD_TDQC)
+#include "tqdc_clkmux/dev_tqdc_clkmux_types.h"
+#endif
 void print_digipots(void)
 {
     const DeviceBase *d = find_device_const(DEV_CLASS_DIGIPOTS);
@@ -133,6 +136,15 @@ void print_fpga(void)
 
 void print_clkmux(void)
 {
+#if defined(BOARD_TDC64VLE) || defined (BOARD_TDQC)
+    const DeviceBase *d = find_device_const(DEV_CLASS_CLKMUX);
+    if (!d || !d->priv)
+        return;
+    const Dev_tqdc_clkmux_priv *priv = (const Dev_tqdc_clkmux_priv *)device_priv_const(d);
+    printf("ClkMux: %s %s\n",
+           tqdc_clk_source_text(priv->clk_source),
+           device_sensor_status_ansi_str(DEV_CLASS_CLKMUX));
+#else
     display_device_sensor_ansi_str("ClkMux", DEV_CLASS_CLKMUX);
+#endif
 }
-
