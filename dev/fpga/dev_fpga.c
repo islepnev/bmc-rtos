@@ -19,6 +19,7 @@
 
 #include <string.h>
 
+#include "AfiSdbId.h"
 #include "../ad9545/dev_ad9545.h"
 #include "../ad9548/dev_ad9548.h"
 #include "app_tasks.h"
@@ -647,6 +648,48 @@ bool fpgaWriteSensors(struct Dev_fpga *dev)
 }
 #endif
 
+bool fpgaPollSdbClockControl(Dev_fpga *dev, const struct sdb_device *sdb_dev)
+{
+    uint32_t base = sdb_dev->sdb_component.addr_first / 2;
+    uint16_t reg_control;
+    uint16_t reg_status;
+    uint16_t reg_source;
+    if (!fpga_r16(dev, base + 0, &reg_control))
+        return false;
+    if (!fpga_r16(dev, base + 1, &reg_status))
+        return false;
+    if (!fpga_r16(dev, base + 2, &reg_source))
+        return false;
+    clock_control.pll_bypass = 0; // reg_control & 1;
+    clock_control.valid = reg_status & 0x7;
+    clock_control.source = reg_source & 0x7;
+    // log_printf(LOG_DEBUG, "Clock: %04X %04X %04X", reg_control, reg_status, reg_source);
+    return true;
+}
+
+bool fpgaPollSdbDevice(Dev_fpga *dev, const struct sdb_device *sdb_dev)
+{
+    switch (sdb_dev->sdb_component.product.device_id) {
+    case AFI_SDB_Clock_Control: return fpgaPollSdbClockControl(dev, sdb_dev);
+    }
+    return true;
+}
+
+bool fpgaPollSdbDevices(Dev_fpga *dev)
+{
+    if (!dev->priv.fpga.sdb_read)
+        return true;
+    if (!dev->priv.fpga.sdb_crc_valid)
+        return true;
+    struct sdb_rom_t *sdb = &dev->priv.fpga.sdb;
+    struct sdb_interconnect *ic = &sdb->ic;
+    bool ok = true;
+    for (int i=0; i<ic->sdb_records - 1; i++) {
+        ok &= fpgaPollSdbDevice(dev, &sdb->device[i]);
+    }
+    return ok;
+}
+
 bool fpga_periodic_task_v1(struct Dev_fpga *dev)
 {
     return
@@ -685,6 +728,7 @@ bool fpga_periodic_task_v3(struct Dev_fpga *dev)
     fpga_read_base_csr(dev);
 //    fpga_read_temp(dev);
     bool ok =
+        fpgaPollSdbDevices(dev) &&
         fpgaWriteBmcVersion(dev) &&
         fpgaWriteBmcTemperature(dev) &&
         fpgaWriteBmcNetworkInfo(dev) &&
