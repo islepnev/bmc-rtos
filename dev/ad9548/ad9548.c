@@ -150,7 +150,7 @@ bool ad9548_check_id(BusInterface *bus, bool *ok)
         !ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
         return false;
     if (ok)
-        *ok = (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548);
+        *ok = (device_id == DEVICE_ID_AD9548);
     return true;
 }
 
@@ -179,9 +179,8 @@ bool ad9548_detect(BusInterface *bus)
     if (device_id != DEVICE_ID_AD9548) return false;
     if (!ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
         return false;
-    if (device_id == DEVICE_ID_AD9548 && revision_id == REVISION_ID_AD9548) return true;
-    log_printf(LOG_WARNING, "Unknown AD9548 ID: %02X %02X", device_id, revision_id);
-    return false;
+    log_printf(LOG_INFO, "AD9548: chip revision %02X", revision_id);
+    return true;
 }
 
 bool ad9548_repeat_read_register(BusInterface *bus, uint16_t address)
