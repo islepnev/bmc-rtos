@@ -146,8 +146,8 @@ bool ad9548_check_id(BusInterface *bus, bool *ok)
 {
     uint8_t device_id;
     uint8_t revision_id;
-    if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id) ||
-        !ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
+    if (!ad9548_read_register(bus, AD9548_REG1_DEVICE_ID, &device_id) ||
+        !ad9548_read_register(bus, AD9548_REG1_REVISION_ID, &revision_id))
         return false;
     if (ok)
         *ok = (device_id == DEVICE_ID_AD9548);
@@ -160,7 +160,7 @@ bool ad9548_detect(BusInterface *bus)
     uint8_t device_id;
     uint8_t revision_id;
     for (int i=0; i<cycles; i++) {
-        if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id))
+        if (!ad9548_read_register(bus, AD9548_REG1_DEVICE_ID, &device_id))
             return false;
         if (device_id == DEVICE_ID_AD9548) {
             if (i>0)
@@ -169,7 +169,7 @@ bool ad9548_detect(BusInterface *bus)
         }
     }
     for (int i=0; i<cycles; i++) {
-        if (!ad9548_read_register(bus, AD9545_REG1_DEVICE_ID, &device_id))
+        if (!ad9548_read_register(bus, AD9548_REG1_DEVICE_ID, &device_id))
             return false;
         if (device_id != DEVICE_ID_AD9548) {
             // log_printf(LOG_ERR, "AD9548: bad ID %02X on step %d", device_id, i);
@@ -177,7 +177,7 @@ bool ad9548_detect(BusInterface *bus)
         }
     }
     if (device_id != DEVICE_ID_AD9548) return false;
-    if (!ad9548_read_register(bus, AD9545_REG1_REVISION_ID, &revision_id))
+    if (!ad9548_read_register(bus, AD9548_REG1_REVISION_ID, &revision_id))
         return false;
     log_printf(LOG_INFO, "AD9548: chip revision %02X", revision_id);
     return true;
