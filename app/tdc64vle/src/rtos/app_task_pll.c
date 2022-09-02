@@ -37,7 +37,7 @@
 
 osThreadId pllThreadId = NULL;
 enum { pllThreadStackSize = threadStackSize + 150 };
-static const uint32_t pllTaskLoopPeriod = 50;
+static const uint32_t pllTaskLoopPeriod = 100;
 
 static BusInterface pll_bus_info = {
     .type = BUS_IIC,

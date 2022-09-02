@@ -28,6 +28,12 @@ const char *eth_port_descr = "mgmt0";
 bool main_clock_ready = false;
 bool aux_clock_ready = false;
 
+clock_control_t clock_control = {
+    .pll_bypass = true,
+    .valid = CLOCK_SOURCE_LOCAL,
+    .source = CLOCK_SOURCE_AUTO
+};
+
 pll_clock_shift_command_t pll_clock_shift_command = {};
 
 int screen_width = 100;

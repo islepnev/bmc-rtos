@@ -80,7 +80,7 @@
 #define APLL0_M_Divider      8
 #define PLL_DIST_DIV_0_A     10
 #define PLL_DIST_DIV_0_B     10
-#define PLL_DIST_DIV_0_C     10
+#define PLL_DIST_DIV_0_C     8
 #define DPLL1_EXT_ZD         0
 #define DPLL1_ZD_FB_Path     PROFILE_INT_ZD_FEEDBACK_OUT1A
 #define APLL1_Frequency      3.25e9

@@ -52,6 +52,20 @@ extern bool screen_size_set;
 extern bool main_clock_ready;
 extern bool aux_clock_ready;
 
+typedef enum {
+    CLOCK_SOURCE_AUTO = 0,
+    CLOCK_SOURCE_LOCAL = 1,
+    CLOCK_SOURCE_TTC = 2,
+    CLOCK_SOURCE_VXS = 4
+} clock_source_t;
+
+typedef struct clock_control_t {
+    bool pll_bypass;
+    clock_source_t valid;
+    clock_source_t source;
+} clock_control_t;
+extern clock_control_t clock_control;
+
 typedef struct pll_clock_shift_command_t {
     int req;
     int ack;

@@ -28,12 +28,25 @@ extern "C" {
 #endif
 
 typedef enum {
-    TQDC_CLK_SOURCE_LOCAL_DIRECT = 0,
-    TQDC_CLK_SOURCE_LOCAL_PLL = 1,
-    TQDC_CLK_SOURCE_VXS = 2,
-    TQDC_CLK_SOURCE_REFIN = 3,
+    TQDC_CLK_SOURCE_LOCAL,
+    TQDC_CLK_SOURCE_LOCAL_PLL,
+    TQDC_CLK_SOURCE_VXS,
+    TQDC_CLK_SOURCE_VXS_PLL,
+    TQDC_CLK_SOURCE_REFIN,
+    TQDC_CLK_SOURCE_REFIN_PLL,
 } tqdc_clk_source_t;
 
+inline const char *tqdc_clk_source_text(tqdc_clk_source_t value) {
+    switch (value) {
+    case TQDC_CLK_SOURCE_LOCAL: return "Local";
+    case TQDC_CLK_SOURCE_LOCAL_PLL: return "Local PLL";
+    case TQDC_CLK_SOURCE_VXS: return "VXS";
+    case TQDC_CLK_SOURCE_VXS_PLL: return "VXS PLL";
+    case TQDC_CLK_SOURCE_REFIN: return "REF";
+    case TQDC_CLK_SOURCE_REFIN_PLL: return "REF PLL";
+    default: return "";
+    }
+}
 typedef struct Dev_tqdc_clkmux_priv {
     tqdc_clk_source_t clk_source;
 } Dev_tqdc_clkmux_priv;
