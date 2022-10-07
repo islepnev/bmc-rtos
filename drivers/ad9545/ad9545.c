@@ -283,7 +283,7 @@ static bool pllReadRefStatus(BusInterface *bus, AD9545_Status *status)
     status->ref[0].raw = refa;
 
     uint8_t refb;
-    if (! ad9545_read1(bus, AD9545_REG1_3005, &refb))
+    if (! ad9545_read1(bus, AD9545_REG1_3007, &refb))
         return false;
     status->ref[2].raw = refb;
 
