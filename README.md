@@ -2,6 +2,8 @@
 
 Board Management Controller
 
+![mcb-32f769](doc/mcb-32f769-v1.1_320px.png)
+
 Supported boards
 
 - CRU16 v1.0 + MCB32F769 v1.1
