@@ -66,7 +66,7 @@ static bool is_fpga_device_ok()
     const DeviceBase *d = find_device_const(DEV_CLASS_FPGA);
     if (!d)
         return false;
-    return d->device_status != DEVICE_UNKNOWN;
+    return d->device_status == DEVICE_NORMAL;
 }
 
 tqdc_clk_source_t get_clk_source()
