@@ -85,6 +85,18 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
             d->priv.fsm_state = AUXPLL_STATE_ERROR;
             break;
         }
+        if (! auxpllReadStatus(d)) {
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
+            break;
+        }
+        d->priv.recoveryCount = 0;
+        d->priv.fsm_state = AUXPLL_STATE_PAUSE;
+        break;
+    case AUXPLL_STATE_PAUSE:
+        if (!enable) {
+            d->priv.fsm_state = AUXPLL_STATE_ERROR;
+            break;
+        }
         d->priv.recoveryCount = 0;
         break;
     case AUXPLL_STATE_ERROR:
@@ -111,18 +123,6 @@ void auxpll_task_run(Dev_auxpll *d, bool enable)
         d->priv.fsm_state = AUXPLL_STATE_INIT;
     }
 
-    if (d->priv.fsm_state != AUXPLL_STATE_INIT &&
-            d->priv.fsm_state != AUXPLL_STATE_RESET &&
-            d->priv.fsm_state != AUXPLL_STATE_ERROR &&
-            d->priv.fsm_state != AUXPLL_STATE_FATAL) {
-    }
-    if (d->priv.fsm_state == AUXPLL_STATE_RUN) {
-        if (! auxpllReadStatus(d)) {
-            d->priv.fsm_state = AUXPLL_STATE_ERROR;
-        }
-    } else {
-        auxpll_clear_status(d);
-    }
     int stateChanged = old_state != d->priv.fsm_state;
     if (stateChanged) {
         d->priv.stateStartTick = osKernelSysTick();

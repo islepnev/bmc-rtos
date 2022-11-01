@@ -31,6 +31,7 @@ static char *auxpllStateStr(AuxPllState auxpllState)
     case AUXPLL_STATE_RESET: return "RESET";
     case AUXPLL_STATE_SETUP: return "SETUP";
     case AUXPLL_STATE_RUN: return "RUN";
+    case AUXPLL_STATE_PAUSE: return "PAUSE";
     case AUXPLL_STATE_ERROR: return "ERROR";
     case AUXPLL_STATE_FATAL: return "FATAL";
     default: return "unknown";

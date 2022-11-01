@@ -47,5 +47,5 @@ bool ad9516_running(Dev_auxpll *d)
 {
     if (!d)
         return false;
-    return d->priv.fsm_state == AUXPLL_STATE_RUN;
+    return d->priv.fsm_state == AUXPLL_STATE_RUN || d->priv.fsm_state == AUXPLL_STATE_PAUSE;
 }

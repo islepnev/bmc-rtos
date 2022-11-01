@@ -95,11 +95,11 @@ bool auxpllReadStatus(Dev_auxpll *d)
     if (data != AD9516_PART_ID)
         return false;
 
-    if (!pllIoUpdate(d))
+//    if (!pllIoUpdate(d))
+//        return false;
+    if (! ad9516_read1(bus, AD9516_REG1_PLL_READBACK, &data))
         return false;
-    if (! ad9516_read1(bus, AD9516_REG1_PLL_READBACK, &d->priv.status.pll_readback.raw))
-        return false;
-
+    d->priv.status.pll_readback.raw = data;
     return true;
 }
 
