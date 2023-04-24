@@ -33,6 +33,7 @@ enum {
 
     // Control Bytes (86-99)
     SFF_8436_TX_DISABLE_REG = 86,
+    SFF_8436_CDR_REG = 98,
 
     // Serial ID: Data Fields (128-190)
     SFF_8436_VENDOR_NAME_REG16 = 148, // 148-163, QSFP+ vendor name(ASCII)
