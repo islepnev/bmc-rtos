@@ -228,9 +228,21 @@ bool dev_sfpiic_ch_update(Dev_sfpiic *d, uint8_t ch)
         uint8_t data = 0;
         if (! sfpiic_mem_read(&bus, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
             return false;
+
         if (data) {
             log_printf(LOG_INFO, "%s: clearing TX_DISABLE %02X", d->priv.portName[ch], data);
             if (! sfpiic_mem_write(&bus, SFF_8436_TX_DISABLE_REG, (uint8_t *)&data, 1))
+                return false;
+        }
+
+        // Disable CDR
+        if (! sfpiic_mem_read(&bus, SFF_8436_CDR_REG, (uint8_t *)&data, 1))
+            return false;
+
+        uint8_t data_cdr = 0;
+        if (data) {
+            log_printf(LOG_INFO, "%s: clearing CDR %02X", d->priv.portName[ch], data);
+            if (! sfpiic_mem_write(&bus, SFF_8436_CDR_REG, (uint8_t *)&data_cdr, 1))
                 return false;
         }
     }
