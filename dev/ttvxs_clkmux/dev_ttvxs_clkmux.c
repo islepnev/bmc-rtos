@@ -110,7 +110,7 @@ static bool dev_clkmux_set_crsw2(Dev_ttvxs_clkmux *d)
     data.all = 0;
     int crsw2_output_map[4] = {
         CRSW2_IN_AD9516,
-        CRSW2_IN_AD9516,
+        CRSW2_IN_PLL1B,
         CRSW2_IN_AD9516,
         CRSW2_IN_AD9516
     };
