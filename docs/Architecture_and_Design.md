@@ -12,6 +12,7 @@
 8. [Error Handling](#error-handling)
 9. [Code Organization](#code-organization)
 10. [Design Patterns](#design-patterns)
+11. [VXS Switched Serial I2C Framework](#vxs-switched-serial-i2c-framework)
 
 ## Overview
 
@@ -77,6 +78,8 @@ The task layer implements FreeRTOS-based concurrent execution:
 - TCP/IP networking task (selected boards)
 - FPGA management task
 - Analog-to-digital conversion task
+- VXSIIC master task (TTVXS only, 10ms period)
+- VXSIIC slave task (payload boards, 10ms period)
 
 #### Layer 5: Application Logic
 
@@ -115,6 +118,7 @@ System boot follows this sequence:
    f. FPGA task
    g. TCP/IP task (if enabled)
    h. ADC task (if enabled)
+   i. VXSIIC master/slave task (board-dependent)
 
 4. osKernelStart() - Start FreeRTOS scheduler
    a. Begin periodic task execution
@@ -326,7 +330,7 @@ FreeRTOS mail queues enable task-to-task communication:
 - `mq_cmd_digipots`: Command queue for digital potentiometer control
 - `mq_cmd_menu`: Command queue for menu/UI commands
 
-Queue size: 10 messages each
+Queue size: 10 messages each  
 Message types: CommandDigipots, CommandMenu
 
 ##### Mutex Protection
@@ -447,19 +451,33 @@ Call sync_ipmi_sensors()
 osDelay(10)
 ```
 
+#### VXSIIC Tasks (10ms period)
+
+```
+Task Wakeup (master or slave)
+    ↓
+Execute VXSIIC FSM (RESET → RUN → PAUSE/ERROR)
+    ↓
+Poll slots / respond to queries
+    ↓
+Update cached registers for SNMP/web
+    ↓
+osDelay(10)
+```
+
 ## Configuration
 
 ### Board Support Variants
 
 The system supports configuration for multiple board types:
 
-| Board ID | Configuration | Purpose |
-|----------|---------------|---------|
-| BOARD_CRU16 | CRU-16 v1.0 + MCB32F769 v1.1 | CRU detector system |
-| BOARD_TDC72 | TDC72VHL base configuration | Generic TDC72 variant |
-| BOARD_TDC72VHLV2 | TDC72VHL version 2 specific | Enhanced TDC72VHL |
-| BOARD_TQDC16VSV1 | TQDC-16 variant | TQDC detector system |
-| BOARD_TTVXS | TTVXS configuration | TTVXS detector system |
+| Board ID | Configuration | Purpose | VXSIIC Role |
+|----------|---------------|---------|-------------|
+| BOARD_CRU16 | CRU-16 v1.0 + MCB32F769 v1.1 | CRU detector system | VXSIIC slave |
+| BOARD_TDC72 | TDC72VHL base configuration | Generic TDC72 variant | VXSIIC slave |
+| BOARD_TDC72VHLV2 | TDC72VHL version 2 specific | Enhanced TDC72VHL | VXSIIC slave |
+| BOARD_TQDC16VSV1 | TQDC-16 variant | TQDC detector system | VXSIIC slave |
+| BOARD_TTVXS | TTVXS configuration | TTVXS detector system | VXSIIC master (centralized monitoring) |
 
 Board selection is specified at compile time via compiler flags:
 
@@ -617,6 +635,7 @@ Additional stack allocation for specific tasks:
 | Main | +70 words |
 | PLL | +150 words |
 | Power Monitor | +120 words |
+| VXSIIC master/slave | +200 words (polling + multiplexer cache) |
 
 #### Stack Overhead
 
@@ -645,11 +664,12 @@ Monitoring enables:
 Real-time constraints for periodic tasks:
 
 | Task | Period | Tolerance | Overrun Action |
-|------|--------|-----------|---|
+|------|--------|-----------|----------------|
 | Main | 10ms | ±5% | Log warning, continue |
 | PLL | 50ms | ±10% | Log notice, continue |
 | Power Monitor | 10ms | ±5% | Log warning, continue |
-|
+| VXSIIC master/slave | 10ms | ±5% | Log warning, continue |
+
 Timing violations are logged but do not halt execution.
 
 ## Error Handling
@@ -680,6 +700,13 @@ Device-specific error handling occurs in FSM state machines:
 4. State transition to ERROR
 5. Status update to indicate failure
 6. Graceful degradation
+
+### VXSIIC-Specific Error Handling
+
+- Multiplexer (PCA9548) access failures
+- Slot polling timeouts or module detection loss
+- Synchronization errors during channel routing
+- Automatic recovery: reset multiplexer, pause polling, retry on next cycle
 
 ### System-Level Error Recovery
 
@@ -743,6 +770,8 @@ Log levels:
 | `external/` | External libraries | Third-party code |
 | `mib/` | SNMP MIB | Management information base |
 | `app/<board>/` | Board-specific | Board variants, BSP |
+| `dev/vxsiicm/` | VXSIIC master | Master polling, multiplexer control |
+| `dev/vxsiics/` | VXSIIC slave | Slave responder logic |
 
 ### Device Directory Organization
 
@@ -864,6 +893,45 @@ Enables:
 - Asynchronous event processing
 - Simplified inter-task communication
 - Modular system design
+
+## VXS Switched Serial I2C Framework
+
+### Architecture Overview
+
+The VXSIIC (VXS Switched Serial I2C) framework implements a master-slave system for communication over the VXS backplane:
+
+- TTVXS acts as the centralized board monitoring controller (master)
+- Payload modules (CRU-16, TQDC, TDC64VLE) act as slave responders
+- I2C traffic is routed over the VXS backplane using multiplexed channel switching
+
+### VXSIIC Master (vxsiicm)
+
+- 10ms task wakeup with sequential slot-by-slot polling
+- FSM states: RESET, RUN, PAUSE, ERROR
+- PCA9548 multiplexer routing to 18 payload slots
+- Register access to EEPROM, GPIO expander, MCU at known addresses
+- Cached data for SNMP and web interface access
+
+### VXSIIC Slave (vxsiics)
+
+- 10ms task with 100ms polling delay
+- I2C slave interface responding to master queries
+- Decoupled data model from front-panel Ethernet interfaces
+- Environmental, power, and status register exposure
+
+### Physical Implementation Details
+
+- PCA9548 multiplexer addresses (0x71, 0x72, 0x73)
+- Slot-to-channel mapping tables
+- Error recovery procedures for module detection loss
+- Multiplexer access synchronization patterns
+
+### Configuration and Performance
+
+- VXSIIC roles integrated into board variant table
+- Dedicated stack allocation for master/slave tasks
+- VXSIIC-specific error handling and recovery
+- Code organization extended with `dev/vxsiicm/` and `dev/vxsiics/` directories
 
 ## Extensibility Guidelines
 
